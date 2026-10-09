@@ -3,7 +3,7 @@
 // the relative path './sw.js' which resolves to /app/sw.js here.
 // Bump CACHE_VERSION whenever you ship a new app build.
 
-const CACHE_VERSION = 'hearth-v0.91.3';
+const CACHE_VERSION = 'hearth-v0.92.0';
 const APP_SHELL = [
   './',
   './index.html',

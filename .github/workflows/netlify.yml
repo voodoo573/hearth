@@ -28,4 +28,4 @@ jobs:
         run: npx --yes netlify-cli@17 deploy --prod --dir _site --message "main ${GITHUB_SHA::7}"
       - name: Deploy preview (pull request)
         if: github.event_name == 'pull_request'
-        run: npx --yes netlify-cli@17 deploy --dir _site --alias "pr-${{ github.event.number }}" --message "PR #${{ github.event.number }}"
+        run: npx --yes netlify-cli@17 deploy --dir _site --alias "pr-${{ github.event.number }}" --message "PR ${{ github.event.number }}"

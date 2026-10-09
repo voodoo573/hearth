@@ -1420,6 +1420,19 @@
   .cl-card-meta { font-size:11px; color:var(--ink-faded); }
   .cl-add-btn { flex:none; }
   .cl-add-btn:disabled { opacity:0.5; }
+  .cl-card-info { background:none; border:none; padding:0; text-align:left; cursor:pointer; font:inherit; color:inherit; }
+  .cl-tag { font-size:9.5px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:var(--ink-faded); border:1px solid var(--card-border); border-radius:6px; padding:0 4px; margin-left:4px; }
+  .cl-status { display:flex; align-items:center; gap:10px; justify-content:space-between; font-size:11.5px; color:var(--ink-faded); margin:8px 0 10px; }
+  .cl-status.err { color:var(--crimson); }
+  .cl-refresh { flex:none; }
+  .cl-error { font-size:12.5px; color:var(--crimson); margin:10px 0; }
+  .cl-pv-meta { font-size:11.5px; color:var(--ink-faded); margin-top:2px; }
+  .cl-pv-desc { font-size:13px; color:var(--ink); line-height:1.45; margin:12px 0 8px; white-space:pre-wrap; }
+  .cl-pv-stats { display:flex; flex-direction:column; gap:4px; font-size:12.5px; color:var(--ink); margin:8px 0; }
+  .cl-pv-thumb { display:block; max-width:100%; border-radius:8px; border:1px solid var(--card-border); margin:8px 0; }
+  .cl-pv-credits { font-size:11.5px; color:var(--ink-soft); line-height:1.4; margin:10px 0; padding:8px 10px; border-left:3px solid var(--gold); background:var(--page-deep, var(--page)); border-radius:4px; }
+  .cl-pv-where { font-size:11.5px; color:var(--ink-faded); margin:10px 0; font-style:italic; }
+  .cl-pv-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
   .cl-contribute { margin-top:16px; border:1px dashed var(--gold); border-radius:10px; padding:12px; text-align:center; }
   .cl-contribute-title { font-weight:700; color:var(--gold); margin-bottom:4px; }
   .cl-contribute-desc { font-size:11.5px; color:var(--ink-faded); margin-bottom:10px; line-height:1.35; }
@@ -7772,7 +7785,7 @@
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '0.91.3';
+const HEARTH_VERSION = '0.92.0';
 // ============================================================
 // SRD 5.1 DATA v2 - structured for in-app casting
 // All content here is from the SRD 5.1 (CC-BY-4.0)
@@ -21006,10 +21019,14 @@ const STORAGE_KEY = 'hearth.characters.v2';
 // gate: 5.5e code + any 5.5e characters are untouched, just not shown.
 const SHOW_2024_EDITION = false;
 // ============================================================
-// COMMUNITY CONTENT LIBRARY — the GitHub-fed index will populate these shelves
-// once the importer lands; for now they're the organised empty containers.
-const CONTENT_REPO_URL = ''; // TODO: set to the Hearth community GitHub repo URL
-const CONTENT_LIBRARY = { races: [], subclasses: [], spells: [], feats: [], backgrounds: [], monsters: [], maps: [] };
+// COMMUNITY CONTENT LIBRARY — shelves are filled from the community repo's
+// index.json (see the importer next to the Magic Item Forge).
+const CONTENT_REPO_URL = 'https://github.com/voodoo573/hearth-community';
+const CONTENT_RAW_BASE = 'https://raw.githubusercontent.com/voodoo573/hearth-community/main/';
+const CONTENT_LIBRARY = { races: [], subclasses: [], spells: [], feats: [], backgrounds: [], weapons: [], magicItems: [], monsters: [], maps: [] };
+const COMMUNITY_INDEX_CACHE_KEY = 'hearth.community.index.v1';
+const COMMUNITY_INSTALLED_KEY = 'hearth.community.installed.v1';
+const WEAPON_LIBRARY_KEY = 'hearth.weaponLibrary.v1';
 // ============================================================
 const DRAFT_STORAGE_KEY = 'hearth.characterDraft.v1';
 const DM_SETTINGS_KEY = 'hearth.dmSettings.v1';
@@ -22251,6 +22268,7 @@ function dmClearCombat() {  const enc = loadEncounter();
   enc.turnIdx = 0;
   enc.round = 1;
   enc.tieBreaks = {}; // v0.21.0 — fresh ties next fight
+  enc.started = false; // v0.92.0 — back to "Not started" so the next fight needs ⚔ Start combat
   saveEncounter(enc);
   return enc;
 }
@@ -22364,6 +22382,7 @@ function getCharacter(id) {
   const ch = loadCharacters().find(c => c.id === id);
   if (ch && (ch.xp == null || ch.xp === undefined)) ch.xp = XP_THRESHOLDS[ch.level] || 0;
   if (ch && !ch.preparedSpells) ch.preparedSpells = [];
+  if (ch) normaliseCharacterSpellLists(ch);
   if (ch && !ch.resourcesUsed) ch.resourcesUsed = {};
   if (ch && !ch.invocations) ch.invocations = [];
   if (ch && !Array.isArray(ch.companions)) ch.companions = [];  // v0.20.89
@@ -23429,8 +23448,46 @@ function cantripsKnownCap(ch) {
 // to prep cap (their spells are tracked separately via knownCap).
 // v0.91.2 — prepared spells that count against the prepare limit. Always-prepared
 // subclass spells (domain/oath/circle lists) never count, even if they were prepped by hand.
+// v0.92.0 — count exactly what the Prepared list can show: each real levelled spell once
+// (case-insensitive, so an imported "bless" and "Bless" are one spell), never always-prepared
+// ones. Unknown names (typos, removed homebrew) no longer inflate the header.
 function preparedCountForCap(ch) {
-  return (ch.preparedSpells || []).filter(n => { const g = featureSpellGrantInfo(ch, n); return !(g && g.reset === 'known'); }).length;
+  const seen = new Set();
+  let poolNames = null;
+  try { poolNames = new Set(spellPool(ch).map(s => s.name)); } catch (e) { poolNames = null; }
+  (ch.preparedSpells || []).forEach(n => {
+    const name = canonicalSpellName(n);
+    const sp = name && spellByLowerName(name);
+    if (!sp || !(sp.level > 0)) return;
+    if (poolNames && !poolNames.has(sp.name)) return; // not on the list the Prepared section draws from
+    const g = featureSpellGrantInfo(ch, sp.name);
+    if (g && g.reset === 'known') return;
+    seen.add(sp.name);
+  });
+  return seen.size;
+}
+let _spellLowerIdx = null, _spellLowerIdxLen = -1;
+function spellByLowerName(n) {
+  if (!_spellLowerIdx || _spellLowerIdxLen !== SPELLS.length) {
+    _spellLowerIdx = new Map(); SPELLS.forEach(s => { if (s && s.name) _spellLowerIdx.set(s.name.toLowerCase(), s); });
+    _spellLowerIdxLen = SPELLS.length;
+  }
+  return _spellLowerIdx.get(String(n || '').trim().toLowerCase()) || null;
+}
+function canonicalSpellName(n) {
+  if (typeof n !== 'string') return n;
+  const sp = spellByLowerName(n);
+  return sp ? sp.name : n;
+}
+// v0.92.0 — spell lists saved or imported with different capitalisation ("cure wounds")
+// never matched the Prepared/Known lists; store them under the real spell name, once.
+function normaliseCharacterSpellLists(ch) {
+  ['preparedSpells', 'spells', 'cantrips'].forEach(k => {
+    if (!Array.isArray(ch[k])) return;
+    const out = [];
+    ch[k].forEach(n => { const c = canonicalSpellName(n); if (!out.includes(c)) out.push(c); });
+    ch[k] = out;
+  });
 }
 
 function prepCap(ch) {
@@ -26020,6 +26077,11 @@ function setupTabs() {
   document.querySelectorAll('.tab').forEach(t => {
     t.addEventListener('click', () => {
       state.tab = t.dataset.tab;
+      // v0.92.0 — the Home tab always lands on the top-level in-app home (the
+      // Player / Dungeon Master / Content Library tiles). Before, it reopened
+      // whichever sub-menu or popup was last left open (e.g. the Player
+      // character list), so Home looked different from one tap to the next.
+      if (state.tab === 'character' && state.ui) { state.ui.homeMenu = null; state.ui.homePanel = null; }
       document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
       render();
     });
@@ -28285,6 +28347,8 @@ function renderCharacter() {
       render();
     });
   });
+  // v0.92.0 — community Content Library (fetch, preview, add, refresh).
+  wireContentLibrary();
   // v0.58.0 — two-level role menu.
   document.querySelectorAll('[data-home-menu]').forEach(b => {
     b.addEventListener('click', () => {
@@ -30640,22 +30704,39 @@ function homePanelContentLibrary() {
     { key: 'spells',      label: 'Spells',      icon: '\u2728', blurb: 'Homebrew spells' },
     { key: 'feats',       label: 'Feats',       icon: '\u{1F3AF}', blurb: 'Custom feats' },
     { key: 'backgrounds', label: 'Backgrounds', icon: '\u{1F4DC}', blurb: 'Character backgrounds' },
+    { key: 'weapons',     label: 'Weapons',     icon: '\u{1F5E1}\uFE0F', blurb: 'Homebrew and magic weapons for your weapon library' },
+    { key: 'magicItems',  label: 'Magic Items', icon: '\u{1F48E}', blurb: 'Rings, wondrous items and more for the catalogue' },
     { key: 'monsters',    label: 'Monsters',    icon: '\u{1F409}', blurb: 'Creatures & bosses for the bestiary' },
     { key: 'maps',        label: 'Maps',        icon: '\u{1F5FA}\uFE0F', blurb: 'Battle maps for the DM screen' },
   ];
+  const ui = clUi();
+  clLoadCachedIndex();
+  if (ui.preview) {
+    const entry = clFindEntry(ui.preview);
+    if (entry) return clPreviewHTML(entry);
+    ui.preview = null;
+  }
   const lib = (typeof CONTENT_LIBRARY !== 'undefined') ? CONTENT_LIBRARY : {};
+  const inst = loadCommunityInstalled();
   const sections = cats.map(c => {
     const items = Array.isArray(lib[c.key]) ? lib[c.key] : [];
     const body = items.length
-      ? items.map(it => `
+      ? items.map(it => {
+          const rec = inst[it.id];
+          const outdated = rec && rec.version !== it.version;
+          const btn = (rec && !outdated)
+            ? `<button class="btn cl-add-btn" data-cl-open="${escape(it.id)}">\u2713 Added</button>`
+            : `<button class="btn cl-add-btn" data-cl-add="${escape(it.id)}"${ui.busy ? ' disabled' : ''}>${ui.busy === it.id ? 'Adding\u2026' : (outdated ? 'Update' : 'Add')}</button>`;
+          return `
           <div class="cl-card">
-            <div class="cl-card-info">
-              <div class="cl-card-name">${escape(it.name || 'Untitled')}</div>
-              <div class="cl-card-meta">${escape(it.author ? 'by ' + it.author : '')}${it.desc ? ' \u00B7 ' + escape(it.desc) : ''}</div>
-            </div>
-            <button class="btn cl-add-btn" data-cl-add="${escape(it.id || '')}" disabled>Add</button>
-          </div>`).join('')
-      : `<div class="cl-empty">No community ${escape(c.label.toLowerCase())} yet \u2014 this shelf is ready and waiting.</div>`;
+            <button class="cl-card-info" data-cl-open="${escape(it.id)}">
+              <div class="cl-card-name">${escape(it.name || 'Untitled')}${it.example ? ' <span class="cl-tag">example</span>' : ''}</div>
+              <div class="cl-card-meta">${escape(it.author ? 'by ' + it.author : '')}${it.summary ? ' \u00B7 ' + escape(it.summary) : ''}</div>
+            </button>
+            ${btn}
+          </div>`;
+        }).join('')
+      : `<div class="cl-empty">${ui.status === 'loading' ? 'Loading\u2026' : `No community ${escape(c.label.toLowerCase())} yet \u2014 this shelf is ready and waiting.`}</div>`;
     return `
       <div class="cl-cat">
         <div class="cl-cat-head"><span class="cl-cat-icon">${c.icon}</span><span class="cl-cat-label">${c.label}</span><span class="cl-cat-count">${items.length}</span></div>
@@ -30663,17 +30744,22 @@ function homePanelContentLibrary() {
         ${body}
       </div>`;
   }).join('');
+  const when = ui.fetchedAt ? new Date(ui.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+  const statusText = ui.status === 'loading' ? 'Checking GitHub for new content\u2026'
+    : ui.status === 'error' ? `Couldn't reach GitHub (${escape(ui.error)}).${when ? ' Showing the list from ' + escape(when) + '.' : ''}`
+    : when ? 'Up to date as of ' + escape(when) + '.' : '';
   const contribute = CONTENT_REPO_URL
     ? `<a class="btn primary cl-repo-link" href="${CONTENT_REPO_URL}" target="_blank" rel="noopener noreferrer">Open the community GitHub</a>`
     : `<div class="cl-repo-soon">GitHub repo link coming soon.</div>`;
   return `
     <section class="section rules-home">
       <div class="rules-home-title">Content Library</div>
-      <div class="rules-home-helper">Browse and add homebrew and maps made by the community. Content is curated and hosted on GitHub. Adding straight into the app is coming soon \u2014 for now this is the organised home where it will all live.</div>
+      <div class="rules-home-helper">Browse and add homebrew and maps made by the community. Everything here is curated on GitHub and shared under CC BY 4.0. Tap an item to preview it, or Add to put it straight into your Hearth.</div>
+      <div class="cl-status${ui.status === 'error' ? ' err' : ''}"><span>${statusText}</span><button class="btn cl-refresh" data-cl-refresh="1"${ui.status === 'loading' ? ' disabled' : ''}>\u21BB Refresh</button></div>
       <div class="cl-wrap">${sections}</div>
       <div class="cl-contribute">
         <div class="cl-contribute-title">Want to contribute?</div>
-        <div class="cl-contribute-desc">Homebrew and maps are shared through the community GitHub. Once the importer is live, anything approved onto the repo shows up here automatically.</div>
+        <div class="cl-contribute-desc">Homebrew and maps are shared through the community GitHub. Once a submission is approved it shows up here automatically, usually within about 5 minutes (tap Refresh to check).</div>
         ${contribute}
       </div>
     </section>`;
@@ -32501,10 +32587,10 @@ async function importCharacterBackup(file) {
 // the browser's native confirm and alert popups. After any restore, references to media that is not
 // on this device are pruned, so a map slot offers "Add map" instead of a blank.
 var HEARTH_BACKUP_SCHEMA = 2;
-var HEARTH_BACKUP_KEYS = ['hearth.characters.v2', 'hearth.characters.55.v1', 'hearth.dmGames.v1', 'hearth.dmGames.55.v1', 'hearth.dmSettings.v1', 'hearth.prefs.v1', 'hearth.ruleset', 'hearth.ai.endpoint.v1', 'hearth.ai.homebrew.v1', 'hearth_custom_monsters', 'hearth.mapLibrary.v1'];
+var HEARTH_BACKUP_KEYS = ['hearth.characters.v2', 'hearth.characters.55.v1', 'hearth.dmGames.v1', 'hearth.dmGames.55.v1', 'hearth.dmSettings.v1', 'hearth.prefs.v1', 'hearth.ruleset', 'hearth.ai.endpoint.v1', 'hearth.ai.homebrew.v1', 'hearth_custom_monsters', 'hearth.mapLibrary.v1', 'hearth.community.installed.v1', 'hearth.weaponLibrary.v1'];
 var HEARTH_GAME_KEYS = ['hearth.dmGames.v1', 'hearth.dmGames.55.v1'];
 // Arrays of { id, ... } that merge by id.
-var HEARTH_ARRAY_KEYS = ['hearth.characters.v2', 'hearth.characters.55.v1', 'hearth_custom_monsters', 'hearth.mapLibrary.v1'];
+var HEARTH_ARRAY_KEYS = ['hearth.characters.v2', 'hearth.characters.55.v1', 'hearth_custom_monsters', 'hearth.mapLibrary.v1', 'hearth.weaponLibrary.v1'];
 
 function backupReadJSON(k, fallback) {
   try { const v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? fallback : v; } catch (e) { return fallback; }
@@ -33529,6 +33615,19 @@ function bonusSkillGrantOptions(ch, g) {
   if (g.mode === 'expertise') return Object.keys(SKILLS).filter(k => skillProfMultiplier(ch, k) === 1);
   return (g.options || Object.keys(SKILLS)).filter(k => SKILLS[k] && skillProfMultiplier(ch, k) < 1);
 }
+// v0.92.0 — Favored Enemy / Natural Explorer on the Features tab: a Choose / Change
+// button per pick the ranger has earned (level 1, 6, 14 / 1, 6, 10), so rangers made
+// before v0.91.2 (never prompted) and anyone who wants to change a pick can do it.
+function renderRangerChoiceButtons(ch, featureName) {
+  if (!ch || (typeof characterEdition === 'function' && characterEdition(ch) === '5.5e')) return '';
+  const grants = bonusSkillGrants(ch).filter(g => g.title === featureName);
+  if (!grants.length) return '';
+  return `<div class="ranger-choice-btns" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">${grants.map(g => {
+    const picked = Array.isArray(ch[g.field]) && ch[g.field].length;
+    const lvl = (g.source.match(/level (\d+)/) || [])[1] || '';
+    return `<button type="button" class="effect-start-btn" data-ranger-choice="${g.field}">${picked ? 'Change' : 'Choose'}${grants.length > 1 ? ' (L' + lvl + ')' : ''}</button>`;
+  }).join('')}</div>`;
+}
 function renderLoreSkillsDialog(ch) {
   const g = bonusSkillGrants(ch).find(x => x.field === state.ui.loreSkillsDialog) || bonusSkillGrantPending(ch);
   if (!g) return '';
@@ -33544,6 +33643,7 @@ function renderLoreSkillsDialog(ch) {
           ${options.map(k => `<button type="button" class="skill-choice-btn ${picks.includes(k) ? 'active' : ''}" data-lore-skill="${k}">${escape(g.mode === 'list' ? (RANGER_CHOICE_ITEMS[k] || k) : SKILLS[k].name)}</button>`).join('')}
         </div>
         <div class="dialog-actions" style="margin-top:14px;">
+          ${state.ui.loreSkillsManual ? `<button class="btn" id="loreSkillsCancel">Cancel</button>` : ''}
           <button class="btn primary" id="loreSkillsConfirm" style="flex:1;" ${picks.length === need ? '' : 'disabled'}>Confirm</button>
         </div>
       </div>
@@ -35003,6 +35103,10 @@ function openNextLevelChoice(ch, opts) {
   // spell browser, so move on to the remaining steps (ASI, fighting style…)
   // instead of reopening it. Prevents an endless Browse Spells loop.
   const skipSpellLearn = !!(opts && opts.skipSpellLearn);
+  // v0.92.0 — opts.skipInvocations: the player just pressed Done on the
+  // auto-opened invocation picker, so carry on (e.g. to the L15 Mystic
+  // Arcanum) without reopening it.
+  const skipInvocations = !!(opts && opts.skipInvocations);
   // Subclass picker — walks every class on the character that has reached
   // its subclass-pick level without a subclass chosen yet. For multiclass
   // chars this fires once per class.
@@ -35036,6 +35140,7 @@ function openNextLevelChoice(ch, opts) {
   if (pendingBonusSkills) {
     state.ui.loreSkillsDialog = pendingBonusSkills.field;
     state.ui.loreSkillPicks = [];
+    state.ui.loreSkillsManual = false;
     return true;
   }
   if (ch.race === 'elf' && ch.subrace === 'high' && !ch.highElfCantrip) {
@@ -35131,8 +35236,9 @@ function openNextLevelChoice(ch, opts) {
     state.ui.asiDialog = true;
     return true;
   }
-  if (classLevelFor(ch, 'warlock') >= 1 && (ch.invocations || []).length < warlockInvocationCap(ch)) {
+  if (!skipInvocations && classLevelFor(ch, 'warlock') >= 1 && (ch.invocations || []).length < warlockInvocationCap(ch)) {
     state.ui.invocationDialog = true;
+    state.ui.invocationAutoOpened = true;
     return true;
   }
   // v0.91.2 — 5e Mystic Arcanum picks (warlock 11/13/15/17) reuse the Arcanum picker.
@@ -36030,12 +36136,20 @@ function renderAddWeaponDialog(ch) {
     <div class="dialog-backdrop" id="dialogBackdrop">
       <div class="dialog">
         <div class="dialog-title">Add Weapon</div>
-        <div class="dialog-helper">Pick a base SRD weapon, a magic weapon from the catalogue, or create a custom one.</div>
+        <div class="dialog-helper">Pick a base SRD weapon, one from your weapon library, a magic weapon from the catalogue, or create a custom one.</div>
         <div class="dialog-body">
           <button class="dialog-option" id="customWeaponBtn">
             <span style="font-weight:600;color:var(--moss);">+ Custom Weapon…</span>
             <span class="dialog-option-meta">name it yourself</span>
           </button>
+          ${(() => { const wl = loadWeaponLibrary(); return wl.length ? `<div class="section-mini" style="margin-top:10px;">Your Weapon Library</div>` + wl.map(w => `
+            <div class="dialog-option weapon-lib-row" style="display:flex;align-items:center;gap:8px;">
+              <button class="dialog-option" data-weapon-lib-add="${escape(w.id)}" style="flex:1;margin:0;border:none;background:none;padding:0;">
+                <span>${escape(w.name)}${w.magicBonus ? ' +' + w.magicBonus : ''}</span>
+                <span class="dialog-option-meta">${escape(weaponDamageLabel(w))}${(w.extraDamage || []).map(x => ' + ' + x.count + 'd' + x.sides + ' ' + escape(x.type)).join('')}${w.props && w.props.length ? ' · ' + escape(w.props.join(', ')) : ''}${w.source && w.source.author ? ' · by ' + escape(w.source.author) : ''}</span>
+              </button>
+              <button class="btn" data-weapon-customise="lib:${escape(w.id)}" aria-label="Customise">🔧</button>
+            </div>`).join('') : ''; })()}
           <div class="section-mini" style="margin-top:10px;color:var(--gold);">✦ Magic Weapons</div>
           <select class="magic-weapon-select" id="magicWeaponSelect">
             <option value="">Choose a magic weapon…</option>
@@ -36113,7 +36227,10 @@ function weaponDetailHTML(ch) {
 function renderCustomWeaponDialog(ch) {
   const dmgTypes = ['slashing', 'piercing', 'bludgeoning', 'fire', 'cold', 'lightning', 'thunder', 'acid', 'poison', 'necrotic', 'radiant', 'psychic', 'force'];
   const dmgOptions = (sel) => dmgTypes.map(t => `<option value="${t}"${t === sel ? ' selected' : ''}>${t}</option>`).join('');
-  const pf = state.ui.customWeaponPrefill ? WEAPONS[state.ui.customWeaponPrefill] : null;
+  const pfKey = state.ui.customWeaponPrefill || '';
+  const pf = pfKey.startsWith('lib:') ? (loadWeaponLibrary().find(w => w.id === pfKey.slice(4)) || null) : (pfKey ? WEAPONS[pfKey] : null);
+  const pfBonus = pf && pfKey.startsWith('lib:') ? (pf.magicBonus || 0) : 0;
+  const pfExtra = pf && pfKey.startsWith('lib:') && Array.isArray(pf.extraDamage) ? pf.extraDamage : [];
   const pfName = pf ? pf.name : '';
   const pfCount = pf ? pf.damage.count : 1;
   const pfSides = pf ? pf.damage.sides : 8;
@@ -36140,7 +36257,7 @@ function renderCustomWeaponDialog(ch) {
               <input class="hp-input" id="cwDiceSides" type="number" min="2" max="20" value="${pfSides}" style="flex:1;" />
               <select class="hp-input" id="cwDmgType" style="flex:1.6;">${dmgOptions(pfType)}</select>
             </div>
-            <div id="cwExtraRows"></div>
+            <div id="cwExtraRows">${pfExtra.map(x => `<div class="cw-extra-row" style="display:flex;gap:6px;align-items:center;margin-top:7px;"><input class="hp-input cw-extra-count" type="number" min="1" max="20" value="${Number(x.count) || 1}" style="flex:1;" /><span style="align-self:center;font-family:Georgia, 'Times New Roman', serif;font-size:18px;">d</span><input class="hp-input cw-extra-sides" type="number" min="2" max="20" value="${Number(x.sides) || 6}" style="flex:1;" /><select class="hp-input cw-extra-type" style="flex:1.6;">${dmgOptions(x.type)}</select><button type="button" class="cw-remove-row" aria-label="Remove damage type">×</button></div>`).join('')}</div>
             <button type="button" class="cw-add-damage" id="cwAddDamage">+ Add damage type</button>
             <div class="small-note">Add as many damage types as you like — e.g. 1d8 slashing + 1d6 fire. Extra dice roll on a hit and double on a crit.</div>
             <template id="cwRowTemplate"><div class="cw-extra-row" style="display:flex;gap:6px;align-items:center;margin-top:7px;"><input class="hp-input cw-extra-count" type="number" min="1" max="20" value="1" style="flex:1;" /><span style="align-self:center;font-family:Georgia, 'Times New Roman', serif;font-size:18px;">d</span><input class="hp-input cw-extra-sides" type="number" min="2" max="20" value="6" style="flex:1;" /><select class="hp-input cw-extra-type" style="flex:1.6;">${dmgOptions('fire')}</select><button type="button" class="cw-remove-row" aria-label="Remove damage type">×</button></div></template>
@@ -36162,7 +36279,7 @@ function renderCustomWeaponDialog(ch) {
           </div>
           <div class="hp-control-group">
             <div class="hp-control-label">Magic bonus</div>
-            <select class="hp-input" id="cwMagicBonus">${[0,1,2,3].map(n => `<option value="${n}">+${n}${n===0?' (mundane)':' (magic \u2014 adds to attack &amp; damage)'}</option>`).join('')}</select>
+            <select class="hp-input" id="cwMagicBonus">${[0,1,2,3].map(n => `<option value="${n}"${n === pfBonus ? ' selected' : ''}>+${n}${n===0?' (mundane)':' (magic \u2014 adds to attack &amp; damage)'}</option>`).join('')}</select>
           </div>
           <div class="hp-control-group">
             <div class="hp-control-label">Properties</div>
@@ -36174,6 +36291,7 @@ function renderCustomWeaponDialog(ch) {
             <div class="small-note">Finesse uses Str or Dex, whichever is higher. Versatile rolls a larger die two-handed (toggle on the weapon). Thrown can be hurled at range.</div>
           </div>
         </div>
+          <label class="radio-label" style="margin-top:4px;"><input type="checkbox" id="cwSaveToLib" /> Also save to my weapon library</label>
         <div class="dialog-actions">
           <button class="btn" id="dialogClose">Cancel</button>
           <button class="btn primary" id="cwSaveBtn">Add Weapon</button>
@@ -36926,6 +37044,17 @@ function wireGearDialogHandlers(ch) {
   document.querySelectorAll('[data-weapon-detail-close]').forEach(b => {
     b.addEventListener('click', () => { state.ui.weaponDetail = null; render(); });
   });
+  document.querySelectorAll('[data-weapon-lib-add]').forEach(b => {
+    b.addEventListener('click', () => {
+      const w = loadWeaponLibrary().find(x => x.id === b.dataset.weaponLibAdd); if (!w) return;
+      confirmDialog('Add ' + w.name + ' to your gear?', () => {
+        const nw = clWeaponForCharacter(w);
+        ch.inventory.weapons.push(nw);
+        if (state.ui.pactSummon) { state.ui.pactSummon = false; if (hasBladePact(ch)) setPactWeapon(ch, nw.id); }
+        state.ui.weaponDetail = null; state.ui.gearDialog = null; saveCharacter(ch); render();
+      });
+    });
+  });
   const customWBtn = document.getElementById('customWeaponBtn');
   if (customWBtn) customWBtn.addEventListener('click', () => { state.ui.customWeaponPrefill = null; state.ui.gearDialog = 'custom_weapon'; render(); });
   // v0.21.162 — custom-weapon damage rows: "+ Add damage type" clones a fresh row; the ×
@@ -36964,6 +37093,12 @@ function wireGearDialogHandlers(ch) {
     });
     if (!name) return;
     const magicBonus = parseInt((document.getElementById('cwMagicBonus') || {}).value, 10) || 0;
+    // v0.92.0 — optionally keep a copy in the device-wide weapon library.
+    if ((document.getElementById('cwSaveToLib') || {}).checked) {
+      const wl = loadWeaponLibrary();
+      wl.push({ id: 'wl_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 5), name, damage: { count: dc, sides: ds }, type: dmgType, kind, props, cat, ...(extraDamage.length ? { extraDamage } : {}), ...(magicBonus ? { magicBonus } : {}), addedAt: Date.now() });
+      saveWeaponLibrary(wl);
+    }
     ch.inventory.weapons.push({
       id: 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
       name,
@@ -40789,6 +40924,7 @@ function renderFeaturesTab(ch) {
           <div class="feature">
             <div class="feature-name">${f.name} <span class="feature-lvl">${f.klassName ? f.klassName + ' ' : 'L'}${f.classLevel || f.level}</span></div>
             <div class="feature-desc">${f.desc}</div>
+            ${klassId === 'ranger' && (f.name === 'Favored Enemy' || f.name === 'Natural Explorer') ? renderRangerChoiceButtons(ch, f.name) : ''}
             ${klassId === 'wizard' && (f.name === 'Spell Mastery' || f.name === 'Signature Spells') ? renderWizardMasteryPicker(ch, f.name) : ''}
             ${renderFeatureResourceButton(ch, f, klassId)}
             ${effectId ? (isEffectActive(ch, effectId) ? `<button class="effect-start-btn danger" data-end-effect="${effectId}">End</button>` : `<button class="effect-start-btn" data-start-effect="${effectId}">Activate</button>`) : ""}
@@ -41693,6 +41829,7 @@ function wirePlay(ch) {
   const manageInvocationsBtn = document.getElementById('manageInvocationsBtn');
   if (manageInvocationsBtn) manageInvocationsBtn.addEventListener('click', () => {
     state.ui.invocationDialog = true;
+    state.ui.invocationAutoOpened = false;
     render();
   });
 
@@ -42435,8 +42572,25 @@ function wirePlay(ch) {
       render();
     });
   });
+  // v0.92.0 — ranger Favored Enemy / Natural Explorer: open the picker from the Features tab.
+  document.querySelectorAll('[data-ranger-choice]').forEach(b => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const field = b.dataset.rangerChoice;
+      state.ui.loreSkillsDialog = field;
+      state.ui.loreSkillPicks = Array.isArray(ch[field]) ? ch[field].slice() : [];
+      state.ui.loreSkillsManual = true;
+      render();
+    });
+  });
+  const loreCancel = document.getElementById('loreSkillsCancel');
+  if (loreCancel) loreCancel.addEventListener('click', () => {
+    state.ui.loreSkillsDialog = false; state.ui.loreSkillPicks = []; state.ui.loreSkillsManual = false; render();
+  });
   const loreConfirm = document.getElementById('loreSkillsConfirm');
   if (loreConfirm) loreConfirm.addEventListener('click', () => {
+    const wasManual = !!state.ui.loreSkillsManual;
+    state.ui.loreSkillsManual = false;
     const picks = state.ui.loreSkillPicks || [];
     ch.skillOverrides = ch.skillOverrides || {};
     const g = bonusSkillGrants(ch).find(x => x.field === state.ui.loreSkillsDialog);
@@ -42447,7 +42601,7 @@ function wirePlay(ch) {
     state.ui.loreSkillPicks = [];
     logRoll(g.title, g.source, picks.map(k => g.mode === 'list' ? (RANGER_CHOICE_ITEMS[k] || k) : SKILLS[k].name).join(', '));
     saveCharacter(ch);
-    openNextLevelChoice(ch);
+    if (!wasManual) openNextLevelChoice(ch);
     render();
   });
 
@@ -42600,6 +42754,9 @@ function wirePlay(ch) {
     // closing it should re-run the chain so any remaining steps (more
     // spells to learn, ASI, fighting style) get picked up.
     const wasAutoOpened = state.ui.browseSpells && state.ui.browseSpellsAutoOpened;
+    // v0.92.0 — same for the invocation picker: Done continues the chain.
+    const wasInvocationAuto = !!(state.ui.invocationDialog && state.ui.invocationAutoOpened);
+    state.ui.invocationAutoOpened = false;
     state.ui.browseSpells = false;
     state.ui.browseSpellsAutoOpened = false;
     state.ui.quickFeaturesDialog = false;
@@ -42616,6 +42773,7 @@ function wirePlay(ch) {
     state.ui.wildShapePicker = false;
     state.ui.activeShapeSheet = false;
     if (wasAutoOpened) openNextLevelChoice(ch, { skipSpellLearn: true });
+    else if (wasInvocationAuto) openNextLevelChoice(ch, { skipSpellLearn: true, skipInvocations: true });
     render();
   });
   const dlgBack = document.getElementById('dialogBackdrop');
@@ -45630,6 +45788,511 @@ function deleteForgeMagicItem(id) {
   const hb = loadAiHomebrew().filter(h => !(h.type === 'magic_item' && h.data && h.data.id === id));
   saveAiHomebrew(hb);
   injectHomebrewMagicItemsIntoRegistry();
+}
+
+// ============================================================
+// COMMUNITY CONTENT LIBRARY — GitHub-fed importer (v0.92.0)
+// index.json is regenerated by CI on every push to main of hearth-community.
+// raw.githubusercontent.com caches for max-age=300, so new approvals show up
+// ~5 minutes after a merge; tapping Refresh adds ?t=<timestamp> to bust that.
+// Installed items are kept in COMMUNITY_INSTALLED_KEY and injected into the
+// built-in registries at start-up, so they work just like built-in content.
+// Subclasses and magic items go through the Forge homebrew list instead, so
+// they behave exactly like forged ones. Weapons go into a per-device weapon
+// library that the Add Weapon dialog picks from.
+// ============================================================
+const CL_TYPE_SHELF = { race: 'races', subclass: 'subclasses', spell: 'spells', feat: 'feats', background: 'backgrounds', monster: 'monsters', map: 'maps', weapon: 'weapons', 'magic-item': 'magicItems' };
+const CL_TYPE_LABEL = { race: 'Race', subclass: 'Subclass', spell: 'Spell', feat: 'Feat', background: 'Background', monster: 'Monster', map: 'Map', weapon: 'Weapon', 'magic-item': 'Magic Item' };
+const CL_PATH_RE = /^(races|subclasses|spells|feats|backgrounds|monsters|maps|weapons|magic-items)\/[a-z0-9-]+\.json$/;
+const CL_ID_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
+const CL_DMG_TYPES = ['slashing', 'piercing', 'bludgeoning', 'fire', 'cold', 'lightning', 'thunder', 'acid', 'poison', 'necrotic', 'radiant', 'psychic', 'force'];
+const CL_WEAPON_PROPS = ['finesse', 'light', 'heavy', 'two-handed', 'versatile', 'thrown', 'reach', 'ammunition', 'loading'];
+const CL_MECH_INT_KEYS = ['attackBonus', 'damageBonus', 'acBonus', 'saveBonus', 'spellAttackBonus', 'hpBonus'];
+const clFileCache = {}; // id@version -> parsed item file (this session only)
+
+function clUi() {
+  if (!state.ui.cl) state.ui.cl = { status: 'idle', error: '', bustToken: 0, preview: null, previewStatus: '', previewError: '', busy: null, cachedLoaded: false };
+  return state.ui.cl;
+}
+function clRerender() { if (state.ui.homePanel === 'library') render(); }
+
+// ---------- index ----------
+function clSanitiseIndexItem(it) {
+  if (!it || typeof it !== 'object') return null;
+  if (typeof it.id !== 'string' || !CL_ID_RE.test(it.id)) return null;
+  if (!CL_TYPE_SHELF[it.type]) return null;
+  if (typeof it.path !== 'string' || !CL_PATH_RE.test(it.path)) return null;
+  return {
+    id: it.id, type: it.type,
+    name: String(it.name || it.id).slice(0, 80),
+    author: String(it.author || '').slice(0, 60),
+    summary: String(it.summary || '').slice(0, 200),
+    path: it.path,
+    version: String(it.version || '1.0.0').slice(0, 20),
+    tags: Array.isArray(it.tags) ? it.tags.filter(t => typeof t === 'string').slice(0, 12).map(t => t.slice(0, 30)) : [],
+    example: it.example === true,
+    thumbnail: (typeof it.thumbnail === 'string' && /^maps\/[a-z0-9-]+\.(png|jpg|jpeg|webp)$/.test(it.thumbnail)) ? it.thumbnail : null,
+  };
+}
+function clApplyIndex(idx) {
+  Object.keys(CONTENT_LIBRARY).forEach(k => { CONTENT_LIBRARY[k] = []; });
+  const items = (idx && Array.isArray(idx.items)) ? idx.items : [];
+  items.forEach(raw => {
+    const it = clSanitiseIndexItem(raw);
+    if (!it) return;
+    const shelf = CL_TYPE_SHELF[it.type];
+    if (!CONTENT_LIBRARY[shelf]) CONTENT_LIBRARY[shelf] = [];
+    CONTENT_LIBRARY[shelf].push(it);
+  });
+  // Real content first, examples last, then by name.
+  Object.keys(CONTENT_LIBRARY).forEach(k => CONTENT_LIBRARY[k].sort((a, b) => (a.example - b.example) || a.name.localeCompare(b.name)));
+  clUi().updated = (idx && typeof idx.updated === 'string') ? idx.updated : '';
+}
+function clFindEntry(id) {
+  for (const k of Object.keys(CONTENT_LIBRARY)) {
+    const it = (CONTENT_LIBRARY[k] || []).find(x => x.id === id);
+    if (it) return it;
+  }
+  return null;
+}
+function clLoadCachedIndex() {
+  const ui = clUi();
+  if (ui.cachedLoaded) return;
+  ui.cachedLoaded = true;
+  try {
+    const raw = localStorage.getItem(COMMUNITY_INDEX_CACHE_KEY);
+    if (raw) { const c = JSON.parse(raw); if (c && c.index) { clApplyIndex(c.index); ui.fetchedAt = c.fetchedAt || 0; } }
+  } catch (e) {}
+}
+// bust = true when the user taps Refresh: adds ?t=<timestamp> so the 5-minute
+// raw.githubusercontent cache (and the browser cache) is skipped.
+async function clFetchIndex(bust) {
+  const ui = clUi();
+  if (ui.status === 'loading') return;
+  if (bust) ui.bustToken = Date.now();
+  ui.status = 'loading'; ui.error = '';
+  clRerender();
+  try {
+    const url = CONTENT_RAW_BASE + 'index.json' + (ui.bustToken ? '?t=' + ui.bustToken : '');
+    const res = await fetch(url, { cache: ui.bustToken ? 'no-store' : 'default' });
+    if (!res.ok) throw new Error('GitHub answered ' + res.status);
+    const idx = await res.json();
+    if (!idx || !Array.isArray(idx.items)) throw new Error('index.json is not in the expected format');
+    clApplyIndex(idx);
+    ui.fetchedAt = Date.now();
+    try { localStorage.setItem(COMMUNITY_INDEX_CACHE_KEY, JSON.stringify({ fetchedAt: ui.fetchedAt, index: idx })); } catch (e) {}
+    ui.status = 'ok';
+  } catch (e) {
+    ui.status = 'error';
+    ui.error = (e && e.message) ? e.message : 'Network error';
+  }
+  clRerender();
+}
+function clItemUrl(entry) {
+  const ui = clUi();
+  // ?v= changes whenever the item or the index changes, so a stale copy is never
+  // reused after an update; ?t= is added after Refresh to bypass the CDN cache.
+  let q = '?v=' + encodeURIComponent(entry.version) + (ui.updated ? '&u=' + encodeURIComponent(ui.updated) : '');
+  if (ui.bustToken) q += '&t=' + ui.bustToken;
+  return CONTENT_RAW_BASE + entry.path + q;
+}
+async function clFetchItem(entry) {
+  const key = entry.id + '@' + entry.version + '@' + (clUi().bustToken || 0);
+  if (clFileCache[key]) return clFileCache[key];
+  const res = await fetch(clItemUrl(entry), { cache: clUi().bustToken ? 'no-store' : 'default' });
+  if (!res.ok) throw new Error('Could not download ' + entry.path + ' (' + res.status + ')');
+  const file = await res.json();
+  if (!file || typeof file !== 'object' || !file.data || typeof file.data !== 'object') throw new Error('That item file is missing its data.');
+  if (file.type !== entry.type) throw new Error('That item file is a ' + (file.type || 'unknown type') + ', not a ' + entry.type + '.');
+  if (file.id !== entry.id) throw new Error('That item file has a different id than the index.');
+  clFileCache[key] = file;
+  return file;
+}
+
+// ---------- installed store ----------
+function loadCommunityInstalled() {
+  try { const o = JSON.parse(localStorage.getItem(COMMUNITY_INSTALLED_KEY) || '{}'); return (o && typeof o === 'object' && !Array.isArray(o)) ? o : {}; } catch (e) { return {}; }
+}
+function saveCommunityInstalled(o) {
+  try { localStorage.setItem(COMMUNITY_INSTALLED_KEY, JSON.stringify(o || {})); return true; }
+  catch (e) { showToast('Could not save \u2014 device storage may be full.'); return false; }
+}
+function loadWeaponLibrary() {
+  try { const a = JSON.parse(localStorage.getItem(WEAPON_LIBRARY_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+}
+function saveWeaponLibrary(arr) {
+  try { localStorage.setItem(WEAPON_LIBRARY_KEY, JSON.stringify(arr || [])); return true; }
+  catch (e) { showToast('Could not save \u2014 device storage may be full.'); return false; }
+}
+
+// ---------- per-type normalisers (only known fields are kept) ----------
+function clClampInt(v, lo, hi, dflt) { const n = parseInt(v, 10); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : dflt; }
+function clStr(v, max) { return typeof v === 'string' ? v.slice(0, max || 4000) : ''; }
+function clNormaliseWeapon(d) {
+  const dmg = d.damage || {};
+  const extra = Array.isArray(d.extraDamage) ? d.extraDamage.slice(0, 6).map(x => ({
+    count: clClampInt(x && x.count, 1, 20, 1), sides: clClampInt(x && x.sides, 2, 20, 4),
+    type: CL_DMG_TYPES.includes(x && x.type) ? x.type : 'fire',
+  })) : [];
+  const magicBonus = clClampInt(d.magicBonus, 0, 3, 0);
+  return {
+    name: clStr(d.name, 60).trim() || 'Community Weapon',
+    damage: { count: clClampInt(dmg.count, 1, 20, 1), sides: clClampInt(dmg.sides, 2, 20, 8) },
+    type: CL_DMG_TYPES.includes(d.type) ? d.type : 'slashing',
+    kind: d.kind === 'ranged' ? 'ranged' : 'melee',
+    props: Array.isArray(d.props) ? CL_WEAPON_PROPS.filter(p => d.props.includes(p)) : [],
+    cat: d.cat === 'simple' ? 'simple' : 'martial',
+    ...(extra.length ? { extraDamage: extra } : {}),
+    ...(magicBonus ? { magicBonus } : {}),
+  };
+}
+// Exactly what the Custom Weapon builder's Add Weapon button pushes.
+function clWeaponForCharacter(w) {
+  const copy = JSON.parse(JSON.stringify(w));
+  delete copy.id; delete copy.source; delete copy.addedAt;
+  return { id: 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5), ...copy, equipped: true, custom: true };
+}
+function clNormaliseMagicItem(d, file) {
+  let mech = null;
+  if (d.mech && typeof d.mech === 'object') {
+    mech = {};
+    CL_MECH_INT_KEYS.forEach(k => { if (d.mech[k] != null) { const n = clClampInt(d.mech[k], -10, 50, 0); if (n) mech[k] = n; } });
+    if (CL_DMG_TYPES.includes(d.mech.resistType)) mech.resistType = d.mech.resistType;
+    if (!Object.keys(mech).length) mech = null;
+  }
+  const id = forgeSlug(d.id || file.id) || forgeSlug(file.id);
+  return {
+    id,
+    name: clStr(d.name, 60) || file.name || 'Community Item',
+    type: MAGIC_ITEM_TYPES[d.type] ? d.type : 'wondrous',
+    rarity: MAGIC_ITEM_RARITIES[d.rarity] ? d.rarity : 'uncommon',
+    theme: FORGE_THEMES[d.theme] ? d.theme : 'arcane',
+    attune: !!d.attune,
+    desc: clStr(d.desc, 3000),
+    mech,
+    templateId: typeof d.templateId === 'string' ? d.templateId : null,
+  };
+}
+function clRegistryKey(registryHas, file, dataId) {
+  let key = forgeSlug(dataId || file.id);
+  if (!key) key = 'community_item';
+  if (registryHas(key)) key = 'cm_' + key; // never shadow a built-in
+  return key;
+}
+
+// ---------- registry injection (races, spells, feats, backgrounds, monsters) ----------
+function injectCommunityContentIntoRegistries() {
+  Object.keys(RACES).forEach(k => { if (RACES[k] && RACES[k]._community) delete RACES[k]; });
+  Object.keys(BACKGROUNDS).forEach(k => { if (BACKGROUNDS[k] && BACKGROUNDS[k]._community) delete BACKGROUNDS[k]; });
+  for (let i = SPELLS.length - 1; i >= 0; i--) if (SPELLS[i] && SPELLS[i]._community) SPELLS.splice(i, 1);
+  for (let i = FEATS.length - 1; i >= 0; i--) if (FEATS[i] && FEATS[i]._community) FEATS.splice(i, 1);
+  for (let i = MONSTERS.length - 1; i >= 0; i--) if (MONSTERS[i] && MONSTERS[i]._community) MONSTERS.splice(i, 1);
+  const inst = loadCommunityInstalled();
+  Object.values(inst).forEach(rec => {
+    if (!rec || !rec.data || !rec.key) return;
+    const meta = { _community: rec.id, _communityAuthor: rec.author || '' };
+    try {
+      if (rec.type === 'race' && !(RACES[rec.key] && !RACES[rec.key]._community)) RACES[rec.key] = { ...rec.data, ...meta };
+      else if (rec.type === 'background' && !(BACKGROUNDS[rec.key] && !BACKGROUNDS[rec.key]._community)) BACKGROUNDS[rec.key] = { ...rec.data, ...meta };
+      else if (rec.type === 'spell' && !SPELLS.some(s => s.name === rec.data.name)) SPELLS.push({ ...rec.data, ...meta });
+      else if (rec.type === 'feat' && !FEATS.some(f => f.id === rec.key)) FEATS.push({ ...rec.data, id: rec.key, ...meta });
+      else if (rec.type === 'monster' && !MONSTERS.some(m => m.id === rec.key)) MONSTERS.push({ ...rec.data, id: rec.key, ...meta });
+    } catch (e) { console.warn('Community item skipped:', rec.id, e); }
+  });
+}
+
+// ---------- install / remove ----------
+function clRecordBase(entry, file) {
+  return {
+    id: entry.id, type: entry.type, name: file.name || entry.name, version: file.version || entry.version,
+    author: file.author || entry.author || '', license: file.license || 'CC-BY-4.0',
+    credits: clStr(file.credits, 1000), addedAt: Date.now(),
+  };
+}
+function clIsInstalled(entry) {
+  const inst = loadCommunityInstalled();
+  return inst[entry.id] || null;
+}
+async function clInstall(entry) {
+  const file = await clFetchItem(entry);
+  const d = file.data;
+  const inst = loadCommunityInstalled();
+  const prev = inst[entry.id];
+  const rec = clRecordBase(entry, file);
+  const community = { id: entry.id, version: rec.version, author: rec.author, credits: rec.credits };
+  switch (entry.type) {
+    case 'race': {
+      if (!d.name) throw new Error('This race has no name.');
+      rec.key = (prev && prev.key) || clRegistryKey(k => !!RACES[k] && !RACES[k]._community, file, null);
+      rec.data = JSON.parse(JSON.stringify(d));
+      break;
+    }
+    case 'background': {
+      if (!d.name) throw new Error('This background has no name.');
+      rec.key = (prev && prev.key) || clRegistryKey(k => !!BACKGROUNDS[k] && !BACKGROUNDS[k]._community, file, null);
+      rec.data = JSON.parse(JSON.stringify(d));
+      break;
+    }
+    case 'spell': {
+      if (!d.name) throw new Error('This spell has no name.');
+      if (SPELLS.some(s => s.name === d.name && s._community !== entry.id)) throw new Error('A spell called "' + d.name + '" already exists in Hearth.');
+      rec.key = forgeSlug(d.name);
+      rec.data = JSON.parse(JSON.stringify(d));
+      break;
+    }
+    case 'feat': {
+      if (!d.name) throw new Error('This feat has no name.');
+      rec.key = (prev && prev.key) || clRegistryKey(k => FEATS.some(f => f.id === k && !f._community), file, d.id);
+      rec.data = { name: clStr(d.name, 80), desc: clStr(d.desc, 3000), ...(d.hpPerLevel ? { hpPerLevel: clClampInt(d.hpPerLevel, 0, 5, 0) } : {}) };
+      break;
+    }
+    case 'monster': {
+      if (!d.name) throw new Error('This monster has no name.');
+      rec.key = 'cm_' + forgeSlug(entry.id);
+      rec.data = JSON.parse(JSON.stringify(d));
+      break;
+    }
+    case 'subclass': {
+      if (!d.klass || !SUBCLASSES[d.klass]) throw new Error('This subclass is for an unknown class (' + (d.klass || 'none') + ').');
+      const sub = { klass: d.klass, id: forgeSlug(d.id || entry.id), name: clStr(d.name, 80) || rec.name, desc: clStr(d.desc, 3000), levelFeatures: (d.levelFeatures && typeof d.levelFeatures === 'object') ? JSON.parse(JSON.stringify(d.levelFeatures)) : {} };
+      const existing = SUBCLASSES[sub.klass][sub.id];
+      if (existing && !existing._homebrew) sub.id = 'cm_' + sub.id;
+      const hb = loadAiHomebrew();
+      const i = hb.findIndex(h => h && h.type === 'subclass' && h.data && h.data.id === sub.id && h.data.klass === sub.klass);
+      const hbEntry = { type: 'subclass', title: sub.name, data: sub, savedAt: Date.now(), community };
+      if (i >= 0) hb[i] = hbEntry; else hb.push(hbEntry);
+      saveAiHomebrew(hb);
+      injectHomebrewSubclassesIntoRegistry();
+      rec.key = sub.klass + ':' + sub.id;
+      break;
+    }
+    case 'magic-item': {
+      const item = clNormaliseMagicItem(d, file);
+      if (MAGIC_ITEMS[item.id] && !MAGIC_ITEMS[item.id]._homebrew) item.id = 'cm_' + item.id;
+      // Same record shape saveForgeMagicItem() writes, plus where it came from.
+      const hb = loadAiHomebrew();
+      const i = hb.findIndex(h => h && h.type === 'magic_item' && h.data && h.data.id === item.id);
+      const hbEntry = { type: 'magic_item', title: item.name, data: item, savedAt: Date.now(), community };
+      if (i >= 0) hb[i] = hbEntry; else hb.push(hbEntry);
+      saveAiHomebrew(hb);
+      injectHomebrewMagicItemsIntoRegistry();
+      rec.key = item.id;
+      break;
+    }
+    case 'weapon': {
+      const w = clNormaliseWeapon(d);
+      const lib = loadWeaponLibrary();
+      const libId = 'wl_' + forgeSlug(entry.id);
+      const libEntry = { id: libId, ...w, source: community, addedAt: Date.now() };
+      const i = lib.findIndex(x => x.id === libId);
+      if (i >= 0) lib[i] = libEntry; else lib.push(libEntry);
+      if (!saveWeaponLibrary(lib)) throw new Error('Device storage is full.');
+      rec.key = libId;
+      break;
+    }
+    case 'map': {
+      const img = clStr(d.image, 120);
+      if (!/^[a-z0-9-]+\.(png|jpg|jpeg|webp)$/.test(img)) throw new Error('This map has no valid image file.');
+      const folder = entry.path.split('/')[0];
+      const res = await fetch(CONTENT_RAW_BASE + folder + '/' + img + '?' + clItemUrl(entry).split('?')[1], { cache: clUi().bustToken ? 'no-store' : 'default' });
+      if (!res.ok) throw new Error('Could not download the map image (' + res.status + ').');
+      const blob = await res.blob();
+      const full = await compressImageToDataUrl(blob, 1400, 0.8);
+      const thumb = await compressImageToDataUrl(blob, 220, 0.7);
+      const mapId = (prev && prev.key) || ('cmmap_' + forgeSlug(entry.id));
+      await idbPutMap(mapId, full);
+      try { await idbPutMap(mapId + ':orig', blob); } catch (e) {}
+      const lib = loadMapLibrary().filter(m => m.id !== mapId);
+      lib.push({ id: mapId, name: (file.name || entry.name).slice(0, 40), thumb, createdAt: Date.now(), origName: img, community: entry.id,
+        gridCols: clClampInt(d.gridCols, 0, 500, 0) || null, gridRows: clClampInt(d.gridRows, 0, 500, 0) || null });
+      saveMapLibrary(lib);
+      rec.key = mapId;
+      break;
+    }
+    default: throw new Error('Unknown content type.');
+  }
+  inst[entry.id] = rec;
+  if (!saveCommunityInstalled(inst)) throw new Error('Device storage is full.');
+  injectCommunityContentIntoRegistries();
+  return rec;
+}
+function clRemove(id) {
+  const inst = loadCommunityInstalled();
+  const rec = inst[id];
+  if (!rec) return;
+  if (rec.type === 'subclass') {
+    const [klass, sid] = String(rec.key || '').split(':');
+    saveAiHomebrew(loadAiHomebrew().filter(h => !(h && h.type === 'subclass' && h.data && h.data.id === sid && h.data.klass === klass)));
+    injectHomebrewSubclassesIntoRegistry();
+  } else if (rec.type === 'magic-item') {
+    saveAiHomebrew(loadAiHomebrew().filter(h => !(h && h.type === 'magic_item' && h.data && h.data.id === rec.key)));
+    injectHomebrewMagicItemsIntoRegistry();
+  } else if (rec.type === 'weapon') {
+    saveWeaponLibrary(loadWeaponLibrary().filter(w => w.id !== rec.key));
+  } else if (rec.type === 'map') {
+    removeLibraryMap(rec.key);
+  }
+  delete inst[id];
+  saveCommunityInstalled(inst);
+  injectCommunityContentIntoRegistries();
+}
+function clActiveCharacter() {
+  try { return state.activeCharId ? getCharacter(state.activeCharId) : null; } catch (e) { return null; }
+}
+async function clAddWeaponToCharacter(entry) {
+  const ch = clActiveCharacter();
+  if (!ch) throw new Error('Open a character first.');
+  const rec = clIsInstalled(entry);
+  let w = rec ? loadWeaponLibrary().find(x => x.id === rec.key) : null;
+  if (!w) { await clInstall(entry); w = loadWeaponLibrary().find(x => x.id === 'wl_' + forgeSlug(entry.id)); }
+  if (!w) throw new Error('Could not load the weapon.');
+  if (!ch.inventory) ch.inventory = {};
+  if (!Array.isArray(ch.inventory.weapons)) ch.inventory.weapons = [];
+  ch.inventory.weapons.push(clWeaponForCharacter(w));
+  saveCharacter(ch);
+  return ch;
+}
+
+// ---------- preview + UI ----------
+function clWhereItGoes(type) {
+  return ({
+    race: 'Shows up in the race list when you create a character.',
+    subclass: 'Shows up as a subclass option for its class, like a forged subclass.',
+    spell: 'Added to the spell lists of its classes.',
+    feat: 'Added to the feat list.',
+    background: 'Shows up in the background list when you create a character.',
+    monster: 'Added to the DM bestiary.',
+    map: 'Added to your map library on the DM screen.',
+    weapon: 'Saved to your weapon library (Gear \u2192 Add Weapon). You can also add it straight to a character.',
+    'magic-item': 'Added to the magic item catalogue, like a Magic Item Forge item.',
+  })[type] || '';
+}
+function clDetailLines(type, d) {
+  const L = [];
+  const add = (k, v) => { if (v != null && v !== '' && !(Array.isArray(v) && !v.length)) L.push([k, String(v)]); };
+  const dice = (x) => x ? x.count + 'd' + x.sides : '';
+  try {
+    if (type === 'weapon') {
+      const w = clNormaliseWeapon(d);
+      add('Damage', dice(w.damage) + ' ' + w.type + (w.extraDamage ? w.extraDamage.map(x => ' + ' + dice(x) + ' ' + x.type).join('') : ''));
+      add('Type', w.cat + ' ' + w.kind);
+      add('Properties', w.props.join(', '));
+      if (w.magicBonus) add('Magic', '+' + w.magicBonus + ' to attack & damage');
+    } else if (type === 'magic-item') {
+      const m = clNormaliseMagicItem(d, {});
+      add('Type', MAGIC_ITEM_TYPES[m.type].name);
+      add('Rarity', MAGIC_ITEM_RARITIES[m.rarity].name + (m.attune ? ' \u00b7 requires attunement' : ''));
+      if (m.mech) add('Bonuses', Object.entries(m.mech).map(([k, v]) => k === 'resistType' ? 'resist ' + v : k.replace(/Bonus$/, '').replace(/([A-Z])/g, ' $1').toLowerCase() + ' +' + v).join(', '));
+      add('Effect', m.desc);
+    } else if (type === 'race') {
+      add('Size / speed', (d.size || '') + ' \u00b7 ' + (d.speed || 30) + ' ft');
+      if (d.bonuses) add('Ability scores', Object.entries(d.bonuses).map(([k, v]) => k.toUpperCase() + ' +' + v).join(', '));
+      add('Traits', (d.traits || []).map(t => t && t.name).filter(Boolean).join(', '));
+      if (d.subraces) add('Subraces', Object.values(d.subraces).map(s => s && s.name).filter(Boolean).join(', '));
+    } else if (type === 'subclass') {
+      add('Class', d.klass);
+      add('Features', Object.keys(d.levelFeatures || {}).map(l => 'L' + l + ': ' + (d.levelFeatures[l] || []).map(f => f && f.name).join(', ')).join(' \u00b7 '));
+    } else if (type === 'spell') {
+      add('Level', d.level === 0 ? 'Cantrip' : 'Level ' + d.level + (d.school ? ' ' + d.school : ''));
+      add('Classes', (d.classes || []).join(', '));
+      add('Casting', [d.time, d.range, d.components, d.duration].filter(Boolean).join(' \u00b7 '));
+      add('Effect', d.desc);
+    } else if (type === 'feat') {
+      add('Effect', d.desc);
+    } else if (type === 'background') {
+      add('Skills', (d.skills || []).join(', '));
+      if (d.feature) add('Feature', d.feature.name + ': ' + d.feature.desc);
+    } else if (type === 'monster') {
+      add('Stats', 'CR ' + d.cr + ' \u00b7 ' + (d.size || '') + ' ' + (d.type || '') + ' \u00b7 AC ' + d.ac + ' \u00b7 HP ' + d.hp);
+      add('Actions', (d.actions || []).map(a => a && a.name).filter(Boolean).join(', '));
+    } else if (type === 'map') {
+      add('Grid', (d.gridCols && d.gridRows) ? d.gridCols + ' \u00d7 ' + d.gridRows + ' squares' : '');
+      add('Setting', d.setting);
+    }
+  } catch (e) {}
+  return L;
+}
+function clPreviewHTML(entry) {
+  const ui = clUi();
+  const key = entry.id + '@' + entry.version + '@' + (ui.bustToken || 0);
+  const file = clFileCache[key];
+  const rec = clIsInstalled(entry);
+  const busy = ui.busy === entry.id;
+  const ch = entry.type === 'weapon' ? clActiveCharacter() : null;
+  const outdated = rec && rec.version !== entry.version;
+  let body;
+  if (!file) {
+    body = ui.previewStatus === 'error'
+      ? `<div class="cl-error">Couldn't load this item: ${escape(ui.previewError)}</div><button class="btn" data-cl-open="${escape(entry.id)}">Try again</button>`
+      : `<div class="cl-empty">Loading preview\u2026</div>`;
+  } else {
+    const lines = clDetailLines(entry.type, file.data);
+    body = `
+      ${file.description ? `<div class="cl-pv-desc">${escape(file.description)}</div>` : ''}
+      ${lines.length ? `<div class="cl-pv-stats">${lines.map(([k, v]) => `<div><span class="wd-lbl">${escape(k)}</span> ${escape(v)}</div>`).join('')}</div>` : ''}
+      ${entry.type === 'map' && entry.thumbnail ? `<img class="cl-pv-thumb" alt="" src="${escape(CONTENT_RAW_BASE + entry.thumbnail)}" />` : ''}
+      ${file.credits ? `<div class="cl-pv-credits"><span class="wd-lbl">Credit</span> ${escape(file.credits)}</div>` : ''}`;
+  }
+  const actions = [];
+  if (rec && !outdated) actions.push(`<button class="btn" disabled>\u2713 In your Hearth</button>`);
+  else actions.push(`<button class="btn primary" data-cl-add="${escape(entry.id)}"${busy ? ' disabled' : ''}>${busy ? 'Adding\u2026' : (outdated ? 'Update to v' + escape(entry.version) : 'Add to Hearth')}</button>`);
+  if (ch) actions.push(`<button class="btn" data-cl-add-char="${escape(entry.id)}"${busy ? ' disabled' : ''}>Add to ${escape(ch.name || 'current character')}</button>`);
+  if (rec) actions.push(`<button class="btn" data-cl-remove="${escape(entry.id)}">Remove</button>`);
+  return `
+    <section class="section rules-home">
+      <button class="btn cl-back" data-cl-back="1">\u2190 Back to the library</button>
+      <div class="rules-home-title" style="margin-top:10px;">${escape(file ? file.name : entry.name)}</div>
+      <div class="cl-pv-meta">${escape(CL_TYPE_LABEL[entry.type] || entry.type)} \u00b7 by ${escape(entry.author || 'unknown')} \u00b7 v${escape(entry.version)}${entry.example ? ' \u00b7 example' : ''}</div>
+      <div class="cl-pv-meta">Licence: ${escape((file && file.license) || 'CC-BY-4.0').replace('CC-BY-4.0', 'CC BY 4.0')}${entry.tags.length ? ' \u00b7 ' + entry.tags.map(escape).join(', ') : ''}</div>
+      ${body}
+      <div class="cl-pv-where">${escape(clWhereItGoes(entry.type))}${outdated ? ' You have v' + escape(rec.version) + '.' : ''}</div>
+      <div class="cl-pv-actions">${actions.join('')}</div>
+    </section>`;
+}
+async function clOpenPreview(id) {
+  const ui = clUi();
+  const entry = clFindEntry(id);
+  if (!entry) return;
+  ui.preview = id; ui.previewStatus = 'loading'; ui.previewError = '';
+  render();
+  try { await clFetchItem(entry); ui.previewStatus = 'ok'; }
+  catch (e) { ui.previewStatus = 'error'; ui.previewError = (e && e.message) || 'Network error'; }
+  if (ui.preview === id) clRerender();
+}
+async function clDoAdd(id, toCharacter) {
+  const ui = clUi();
+  const entry = clFindEntry(id);
+  if (!entry || ui.busy) return;
+  ui.busy = id; clRerender();
+  try {
+    if (toCharacter) {
+      const ch = await clAddWeaponToCharacter(entry);
+      showToast('Added ' + entry.name + ' to ' + (ch.name || 'your character') + '.');
+    } else {
+      const rec = await clInstall(entry);
+      showToast('Added ' + rec.name + '. ' + clWhereItGoes(entry.type));
+    }
+  } catch (e) {
+    showToast('Could not add ' + entry.name + ': ' + ((e && e.message) || 'network error'));
+  }
+  ui.busy = null; clRerender();
+}
+function wireContentLibrary() {
+  if (state.ui.homePanel !== 'library') return;
+  const ui = clUi();
+  clLoadCachedIndex();
+  if (ui.status === 'idle') { setTimeout(() => clFetchIndex(false), 0); }
+  document.querySelectorAll('[data-cl-refresh]').forEach(b => b.addEventListener('click', () => clFetchIndex(true)));
+  document.querySelectorAll('[data-cl-open]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); clOpenPreview(b.dataset.clOpen); }));
+  document.querySelectorAll('[data-cl-back]').forEach(b => b.addEventListener('click', () => { ui.preview = null; render(); }));
+  document.querySelectorAll('[data-cl-add]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); clDoAdd(b.dataset.clAdd, false); }));
+  document.querySelectorAll('[data-cl-add-char]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); clDoAdd(b.dataset.clAddChar, true); }));
+  document.querySelectorAll('[data-cl-remove]').forEach(b => b.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const id = b.dataset.clRemove; const rec = loadCommunityInstalled()[id];
+    const warn = rec && ['race', 'subclass', 'background'].includes(rec.type) ? ' Characters already using it may lose those details.' : (rec && rec.type === 'weapon' ? ' Copies already on characters are kept.' : '');
+    confirmDialog('Remove "' + (rec ? rec.name : id) + '" from this device?' + warn, () => { clRemove(id); showToast('Removed.'); render(); });
+  }));
 }
 
 function aiEndpoint() { return localStorage.getItem(AI_ENDPOINT_KEY) || ''; }
@@ -50860,6 +51523,7 @@ document.addEventListener('click', (e) => {
   // --- Build Choices: Eldritch Invocations (reuses the shared invocation dialog) ---
   if (e.target.closest('[data-b55-open-invocations]')) {
     state.ui.invocationDialog = true;
+    state.ui.invocationAutoOpened = false;
     render();
     return;
   }
@@ -50932,13 +51596,14 @@ if (typeof window !== 'undefined') {
 })();
 injectHomebrewSubclassesIntoRegistry();
 injectHomebrewMagicItemsIntoRegistry();
+injectCommunityContentIntoRegistries();
 render();
 // v0.91.0 — say what a backup restore did, once the reload has finished.
 (() => { try { const m = sessionStorage.getItem('hearth.postRestoreMsg'); if (m) { sessionStorage.removeItem('hearth.postRestoreMsg'); setTimeout(() => showToast(m, 8000), 400); } } catch (e) {} })();
 
 // v0.14.1 PWA update handling. Forces fresh checks, shows a one-tap refresh prompt, and reloads after the new worker takes control.
 (function () {
-  const APP_VERSION = 'v0.91.3';
+  const APP_VERSION = 'v0.92.0';
   window.HEARTH_VERSION = APP_VERSION;
 
   function showUpdatePrompt(registration) {
