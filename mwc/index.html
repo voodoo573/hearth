@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Minor Works Certificate</title>
+<meta name="theme-color" content="#1c2836">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CertMate">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" href="./icon-192.png" sizes="192x192" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    --ink:#16202b; --panel:#1c2836; --panel2:#243447; --edge:#33475d;
+    --paper:#ffffff; --navy:#1f3864; --fill:#fff2cc;
+    --bg:#e9edf1; --card:#ffffff; --text:#1a2530; --muted:#5d6b7a; --line:#d3dae1;
+    --accent:#2d7d9a;
+    --pass:#1f9d55; --pass-bg:#e6f5ec; --warn:#c07d0a; --warn-bg:#fbf1dd; --fail:#c0392b; --fail-bg:#fbe7e4;
+    --field:#f7fafc;
+    font-synthesis-weight:none;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--bg); color:var(--text);
+    -webkit-text-size-adjust:100%; line-height:1.45;
+  }
+  .mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+
+  /* ---------- app shell ---------- */
+  .wrap{max-width:760px;margin:0 auto;padding:0 14px 64px}
+  header.app{
+    position:sticky;top:0;z-index:20;
+    background:var(--panel);
+    margin:0 -14px 0;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 12px;
+    border-bottom:1px solid var(--edge);
+  }
+  .brand{display:flex;align-items:center;gap:11px}
+  .spark{width:30px;height:30px;flex:0 0 auto;display:block}
+  .brand h1{font-size:17px;letter-spacing:.2px;margin:0;color:#eaf1f7;font-weight:600}
+  .brand .sub{font-size:11.5px;color:#8ea6bd;margin-top:1px}
+  .brand .tag{margin-left:auto;font-size:10px;letter-spacing:.7px;color:#8ea6bd;border:1px solid var(--edge);padding:3px 7px;border-radius:100px;text-transform:uppercase}
+  .folderbtn{margin-left:auto;display:flex;align-items:center;gap:7px;background:#17222f;border:1px solid var(--edge);color:#cfe0ee;font-family:inherit;font-size:13px;font-weight:600;padding:8px 13px;border-radius:100px;cursor:pointer}
+  .folderbtn .badge{background:#2d7d9a;color:#fff;border-radius:100px;min-width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;padding:0 5px}
+  .folderpanel{background:var(--card);border-radius:12px;padding:14px 14px 18px;color:var(--text)}
+  .folderpanel h3{margin:2px 2px 13px;font-size:16px}
+  .doc{display:flex;align-items:center;gap:9px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;margin-bottom:9px}
+  .doc .info{min-width:0;flex:1}
+  .doc .info .t{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .doc .info .m{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .doc button{font-family:inherit;font-size:13px;font-weight:600;border-radius:8px;padding:9px 12px;cursor:pointer;border:1px solid var(--line);background:var(--field);color:var(--text);flex:0 0 auto}
+  .doc button.open{border-color:var(--navy);background:var(--navy);color:#fff}
+  .doc button.del{border-color:#e0b4ae;background:#fff;color:#b23c2e;padding:9px 11px}
+  .empty{padding:28px 12px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.6}
+  .welcomewrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+  .welcomecard{background:var(--card);color:var(--text);border-radius:16px;padding:24px 22px 22px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  .welcomecard .wspark{width:46px;height:46px;display:block;margin:0 0 14px}
+  .welcomecard h2{margin:0 0 6px;font-size:21px}
+  .welcomecard p{margin:0 0 18px;font-size:14px;color:var(--muted);line-height:1.5}
+  .welcomecard label{display:block;font-size:12.5px;color:var(--muted);font-weight:500;margin:0 0 5px}
+  .welcomecard input{font-family:inherit;font-size:16px;color:var(--text);background:var(--field);border:1px solid var(--line);border-radius:10px;padding:12px;width:100%;margin:0 0 14px}
+  .welcomecard input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+  .welcomecard button{width:100%;font-family:inherit;font-size:16px;font-weight:600;color:#fff;background:var(--navy);border:none;border-radius:11px;padding:14px;cursor:pointer}
+
+  /* home menu */
+  .homebtn{background:#17222f;border:1px solid var(--edge);color:#cfe0ee;font-family:inherit;font-size:18px;line-height:1;padding:8px 12px;border-radius:100px;cursor:pointer;margin-right:8px}
+  #homeView{padding:18px 0 8px}
+  .home-intro{font-size:13px;color:var(--muted);margin:0 2px 16px}
+  .tile{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 12px;cursor:pointer;font-family:inherit;color:var(--text)}
+  .tile:active{background:var(--field)}
+  .tile[disabled]{opacity:.55;cursor:default}
+  .tile .tico{flex:0 0 auto;width:42px;height:42px;border-radius:10px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .tile .tt{font-size:16px;font-weight:600}
+  .tile .td{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .tile .tsoon{margin-left:auto;font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:100px;padding:3px 8px}
+  .homever{text-align:center;font-size:11px;color:var(--muted);margin-top:16px;letter-spacing:.05em}
+
+  /* circuit list */
+  .clist{margin:2px 0 0}
+  .citem{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;margin-bottom:9px;background:var(--card)}
+  .citem .cinfo{min-width:0;flex:1}
+  .citem .cref{font-weight:600;font-size:14.5px}
+  .citem .cmeta{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .citem .cstat{flex:0 0 auto;font-size:11px;font-weight:600;padding:3px 8px;border-radius:100px}
+  .cstat.pass{background:var(--pass-bg);color:var(--pass)} .cstat.warn{background:var(--warn-bg);color:var(--warn)} .cstat.fail{background:var(--fail-bg);color:var(--fail)}
+  .citem button{flex:0 0 auto;font-family:inherit;font-size:13px;font-weight:600;border-radius:8px;padding:8px 10px;cursor:pointer;border:1px solid var(--line);background:var(--field);color:var(--text)}
+  .addcirc{width:100%;font-family:inherit;font-size:15px;font-weight:600;color:var(--navy);background:#eaf0f7;border:1px dashed var(--navy);border-radius:11px;padding:13px;cursor:pointer;margin-top:4px}
+
+  /* schedule output table */
+  .stsched{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table.sts{border-collapse:collapse;font-size:9.5px;min-width:100%}
+  table.sts th,table.sts td{border:1px solid #9aa7b2;padding:3px 5px;text-align:center;white-space:nowrap}
+  table.sts th{background:#dce6f1;font-weight:600;font-size:8.5px}
+  table.sts td.l{text-align:left}
+  table.sts tr:nth-child(even) td{background:#f6f8fa}
+  .schednote{font-size:10px;color:#777;margin-top:8px}
+
+  /* document modes */
+  body[data-mode="home"] #checks, body[data-mode="home"] .go, body[data-mode="home"] #mwView, body[data-mode="home"] #stsView, body[data-mode="home"] #eicView, body[data-mode="home"] #eicrView, body[data-mode="home"] #refView, body[data-mode="home"] #inspView{display:none}
+  body[data-mode="mw"] #homeView, body[data-mode="mw"] #stsView, body[data-mode="mw"] #eicView, body[data-mode="mw"] #eicrView, body[data-mode="mw"] #refView, body[data-mode="mw"] #inspView, body[data-mode="mw"] #goSTS{display:none}
+  body[data-mode="sts"] #homeView, body[data-mode="sts"] #mwView, body[data-mode="sts"] #eicView, body[data-mode="sts"] #eicrView, body[data-mode="sts"] #refView, body[data-mode="sts"] #inspView, body[data-mode="sts"] #checks, body[data-mode="sts"] #goMW{display:none}
+  body[data-mode="eic"] #homeView, body[data-mode="eic"] #mwView, body[data-mode="eic"] #eicrView, body[data-mode="eic"] #refView, body[data-mode="eic"] #checks, body[data-mode="eic"] #goMW{display:none}
+  body[data-mode="eicr"] #homeView, body[data-mode="eicr"] #mwView, body[data-mode="eicr"] #eicView, body[data-mode="eicr"] #refView, body[data-mode="eicr"] #checks, body[data-mode="eicr"] #goMW{display:none}
+  body[data-mode="ref"] #homeView, body[data-mode="ref"] #mwView, body[data-mode="ref"] #stsView, body[data-mode="ref"] #eicView, body[data-mode="ref"] #eicrView, body[data-mode="ref"] #inspView, body[data-mode="ref"] #checks, body[data-mode="ref"] .go{display:none}
+
+  /* observations + photos */
+  .oitem{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;margin-bottom:9px;background:var(--card)}
+  .oitem .oinfo{min-width:0;flex:1}
+  .oitem .odesc{font-size:14px}
+  .oitem .oloc{font-size:12px;color:var(--muted);margin-top:2px}
+  .oitem .othumbs{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
+  .oitem .othumbs img{width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+  .oitem button{flex:0 0 auto;font-family:inherit;font-size:13px;font-weight:600;border-radius:8px;padding:8px 10px;cursor:pointer;border:1px solid var(--line);background:var(--field);color:var(--text)}
+  .ocode{flex:0 0 auto;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px}
+  .ocode.C1{background:#f9dad4;color:#a5271a} .ocode.C2{background:#fbe6cf;color:#9a5c08} .ocode.C3{background:#dfeaf6;color:#245b86} .ocode.FI{background:#e6e9ec;color:#4a5560}
+  .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+  .thumbs .th{position:relative}
+  .thumbs .th img{width:74px;height:74px;object-fit:cover;border-radius:9px;border:1px solid var(--line)}
+  .thumbs .th .rm{position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:50%;background:#c0392b;color:#fff;border:none;font-size:13px;line-height:1;cursor:pointer}
+  .addphoto{font-family:inherit;font-size:14px;font-weight:600;color:var(--navy);background:#eaf0f7;border:1px dashed var(--navy);border-radius:10px;padding:12px;cursor:pointer;width:100%;margin-top:8px}
+  .obsphoto{display:inline-block;margin:4px 6px 0 0}
+  .obsphoto img{max-width:150px;max-height:150px;border:1px solid #9aa7b2;border-radius:4px}
+  /* inspection tick-sheet */
+  .insec{font-size:12px;letter-spacing:.4px;color:var(--muted);text-transform:uppercase;font-weight:600;margin:15px 2px 4px}
+  .irow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .irow .it{flex:1;font-size:13.5px;line-height:1.35}
+  .irow .it b{color:var(--muted);font-weight:600;margin-right:3px}
+  .irow select{flex:0 0 auto;width:76px;font-family:inherit;font-size:15px;padding:8px 6px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--text);text-align:center}
+  .irow select.flag{border-color:#c0392b;color:#b23c2e;font-weight:700}
+  .irow select.ok{border-color:#1f9d55;color:#1f9d55}
+  #sigCanvas{display:block;width:100%;height:auto;aspect-ratio:3 / 1;background:#fff;border:1px solid var(--line);border-radius:10px;touch-action:none;cursor:crosshair}
+
+  /* ---------- live checks ---------- */
+  .checks{
+    position:sticky;top:var(--stick,0);z-index:15;
+    background:var(--panel2);
+    margin:0 -14px;padding:9px 12px;border-bottom:1px solid var(--edge);
+    display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  .checks::-webkit-scrollbar{display:none}
+  .pill{
+    flex:0 0 auto;display:flex;flex-direction:column;gap:1px;
+    padding:6px 11px;border-radius:9px;min-width:74px;
+    background:#17222f;border:1px solid #2c3e52;
+  }
+  .pill .k{font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;color:#8298ae}
+  .pill .v{font-size:14px;font-weight:600}
+  .pill .v.mono{font-size:13px}
+  .pill[data-s="pass"]{border-color:#1f9d55}.pill[data-s="pass"] .v{color:#4fd08a}
+  .pill[data-s="warn"]{border-color:#c07d0a}.pill[data-s="warn"] .v{color:#f2b552}
+  .pill[data-s="fail"]{border-color:#c0392b;background:#2a1a1a}.pill[data-s="fail"] .v{color:#f38173}
+  .pill[data-s="idle"]{opacity:.5}.pill[data-s="idle"] .v{color:#8298ae}
+
+  /* ---------- form ---------- */
+  main{padding-top:16px}
+  .sec{background:var(--card);border:1px solid var(--line);border-radius:13px;margin:0 0 13px;overflow:hidden}
+  .sec > h2{
+    font-size:12px;letter-spacing:.4px;color:var(--muted);text-transform:uppercase;font-weight:600;
+    margin:0;padding:12px 15px 3px;
+  }
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px 12px;padding:11px 15px 16px}
+  .grid.one{grid-template-columns:1fr}
+  .f{display:flex;flex-direction:column;gap:5px;min-width:0}
+  .f.span{grid-column:1 / -1}
+  .f label{font-size:12.5px;color:var(--muted);font-weight:500}
+  .f input,.f select,.f textarea{
+    font-family:inherit;font-size:15.5px;color:var(--text);
+    background:var(--field);border:1px solid var(--line);border-radius:9px;
+    padding:11px 11px;width:100%;appearance:none;-webkit-appearance:none;
+  }
+  .f textarea{resize:vertical;min-height:52px;line-height:1.4}
+  .f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+  .f .unit{position:relative}
+  .f .unit input{padding-right:34px}
+  .f .unit .u{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);pointer-events:none}
+  select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%235d6b7a' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:30px}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg button{
+    flex:1 1 auto;font-family:inherit;font-size:14.5px;font-weight:500;
+    padding:10px 6px;border-radius:9px;border:1px solid var(--line);background:var(--field);color:var(--text);cursor:pointer;
+  }
+  .seg button[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .hint{font-size:11.5px;color:var(--muted);padding:0 15px 13px;margin-top:-4px}
+  .hint b{color:var(--accent);font-weight:600}
+  .row-btn{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .mini{font-size:12px;padding:8px 12px;border-radius:8px;border:1px solid var(--accent);background:#eaf3f6;color:#1c5a70;font-weight:600;cursor:pointer;font-family:inherit}
+  .mini.ghost{background:transparent;color:var(--accent)}
+  .results{display:none;margin-top:7px;border:1px solid var(--line);border-radius:10px;overflow:hidden;max-height:240px;overflow-y:auto;background:var(--card)}
+  .results.on{display:block}
+  .results .item{padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+  .results .item:last-child{border-bottom:none}
+  .results .item:active{background:var(--field)}
+  .results .item b{font-weight:600;font-size:14.5px}
+  .results .item .meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .results .none{padding:11px 12px;font-size:13px;color:var(--muted)}
+  #storeMsg{font-size:12px;min-height:16px}
+
+  /* ---------- generate bar ---------- */
+  .go{position:sticky;bottom:0;z-index:16;margin:6px -14px 0;padding:11px 14px calc(env(safe-area-inset-bottom,0px) + 11px);
+      background:linear-gradient(180deg,rgba(233,237,241,0),var(--bg) 34%)}
+  .go button{
+    width:100%;font-family:inherit;font-size:16px;font-weight:600;color:#fff;
+    background:var(--navy);border:none;border-radius:11px;padding:15px;cursor:pointer;
+    box-shadow:0 6px 18px rgba(31,56,100,.28);
+  }
+  .go button:active{transform:translateY(1px)}
+
+  /* ---------- cert overlay ---------- */
+  .overlay{position:fixed;inset:0;z-index:40;background:rgba(16,24,33,.55);display:none;overflow:auto;padding:0}
+  .overlay.on{display:block}
+  .sheetwrap{max-width:820px;margin:0 auto;padding:14px 10px 40px}
+  .bar{position:sticky;top:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:calc(env(safe-area-inset-top,0px) + 8px) 4px 10px}
+  .bar .x{margin-right:auto;background:#1c2836;color:#eaf1f7;border:none;border-radius:9px;padding:10px 14px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+  .bar .act{background:#fff;color:var(--navy);border:1px solid #fff;border-radius:9px;padding:10px 14px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+  .bar .act.primary{background:#25d366;color:#08331b;border-color:#25d366}
+  .bar .act:disabled{opacity:.6}
+  .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translateX(-50%);background:#16202b;color:#fff;padding:11px 16px;border-radius:10px;font-size:13.5px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none;max-width:88%;text-align:center}
+  .toast.on{opacity:1}
+  .cert.cap{width:760px !important;max-width:none !important}
+  .imgwrap{max-width:820px;margin:0 auto;padding:14px 10px 40px}
+  .imghint{color:#dfe7ee;font-size:12.5px;text-align:center;line-height:1.5;margin:2px 8px 12px}
+  #imgOut{display:block;width:100%;height:auto;border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.3);background:#fff}
+  a.act{text-decoration:none;display:inline-block}
+
+  /* ---------- the certificate ---------- */
+  .cert{background:var(--paper);color:#1a2530;border-radius:6px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  .cert .hd{background:var(--navy);color:#fff;text-align:center;padding:15px 16px}
+  .cert .hd h3{margin:0;font-size:18px;letter-spacing:.3px}
+  .cert .hd p{margin:3px 0 0;font-size:11px;font-style:italic;opacity:.9}
+  .cert .note{text-align:center;font-size:11px;font-style:italic;color:#666;padding:7px 16px 2px}
+  .cert .body{padding:6px 16px 20px}
+  .band{background:var(--navy);color:#fff;font-weight:600;font-size:12.5px;letter-spacing:.3px;padding:6px 10px;border-radius:3px;margin:15px 0 9px}
+  table.kv{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.kv td{border:1px solid #9aa7b2;padding:6px 9px;vertical-align:top}
+  table.kv td.k{background:#f1f3f5;width:44%;color:#33414f}
+  table.kv td.fill{background:var(--fill)}
+  table.kv td b{font-weight:600}
+  .cmt{font-size:12px;margin:9px 2px 0;padding-left:16px}
+  .cmt li{margin:3px 0}
+  .rcd{width:100%;border-collapse:collapse;font-size:12px;margin-top:7px}
+  .rcd td,.rcd th{border:1px solid #9aa7b2;padding:6px 8px;text-align:center}
+  .rcd th{background:#dce6f1;font-weight:600}
+  .rcd td.l{text-align:left;background:#f1f3f5}
+  .rcd td.fill{background:var(--fill);font-weight:600}
+  .sign td{height:30px}
+  .foot{font-size:10.5px;color:#777;text-align:center;margin-top:12px}
+  .tick{font-size:13px}
+  .warnrow{color:#9a5a00}
+
+  @media(min-width:680px){ .checks{border-radius:0} }
+
+  /* ---------- print ---------- */
+  @media print{
+    body{background:#fff}
+    .wrap,header.app,.checks,main,.go{display:none !important}
+    .overlay{position:static;background:#fff;display:block !important;overflow:visible}
+    .overlay:not(.on){display:none !important}
+    .bar{display:none !important}
+    .sheetwrap{max-width:none;margin:0;padding:0}
+    .cert{box-shadow:none;border-radius:0}
+    .band{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .cert .hd,.rcd th,table.kv td.k,table.kv td.fill,.rcd td.fill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .stsched{overflow:visible !important}
+    table.sts{font-size:7px}
+    table.sts th{font-size:6.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+
+  /* dark UI only (cert stays paper) */
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1720;--card:#17222e;--text:#e6edf3;--muted:#93a3b4;--line:#2a3947;--field:#1c2836;
+    }
+  }
+</style>
+</head>
+<body data-mode="home">
+<div class="wrap">
+  <header class="app">
+    <div class="brand">
+      <svg class="spark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <rect x="1" y="1" width="30" height="30" rx="8" fill="#2d7d9a"/>
+        <path d="M17.5 6 L10 18 h5 l-1.5 8 L22 13 h-5.2 Z" fill="#fff"/>
+      </svg>
+      <div>
+        <h1 id="appTitle">CertMate</h1>
+        <div class="sub" id="appSub">BS 7671 certs &middot; type it, check it, sign it</div>
+      </div>
+      <button class="homebtn" id="goHome" type="button" title="Home" style="display:none">&#9776;</button>
+      <button class="folderbtn" id="openFolder" type="button">Folder<span class="badge" id="docCount">0</span></button>
+    </div>
+  </header>
+
+  <div class="checks" id="checks">
+    <div class="pill" data-s="idle" id="p-zs"><span class="k">Zs vs max</span><span class="v mono">—</span></div>
+    <div class="pill" data-s="idle" id="p-consist"><span class="k">Ze+R1R2</span><span class="v mono">—</span></div>
+    <div class="pill" data-s="idle" id="p-rcd"><span class="k">RCD</span><span class="v mono">—</span></div>
+    <div class="pill" data-s="idle" id="p-ir"><span class="k">Insulation</span><span class="v mono">—</span></div>
+  </div>
+
+  <main>
+    <!-- HOME MENU -->
+    <div id="homeView">
+      <p class="home-intro">Pick what you're filling in. Everything shares the same test checks, store list and folder.</p>
+      <button class="tile" type="button" data-go="mw">
+        <span class="tico">&#9889;</span>
+        <span><span class="tt">Minor Works Certificate</span><span class="td">Single circuit — an addition or alteration</span></span>
+      </button>
+      <button class="tile" type="button" data-go="sts">
+        <span class="tico">&#9638;</span>
+        <span><span class="tt">Schedule of Test Results</span><span class="td">Whole board — a row per circuit</span></span>
+      </button>
+      <button class="tile" type="button" data-go="eic">
+        <span class="tico">&#128203;</span>
+        <span><span class="tt">EIC — new installation</span><span class="td">Certificate + schedule</span></span>
+      </button>
+      <button class="tile" type="button" data-go="eicr">
+        <span class="tico">&#128269;</span>
+        <span><span class="tt">EICR — condition report</span><span class="td">Observations + schedule</span></span>
+      </button>
+      <button class="tile" type="button" data-go="ref">
+        <span class="tico">&#128218;</span>
+        <span><span class="tt">Quick reference</span><span class="td">On-Site Guide — Zs, RCD, IR, disconnection</span></span>
+      </button>
+      <div class="homever" id="verTag"></div>
+    </div>
+
+    <!-- QUICK REFERENCE -->
+    <div id="refView">
+      <section class="sec">
+        <h2>Maximum Zs (Ω) — Table 41.3, 230 V</h2>
+        <div style="padding:4px 15px 14px">
+          <div class="stsched"><table class="sts" id="refMaxZs"></table></div>
+          <p class="hint" style="padding:8px 0 0">Measured Zs should be ≤ <b>0.8×</b> these values (allows for conductor warming). Values derived U0×0.95 ÷ (trip multiple × In); Type B ×5, C ×10, D ×20.</p>
+        </div>
+      </section>
+      <section class="sec">
+        <h2>RCDs</h2>
+        <div style="padding:6px 15px 15px;font-size:14px;line-height:1.6">
+          <div>• <b>Additional protection</b> (30 mA): must trip <b>≤ 40 ms</b> at 5×IΔn.</div>
+          <div>• <b>Fault protection</b> (ADS): Zs ≤ 50 ÷ IΔn — e.g. 30 mA → 1667 Ω, 100 mA → 500 Ω.</div>
+          <div>• General max <b>≤ 300 ms</b> at 1×IΔn (BS EN 61008/61009).</div>
+          <div>• Always operate the <b>test button</b>.</div>
+        </div>
+      </section>
+      <section class="sec">
+        <h2>Insulation resistance — Table 61</h2>
+        <div style="padding:6px 15px 15px;font-size:14px;line-height:1.6">
+          <div>• SELV / PELV — test <b>250 V dc</b> — min <b>0.5 MΩ</b></div>
+          <div>• Up to 500 V (incl. 230/400 V) — test <b>500 V dc</b> — min <b>1.0 MΩ</b></div>
+          <div>• Over 500 V — test <b>1000 V dc</b> — min <b>1.0 MΩ</b></div>
+        </div>
+      </section>
+      <section class="sec">
+        <h2>Max disconnection times — Table 41.1, 230 V</h2>
+        <div style="padding:6px 15px 15px;font-size:14px;line-height:1.6">
+          <div>• Final circuits ≤ 63 A: <b>TN 0.4 s</b> · <b>TT 0.2 s</b></div>
+          <div>• Distribution &amp; final &gt; 63 A: <b>TN 5 s</b> · <b>TT 1 s</b></div>
+          <div style="color:var(--muted);margin-top:4px">Device magnetic trip: Type B ×3–5 · Type C ×5–10 · Type D ×10–20.</div>
+        </div>
+      </section>
+      <section class="sec">
+        <h2>Flat twin &amp; earth (6242Y) — indicative A</h2>
+        <div style="padding:4px 15px 14px">
+          <div class="stsched"><table class="sts" id="refCable">
+            <tr><th>Size mm²</th><th>Method C (clipped)</th><th>Method A (in insulation)</th></tr>
+            <tr><td>1.0</td><td>16</td><td>11.5</td></tr>
+            <tr><td>1.5</td><td>20</td><td>14.5</td></tr>
+            <tr><td>2.5</td><td>27</td><td>20</td></tr>
+            <tr><td>4.0</td><td>37</td><td>26</td></tr>
+            <tr><td>6.0</td><td>47</td><td>32</td></tr>
+            <tr><td>10.0</td><td>64</td><td>44</td></tr>
+          </table></div>
+          <p class="hint" style="padding:8px 0 0"><b>Indicative only</b> — single circuit, 70 °C, no derating. Always verify against BS 7671 Appendix 4 and apply correction factors (grouping, ambient, insulation).</p>
+        </div>
+      </section>
+      <p class="schednote" style="text-align:center;margin:0 4px 8px">A quick summary of common BS 7671 / On-Site Guide values — not a substitute for the current regulations.</p>
+    </div>
+
+    <div id="mwView">
+    <!-- STORE & JOB -->
+    <section class="sec">
+      <h2>Store &amp; job</h2>
+      <div class="grid one">
+        <div class="f">
+          <label for="storeSearch">Find store</label>
+          <input id="storeSearch" placeholder="Start typing a store name…" autocomplete="off">
+          <div id="storeResults" class="results"></div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="f span"><label for="storeName">Store</label><input id="storeName" placeholder="Store name"></div>
+        <div class="f"><label for="storeNo">Store no.</label><input id="storeNo" inputmode="numeric" placeholder="e.g. 1234"></div>
+        <div class="f"><label for="date">Date completed</label><input id="date" type="date"></div>
+        <div class="f span"><label for="addr">Address</label><input id="addr" placeholder="Store address"></div>
+        <div class="f span"><label for="loc">Location of works</label><input id="loc" placeholder="e.g. plant room, shop floor"></div>
+        <div class="f span"><label for="circuit">Circuit reference</label><input id="circuit" placeholder="e.g. way / phase"></div>
+        <div class="f span"><label for="desc">Description of the minor works</label><textarea id="desc" placeholder="Describe the work carried out"></textarea></div>
+      </div>
+      <div class="hint" style="padding-top:0">
+        <div class="row-btn">
+          <button type="button" class="mini" id="saveStore">Save to store list</button>
+          <button type="button" class="mini ghost" id="exportStores">Export list</button>
+          <button type="button" class="mini ghost" id="importStores">Import list</button>
+          <input type="file" id="importFile" accept="application/json,.json,text/csv,.csv" hidden>
+        </div>
+        <div id="storeMsg"></div>
+      </div>
+    </section>
+
+    <!-- INSTALLATION -->
+    <section class="sec">
+      <h2>Installation details</h2>
+      <div class="grid">
+        <div class="f span">
+          <label>System earthing</label>
+          <div class="seg" id="earth">
+            <button type="button" data-v="TN-S" aria-pressed="true">TN-S</button>
+            <button type="button" data-v="TN-C-S" aria-pressed="false">TN-C-S</button>
+            <button type="button" data-v="TT" aria-pressed="false">TT</button>
+          </div>
+        </div>
+        <div class="f">
+          <label for="devStd">Device</label>
+          <select id="devStd">
+            <option value="RCBO">RCBO (BS EN 61009)</option>
+            <option value="MCB">MCB (BS EN 60898)</option>
+          </select>
+        </div>
+        <div class="f">
+          <label for="devType">Type</label>
+          <select id="devType"><option>B</option><option selected>C</option><option>D</option></select>
+        </div>
+        <div class="f">
+          <label for="devRating">Rating</label>
+          <select id="devRating">
+            <option>6</option><option>10</option><option>16</option><option selected>20</option>
+            <option>25</option><option>32</option><option>40</option><option>50</option><option>63</option>
+          </select>
+        </div>
+        <div class="f">
+          <label for="rcd">RCD</label>
+          <select id="rcd"><option value="30" selected>30 mA</option><option value="100">100 mA</option><option value="300">300 mA</option><option value="0">None</option></select>
+        </div>
+        <div class="f"><label for="live">Live conductor</label><div class="unit"><input id="live" inputmode="decimal" placeholder="e.g. 2.5"><span class="u">mm²</span></div></div>
+        <div class="f"><label for="cpc">CPC</label><div class="unit"><input id="cpc" inputmode="decimal" placeholder="e.g. 1.5"><span class="u">mm²</span></div></div>
+        <div class="f span"><label for="cable">Cable type</label><input id="cable" placeholder="e.g. FP, T&amp;E, SWA"></div>
+      </div>
+    </section>
+
+    <!-- TESTS -->
+    <section class="sec">
+      <h2>Test results</h2>
+      <div class="grid">
+        <div class="f"><label for="ze">Ze (measured)</label><div class="unit"><input id="ze" inputmode="decimal" placeholder="0.00"><span class="u">Ω</span></div></div>
+        <div class="f"><label for="zs">Zs (measured)</label><div class="unit"><input id="zs" inputmode="decimal" placeholder="0.00"><span class="u">Ω</span></div></div>
+        <div class="f span">
+          <label for="r1r2">R1 + R2</label>
+          <div class="row-btn">
+            <div class="unit" style="flex:1"><input id="r1r2" inputmode="decimal" placeholder="0.00"><span class="u">Ω</span></div>
+            <button type="button" class="mini" id="calcR1R2">= Zs − Ze</button>
+          </div>
+        </div>
+        <div class="f"><label for="ir">Insulation resistance</label><input id="ir" value=">999"></div>
+        <div class="f"><label for="irUnit">&nbsp;</label><input id="irUnit" value="MΩ" disabled style="opacity:.6"></div>
+        <div class="f"><label for="rcd1">RCD @ 1×IΔn</label><div class="unit"><input id="rcd1" inputmode="decimal" placeholder="0.0"><span class="u">ms</span></div></div>
+        <div class="f"><label for="rcd5">RCD @ 5×IΔn</label><div class="unit"><input id="rcd5" inputmode="decimal" placeholder="0.0"><span class="u">ms</span></div></div>
+      </div>
+    </section>
+
+    <!-- CERTIFIER -->
+    <section class="sec">
+      <h2>Certifier</h2>
+      <div class="grid">
+        <div class="f span"><label for="name">Name</label><input id="name" placeholder="Your name"></div>
+        <div class="f span"><label for="position">Position</label><input id="position" placeholder="e.g. Qualified Electrician"></div>
+        <div class="f"><label for="company">Company (optional)</label><input id="company" placeholder=""></div>
+        <div class="f"><label for="certNo">Cert no. (optional)</label><input id="certNo" placeholder=""></div>
+      </div>
+    </section>
+    </div><!-- /mwView -->
+
+    <!-- SCHEDULE OF TEST RESULTS -->
+    <div id="stsView">
+      <section class="sec">
+        <h2>Board &amp; job</h2>
+        <div class="grid">
+          <div class="f span"><label for="stsStore">Store</label><input id="stsStore" placeholder="Store name"></div>
+          <div class="f"><label for="stsStoreNo">Store no.</label><input id="stsStoreNo" inputmode="numeric" placeholder="e.g. 1234"></div>
+          <div class="f"><label for="stsDate">Date</label><input id="stsDate" type="date"></div>
+          <div class="f span"><label for="stsDbRef">DB reference</label><input id="stsDbRef" placeholder="e.g. DB MS Loading Bay"></div>
+          <div class="f span"><label for="stsLoc">DB location</label><input id="stsLoc" placeholder="e.g. first floor plant room"></div>
+          <div class="f span">
+            <label>System earthing</label>
+            <div class="seg" id="stsEarth">
+              <button type="button" data-v="TN-S" aria-pressed="true">TN-S</button>
+              <button type="button" data-v="TN-C-S" aria-pressed="false">TN-C-S</button>
+              <button type="button" data-v="TT" aria-pressed="false">TT</button>
+            </div>
+          </div>
+          <div class="f"><label for="stsPhases">Supply</label><select id="stsPhases"><option value="1">1-phase</option><option value="3">3-phase</option></select></div>
+          <div class="f"><label for="stsZe">Ze</label><div class="unit"><input id="stsZe" inputmode="decimal" placeholder="0.00"><span class="u">Ω</span></div></div>
+          <div class="f"><label for="stsIpf">Ipf / PSCC</label><div class="unit"><input id="stsIpf" inputmode="decimal" placeholder="0.00"><span class="u">kA</span></div></div>
+          <div class="f"><label for="stsTester">Tested by</label><input id="stsTester" placeholder="Your name"></div>
+        </div>
+      </section>
+      <section class="sec">
+        <h2>Circuits <span id="stsCount" style="color:var(--muted);font-weight:400">0</span></h2>
+        <div style="padding:11px 15px 16px">
+          <div class="clist" id="stsList"></div>
+          <button class="addcirc" id="stsAdd" type="button">＋ Add circuit</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- SCHEDULE OF INSPECTIONS (EIC + EICR) -->
+    <div id="inspView">
+      <section class="sec">
+        <h2>Schedule of Inspections <span id="inspFlagCount" style="color:var(--muted);font-weight:400"></span></h2>
+        <div style="padding:6px 15px 16px">
+          <div class="row-btn" style="margin-bottom:4px">
+            <button class="mini" id="inspAllOk" type="button">Mark all acceptable ✓</button>
+            <button class="mini ghost" id="inspClear" type="button">Clear</button>
+          </div>
+          <div id="inspList"></div>
+          <p class="hint" style="padding:10px 0 0">✓ acceptable · C1/C2/C3 defects · FI further investigation · N/A not applicable · LIM limitation · N/V not verified.</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- EIC FRONT PAGE (shares the board + circuits above) -->
+    <div id="eicView">
+      <section class="sec">
+        <h2>Certificate details</h2>
+        <div class="grid">
+          <div class="f span"><label for="eicClient">Client</label><input id="eicClient" placeholder="e.g. Marks &amp; Spencer plc"></div>
+          <div class="f span"><label for="eicInstall">Installation address</label><input id="eicInstall" placeholder="Store / site address"></div>
+          <div class="f span"><label>This certificate is for</label>
+            <div class="seg" id="eicKind">
+              <button type="button" data-v="New installation" aria-pressed="true">New</button>
+              <button type="button" data-v="Addition" aria-pressed="false">Addition</button>
+              <button type="button" data-v="Alteration" aria-pressed="false">Alteration</button>
+            </div>
+          </div>
+          <div class="f span"><label for="eicDesc">Description &amp; extent of the work</label><textarea id="eicDesc" placeholder="What was installed and the extent covered by this certificate"></textarea></div>
+          <div class="f span"><label for="eicComments">Comments on existing installation (additions/alterations)</label><textarea id="eicComments" placeholder="e.g. existing DB, earthing and bonding verified satisfactory"></textarea></div>
+        </div>
+      </section>
+      <section class="sec">
+        <h2>Declaration &amp; next inspection</h2>
+        <div class="grid">
+          <div class="f span"><label for="eicName">Designed, constructed, inspected &amp; tested by</label><input id="eicName" placeholder="Your name"></div>
+          <div class="f span"><label for="eicFor">For / on behalf of</label><input id="eicFor" placeholder="Company"></div>
+          <div class="f"><label for="eicPos">Position</label><input id="eicPos" placeholder="e.g. Qualified Electrician"></div>
+          <div class="f"><label for="eicDate">Date</label><input id="eicDate" type="date"></div>
+          <div class="f span"><label for="eicNext">Recommended next inspection</label><input id="eicNext" placeholder="e.g. 5 years / date"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- EICR (shares the board + circuits above) -->
+    <div id="eicrView">
+      <section class="sec">
+        <h2>Report details</h2>
+        <div class="grid">
+          <div class="f span"><label for="ecrClient">Client</label><input id="ecrClient" placeholder="e.g. Marks &amp; Spencer plc"></div>
+          <div class="f span"><label for="ecrAddr">Installation address</label><input id="ecrAddr" placeholder="Store / site address"></div>
+          <div class="f span"><label for="ecrPurpose">Purpose of the report</label><input id="ecrPurpose" placeholder="e.g. periodic inspection / change of occupancy"></div>
+          <div class="f span"><label for="ecrExtent">Extent of the installation covered</label><textarea id="ecrExtent" placeholder="What this report covers"></textarea></div>
+          <div class="f span"><label for="ecrLimits">Agreed limitations</label><textarea id="ecrLimits" placeholder="e.g. no access to ..., sampling ...%"></textarea></div>
+        </div>
+      </section>
+      <section class="sec">
+        <h2>Observations <span id="ecrObsCount" style="color:var(--muted);font-weight:400">0</span></h2>
+        <div style="padding:11px 15px 16px">
+          <div class="olist" id="ecrObsList"></div>
+          <button class="addcirc" id="ecrObsAdd" type="button">＋ Add observation</button>
+        </div>
+      </section>
+      <section class="sec">
+        <h2>Assessment &amp; next inspection</h2>
+        <div class="grid">
+          <div class="f span"><label>Overall assessment</label>
+            <div class="seg" id="ecrOutcome">
+              <button type="button" data-v="Satisfactory" aria-pressed="true">Satisfactory</button>
+              <button type="button" data-v="Unsatisfactory" aria-pressed="false">Unsatisfactory</button>
+            </div>
+          </div>
+          <div class="f span"><label for="ecrSummary">Summary of the condition of the installation</label><textarea id="ecrSummary" placeholder="Overall condition summary"></textarea></div>
+          <div class="f span"><label for="ecrName">Inspected &amp; tested by</label><input id="ecrName" placeholder="Your name"></div>
+          <div class="f"><label for="ecrPos">Position</label><input id="ecrPos" placeholder="e.g. Qualified Electrician"></div>
+          <div class="f"><label for="ecrDate">Date</label><input id="ecrDate" type="date"></div>
+          <div class="f span"><label for="ecrNext">Recommended next inspection</label><input id="ecrNext" placeholder="e.g. 5 years / date"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="go" id="goMW"><button id="gen">Generate certificate</button></div>
+<div class="go" id="goSTS"><button id="genSTS">Generate schedule</button></div>
+
+<!-- OBSERVATION ENTRY -->
+<div class="overlay" id="obsCard">
+  <div class="sheetwrap">
+    <div class="bar">
+      <button class="x" id="obCancel">‹ Cancel</button>
+      <button class="act" id="obDelete" style="display:none">Delete</button>
+      <button class="act primary" id="obSave">Save</button>
+    </div>
+    <div class="sec" style="max-width:760px;margin:0 auto">
+      <h2 id="obTitle">Observation</h2>
+      <div class="grid">
+        <div class="f span"><label for="obDesc">Observation</label><textarea id="obDesc" placeholder="Describe the defect / finding"></textarea></div>
+        <div class="f"><label for="obCode">Classification</label>
+          <select id="obCode"><option value="C1">C1 — danger present</option><option value="C2" selected>C2 — potentially dangerous</option><option value="C3">C3 — improvement recommended</option><option value="FI">FI — further investigation</option></select></div>
+        <div class="f"><label for="obLoc">Location / ref</label><input id="obLoc" placeholder="e.g. DB2, kitchen"></div>
+        <div class="f span"><label>Photos</label>
+          <div class="thumbs" id="obThumbs"></div>
+          <button class="addphoto" id="obAddPhoto" type="button">📷 Take / import photo</button>
+          <input type="file" id="obFile" accept="image/*" capture="environment" hidden multiple>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CIRCUIT ENTRY -->
+<div class="overlay" id="circuitCard">
+  <div class="sheetwrap">
+    <div class="bar">
+      <button class="x" id="ccCancel">‹ Cancel</button>
+      <button class="act" id="ccDelete" style="display:none">Delete</button>
+      <button class="act primary" id="ccSave">Save circuit</button>
+    </div>
+    <div class="sec" style="max-width:760px;margin:0 auto">
+      <h2 id="ccTitle">Circuit</h2>
+      <div class="checks" style="position:static;margin:0;border-radius:0 0 0 0;border:none;background:transparent;padding:9px 12px">
+        <div class="pill" data-s="idle" id="cc-zs"><span class="k">Zs vs max</span><span class="v mono">—</span></div>
+        <div class="pill" data-s="idle" id="cc-rcd"><span class="k">RCD</span><span class="v mono">—</span></div>
+        <div class="pill" data-s="idle" id="cc-ir"><span class="k">Insulation</span><span class="v mono">—</span></div>
+      </div>
+      <div class="grid">
+        <div class="f"><label for="ccRef">Circuit no. / ref</label><input id="ccRef" placeholder="e.g. 1"></div>
+        <div class="f"><label for="ccPoints">Points served</label><input id="ccPoints" inputmode="numeric" placeholder=""></div>
+        <div class="f span"><label for="ccDesc">Description</label><input id="ccDesc" placeholder="e.g. Socket outlets — shop floor"></div>
+        <div class="f"><label for="ccWiring">Wiring type</label><input id="ccWiring" placeholder="e.g. A / T&amp;E / FP"></div>
+        <div class="f"><label for="ccRefM">Ref method</label><input id="ccRefM" placeholder="e.g. C / 100"></div>
+        <div class="f"><label for="ccBsen">Device BS(EN)</label>
+          <select id="ccBsen"><option>61009 RCBO</option><option>60898 MCB</option><option>60947 MCCB</option><option>61008 RCD</option><option>3036 fuse</option></select></div>
+        <div class="f"><label for="ccType">Type</label><select id="ccType"><option>B</option><option selected>C</option><option>D</option><option>—</option></select></div>
+        <div class="f"><label for="ccRating">Rating</label><div class="unit"><input id="ccRating" inputmode="numeric" placeholder="20"><span class="u">A</span></div></div>
+        <div class="f"><label for="ccKa">Breaking cap.</label><div class="unit"><input id="ccKa" inputmode="decimal" placeholder="6"><span class="u">kA</span></div></div>
+        <div class="f"><label for="ccLive">Live</label><div class="unit"><input id="ccLive" inputmode="decimal" placeholder="2.5"><span class="u">mm²</span></div></div>
+        <div class="f"><label for="ccCpc">CPC</label><div class="unit"><input id="ccCpc" inputmode="decimal" placeholder="1.5"><span class="u">mm²</span></div></div>
+        <div class="f"><label for="ccZs">Zs (measured)</label><div class="unit"><input id="ccZs" inputmode="decimal" placeholder="0.00"><span class="u">Ω</span></div></div>
+        <div class="f span">
+          <label for="ccR1R2">R1 + R2</label>
+          <div class="row-btn">
+            <div class="unit" style="flex:1"><input id="ccR1R2" inputmode="decimal" placeholder="0.00"><span class="u">Ω</span></div>
+            <button type="button" class="mini" id="ccCalc">= Zs − Ze</button>
+          </div>
+        </div>
+        <div class="f"><label for="ccIrLL">IR line-line</label><input id="ccIrLL" placeholder="—"></div>
+        <div class="f"><label for="ccIrLE">IR line-earth</label><input id="ccIrLE" placeholder=">999"></div>
+        <div class="f"><label for="ccRcdMa">RCD IΔn</label><div class="unit"><input id="ccRcdMa" inputmode="numeric" placeholder="30"><span class="u">mA</span></div></div>
+        <div class="f"><label for="ccRcdMs">RCD op. time</label><div class="unit"><input id="ccRcdMs" inputmode="decimal" placeholder="0.0"><span class="u">ms</span></div></div>
+        <div class="f span"><label style="display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="ccPol" checked style="width:auto"> Polarity confirmed</label></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="sheetwrap">
+    <div class="bar">
+      <button class="x" id="close">‹ Back</button>
+      <button class="act" id="signBtn">✍ Sign</button>
+      <button class="act" id="saveDoc">Save to folder</button>
+      <button class="act primary" id="share">Share / Save</button>
+      <button class="act" id="print">PDF</button>
+      <button class="act" id="word">Word</button>
+    </div>
+    <div class="cert" id="cert"></div>
+  </div>
+</div>
+
+<!-- SIGNATURE PAD -->
+<div class="overlay" id="signPad">
+  <div class="sheetwrap" style="max-width:640px">
+    <div class="bar">
+      <button class="x" id="sigCancel">‹ Cancel</button>
+      <button class="act" id="sigClear">Clear</button>
+      <button class="act" id="sigSaved" style="display:none">Use saved</button>
+      <button class="act primary" id="sigApply">Apply signature</button>
+    </div>
+    <div class="sec" style="max-width:640px;margin:0 auto">
+      <h2>Sign off</h2>
+      <p class="hint" style="padding:0 0 10px">Sign with your finger, then Apply — it drops onto the signature line. Tick "remember" and it's saved for next time.</p>
+      <canvas id="sigCanvas"></canvas>
+      <label style="display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--muted);margin-top:12px;cursor:pointer"><input type="checkbox" id="sigRemember" checked style="width:auto"> Remember my signature on this phone</label>
+    </div>
+  </div>
+</div>
+
+<!-- FOLDER -->
+<div class="overlay" id="folder">
+  <div class="sheetwrap">
+    <div class="bar">
+      <button class="x" id="closeFolder">‹ Back</button>
+      <button class="act" id="exportDocs">Export folder</button>
+      <button class="act" id="importDocs">Import</button>
+      <input type="file" id="importDocsFile" accept="application/json,.json" hidden>
+    </div>
+    <div class="folderpanel">
+      <h3>Saved certificates</h3>
+      <div id="docList"></div>
+    </div>
+  </div>
+</div>
+<!-- FIRST-RUN WELCOME -->
+<div class="overlay" id="welcome">
+  <div class="welcomewrap">
+    <div class="welcomecard">
+      <svg class="wspark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <rect x="1" y="1" width="30" height="30" rx="8" fill="#2d7d9a"/>
+        <path d="M17.5 6 L10 18 h5 l-1.5 8 L22 13 h-5.2 Z" fill="#fff"/>
+      </svg>
+      <h2>Welcome</h2>
+      <p>Pop your name in and it'll fill the certifier on every certificate for you — no need to type it each time.</p>
+      <label for="userName">Your name</label>
+      <input id="userName" placeholder="e.g. Tom Dalton" autocomplete="name">
+      <label for="userPosition">Position <span style="opacity:.7">(optional)</span></label>
+      <input id="userPosition" placeholder="e.g. Qualified Electrician">
+      <button id="welcomeGo" type="button">Get started</button>
+    </div>
+  </div>
+</div>
+<!-- IMAGE SAVE / SHARE VIEWER -->
+<div class="overlay" id="imgview">
+  <div class="imgwrap">
+    <div class="bar">
+      <button class="x" id="imgClose">‹ Back</button>
+      <a class="act primary" id="imgSave" download>Save to phone</a>
+      <button class="act" id="imgShare" type="button" style="display:none">Share</button>
+    </div>
+    <p class="imghint">Tap <b>Save to phone</b> — or press and hold the image and choose <b>Save Image</b> / <b>Add to Photos</b>.</p>
+    <img id="imgOut" alt="Minor Works Certificate">
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
+<script>
+(function(){
+  "use strict";
+  var $=function(id){return document.getElementById(id)};
+
+  // ---------- store database (grows as you work; persisted locally) ----------
+  var DEFAULT_STORES=[{name:"Aberdeen Bridge Of Don Foodhall",no:"2103",addr:""},{name:"Aberdeen Culter BP",no:"322",addr:""},{name:"Aberdeen Royal NHS Hospital",no:"875",addr:""},{name:"Aberdeen Union Square",no:"316",addr:""},{name:"Aberystwyth",no:"1930",addr:""},{name:"Abingdon Fairacres",no:"7778",addr:""},{name:"Acle Norwich BP",no:"1346",addr:""},{name:"Addenbrookes NHS Hospital",no:"1175",addr:""},{name:"Addington Croydon BP",no:"9904",addr:""},{name:"Adel BP",no:"801",addr:""},{name:"Aintree",no:"132",addr:""},{name:"Airport City BP",no:"925",addr:""},{name:"Alder Hey NHS Hospital",no:"907",addr:""},{name:"Alfold BP",no:"2049",addr:""},{name:"Alnwick Foodhall",no:"1004",addr:""},{name:"Alton Simply Food",no:"3492",addr:""},{name:"Altrincham",no:"3036",addr:""},{name:"Amersham Simply Food",no:"4462",addr:""},{name:"Annandale BP",no:"871",addr:""},{name:"Anniesland Simply Food",no:"397",addr:""},{name:"Archway Foodhall",no:"980",addr:""},{name:"Armagh Simply Food",no:"124",addr:""},{name:"Ashbourne Simply Food",no:"245",addr:""},{name:"Ashby - De - La - Zouch Foodhall",no:"2102",addr:""},{name:"Ashchurch Tewkesbury BP",no:"7320",addr:""},{name:"Ashford Outlet",no:"6606",addr:""},{name:"Ashford Warren Retail Park Foodhall",no:"1895",addr:""},{name:"Ashington SF Connect",no:"1911",addr:""},{name:"Ashtead Foodhall",no:"2170",addr:""},{name:"Ashton Moss",no:"1190",addr:""},{name:"Aviemore BP",no:"760",addr:""},{name:"Aylesbury",no:"2516",addr:""},{name:"Aylesbury Broadfields Foodhall",no:"2058",addr:""},{name:"Aylesford Simply Food",no:"1414",addr:""},{name:"Aylsham BP",no:"2155",addr:""},{name:"Ayr",no:"2024",addr:""},{name:"Ayr Heathfield Foodhall",no:"1940",addr:""},{name:"Bagshot BP",no:"78",addr:""},{name:"Baldock A1 Moto",no:"293",addr:""},{name:"Ballymena",no:"2600",addr:""},{name:"Ballymena Welcome Break",no:"5690",addr:""},{name:"Banbridge Foodhall",no:"1617",addr:""},{name:"Banbridge Outlet",no:"3900",addr:""},{name:"Banbury Gateway M40",no:"1833",addr:""},{name:"Bangor Northern Ireland",no:"3777",addr:""},{name:"Bankside Simply Food",no:"134",addr:""},{name:"Barnes Foodhall",no:"1991",addr:""},{name:"Barnsley Cortonwood Foodhall",no:"2114",addr:""},{name:"Barnsley Retail Park",no:"1718",addr:""},{name:"Barnstaple",no:"1805",addr:""},{name:"Barnwood BP",no:"1227",addr:""},{name:"Basildon Hospital",no:"1629",addr:""},{name:"Basildon Mayflower Simply Food",no:"1146",addr:""},{name:"Basingstoke",no:"1834",addr:""},{name:"Bath Southgate",no:"8929",addr:""},{name:"Battersea Clothing",no:"8877",addr:""},{name:"Battersea Foodhall",no:"1633",addr:""},{name:"Battlefield - HMS",no:"1757",addr:""},{name:"Beaconsfield M40 Moto Simply Food",no:"284",addr:""},{name:"Beaconsfield Simply Food",no:"8840",addr:""},{name:"Bearsden Simply Food",no:"8866",addr:""},{name:"Beckenham Simply Food",no:"2574",addr:""},{name:"Beckington BP",no:"915",addr:""},{name:"Bedford BP",no:"232",addr:""},{name:"Bedford Newnham Avenue BP",no:"51",addr:""},{name:"Belfast",no:"2972",addr:""},{name:"Belfast Abbey Centre",no:"6952",addr:""},{name:"Belfast Boucher Rd Simply Food",no:"57",addr:""},{name:"Belfast Upper Road Simply Food",no:"8947",addr:""},{name:"Bell Green Sydenham",no:"5672",addr:""},{name:"Berwick Upon Tweed Simply Food",no:"38",addr:""},{name:"Bessborough BP",no:"222",addr:""},{name:"Besthorpe BP",no:"1444",addr:""},{name:"Beverley Simply Food",no:"2710",addr:""},{name:"Bexhill",no:"1231",addr:""},{name:"Bexleyheath",no:"3191",addr:""},{name:"Bicester Family Farm BP",no:"7207",addr:""},{name:"Bicester Foodhall",no:"1008",addr:""},{name:"Bidston Moss Foodhall",no:"1939",addr:""},{name:"Biggleswade Retail Park",no:"2017",addr:""},{name:"Birch East Moto",no:"2078",addr:""},{name:"Birch West M62 Moto Simply Food",no:"3748",addr:""},{name:"Birmingham Airport",no:"435",addr:""},{name:"Birmingham Bullring",no:"1666",addr:""},{name:"Birmingham Heartlands NHS Hospital",no:"2068",addr:""},{name:"Birmingham New Street Rail",no:"1217",addr:""},{name:"Birmingham QE NHS Hospital",no:"818",addr:""},{name:"Birstall Simply Food",no:"198",addr:""},{name:"Bishop Auckland Simply Food",no:"1178",addr:""},{name:"Bishop's Stortford",no:"3308",addr:""},{name:"Bishopsgate Foodhall",no:"2151",addr:""},{name:"Blackbird BP",no:"1123",addr:""},{name:"Blackburn NHS Hospital",no:"905",addr:""},{name:"Blackheath Simply Food",no:"3476",addr:""},{name:"Blackpole SF",no:"786",addr:""},{name:"Blackpool",no:"2503",addr:""},{name:"Blackpool Victoria NHS Hospital",no:"1260",addr:""},{name:"Blandford Forum Foodhall",no:"1896",addr:""},{name:"Bluewater",no:"6460",addr:""},{name:"Blyth Moto",no:"5347",addr:""},{name:"Bognor Regis Foodhall",no:"1837",addr:""},{name:"Bolton Middlebrook",no:"6509",addr:""},{name:"Bond Street Simply Food",no:"8992",addr:""},{name:"Bordesley BP",no:"1870",addr:""},{name:"Borehamwood Clarendon BP",no:"14",addr:""},{name:"Borehamwood Simply Food",no:"96",addr:""},{name:"Bourne Foodhall",no:"764",addr:""},{name:"Bovey Straights BP",no:"1205",addr:""},{name:"Brackley BP",no:"15",addr:""},{name:"Bracknell",no:"2099",addr:""},{name:"Bracknell BP",no:"157",addr:""},{name:"Bradford NHS Hospital",no:"2073",addr:""},{name:"Braintree BP",no:"1864",addr:""},{name:"Braintree Simply Food",no:"1303",addr:""},{name:"Braintree Village Outlet",no:"6732",addr:""},{name:"Brampton Hut BP",no:"1240",addr:""},{name:"Branchton Greenock BP",no:"61",addr:""},{name:"Brands Hill BP",no:"5362",addr:""},{name:"Branston BP",no:"1283",addr:""},{name:"Breakspear Hemel BP",no:"5911",addr:""},{name:"Brent Cross Shopping Centre",no:"3120",addr:""},{name:"Brentwood Connect BP",no:"909",addr:""},{name:"Bretton BP",no:"1979",addr:""},{name:"Bridgend Outlet",no:"6651",addr:""},{name:"Bridgnorth Simply Food",no:"93",addr:""},{name:"Bridgwater Moto",no:"1299",addr:""},{name:"Bridgwater SF",no:"784",addr:""},{name:"Brighton",no:"1232",addr:""},{name:"Brighton Carden Avenue Simply Food",no:"382",addr:""},{name:"Brighton Rail Simply Food",no:"6790",addr:""},{name:"Bristol Airport",no:"2069",addr:""},{name:"Bristol Avonmeads Foodhall",no:"4051",addr:""},{name:"Bristol Cabot Circus",no:"8685",addr:""},{name:"Bristol Eastgate Foodhall",no:"1959",addr:""},{name:"Bristol Imperial Park Simply Food",no:"1324",addr:""},{name:"Bristol Longwell Green",no:"254",addr:""},{name:"Bristol Temple Meads Rail SS",no:"1593",addr:""},{name:"Bristol Whiteladies Road Simply Foo",no:"2123",addr:""},{name:"Brixton",no:"1025",addr:""},{name:"Broadstone Foodhall",no:"778",addr:""},{name:"Bromborough Simply Food",no:"1922",addr:""},{name:"Bromley",no:"903",addr:""},{name:"Bromley Downham BP",no:"41",addr:""},{name:"Bromwich Astle West Outlet",no:"5759",addr:""},{name:"Brooklands",no:"3803",addr:""},{name:"Broomfield NHS Hospital",no:"438",addr:""},{name:"Broughton Park Foodhall",no:"1894",addr:""},{name:"Broughty Ferry Simply Food",no:"3379",addr:""},{name:"Buckingham BP",no:"1117",addr:""},{name:"Budbrooke South BP",no:"795",addr:""},{name:"Bullionfield BP",no:"5376",addr:""},{name:"Burton",no:"1096",addr:""},{name:"Burton M6 Moto Simply Food",no:"1952",addr:""},{name:"Bury St BP",no:"1241",addr:""},{name:"Bury St Edmunds",no:"1339",addr:""},{name:"Bury The Rock",no:"130",addr:""},{name:"Byker Outlet",no:"3612",addr:""},{name:"Camberley Mytchett BP",no:"171",addr:""},{name:"Camberley The Meadows",no:"136",addr:""},{name:"Cambridge A14 Moto Simply Food",no:"182",addr:""},{name:"Cambridge Rail Simply Food",no:"7605",addr:""},{name:"Cambridge SAT",no:"3450",addr:""},{name:"Cambridge Sidney Street",no:"1740",addr:""},{name:"Cambridge Whittlesford BP",no:"224",addr:""},{name:"Camden Town Simply Food",no:"291",addr:""},{name:"Canary Wharf (Simply Food)",no:"3722",addr:"Jubilee Place, 45 Bank Street, London, E14 5NY"},{name:"Canniesburn BP",no:"1124",addr:""},{name:"Cannock Orbital",no:"7671",addr:""},{name:"Cannon Street Rail Simply Food",no:"4789",addr:""},{name:"Cannonmills BP",no:"1308",addr:""},{name:"Canterbury",no:"709",addr:""},{name:"Canterbury Maybrook Simply Food",no:"381",addr:""},{name:"Canvey Island Foodhall",no:"785",addr:""},{name:"Cardiff Llanishen Simply Food",no:"4860",addr:""},{name:"Newton Mearns (Simply Food)",no:"1258",addr:"250 Ayr Road, Newton Mearns, Glasgow, G77 6EY"},{name:"Silverburn",no:"9137",addr:"763 Barrhead Road, Silverburn Shopping Centre, Glasgow, G53 6AG"}];
+  var stores=(function(){try{var s=JSON.parse(localStorage.getItem("mwc-stores")||"null");if(s&&s.length)return s;}catch(e){}return DEFAULT_STORES.slice();})();
+  function saveStores(){try{localStorage.setItem("mwc-stores",JSON.stringify(stores));}catch(e){}}
+  function escapeHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+  var search=$("storeSearch"), results=$("storeResults");
+  function renderResults(q){
+    q=(q||"").trim().toLowerCase();
+    if(!q){results.classList.remove("on");results.innerHTML="";return;}
+    var hits=stores.filter(function(s){return (s.name+" "+s.no).toLowerCase().indexOf(q)>=0;}).slice(0,10);
+    if(!hits.length){
+      results.innerHTML="<div class='none'>No match yet — fill in the fields below and tap “Save to store list” to add it.</div>";
+      results.classList.add("on");return;
+    }
+    results.innerHTML=hits.map(function(s){return "<div class='item' data-i='"+stores.indexOf(s)+"'><b>M&amp;S "+escapeHtml(s.name)+"</b><div class='meta'>No. "+escapeHtml(s.no||"—")+" &middot; "+escapeHtml(s.addr)+"</div></div>";}).join("");
+    results.classList.add("on");
+  }
+  search.addEventListener("input",function(){renderResults(this.value);});
+  results.addEventListener("click",function(e){
+    var it=e.target.closest(".item");if(!it||!it.dataset.i)return;
+    var s=stores[+it.dataset.i];if(!s)return;
+    $("storeName").value=s.name;$("storeNo").value=s.no;$("addr").value=s.addr;
+    results.classList.remove("on");search.value="";save();sync();
+    $("loc").focus();
+  });
+
+  function storeMsg(t,ok){var m=$("storeMsg");m.textContent=t;m.style.color=ok?"var(--pass)":"var(--muted)";clearTimeout(m._t);m._t=setTimeout(function(){m.textContent="";},3500);}
+
+  $("saveStore").addEventListener("click",function(){
+    var name=$("storeName").value.trim();
+    if(!name){storeMsg("Enter a store name first.",false);return;}
+    var rec={name:name,no:$("storeNo").value.trim(),addr:$("addr").value.trim()};
+    var ix=-1;for(var i=0;i<stores.length;i++){if(stores[i].name.toLowerCase()===name.toLowerCase()){ix=i;break;}}
+    if(ix>=0)stores[ix]=rec;else stores.push(rec);
+    stores.sort(function(a,b){return a.name.localeCompare(b.name);});
+    saveStores();
+    storeMsg((ix>=0?"Updated ":"Saved ")+"\u201c"+name+"\u201d \u00b7 "+stores.length+" stores in your list",true);
+  });
+
+  $("exportStores").addEventListener("click",function(){
+    var blob=new Blob([JSON.stringify(stores,null,2)],{type:"application/json"});
+    var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ms-stores.json";
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    storeMsg("Exported "+stores.length+" stores.",true);
+  });
+  $("importStores").addEventListener("click",function(){$("importFile").click();});
+  $("importFile").addEventListener("change",function(){
+    var f=this.files[0];if(!f)return;var r=new FileReader();
+    r.onload=function(){
+      try{
+        var data = f.name.toLowerCase().indexOf(".csv")>=0 ? parseCSV(r.result) : JSON.parse(r.result);
+        if(!Array.isArray(data))throw 0;
+        var added=0;
+        data.forEach(function(s){
+          if(!s||!s.name)return;
+          var rec={name:String(s.name).trim(),no:String(s.no||s.number||"").trim(),addr:String(s.addr||s.address||"").trim()};
+          var ix=-1;for(var i=0;i<stores.length;i++){if(stores[i].name.toLowerCase()===rec.name.toLowerCase()){ix=i;break;}}
+          if(ix>=0)stores[ix]=rec;else{stores.push(rec);added++;}
+        });
+        stores.sort(function(a,b){return a.name.localeCompare(b.name);});
+        saveStores();
+        storeMsg("Imported \u2014 "+added+" new, "+stores.length+" total.",true);
+      }catch(err){storeMsg("Couldn't read that file. Use JSON, or CSV with name, no, addr columns.",false);}
+    };
+    r.readAsText(f);this.value="";
+  });
+  function parseCSV(txt){
+    var lines=txt.split(/\r?\n/).filter(function(l){return l.trim();});
+    if(!lines.length)return [];
+    function split(line){var out=[],cur="",q=false;for(var i=0;i<line.length;i++){var ch=line[i];
+      if(ch=='"'){if(q&&line[i+1]=='"'){cur+='"';i++;}else q=!q;}
+      else if(ch===','&&!q){out.push(cur);cur="";}else cur+=ch;}
+      out.push(cur);return out.map(function(s){return s.trim().replace(/^"|"$/g,"");});}
+    var head=split(lines[0]).map(function(h){return h.toLowerCase();});
+    var ni=head.indexOf("name"), oi=-1, ai=-1, start=1;
+    head.forEach(function(h,i){if(oi<0&&(h==="no"||h==="number"||h==="store no"||h==="storeno"))oi=i;if(ai<0&&(h==="addr"||h==="address"))ai=i;});
+    if(ni<0){ni=0;oi=1;ai=2;start=0;} // no header row → assume name,no,addr
+    var out=[];for(var i=start;i<lines.length;i++){var c=split(lines[i]);out.push({name:c[ni]||"",no:c[oi]||"",addr:c[ai]||""});}
+    return out;
+  }
+
+  // default date = today
+  (function(){var d=new Date();$("date").value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");})();
+
+  var earth="TN-S";
+  Array.prototype.forEach.call($("earth").children,function(b){
+    b.addEventListener("click",function(){
+      Array.prototype.forEach.call($("earth").children,function(x){x.setAttribute("aria-pressed","false")});
+      b.setAttribute("aria-pressed","true");earth=b.dataset.v;save();
+    });
+  });
+
+  // ---- max Zs (BS 7671 Table 41.3 derivation: U0*Cmin / (mult*In), Cmin 0.95) ----
+  function maxZs(type,rating){var m=type==="B"?5:type==="D"?20:10;return 218.5/(m*rating);}
+  function fmt(n){return (Math.round(n*100)/100).toFixed(2);}
+  function num(v){v=parseFloat(v);return isNaN(v)?null:v;}
+
+  function setPill(id,state,val){var p=$(id);p.setAttribute("data-s",state);p.querySelector(".v").textContent=val;}
+
+  function sync(){
+    var type=$("devType").value, rating=parseFloat($("devRating").value);
+    var zs=num($("zs").value), ze=num($("ze").value), r=num($("r1r2").value);
+    var rcd=parseFloat($("rcd").value), t1=num($("rcd1").value), t5=num($("rcd5").value);
+    var ir=$("ir").value.trim();
+
+    // Zs vs max
+    if(zs===null){setPill("p-zs","idle","—");}
+    else{
+      var mx=maxZs(type,rating), eighty=0.8*mx, st, txt=fmt(zs)+" / "+fmt(mx);
+      if(zs>mx) st="fail"; else if(zs>eighty) st="warn"; else st="pass";
+      setPill("p-zs",st,txt);
+    }
+    // consistency
+    if(zs===null||ze===null||r===null){setPill("p-consist","idle","—");}
+    else{
+      var diff=Math.abs(zs-(ze+r));
+      setPill("p-consist",diff<=0.05?"pass":"warn","Δ"+fmt(diff));
+    }
+    // rcd
+    if(!rcd){setPill("p-rcd","idle","n/a");}
+    else if(t1===null&&t5===null){setPill("p-rcd","idle","—");}
+    else{
+      var ok=true; if(t1!==null&&t1>300)ok=false; if(t5!==null&&t5>40)ok=false;
+      setPill("p-rcd",ok?"pass":"fail",(t5!==null?fmt(t5):"–")+"ms");
+    }
+    // IR
+    if(!ir){setPill("p-ir","idle","—");}
+    else{
+      var pass = ir.indexOf(">")===0 || (num(ir)!==null && num(ir)>=1);
+      setPill("p-ir",pass?"pass":"fail",ir.replace(/\s/g,""));
+    }
+    // keep checks bar offset under sticky header
+    save();
+  }
+
+  // recompute on any input
+  ["input","change"].forEach(function(ev){
+    document.querySelector("main").addEventListener(ev,sync);
+  });
+  $("calcR1R2").addEventListener("click",function(){
+    var zs=num($("zs").value),ze=num($("ze").value);
+    if(zs===null||ze===null){toast("Enter Zs and Ze first.");return;}
+    var r=zs-ze;
+    if(r<0){toast("Ze is higher than Zs — check the readings.");return;}
+    $("r1r2").value=fmt(r);save();sync();
+  });
+
+  // ---- persistence (best effort) ----
+  var FIELDS=["storeName","storeNo","date","addr","loc","circuit","desc","devStd","devType","devRating","rcd","live","cpc","cable","ze","r1r2","zs","ir","rcd1","rcd5","name","position","company","certNo"];
+  function save(){try{var o={earth:earth};FIELDS.forEach(function(f){o[f]=$(f).value});localStorage.setItem("mwc-draft",JSON.stringify(o));}catch(e){}}
+  function load(){try{var o=JSON.parse(localStorage.getItem("mwc-draft")||"null");if(!o)return;FIELDS.forEach(function(f){if(o[f]!=null&&$(f))$(f).value=o[f]});if(o.earth){earth=o.earth;Array.prototype.forEach.call($("earth").children,function(x){x.setAttribute("aria-pressed",x.dataset.v===earth?"true":"false")});}}catch(e){}}
+  load();
+
+  // ---- build the certificate ----
+  function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+  function box(on){return on?"&#9746;":"&#9744;"} // ☒ / ☐
+  function longDate(v){if(!v)return "";var p=v.split("-");if(p.length!==3)return v;var m=["January","February","March","April","May","June","July","August","September","October","November","December"];return parseInt(p[2],10)+" "+m[parseInt(p[1],10)-1]+" "+p[0];}
+
+  function buildCert(){
+    var v=function(id){return $(id).value.trim()};
+    var type=$("devType").value, rating=parseFloat($("devRating").value), std=$("devStd").value;
+    var rcd=parseFloat($("rcd").value);
+    var zs=num(v("zs")), mx=maxZs(type,rating), eighty=0.8*mx;
+    var zsNote="";
+    if(zs!==null){
+      if(zs>mx) zsNote=" — EXCEEDS tabulated max";
+      else if(zs>eighty) zsNote=" — within max, above 80% rule of thumb";
+      else zsNote=" — satisfactory";
+    }
+    var stdName = std==="RCBO" ? "BS EN 61009" : "BS EN 60898";
+    var devLine = rating+" A, Type "+type+(rcd?(" – "+rcd+" mA RCBO ("+ (std==="RCBO"?"BS EN 61009":"MCB "+"BS EN 60898")+")"):(" MCB ("+stdName+")"));
+    if(std==="MCB") devLine = rating+" A, Type "+type+" MCB (BS EN 60898)"+(rcd?" + "+rcd+" mA RCD":"");
+
+    var single = true; // single-phase final circuit assumption for IR L-L
+    var ir=v("ir"), irUnit="MΩ";
+    var t1=v("rcd1"), t5=v("rcd5");
+
+    var rows1 =
+      kv("1. Description of the minor works", esc(v("desc")||"____")+(v("circuit")?"  (Circuit ref. "+esc(v("circuit"))+")":""), true)+
+      kv("2. Location / address of the minor works", (v("storeName")?"Marks &amp; Spencer, "+esc(v("storeName"))+(v("storeNo")?" (Store No. "+esc(v("storeNo"))+")":"")+". ":"")+(v("addr")?esc(v("addr"))+". ":"")+(v("loc")?"Location: "+esc(v("loc"))+".":""), false)+
+      kv("3. Date minor works completed", esc(longDate(v("date"))), true)+
+      kv("4. Details of departures from BS 7671", "None", false);
+
+    var rows2 =
+      "<tr><td class='k'>1. System earthing arrangement</td><td>"+
+        box(earth==="TN-C-S")+" TN-C-S &nbsp; "+box(earth==="TN-S")+" TN-S &nbsp; "+box(earth==="TT")+" TT</td></tr>"+
+      kv("2. Method of fault protection","Automatic disconnection of supply (ADS)",false)+
+      kv("3. Protective device for the circuit", devLine, false)+
+      (rcd?kv("&nbsp;&nbsp;&nbsp;Additional protection (RCD)", rcd+" mA RCD – additional protection (Reg. 411.3.3)",false):"")+
+      kv("&nbsp;&nbsp;&nbsp;Circuit conductors (csa)", "Live "+esc(v("live")||"—")+" mm² – cpc "+esc(v("cpc")||"—")+" mm² – "+esc(v("cable")),false);
+
+    var comments =
+      "<ul class='cmt'>"+
+      "<li>Circuit reference "+esc(v("circuit")||"—")+". Nature of supply at DB: <b>Ze = "+esc(v("ze")||"—")+" Ω</b>.</li>"+
+      "<li>Existing earthing and main protective bonding arrangements verified as present and satisfactory for continued use. The minor works do not impair the safety of the existing installation.</li>"+
+      "</ul>";
+
+    var tests =
+      testrow("3.1 Protective conductor / earth continuity","Confirmed <span class='tick'>&#9746;</span>",false)+
+      testrow("3.2 Continuity of conductors (R1 + R2)", esc(v("r1r2")||"—")+" Ω",true)+
+      "<tr><td class='k'>3.3 Insulation resistance (500 V d.c.)</td><td></td></tr>"+
+      testrow("&nbsp;&nbsp;&nbsp;Line / Neutral", esc(ir)+" "+irUnit,true)+
+      testrow("&nbsp;&nbsp;&nbsp;Line &amp; Neutral / Earth", esc(ir)+" "+irUnit+"  (≥ 1.0 MΩ – PASS)",true)+
+      testrow("3.4 Polarity","Confirmed <span class='tick'>&#9746;</span>",false)+
+      testrow("3.5 Earth fault loop impedance, Zs", esc(v("zs")||"—")+" Ω",true)+
+      testrow("3.6 Maximum permitted Zs (Table 41.3, Type "+type+" "+rating+" A)", fmt(mx)+" Ω"+esc(zsNote),false);
+
+    var rcdBlock = rcd ?
+      "<div class='band'>RCD operation</div>"+
+      "<table class='rcd'><tr><th>IΔn</th><th>At IΔn</th><th>At 5 IΔn</th><th>Test button</th></tr>"+
+      "<tr><td class='l'>"+rcd+" mA</td><td class='fill'>"+esc(t1||"—")+" ms</td><td class='fill'>"+esc(t5||"—")+" ms</td><td>Confirmed &#9746;</td></tr></table>"+
+      "<div class='foot' style='text-align:left;margin:4px 2px 0'>Max permitted: ≤ 300 ms at IΔn and ≤ 40 ms at 5 IΔn (additional protection).</div>"
+      : "";
+
+    var name=v("name"), pos=v("position"), comp=v("company"), certNo=v("certNo");
+
+    return ""+
+      "<div class='hd'><h3>MINOR ELECTRICAL INSTALLATION WORKS CERTIFICATE</h3>"+
+        "<p>(Requirements for Electrical Installations – BS 7671:2018+A2:2022)</p></div>"+
+      "<div class='note'>To be used only for minor electrical work which does not include the provision of a new circuit.</div>"+
+      "<div class='body'>"+
+        "<table class='kv'>"+
+          kv("Certificate No.", esc(certNo), true)+
+          kv("Store / Job", (v("storeName")?"Marks &amp; Spencer – "+esc(v("storeName")):"—")+(v("storeNo")?"  (Store No. "+esc(v("storeNo"))+")":""), false)+
+        "</table>"+
+        "<div class='band'>Part 1 – Description and details of the minor works</div>"+
+        "<table class='kv'>"+rows1+"</table>"+
+        "<div class='band'>Part 2 – Installation details</div>"+
+        "<table class='kv'>"+rows2+"</table>"+
+        "<div style='font-size:11.5px;font-weight:600;margin:9px 2px 0'>Comments on the existing installation (Reg. 132.16):</div>"+
+        comments+
+        "<div class='band'>Part 3 – Essential tests</div>"+
+        "<table class='kv'>"+tests+"</table>"+
+        rcdBlock+
+        "<div class='band'>Part 4 – Declaration</div>"+
+        "<div style='font-size:11.5px;margin:0 2px 8px'>I certify that the said works do not impair the safety of the existing installation, that they have been designed, constructed, inspected and tested in accordance with BS 7671:2018+A2:2022, and that, to the best of my knowledge and belief at the time of my inspection, they complied with BS 7671 except as detailed in Part 1.</div>"+
+        "<table class='kv sign'>"+
+          kv("Name (BLOCK CAPITALS)", esc(name), true)+
+          "<tr><td class='k'>Signature</td><td>__SIG__</td></tr>"+
+          kv("Position", esc(pos), false)+
+          kv("For / on behalf of", esc(comp), false)+
+          kv("Date", esc(longDate(v("date"))), true)+
+        "</table>"+
+        "<div class='foot'>Always check every value before issuing. Fields shaded yellow are filled from your entries. &middot; CertMate v"+APP_VERSION+"</div>"+
+      "</div>";
+  }
+  function kv(k,val,fill){return "<tr><td class='k'>"+k+"</td><td class='"+(fill?"fill":"")+"'><b>"+(val||"")+"</b></td></tr>";}
+  function testrow(k,val,fill){return "<tr><td class='k'>"+k+"</td><td class='"+(fill?"fill":"")+"'>"+val+"</td></tr>";}
+
+  // ---- overlay controls ----
+  var sigData=null, lastBuild=null;
+  function sigImg(){return sigData?("<img src='"+sigData+"' alt='signature' style='height:56px;max-width:230px;vertical-align:middle'>"):"";}
+  function showCert(html){$("cert").innerHTML=html.replace(/__SIG__/g,sigImg());$("overlay").classList.add("on");document.body.style.overflow="hidden";}
+
+  // ---- signature pad ----
+  var sigCtx=null, sigDrawing=false, sigLast=null, sigInk=false;
+  function sigInit(){
+    var c=$("sigCanvas");c.width=600;c.height=200;sigCtx=c.getContext("2d");
+    sigCtx.fillStyle="#fff";sigCtx.fillRect(0,0,600,200);
+    sigCtx.lineWidth=3;sigCtx.lineCap="round";sigCtx.lineJoin="round";sigCtx.strokeStyle="#0d1b2a";sigInk=false;
+  }
+  function sigPos(e){var c=$("sigCanvas"),r=c.getBoundingClientRect(),t=(e.touches&&e.touches[0])||e;return {x:(t.clientX-r.left)*(c.width/r.width),y:(t.clientY-r.top)*(c.height/r.height)};}
+  function sigDown(e){sigDrawing=true;sigLast=sigPos(e);if(e.cancelable)e.preventDefault();}
+  function sigMove(e){if(!sigDrawing)return;var p=sigPos(e);sigCtx.beginPath();sigCtx.moveTo(sigLast.x,sigLast.y);sigCtx.lineTo(p.x,p.y);sigCtx.stroke();sigLast=p;sigInk=true;if(e.cancelable)e.preventDefault();}
+  function sigUp(){sigDrawing=false;}
+  (function(){var c=$("sigCanvas");
+    c.addEventListener("mousedown",sigDown);c.addEventListener("mousemove",sigMove);window.addEventListener("mouseup",sigUp);
+    c.addEventListener("touchstart",sigDown,{passive:false});c.addEventListener("touchmove",sigMove,{passive:false});c.addEventListener("touchend",sigUp);
+  })();
+  function openSign(){
+    $("sigSaved").style.display = (function(){try{return localStorage.getItem("mwc-sig")?"":"none";}catch(e){return "none";}})();
+    $("signPad").classList.add("on");
+    requestAnimationFrame(function(){requestAnimationFrame(sigInit);});
+  }
+  function closeSign(){$("signPad").classList.remove("on");}
+  function applySig(data){
+    sigData=data;
+    if($("sigRemember").checked){try{localStorage.setItem("mwc-sig",data);}catch(e){}}
+    closeSign();
+    if(lastBuild)lastBuild();
+  }
+  $("signBtn").addEventListener("click",openSign);
+  $("sigCancel").addEventListener("click",closeSign);
+  $("sigClear").addEventListener("click",sigInit);
+  $("sigApply").addEventListener("click",function(){if(!sigInk){toast("Sign first, then Apply.");return;}applySig($("sigCanvas").toDataURL("image/png"));});
+  $("sigSaved").addEventListener("click",function(){var d=null;try{d=localStorage.getItem("mwc-sig");}catch(e){}if(d)applySig(d);else toast("No saved signature yet.");});
+
+  function openCert(){lastBuild=function(){showCert(buildCert());};lastBuild();}
+  function closeCert(){$("overlay").classList.remove("on");document.body.style.overflow="";}
+  $("gen").addEventListener("click",openCert);
+  $("close").addEventListener("click",closeCert);
+  $("print").addEventListener("click",function(){window.print();});
+  $("word").addEventListener("click",function(){
+    var inner=$("cert").innerHTML;
+    var wide=inner.indexOf("class='sts'")>=0||inner.indexOf('class="sts"')>=0;
+    var page=wide?"@page{size:A4 landscape;margin:1cm}":"@page{size:A4 portrait;margin:1.4cm}";
+    var head="<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><style>"+
+      page+
+      "body{font-family:Calibri,Arial,sans-serif;font-size:11pt}"+
+      "table{border-collapse:collapse;width:100%}td,th{border:1px solid #888;padding:5px 8px;font-size:10pt;vertical-align:top}"+
+      ".k{background:#f1f3f5;width:44%}.fill{background:#fff2cc}.hd{background:#1f3864;color:#fff;text-align:center;padding:10px}"+
+      ".band{background:#1f3864;color:#fff;font-weight:bold;padding:5px 8px;margin:12px 0 6px}.rcd th{background:#dce6f1}"+
+      "table.sts th,table.sts td{font-size:7.5pt;padding:2px 4px;text-align:center}.ocode{font-weight:bold}"+
+      ".obsphoto img{max-width:170px;max-height:170px}h3{margin:0}</style></head><body>";
+    var html=head+inner+"</body></html>";
+    var blob=new Blob(["\ufeff"+html],{type:"application/msword"});
+    var a=document.createElement("a");a.href=URL.createObjectURL(blob);
+    var m=document.body.getAttribute("data-mode");
+    var storeName=(m==="mw"?$("storeName").value:$("stsStore").value)||"cert";
+    var kindName={mw:"MW-Cert",sts:"Schedule",eic:"EIC",eicr:"EICR"}[m]||"Cert";
+    a.download="CertMate-"+kindName+"-"+storeName.replace(/[^\w]+/g,"-")+".doc";
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+  });
+
+  // ---- toast ----
+  function toast(t){var el=$("toast");el.textContent=t;el.classList.add("on");clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove("on");},2800);}
+
+  // ---- share as image (native share sheet → WhatsApp) ----
+  function fname(ext){var sn=($("storeName").value||"cert").replace(/[^\w]+/g,"-");return "MW-Cert-"+sn+"."+ext;}
+  function certImage(){
+    var node=$("cert");node.classList.add("cap");
+    return new Promise(function(resolve){requestAnimationFrame(function(){requestAnimationFrame(resolve);});})
+      .then(function(){return html2canvas(node,{scale:2,backgroundColor:"#ffffff",useCORS:true});})
+      .then(function(canvas){node.classList.remove("cap");return new Promise(function(res){canvas.toBlob(res,"image/png",0.95);});})
+      .catch(function(e){node.classList.remove("cap");throw e;});
+  }
+  $("share").addEventListener("click",function(){
+    if(typeof html2canvas==="undefined"){toast("Still loading — try again in a second.");return;}
+    var btn=this;btn.disabled=true;var lbl=btn.textContent;btn.textContent="…";
+    certImage().then(function(blob){
+      var fn=fname("png");
+      var url=URL.createObjectURL(blob);
+      $("imgOut").src=url;
+      $("imgSave").href=url;$("imgSave").setAttribute("download",fn);
+      var file=new File([blob],fn,{type:"image/png"});
+      var canShare=false;
+      try{canShare=!!(navigator.canShare&&navigator.canShare({files:[file]}));}catch(e){}
+      if(canShare){
+        $("imgShare").style.display="";
+        $("imgShare").onclick=function(){navigator.share({files:[file],title:"Minor Works Certificate"}).catch(function(){});};
+      }else{
+        $("imgShare").style.display="none";
+      }
+      $("imgview").classList.add("on");
+    }).catch(function(e){toast("Couldn't create the image.");})
+      .then(function(){btn.disabled=false;btn.textContent=lbl;});
+  });
+  $("imgClose").addEventListener("click",function(){$("imgview").classList.remove("on");});
+
+  // ---- documents folder (saved certs) ----
+  var docs=(function(){try{return JSON.parse(localStorage.getItem("mwc-docs")||"[]");}catch(e){return[];}})();
+  function saveDocs(){try{localStorage.setItem("mwc-docs",JSON.stringify(docs));}catch(e){}}
+  function refreshCount(){$("docCount").textContent=docs.length;}
+  function snapshot(){var o={earth:earth};FIELDS.forEach(function(f){if($(f))o[f]=$(f).value;});return o;}
+  function applyData(o){if(!o)return;FIELDS.forEach(function(f){if($(f)&&o[f]!=null)$(f).value=o[f];});if(o.earth){earth=o.earth;Array.prototype.forEach.call($("earth").children,function(x){x.setAttribute("aria-pressed",x.dataset.v===earth?"true":"false");});}save();sync();}
+  function renderDocs(){
+    if(!docs.length){$("docList").innerHTML="<div class='empty'>Nothing saved yet.<br>Generate a cert or schedule and tap \u201cSave to folder\u201d.</div>";return;}
+    $("docList").innerHTML=docs.map(function(d){
+      var o=d.data||{}, when=(d.savedAt||"").slice(0,10), kind=d.kind||"mw", title, meta, tag;
+      if(kind==="eicr"){
+        var rs=o.sts||{}, re=o.eicr||{};
+        title="M&amp;S "+escapeHtml(rs.stsStore||re.ecrClient||"Untitled");
+        meta=[(re.observations?re.observations.length+" obs":""), re.outcome||"", longDate(re.ecrDate)||when].filter(Boolean).join("  \u00b7  ");
+        tag="EICR";
+      }else if(kind==="eic"){
+        var s=o.sts||{}, e=o.eic||{};
+        title="M&amp;S "+escapeHtml(s.stsStore||e.eicClient||"Untitled");
+        meta=[s.stsDbRef?escapeHtml(s.stsDbRef):"", (s.circuits?s.circuits.length+" circuits":""), longDate(e.eicDate)||when].filter(Boolean).join("  \u00b7  ");
+        tag="EIC";
+      }else if(kind==="sts"){
+        title="M&amp;S "+escapeHtml(o.stsStore||"Untitled");
+        meta=[o.stsDbRef?escapeHtml(o.stsDbRef):"", (o.circuits?o.circuits.length+" circuits":""), longDate(o.stsDate)||when].filter(Boolean).join("  \u00b7  ");
+        tag="Schedule";
+      }else{
+        title="M&amp;S "+escapeHtml(o.storeName||"Untitled");
+        meta=[o.storeNo?"No. "+escapeHtml(o.storeNo):"", o.circuit?escapeHtml(o.circuit):"", longDate(o.date)||when].filter(Boolean).join("  \u00b7  ");
+        tag="Minor Works";
+      }
+      return "<div class='doc' data-id='"+d.id+"'><div class='info'><div class='t'>"+title+" <span style='font-weight:400;color:var(--muted);font-size:11px'>\u00b7 "+tag+"</span></div><div class='m'>"+meta+"</div></div>"+
+        "<button class='open' data-a='open'>Open</button><button class='del' data-a='del'>&#10005;</button></div>";
+    }).join("");
+  }
+  function saveToFolder(){
+    var m=document.body.getAttribute("data-mode");
+    var kind=(m==="sts"||m==="eic"||m==="eicr")?m:"mw";
+    var data;
+    if(kind==="eic")data={sts:stsSnapshot(),eic:eicSnapshot(),insp:inspSnapshot()};
+    else if(kind==="eicr")data={sts:stsSnapshot(),eicr:ecrSnapshot(),insp:inspSnapshot()};
+    else if(kind==="sts")data=stsSnapshot();
+    else data=snapshot();
+    var rec={id:"d"+Date.now(),savedAt:new Date().toISOString(),kind:kind,data:data,signature:sigData};
+    docs.unshift(rec);saveDocs();refreshCount();
+    toast("Saved to folder \u00b7 "+docs.length+" item"+(docs.length>1?"s":""));
+  }
+  $("saveDoc").addEventListener("click",saveToFolder);
+  $("openFolder").addEventListener("click",function(){renderDocs();$("folder").classList.add("on");document.body.style.overflow="hidden";});
+  $("closeFolder").addEventListener("click",function(){$("folder").classList.remove("on");document.body.style.overflow="";});
+  $("docList").addEventListener("click",function(e){
+    var b=e.target.closest("button");if(!b)return;var row=e.target.closest(".doc");if(!row)return;
+    var id=row.dataset.id,d=null;for(var i=0;i<docs.length;i++){if(docs[i].id===id){d=docs[i];break;}}
+    if(!d)return;
+    if(b.dataset.a==="open"){
+      $("folder").classList.remove("on");document.body.style.overflow="";
+      var k=d.kind||"mw";
+      if(k==="eic"){var dd=d.data||{};stsApply(dd.sts);eicApply(dd.eic);inspApply(dd.insp);setMode("eic");sigData=d.signature||null;buildEIC();}
+      else if(k==="eicr"){var de=d.data||{};stsApply(de.sts);ecrApply(de.eicr);inspApply(de.insp);setMode("eicr");sigData=d.signature||null;buildEICR();}
+      else if(k==="sts"){stsApply(d.data);setMode("sts");sigData=d.signature||null;buildSchedule();}
+      else{applyData(d.data);setMode("mw");sigData=d.signature||null;openCert();}
+    }
+    else{docs=docs.filter(function(x){return x.id!==id;});saveDocs();refreshCount();renderDocs();}
+  });
+  $("exportDocs").addEventListener("click",function(){
+    var blob=new Blob([JSON.stringify(docs,null,2)],{type:"application/json"});
+    var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="mw-certs-folder.json";
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    toast("Exported "+docs.length+" certificate"+(docs.length===1?"":"s")+".");
+  });
+  $("importDocs").addEventListener("click",function(){$("importDocsFile").click();});
+  $("importDocsFile").addEventListener("change",function(){
+    var f=this.files[0];if(!f)return;var r=new FileReader();
+    r.onload=function(){try{
+      var d=JSON.parse(r.result);if(!Array.isArray(d))throw 0;
+      var have={};docs.forEach(function(x){have[x.id]=1;});
+      var added=0;d.forEach(function(x){if(x&&x.id&&!have[x.id]){docs.push(x);added++;}});
+      docs.sort(function(a,b){return (b.savedAt||"").localeCompare(a.savedAt||"");});
+      saveDocs();refreshCount();renderDocs();toast("Imported "+added+" new \u00b7 "+docs.length+" total.");
+    }catch(e){toast("Couldn't read that file.");}};
+    r.readAsText(f);this.value="";
+  });
+  refreshCount();
+
+  // ---- remembered user: ask name once, auto-fill certifier every time ----
+  var user=(function(){try{return JSON.parse(localStorage.getItem("mwc-user")||"null");}catch(e){return null;}})();
+  function saveUser(){try{localStorage.setItem("mwc-user",JSON.stringify(user));}catch(e){}}
+  // seed the certifier fields from the remembered user when blank
+  if(user&&user.name&&!$("name").value){$("name").value=user.name;}
+  if(user&&user.position&&!$("position").value){$("position").value=user.position;}
+  // keep the remembered name in step if they correct it on a cert
+  $("name").addEventListener("change",function(){user=user||{};user.name=this.value.trim();saveUser();});
+  $("position").addEventListener("change",function(){user=user||{};user.position=this.value.trim();saveUser();});
+  // first run → ask for their name
+  function finishWelcome(){
+    var n=$("userName").value.trim();
+    if(!n){$("userName").focus();return;}
+    user={name:n,position:$("userPosition").value.trim()};saveUser();
+    $("name").value=user.name; if(user.position)$("position").value=user.position;
+    $("welcome").classList.remove("on");document.body.style.overflow="";
+    save();sync();
+  }
+  if(!user){
+    $("welcome").classList.add("on");document.body.style.overflow="hidden";
+    setTimeout(function(){$("userName").focus();},60);
+    $("welcomeGo").addEventListener("click",finishWelcome);
+    $("userName").addEventListener("keydown",function(e){if(e.key==="Enter")finishWelcome();});
+    $("userPosition").addEventListener("keydown",function(e){if(e.key==="Enter")finishWelcome();});
+  }
+
+  // ===================== HOME / MODES =====================
+  var APP_VERSION="1.3.0";
+  (function(){var t=$("verTag");if(t)t.textContent="CertMate \u00b7 v"+APP_VERSION;})();
+  function buildRef(){
+    var el=$("refMaxZs");if(!el||el.dataset.built)return;
+    var ratings=[6,10,16,20,25,32,40,50,63],types=["B","C","D"];
+    var head="<tr><th>In (A)</th><th>Type B</th><th>Type C</th><th>Type D</th></tr>";
+    var rows=ratings.map(function(r){return "<tr><td>"+r+"</td>"+types.map(function(t){return "<td>"+fmt(maxZs(t,r))+"</td>";}).join("")+"</tr>";}).join("");
+    el.innerHTML=head+rows;el.dataset.built="1";
+  }
+  buildRef();
+  function setMode(m){
+    document.body.setAttribute("data-mode",m);
+    sigData=null;
+    $("goHome").style.display = m==="home" ? "none" : "";
+    var titles={home:"CertMate",mw:"Minor Works",sts:"Schedule of Test Results",eic:"Electrical Installation Cert",eicr:"Condition Report (EICR)",ref:"Quick reference"};
+    var subs={home:"BS 7671 certs \u00b7 type it, check it, sign it",mw:"Minor Works Certificate",sts:"Board test schedule",eic:"New install / addition + schedule",eicr:"Observations + schedule",ref:"On-Site Guide summary"};
+    $("appTitle").textContent=titles[m]||"Test Certs"; $("appSub").textContent=subs[m]||"";
+    if(m==="sts"||m==="eic"||m==="eicr"){
+      if(user&&user.name&&!$("stsTester").value)$("stsTester").value=user.name;
+      if(!$("stsDate").value)$("stsDate").value=$("date").value;
+      stsRender();
+      $("genSTS").textContent = m==="eic" ? "Generate EIC" : (m==="eicr" ? "Generate EICR" : "Generate schedule");
+    }
+    if(m==="eic"){
+      if(user&&user.name&&!$("eicName").value)$("eicName").value=user.name;
+      if(user&&user.position&&!$("eicPos").value)$("eicPos").value=user.position;
+      if(!$("eicDate").value)$("eicDate").value=$("date").value;
+      if(!$("eicInstall").value&&$("stsStore").value)$("eicInstall").value="M&S "+$("stsStore").value;
+      if(!$("eicClient").value)$("eicClient").value="Marks & Spencer plc";
+    }
+    if(m==="eicr"){
+      if(user&&user.name&&!$("ecrName").value)$("ecrName").value=user.name;
+      if(user&&user.position&&!$("ecrPos").value)$("ecrPos").value=user.position;
+      if(!$("ecrDate").value)$("ecrDate").value=$("date").value;
+      if(!$("ecrAddr").value&&$("stsStore").value)$("ecrAddr").value="M&S "+$("stsStore").value;
+      if(!$("ecrClient").value)$("ecrClient").value="Marks & Spencer plc";
+      ecrRenderObs();
+    }
+    if(m==="eic"||m==="eicr")inspRender();
+    window.scrollTo(0,0);
+  }
+  $("goHome").addEventListener("click",function(){setMode("home");});
+  Array.prototype.forEach.call(document.querySelectorAll("#homeView .tile[data-go]"),function(t){
+    t.addEventListener("click",function(){setMode(t.dataset.go);});
+  });
+
+  // ===================== SCHEDULE OF TEST RESULTS =====================
+  var stsEarthVal="TN-S";
+  Array.prototype.forEach.call($("stsEarth").children,function(b){
+    b.addEventListener("click",function(){
+      Array.prototype.forEach.call($("stsEarth").children,function(x){x.setAttribute("aria-pressed","false");});
+      b.setAttribute("aria-pressed","true");stsEarthVal=b.dataset.v;stsSave();
+    });
+  });
+  var circuits=[], editIx=-1;
+  var STS_FIELDS=["stsStore","stsStoreNo","stsDate","stsDbRef","stsLoc","stsPhases","stsZe","stsIpf","stsTester"];
+  function stsSnapshot(){var o={earth:stsEarthVal,circuits:circuits};STS_FIELDS.forEach(function(f){if($(f))o[f]=$(f).value;});return o;}
+  function stsApply(o){if(!o)return;STS_FIELDS.forEach(function(f){if($(f)&&o[f]!=null)$(f).value=o[f];});stsEarthVal=o.earth||"TN-S";Array.prototype.forEach.call($("stsEarth").children,function(x){x.setAttribute("aria-pressed",x.dataset.v===stsEarthVal?"true":"false");});circuits=Array.isArray(o.circuits)?o.circuits:[];stsRender();}
+  function stsSave(){try{localStorage.setItem("mwc-sts",JSON.stringify(stsSnapshot()));}catch(e){}}
+  $("stsView").addEventListener("input",stsSave);
+
+  function circStatus(c){
+    var st="pass", zs=num(c.zs), rating=parseFloat(c.rating), type=c.type;
+    if(zs!==null&&rating&&(type==="B"||type==="C"||type==="D")){var mx=maxZs(type,rating);if(zs>mx)st="fail";else if(zs>0.8*mx)st="warn";}
+    var t=num(c.rcdMs), ma=num(c.rcdMa);
+    if(ma&&t!==null&&t>40&&st!=="fail")st=(t>300?"fail":"warn");
+    var ir=(c.irLE||"").trim();
+    if(ir&&ir.indexOf(">")!==0&&num(ir)!==null&&num(ir)<1)st="fail";
+    return st;
+  }
+  function stsRender(){
+    $("stsCount").textContent=circuits.length;
+    if(!circuits.length){$("stsList").innerHTML="<div class='empty' style='padding:16px 4px'>No circuits yet. Tap \u201cAdd circuit\u201d.</div>";return;}
+    $("stsList").innerHTML=circuits.map(function(c,i){
+      var meta=[c.desc||"", ((c.type&&c.type!=="—")?("Type "+c.type):"")+(c.rating?" "+c.rating+"A":""), c.zs?("Zs "+c.zs):""].filter(Boolean).join("  \u00b7  ");
+      var st=circStatus(c);
+      return "<div class='citem' data-i='"+i+"'><div class='cinfo'><div class='cref'>"+escapeHtml(c.ref||("Circuit "+(i+1)))+"</div><div class='cmeta'>"+escapeHtml(meta)+"</div></div>"+
+        "<span class='cstat "+st+"'>"+st.toUpperCase()+"</span><button data-a='edit'>Edit</button></div>";
+    }).join("");
+  }
+  $("stsList").addEventListener("click",function(e){var row=e.target.closest(".citem");if(!row)return;openCircuit(parseInt(row.dataset.i,10));});
+  $("stsAdd").addEventListener("click",function(){openCircuit(-1);});
+
+  function ccGet(){return {ref:$("ccRef").value.trim(),points:$("ccPoints").value.trim(),desc:$("ccDesc").value.trim(),wiring:$("ccWiring").value.trim(),refm:$("ccRefM").value.trim(),bsen:$("ccBsen").value,type:$("ccType").value,rating:$("ccRating").value.trim(),ka:$("ccKa").value.trim(),live:$("ccLive").value.trim(),cpc:$("ccCpc").value.trim(),zs:$("ccZs").value.trim(),r1r2:$("ccR1R2").value.trim(),irLL:$("ccIrLL").value.trim(),irLE:$("ccIrLE").value.trim(),rcdMa:$("ccRcdMa").value.trim(),rcdMs:$("ccRcdMs").value.trim(),pol:$("ccPol").checked};}
+  function ccSet(c){c=c||{};$("ccRef").value=c.ref||"";$("ccPoints").value=c.points||"";$("ccDesc").value=c.desc||"";$("ccWiring").value=c.wiring||"";$("ccRefM").value=c.refm||"";$("ccBsen").value=c.bsen||"61009 RCBO";$("ccType").value=c.type||"C";$("ccRating").value=c.rating||"";$("ccKa").value=c.ka||"";$("ccLive").value=c.live||"";$("ccCpc").value=c.cpc||"";$("ccZs").value=c.zs||"";$("ccR1R2").value=c.r1r2||"";$("ccIrLL").value=c.irLL||"";$("ccIrLE").value=(c.irLE!=null?c.irLE:">999");$("ccRcdMa").value=c.rcdMa||"";$("ccRcdMs").value=c.rcdMs||"";$("ccPol").checked=c.pol!==false;}
+  function ccSync(){
+    var type=$("ccType").value,rating=parseFloat($("ccRating").value),zs=num($("ccZs").value);
+    if(zs===null||!rating||!(type==="B"||type==="C"||type==="D")){setPill("cc-zs","idle","—");}
+    else{var mx=maxZs(type,rating);setPill("cc-zs",zs>mx?"fail":(zs>0.8*mx?"warn":"pass"),fmt(zs)+" / "+fmt(mx));}
+    var ma=num($("ccRcdMa").value),t=num($("ccRcdMs").value);
+    if(!ma){setPill("cc-rcd","idle","n/a");}else if(t===null){setPill("cc-rcd","idle","—");}else{setPill("cc-rcd",t>40?(t>300?"fail":"warn"):"pass",fmt(t)+"ms");}
+    var ir=$("ccIrLE").value.trim();
+    if(!ir){setPill("cc-ir","idle","—");}else{var p=ir.indexOf(">")===0||(num(ir)!==null&&num(ir)>=1);setPill("cc-ir",p?"pass":"fail",ir.replace(/\s/g,""));}
+  }
+  $("circuitCard").addEventListener("input",ccSync);
+  $("ccCalc").addEventListener("click",function(){var zs=num($("ccZs").value),ze=num($("stsZe").value);if(zs===null||ze===null){toast("Enter the circuit Zs and the board Ze first.");return;}var r=zs-ze;if(r<0){toast("Board Ze is higher than Zs — check readings.");return;}$("ccR1R2").value=fmt(r);ccSync();});
+  function openCircuit(ix){
+    editIx=ix;
+    if(ix>=0){ccSet(circuits[ix]);$("ccTitle").textContent="Edit circuit";$("ccDelete").style.display="";}
+    else{ccSet({});$("ccTitle").textContent="New circuit";$("ccDelete").style.display="none";}
+    ccSync();$("circuitCard").classList.add("on");document.body.style.overflow="hidden";window.scrollTo(0,0);
+  }
+  function closeCircuit(){$("circuitCard").classList.remove("on");document.body.style.overflow="";}
+  $("ccCancel").addEventListener("click",closeCircuit);
+  $("ccSave").addEventListener("click",function(){var c=ccGet();if(!c.ref&&!c.desc){toast("Give the circuit a number or description.");return;}if(editIx>=0)circuits[editIx]=c;else circuits.push(c);stsSave();stsRender();closeCircuit();});
+  $("ccDelete").addEventListener("click",function(){if(editIx>=0){circuits.splice(editIx,1);stsSave();stsRender();}closeCircuit();});
+
+  function stsMaxZs(c){var rating=parseFloat(c.rating),type=c.type;if(!rating||!(type==="B"||type==="C"||type==="D"))return "—";return fmt(maxZs(type,rating));}
+  function stsBoardRows(){
+    var v=function(id){return escapeHtml($(id).value.trim());};
+    return "<table class='kv'>"+
+      "<tr><td class='k'>Store</td><td>"+(v("stsStore")?("M&amp;S "+v("stsStore")):"—")+(v("stsStoreNo")?(" (No. "+v("stsStoreNo")+")"):"")+"</td><td class='k'>DB reference</td><td>"+(v("stsDbRef")||"—")+"</td></tr>"+
+      "<tr><td class='k'>DB location</td><td>"+(v("stsLoc")||"—")+"</td><td class='k'>Date</td><td>"+(escapeHtml(longDate($("stsDate").value))||"—")+"</td></tr>"+
+      "<tr><td class='k'>Earthing</td><td>"+stsEarthVal+"</td><td class='k'>Supply</td><td>"+($("stsPhases").value==="3"?"3-phase":"1-phase")+"</td></tr>"+
+      "<tr><td class='k'>Ze</td><td>"+(v("stsZe")||"—")+" \u03a9</td><td class='k'>Ipf / PSCC</td><td>"+(v("stsIpf")||"—")+" kA</td></tr>"+
+      "<tr><td class='k'>Tested by</td><td>"+(v("stsTester")||"—")+"</td><td class='k'>Circuits</td><td>"+circuits.length+"</td></tr>"+
+    "</table>";
+  }
+  function scheduleTableHtml(){
+    var cols=["No.","Circuit description","Wiring","Ref","Pts","Live","cpc","BS(EN)","Type","Rating A","kA","Max Zs \u03a9","R1+R2 \u03a9","IR L-L","IR L-E","Pol.","Zs \u03a9","RCD mA","RCD ms"];
+    var head="<tr>"+cols.map(function(c){return "<th>"+c+"</th>";}).join("")+"</tr>";
+    var rows=circuits.map(function(c,i){
+      var cells=[c.ref||(i+1),c.desc||"",c.wiring||"",c.refm||"",c.points||"",c.live||"",c.cpc||"",c.bsen||"",c.type||"",c.rating||"",c.ka||"",stsMaxZs(c),c.r1r2||"",c.irLL||"",c.irLE||"",(c.pol!==false?"\u2713":"\u2717"),c.zs||"",c.rcdMa||"",c.rcdMs||""];
+      return "<tr>"+cells.map(function(x,j){return "<td class='"+(j===1?"l":"")+"'>"+escapeHtml(String(x))+"</td>";}).join("")+"</tr>";
+    }).join("");
+    return "<div class='stsched'><table class='sts'>"+head+(rows||("<tr><td colspan='"+cols.length+"'>No circuits added</td></tr>"))+"</table></div>";
+  }
+  function buildSchedule(){lastBuild=buildSchedule;
+    var html="<div class='hd'><h3>SCHEDULE OF TEST RESULTS</h3><p>(Requirements for Electrical Installations – BS 7671:2018+A2:2022)</p></div>"+
+      "<div class='body'>"+stsBoardRows()+
+      "<div class='band'>Circuit details &amp; test results</div>"+
+      scheduleTableHtml()+
+      "<p class='schednote'>Max Zs from BS 7671 Table 41.3 (U0 \u00d7 Cmin 0.95 \u00f7 (device multiplier \u00d7 In)). Insulation resistance measured at 500 V d.c. Always verify every value before issuing. &middot; CertMate v"+APP_VERSION+"</p>"+
+      "<div class='band'>Declaration</div>"+
+      "<table class='kv'><tr><td class='k'>Tested by</td><td class='fill'><b>"+escapeHtml($("stsTester").value.trim())+"</b></td></tr><tr><td class='k'>Signature</td><td>__SIG__</td></tr><tr><td class='k'>Date</td><td class='fill'><b>"+escapeHtml(longDate($("stsDate").value))+"</b></td></tr></table>"+
+      "</div>";
+    showCert(html);
+  }
+
+  // ---- Schedule of Inspections (shared by EIC + EICR) ----
+  var INSP_ITEMS=[
+    {s:"1 · Supply intake & origin",items:[["1.1","Service cable, head & metering — condition"],["1.2","Meter tails — condition & rating"],["1.3","Main switch / isolator — condition & operation"],["1.4","Earthing conductor & connection"],["1.5","Main protective bonding — water, gas, other services, steel"],["1.6","Earth electrode arrangement (where fitted)"],["1.7","Earthing & bonding labels present"]]},
+    {s:"2 · Distribution board(s)",items:[["2.1","Enclosure condition, security & suitability"],["2.2","Working space & access adequate"],["2.3","Protective devices correctly rated & set"],["2.4","RCD(s) present & correct type"],["2.5","Circuits & devices correctly identified"],["2.6","Circuit chart / schedule present"],["2.7","Warning & safety labels (isolation, RCD test)"],["2.8","No signs of overheating or damage"]]},
+    {s:"3 · Final circuits",items:[["3.1","Conductor identification correct"],["3.2","Conductors & connections — condition"],["3.3","Conductors adequate for current-carrying capacity"],["3.4","RCD additional protection for sockets / mobile equipment"],["3.5","Accessories — suitability & condition"],["3.6","Fire barriers / sealing where required"],["3.7","Cables supported & protected from damage"]]},
+    {s:"4 · Special locations & general",items:[["4.1","Bathrooms — zones & supplementary bonding as required"],["4.2","Outdoor / wet areas — suitable equipment & RCD"],["4.3","Adequate signage & information present"],["4.4","No accessible live parts / adequate IP rating"]]}
+  ];
+  var OUTCOMES=["","\u2713","C1","C2","C3","FI","N/A","LIM","N/V"];
+  var inspections={};
+  function inspFlagCount(){var n=0;for(var k in inspections){if(["C1","C2","C3","FI"].indexOf(inspections[k])>=0)n++;}return n;}
+  function inspRender(){
+    $("inspList").innerHTML=INSP_ITEMS.map(function(g){
+      return "<div class='insec'>"+escapeHtml(g.s)+"</div>"+g.items.map(function(it){
+        var val=inspections[it[0]]||"";
+        var opts=OUTCOMES.map(function(o){return "<option"+(o===val?" selected":"")+">"+o+"</option>";}).join("");
+        var cls=(["C1","C2","C3","FI"].indexOf(val)>=0)?"flag":(val==="\u2713"?"ok":"");
+        return "<div class='irow'><div class='it'><b>"+it[0]+"</b>"+escapeHtml(it[1])+"</div><select data-k='"+it[0]+"' class='"+cls+"'>"+opts+"</select></div>";
+      }).join("");
+    }).join("");
+    var fc=inspFlagCount();$("inspFlagCount").textContent=fc?("\u00b7 "+fc+" flagged"):"";
+  }
+  $("inspList").addEventListener("change",function(e){var s=e.target;if(!s||s.tagName!=="SELECT")return;var k=s.getAttribute("data-k");if(!k)return;if(s.value)inspections[k]=s.value;else delete inspections[k];inspRender();inspSave();});
+  $("inspAllOk").addEventListener("click",function(){INSP_ITEMS.forEach(function(g){g.items.forEach(function(it){if(!inspections[it[0]])inspections[it[0]]="\u2713";});});inspRender();inspSave();});
+  $("inspClear").addEventListener("click",function(){inspections={};inspRender();inspSave();});
+  function inspSnapshot(){return inspections;}
+  function inspApply(o){inspections=(o&&typeof o==="object")?o:{};inspRender();}
+  function inspSave(){try{localStorage.setItem("mwc-insp",JSON.stringify(inspections));}catch(e){}}
+  (function(){try{var o=JSON.parse(localStorage.getItem("mwc-insp")||"null");if(o)inspApply(o);}catch(e){}})();
+  function inspectionsTableHtml(){
+    return "<table class='kv'>"+INSP_ITEMS.map(function(g){
+      return "<tr><td class='k' colspan='2'><b>"+escapeHtml(g.s)+"</b></td></tr>"+g.items.map(function(it){
+        return "<tr><td class='l'>"+it[0]+"&nbsp; "+escapeHtml(it[1])+"</td><td style='text-align:center;font-weight:600;width:70px'>"+escapeHtml(inspections[it[0]]||"—")+"</td></tr>";
+      }).join("");
+    }).join("")+"</table>";
+  }
+
+  // ---- EIC (shares board + circuits) ----
+  var eicKindVal="New installation";
+  Array.prototype.forEach.call($("eicKind").children,function(b){
+    b.addEventListener("click",function(){Array.prototype.forEach.call($("eicKind").children,function(x){x.setAttribute("aria-pressed","false");});b.setAttribute("aria-pressed","true");eicKindVal=b.dataset.v;eicSave();});
+  });
+  var EIC_FIELDS=["eicClient","eicInstall","eicDesc","eicComments","eicName","eicFor","eicPos","eicDate","eicNext"];
+  function eicSnapshot(){var o={kind:eicKindVal};EIC_FIELDS.forEach(function(f){if($(f))o[f]=$(f).value;});return o;}
+  function eicApply(o){if(!o)return;EIC_FIELDS.forEach(function(f){if($(f)&&o[f]!=null)$(f).value=o[f];});eicKindVal=o.kind||"New installation";Array.prototype.forEach.call($("eicKind").children,function(x){x.setAttribute("aria-pressed",x.dataset.v===eicKindVal?"true":"false");});}
+  function eicSave(){try{localStorage.setItem("mwc-eic",JSON.stringify(eicSnapshot()));}catch(e){}}
+  $("eicView").addEventListener("input",eicSave);
+  (function(){try{var o=JSON.parse(localStorage.getItem("mwc-eic")||"null");if(o)eicApply(o);}catch(e){}})();
+
+  function buildEIC(){lastBuild=buildEIC;
+    var v=function(id){return escapeHtml($(id).value.trim());};
+    var supply="<table class='kv'>"+
+      "<tr><td class='k'>System earthing</td><td>"+stsEarthVal+"</td><td class='k'>Supply</td><td>"+($("stsPhases").value==="3"?"3-phase":"1-phase")+"</td></tr>"+
+      "<tr><td class='k'>Ze at origin</td><td>"+(v("stsZe")||"—")+" \u03a9</td><td class='k'>Ipf / PSCC</td><td>"+(v("stsIpf")||"—")+" kA</td></tr>"+
+      "<tr><td class='k'>Distribution board</td><td>"+(v("stsDbRef")||"—")+"</td><td class='k'>Location</td><td>"+(v("stsLoc")||"—")+"</td></tr>"+
+    "</table>";
+    var html="<div class='hd'><h3>ELECTRICAL INSTALLATION CERTIFICATE</h3><p>(Requirements for Electrical Installations – BS 7671:2018+A2:2022)</p></div>"+
+      "<div class='body'>"+
+      "<table class='kv'>"+
+        "<tr><td class='k'>Client</td><td class='fill'><b>"+v("eicClient")+"</b></td></tr>"+
+        "<tr><td class='k'>Installation address</td><td class='fill'><b>"+v("eicInstall")+"</b></td></tr>"+
+        "<tr><td class='k'>This certificate covers</td><td><b>"+escapeHtml(eicKindVal)+"</b></td></tr>"+
+      "</table>"+
+      "<div class='band'>Description &amp; extent of the work</div>"+
+      "<table class='kv'><tr><td class='fill'>"+(v("eicDesc")||"—")+"</td></tr></table>"+
+      (v("eicComments")?("<div class='band'>Comments on existing installation</div><table class='kv'><tr><td>"+v("eicComments")+"</td></tr></table>"):"")+
+      "<div class='band'>Supply characteristics &amp; earthing</div>"+supply+
+      "<div class='band'>Schedule of Inspections</div>"+inspectionsTableHtml()+"<div class='band'>Schedule of Test Results</div>"+stsBoardRows()+scheduleTableHtml()+
+      "<p class='schednote'>Max Zs from BS 7671 Table 41.3. Insulation resistance at 500 V d.c. Always verify before issuing. &middot; CertMate v"+APP_VERSION+"</p>"+
+      "<div class='band'>Declaration</div>"+
+      "<div style='font-size:11.5px;margin:0 2px 8px'>I, being the person responsible for the design, construction, inspection &amp; testing of the electrical installation described above, having exercised reasonable skill and care, CERTIFY that the said work is to the best of my knowledge and belief in accordance with BS 7671:2018+A2:2022, except as detailed above.</div>"+
+      "<table class='kv'>"+
+        "<tr><td class='k'>Name</td><td class='fill'><b>"+v("eicName")+"</b></td></tr>"+
+        "<tr><td class='k'>Signature</td><td>__SIG__</td></tr>"+
+        "<tr><td class='k'>For / on behalf of</td><td>"+(v("eicFor")||"—")+"</td></tr>"+
+        "<tr><td class='k'>Position</td><td>"+(v("eicPos")||"—")+"</td></tr>"+
+        "<tr><td class='k'>Date</td><td class='fill'><b>"+(escapeHtml(longDate($("eicDate").value))||"")+"</b></td></tr>"+
+        "<tr><td class='k'>Recommended next inspection</td><td class='fill'><b>"+(v("eicNext")||"—")+"</b></td></tr>"+
+      "</table>"+
+      "</div>";
+    showCert(html);
+  }
+
+  // ---- EICR (shares board + circuits; observations carry photos) ----
+  var ecrOutcomeVal="Satisfactory";
+  Array.prototype.forEach.call($("ecrOutcome").children,function(b){
+    b.addEventListener("click",function(){Array.prototype.forEach.call($("ecrOutcome").children,function(x){x.setAttribute("aria-pressed","false");});b.setAttribute("aria-pressed","true");ecrOutcomeVal=b.dataset.v;ecrSave();});
+  });
+  var ECR_FIELDS=["ecrClient","ecrAddr","ecrPurpose","ecrExtent","ecrLimits","ecrSummary","ecrName","ecrPos","ecrDate","ecrNext"];
+  var observations=[], obEditIx=-1, obPhotos=[];
+  function ecrSnapshot(){var o={outcome:ecrOutcomeVal,observations:observations};ECR_FIELDS.forEach(function(f){if($(f))o[f]=$(f).value;});return o;}
+  function ecrApply(o){if(!o)return;ECR_FIELDS.forEach(function(f){if($(f)&&o[f]!=null)$(f).value=o[f];});ecrOutcomeVal=o.outcome||"Satisfactory";Array.prototype.forEach.call($("ecrOutcome").children,function(x){x.setAttribute("aria-pressed",x.dataset.v===ecrOutcomeVal?"true":"false");});observations=Array.isArray(o.observations)?o.observations:[];ecrRenderObs();}
+  function ecrSave(){try{localStorage.setItem("mwc-eicr",JSON.stringify(ecrSnapshot()));}catch(e){if(e&&(e.name==="QuotaExceededError"||e.code===22))toast("Storage full — export your folder or remove some photos.");}}
+  $("eicrView").addEventListener("input",ecrSave);
+  (function(){try{var o=JSON.parse(localStorage.getItem("mwc-eicr")||"null");if(o)ecrApply(o);}catch(e){}})();
+
+  function ecrRenderObs(){
+    $("ecrObsCount").textContent=observations.length;
+    if(!observations.length){$("ecrObsList").innerHTML="<div class='empty' style='padding:16px 4px'>No observations. Tap \u201cAdd observation\u201d.</div>";return;}
+    $("ecrObsList").innerHTML=observations.map(function(o,i){
+      var thumbs=(o.photos||[]).slice(0,5).map(function(p){return "<img src='"+p+"'>";}).join("");
+      return "<div class='oitem' data-i='"+i+"'><span class='ocode "+(o.code||"C2")+"'>"+(o.code||"C2")+"</span>"+
+        "<div class='oinfo'><div class='odesc'>"+escapeHtml(o.desc||"—")+"</div>"+(o.loc?"<div class='oloc'>"+escapeHtml(o.loc)+"</div>":"")+
+        (thumbs?"<div class='othumbs'>"+thumbs+"</div>":"")+"</div><button data-a='edit'>Edit</button></div>";
+    }).join("");
+  }
+  function renderObThumbs(){
+    $("obThumbs").innerHTML=obPhotos.map(function(p,i){return "<span class='th'><img src='"+p+"'><button class='rm' data-i='"+i+"' type='button'>&times;</button></span>";}).join("");
+  }
+  $("obThumbs").addEventListener("click",function(e){var b=e.target.closest(".rm");if(!b)return;obPhotos.splice(parseInt(b.dataset.i,10),1);renderObThumbs();});
+  $("obAddPhoto").addEventListener("click",function(){$("obFile").click();});
+  $("obFile").addEventListener("change",function(){
+    var files=Array.prototype.slice.call(this.files||[]);if(!files.length){return;}var done=0;
+    files.forEach(function(f){compressImage(f,function(d){if(d)obPhotos.push(d);done++;if(done===files.length)renderObThumbs();});});
+    this.value="";
+  });
+  function compressImage(file,cb){
+    try{
+      var img=new Image(),url=URL.createObjectURL(file);
+      img.onload=function(){
+        var max=1000,w=img.width,h=img.height;
+        if(w>h&&w>max){h=Math.round(h*max/w);w=max;}else if(h>=w&&h>max){w=Math.round(w*max/h);h=max;}
+        var cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);
+        URL.revokeObjectURL(url);
+        try{cb(cv.toDataURL("image/jpeg",0.5));}catch(e){cb(null);}
+      };
+      img.onerror=function(){URL.revokeObjectURL(url);cb(null);};
+      img.src=url;
+    }catch(e){cb(null);}
+  }
+  function openObs(ix){
+    obEditIx=ix;
+    if(ix>=0){var o=observations[ix];$("obDesc").value=o.desc||"";$("obCode").value=o.code||"C2";$("obLoc").value=o.loc||"";obPhotos=(o.photos||[]).slice();$("obTitle").textContent="Edit observation";$("obDelete").style.display="";}
+    else{$("obDesc").value="";$("obCode").value="C2";$("obLoc").value="";obPhotos=[];$("obTitle").textContent="New observation";$("obDelete").style.display="none";}
+    renderObThumbs();$("obsCard").classList.add("on");document.body.style.overflow="hidden";window.scrollTo(0,0);
+  }
+  function closeObs(){$("obsCard").classList.remove("on");document.body.style.overflow="";}
+  $("ecrObsAdd").addEventListener("click",function(){openObs(-1);});
+  $("ecrObsList").addEventListener("click",function(e){var row=e.target.closest(".oitem");if(!row)return;openObs(parseInt(row.dataset.i,10));});
+  $("obCancel").addEventListener("click",closeObs);
+  $("obSave").addEventListener("click",function(){var o={desc:$("obDesc").value.trim(),code:$("obCode").value,loc:$("obLoc").value.trim(),photos:obPhotos.slice()};if(!o.desc){toast("Describe the observation first.");return;}if(obEditIx>=0)observations[obEditIx]=o;else observations.push(o);ecrSave();ecrRenderObs();closeObs();});
+  $("obDelete").addEventListener("click",function(){if(obEditIx>=0){observations.splice(obEditIx,1);ecrSave();ecrRenderObs();}closeObs();});
+
+  function buildEICR(){lastBuild=buildEICR;
+    var v=function(id){return escapeHtml($(id).value.trim());};
+    var obsRows=observations.length?observations.map(function(o,i){
+      return "<tr><td>"+(i+1)+"</td><td><span class='ocode "+(o.code||"C2")+"'>"+(o.code||"C2")+"</span></td><td class='l'>"+escapeHtml(o.desc||"")+"</td><td>"+escapeHtml(o.loc||"")+"</td></tr>";
+    }).join(""):"<tr><td colspan='4'>No observations recorded</td></tr>";
+    var photoBlocks=observations.map(function(o,i){
+      if(!o.photos||!o.photos.length)return "";
+      return "<div style='margin:8px 0'><b style='font-size:11px'>Observation "+(i+1)+" ("+escapeHtml(o.code||"")+")</b><br>"+o.photos.map(function(p){return "<span class='obsphoto'><img src='"+p+"'></span>";}).join("")+"</div>";
+    }).join("");
+    var out=ecrOutcomeVal, outColor=out==="Unsatisfactory"?"#c0392b":"#1f9d55";
+    var html="<div class='hd'><h3>ELECTRICAL INSTALLATION CONDITION REPORT</h3><p>(Requirements for Electrical Installations – BS 7671:2018+A2:2022)</p></div>"+
+      "<div class='body'>"+
+      "<table class='kv'>"+
+        "<tr><td class='k'>Client</td><td class='fill'><b>"+v("ecrClient")+"</b></td></tr>"+
+        "<tr><td class='k'>Installation address</td><td class='fill'><b>"+v("ecrAddr")+"</b></td></tr>"+
+        "<tr><td class='k'>Purpose of the report</td><td>"+(v("ecrPurpose")||"—")+"</td></tr>"+
+      "</table>"+
+      "<div class='band'>Extent &amp; limitations</div>"+
+      "<table class='kv'><tr><td class='k'>Extent covered</td><td>"+(v("ecrExtent")||"—")+"</td></tr><tr><td class='k'>Agreed limitations</td><td>"+(v("ecrLimits")||"—")+"</td></tr></table>"+
+      "<div class='band'>Observations</div>"+
+      "<table class='rcd'><tr><th>Item</th><th>Code</th><th>Observation</th><th>Location</th></tr>"+obsRows+"</table>"+
+      (photoBlocks?("<div class='band'>Photographic record</div>"+photoBlocks):"")+
+      "<div class='band'>Summary &amp; assessment</div>"+
+      "<table class='kv'><tr><td class='k'>Overall assessment</td><td class='fill'><b style='color:"+outColor+"'>"+escapeHtml(out)+"</b></td></tr>"+
+      "<tr><td class='k'>Summary of condition</td><td>"+(v("ecrSummary")||"—")+"</td></tr>"+
+      "<tr><td class='k'>Recommended next inspection</td><td class='fill'><b>"+(v("ecrNext")||"—")+"</b></td></tr></table>"+
+      "<div class='band'>Schedule of Inspections</div>"+inspectionsTableHtml()+"<div class='band'>Schedule of Test Results</div>"+stsBoardRows()+scheduleTableHtml()+
+      "<p class='schednote'>Codes: C1 danger present \u00b7 C2 potentially dangerous \u00b7 C3 improvement recommended \u00b7 FI further investigation. Always verify before issuing. &middot; CertMate v"+APP_VERSION+"</p>"+
+      "<div class='band'>Declaration</div>"+
+      "<table class='kv'><tr><td class='k'>Inspected &amp; tested by</td><td class='fill'><b>"+v("ecrName")+"</b></td></tr><tr><td class='k'>Signature</td><td>__SIG__</td></tr><tr><td class='k'>Position</td><td>"+(v("ecrPos")||"—")+"</td></tr><tr><td class='k'>Date</td><td class='fill'><b>"+(escapeHtml(longDate($("ecrDate").value))||"")+"</b></td></tr></table>"+
+      "</div>";
+    showCert(html);
+  }
+
+  $("genSTS").addEventListener("click",function(){
+    var m=document.body.getAttribute("data-mode");
+    if(m==="eicr"){buildEICR();return;}
+    if(!circuits.length){toast("Add at least one circuit first.");return;}
+    if(m==="eic")buildEIC();else buildSchedule();
+  });
+  (function(){try{var o=JSON.parse(localStorage.getItem("mwc-sts")||"null");if(o)stsApply(o);}catch(e){}})();
+
+  // sticky offset for checks bar under header
+  function offset(){var h=document.querySelector("header.app");document.querySelector(".checks").style.setProperty("--stick",h.offsetHeight+"px");}
+  window.addEventListener("resize",offset);offset();
+
+  sync();
+})();
+</script>
+<script>
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",function(){
+      navigator.serviceWorker.register("./sw.js").catch(function(){/* fine if absent (e.g. single-file use) */});
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+name: Deploy to Netlify
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: write
+concurrency:
+  group: netlify-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Prepare site folder
+        run: rsync -a --exclude '.git' --exclude '.github' ./ _site/
+      - name: Deploy to production (main)
+        if: github.event_name != 'pull_request'
+        run: npx --yes netlify-cli@17 deploy --prod --dir _site --message "main ${GITHUB_SHA::7}"
+      - name: Deploy preview (pull request)
+        if: github.event_name == 'pull_request'
+        run: npx --yes netlify-cli@17 deploy --dir _site --alias "pr-${{ github.event.number }}" --message "PR #${{ github.event.number }}"

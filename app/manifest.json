@@ -1,0 +1,17 @@
+{
+  "name": "Hearth — D&D Companion",
+  "short_name": "Hearth",
+  "description": "A leather-bound companion app for D&D 5e.",
+  "id": "/app/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#100c08",
+  "theme_color": "#1a120c",
+  "icons": [
+    { "src": "/icons/icon-192-v74.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512-v74.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512-v74.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Hearth: a free, offline D&amp;D 5e companion for players and DMs</title>
+<meta name="description" content="Hearth is a free, offline, no-account D&amp;D 5e companion. Players get a calm character sheet that levels to 20. DMs get encounters, a battle map with fog of war, and a projector screen for the table." />
+<meta name="theme-color" content="#1a120c" />
+<meta name="color-scheme" content="dark" />
+
+<!-- Open Graph / link previews -->
+<meta property="og:title" content="Hearth: a D&amp;D 5e companion for players and DMs" />
+<meta property="og:description" content="Character sheets, spells and combat for players. Encounters, battle map, fog of war and a projector screen for DMs. Free, offline, no accounts." />
+<meta property="og:image" content="/icons/icon-512-v74.png" />
+<meta property="og:type" content="website" />
+
+<!-- PWA hookup: same manifest + icons as before (routes unchanged) -->
+<link rel="manifest" href="/manifest.webmanifest" />
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon-v74.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32-v74.png" />
+<meta name="apple-mobile-web-app-title" content="Hearth" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IM+Fell+English+SC&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+<style>
+:root {
+  --page: #100c08;
+  --leather: #6e4828;
+  --ink: #f5e6c8;
+  --ink-soft: #d8c298;
+  --ink-faded: #b09468;
+  --gold: #d4a04b;
+  --gold-bright: #e8b965;
+  --gold-deep: #b8893a;
+  --crimson: #c25a4a;
+  --moss: #8aa66a;
+  --sky: #7fa6c4;
+  --rule: #4a3520;
+  --rule-soft: rgba(168, 128, 64, 0.24);
+  --card: rgba(60, 42, 24, 0.22);
+  --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --mono: 'JetBrains Mono', Menlo, Consolas, monospace;
+  --display: 'IM Fell English SC', 'Cormorant Garamond', Georgia, serif;
+  --radius: 6px;
+  --maxw: 1120px;
+  --bar: 64px;   /* top bar height */
+  --tabs: 56px;  /* tab bar height */
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--bar) + 12px); }
+html, body { background: var(--page); color: var(--ink); }
+body {
+  font-family: var(--serif);
+  font-size: 1.125rem;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(60rem 40rem at 15% -5%, rgba(255, 190, 110, 0.09), transparent 60%),
+    radial-gradient(50rem 30rem at 95% 30%, rgba(220, 150, 80, 0.05), transparent 60%),
+    var(--page);
+}
+img, svg { display: block; max-width: 100%; }
+[hidden] { display: none !important; }
+a { color: var(--gold-bright); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { color: var(--ink); }
+:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; border-radius: 3px; }
+.skip {
+  position: absolute; left: 12px; top: -60px; z-index: 100;
+  background: var(--gold); color: #1a120c; padding: 10px 16px; border-radius: var(--radius);
+  font-family: var(--mono); font-size: 0.8rem; text-decoration: none;
+}
+.skip:focus { top: 12px; }
+.wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
+@media (min-width: 720px) { .wrap { padding: 0 32px; } }
+
+/* ------------------------------------------------------------ Top bar */
+.topbar {
+  position: sticky; top: 0; z-index: 40; height: var(--bar);
+  background: rgba(16, 12, 8, 0.9);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2); backdrop-filter: blur(10px) saturate(1.2);
+  border-bottom: 1px solid var(--rule-soft);
+}
+.topbar .wrap { display: flex; align-items: center; gap: 14px; height: 100%; }
+.brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+.brand-glyph {
+  position: relative; width: 36px; height: 36px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
+  background: linear-gradient(160deg, #3a2616, #1a120c);
+  box-shadow: 0 0 0 1px rgba(184, 137, 61, 0.45), 0 0 14px rgba(212, 160, 75, 0.18);
+}
+.brand-glyph svg, .brand-glyph img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.brand-glyph img { object-fit: cover; }
+.brand-name { font-size: 1.4rem; font-weight: 600; letter-spacing: 0.02em; }
+.version-tag {
+  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-faded); border: 1px solid var(--rule); border-radius: 99px; padding: 2px 8px;
+}
+.topbar .btn { margin-left: auto; }
+
+/* ------------------------------------------------------------ Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 48px; padding: 12px 22px; border-radius: var(--radius);
+  font-family: var(--display); font-size: 1.05rem; letter-spacing: 0.08em;
+  text-decoration: none; cursor: pointer; border: 1px solid transparent; white-space: nowrap;
+  transition: transform 120ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+.btn-primary {
+  color: #1a120c;
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold) 55%, var(--gold-deep));
+  border-color: #f0c77a;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.5), 0 6px 22px rgba(212, 160, 75, 0.22), 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+.btn-primary:hover { color: #1a120c; transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(1px); }
+.btn-primary[aria-busy="true"] { opacity: 0.8; cursor: progress; }
+.btn-ghost { color: var(--ink); background: rgba(60, 42, 24, 0.35); border-color: var(--rule); }
+.btn-ghost:hover { color: var(--ink); border-color: var(--gold-deep); background: rgba(60, 42, 24, 0.55); }
+.btn-sm { min-height: 40px; padding: 8px 16px; font-size: 0.95rem; }
+
+/* ------------------------------------------------------------ Hero (compact) */
+.hero { padding: 28px 0 28px; }
+.hero-grid { display: grid; gap: 28px; align-items: center; }
+@media (min-width: 960px) {
+  .hero { padding: 48px 0 40px; }
+  .hero-grid { grid-template-columns: 1.1fr 1fr; gap: 48px; }
+}
+.eyebrow {
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.26em; text-transform: uppercase;
+  color: var(--gold); display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+}
+.eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--crimson); box-shadow: 0 0 10px var(--crimson); }
+h1 { font-weight: 500; font-size: clamp(2.4rem, 8vw, 4.2rem); line-height: 1.02; letter-spacing: -0.01em; margin-bottom: 14px; text-wrap: balance; }
+h1 em, h2 em { font-style: italic; color: var(--gold); }
+.lead { font-size: clamp(1.15rem, 2.4vw, 1.3rem); color: var(--ink-soft); max-width: 34rem; margin-bottom: 20px; }
+.lead strong { color: var(--ink); font-weight: 600; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.cta-row .btn { flex: 1 1 0; }
+@media (max-width: 559px) { .cta-row .btn { padding: 12px 10px; font-size: 0.98rem; gap: 8px; } .cta-row .btn-ghost svg { display: none; } }
+@media (min-width: 560px) { .cta-row .btn { flex: 0 0 auto; } }
+.cta-note { font-family: var(--mono); font-size: 0.75rem; color: var(--ink-faded); margin-top: 10px; min-height: 1.2em; }
+.trust { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; list-style: none; }
+.trust li {
+  font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink-soft); border: 1px solid var(--rule); border-radius: 99px; padding: 4px 10px;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.trust li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--moss); }
+
+/* Future Android app slot: hidden until ANDROID_APP_URL is set in the script */
+.android-slot { margin-top: 12px; }
+.android-slot a {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 16px;
+  border: 1px solid var(--rule); border-radius: var(--radius); color: var(--ink); text-decoration: none;
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em; background: rgba(0,0,0,.25);
+}
+.android-slot a:hover { border-color: var(--gold-deep); }
+
+/* Hero art: a sheet card overlapping a map card, drawn inline */
+.art { position: relative; display: grid; grid-template-columns: 1fr; }
+.page {
+  background: linear-gradient(180deg, #241a10, #18110b);
+  border: 1px solid var(--rule); border-radius: 10px;
+  box-shadow: 0 24px 50px rgba(0,0,0,.55);
+}
+.page-map { grid-area: 1 / 1; width: 78%; margin-left: auto; padding: 8px; }
+.page-sheet { grid-area: 1 / 1; align-self: end; width: 58%; padding: 12px; position: relative; z-index: 2; transform: translateY(38px) rotate(-2deg); }
+.art { margin-bottom: 38px; }
+@media (min-width: 960px) {
+  .art { margin-bottom: 30px; }
+  .page-map { width: 82%; padding: 12px; transform: rotate(1.5deg); }
+  .page-sheet { width: 58%; padding: 16px; transform: translateY(30px) rotate(-2deg); }
+}
+.mini-label { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faded); }
+.sheet-name { font-size: 1.15rem; font-weight: 600; line-height: 1.1; }
+.sheet-sub { font-size: 0.88rem; color: var(--ink-soft); font-style: italic; }
+.hp-row { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 0.68rem; color: var(--ink-soft); margin: 8px 0 4px; }
+.hp-bar { height: 8px; border-radius: 99px; background: #0c0906; border: 1px solid var(--rule); overflow: hidden; display: flex; }
+.hp-bar i { display: block; height: 100%; }
+.hp-bar .cur { width: 72%; background: linear-gradient(90deg, #6f8f52, var(--moss)); }
+.hp-bar .tmp { width: 10%; background: var(--sky); }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.chip { font-family: var(--mono); font-size: 0.6rem; padding: 2px 7px; border-radius: 99px; border: 1px solid var(--rule); color: var(--ink-soft); }
+.chip.gold { border-color: var(--gold-deep); color: var(--gold-bright); }
+.chip.red { border-color: #7a3a30; color: #e08a7a; }
+.pips { display: flex; gap: 4px; margin-top: 8px; align-items: center; }
+.pips i { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--gold-deep); }
+.pips i.on { background: radial-gradient(circle at 35% 35%, var(--gold-bright), var(--gold-deep)); }
+.pips .mini-label { margin-right: 4px; }
+.map-svg { width: 100%; height: auto; border-radius: 6px; }
+.init { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
+.init span { font-family: var(--mono); font-size: 0.6rem; padding: 2px 7px; border-radius: 4px; background: rgba(0,0,0,.3); border: 1px solid var(--rule); color: var(--ink-soft); }
+.init span.now { border-color: var(--gold); color: var(--gold-bright); }
+@media (max-width: 599px) { .init { display: none; } }
+
+/* ------------------------------------------------------------ Tabs */
+.tabs-wrap {
+  position: sticky; top: var(--bar); z-index: 30;
+  background: rgba(16, 12, 8, 0.94);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--rule-soft);
+  margin-top: 16px;
+}
+.tabs {
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px;
+  padding: 8px 0; max-width: 720px;
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  min-height: 48px; padding: 6px 2px; border-radius: var(--radius);
+  font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink-soft); text-decoration: none; border: 1px solid transparent; text-align: center;
+  -webkit-tap-highlight-color: transparent; transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+.tab svg { width: 18px; height: 18px; color: var(--gold-deep); }
+.tab:hover { color: var(--ink); background: rgba(212, 160, 75, 0.07); }
+.tab[aria-selected="true"] {
+  color: var(--ink); background: rgba(212, 160, 75, 0.14); border-color: var(--gold-deep);
+}
+.tab[aria-selected="true"] svg { color: var(--gold-bright); }
+.tab .long { display: none; }
+@media (min-width: 720px) {
+  .tabs { gap: 6px; }
+  .tab { flex-direction: row; gap: 8px; font-size: 0.72rem; letter-spacing: 0.12em; }
+}
+@media (min-width: 960px) {
+  .tabs { max-width: 860px; }
+  .tab { white-space: nowrap; }
+  .tab .long { display: inline; }
+  .tab .short { display: none; }
+}
+
+/* ------------------------------------------------------------ Panels */
+.panel { padding: 28px 0 48px; }
+.panel:focus { outline: none; }
+.panel:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: -2px; }
+/* Each panel fills the space under the sticky bars, so any tab can scroll to the top */
+.js .panels .panel { min-height: calc(100vh - var(--bar) - var(--tabs) - 16px); }
+@supports (height: 100svh) { .js .panels .panel { min-height: calc(100svh - var(--bar) - var(--tabs) - 16px); } }
+@media (min-width: 960px) { .panel { padding: 40px 0 72px; } }
+.panel-head { display: grid; gap: 6px; margin-bottom: 18px; }
+h2 { font-weight: 500; font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1.1; text-wrap: balance; }
+h3 { font-weight: 600; font-size: 1.15rem; line-height: 1.2; margin-bottom: 4px; color: var(--ink); }
+.sub { color: var(--ink-soft); max-width: 38rem; }
+.no-js-label { display: none; }
+html:not(.js) .panel { border-top: 1px solid var(--rule-soft); }
+.js .panel.enter { animation: fadeUp 280ms var(--ease); }
+
+.cards { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+@media (min-width: 720px) { .cards { gap: 14px; } }
+@media (min-width: 960px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+.card { border: 1px solid var(--rule-soft); border-radius: 10px; padding: 14px; background: var(--card); }
+@media (min-width: 720px) { .card { padding: 18px 20px; } }
+.card .glyph { font-size: 1.3rem; color: var(--gold); line-height: 1; margin-bottom: 8px; display: block; }
+.card p { color: var(--ink-soft); font-size: 0.98rem; line-height: 1.4; }
+@media (max-width: 380px) { .card h3 { font-size: 1.05rem; } .card p { font-size: 0.92rem; } }
+
+/* Projector block inside the DM panel */
+.proj { margin-top: 28px; border: 1px solid var(--gold-deep); border-radius: 12px; padding: 18px; background: radial-gradient(30rem 16rem at 0% 0%, rgba(212,160,75,.10), transparent 70%), rgba(30, 20, 12, 0.5); }
+@media (min-width: 720px) { .proj { padding: 24px; } }
+.proj h3 { font-size: 1.4rem; }
+.screens { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.screen { border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: #0c0906; }
+.screen figcaption { padding: 6px 8px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+.screen figcaption b { color: var(--gold-bright); font-weight: 600; }
+.screen svg { width: 100%; height: auto; }
+.ticks { list-style: none; display: grid; gap: 8px; }
+@media (min-width: 720px) { .ticks { grid-template-columns: repeat(3, 1fr); gap: 16px; } }
+.ticks li { padding-left: 22px; position: relative; color: var(--ink-soft); font-size: 1rem; line-height: 1.4; }
+.ticks li::before { content: '✓'; position: absolute; left: 0; top: 0; color: var(--moss); font-family: var(--mono); }
+.ticks b { color: var(--ink); }
+
+/* Install panel */
+.install-grid { display: grid; gap: 16px; align-items: start; }
+@media (min-width: 900px) { .install-grid { grid-template-columns: 1fr 1.1fr; gap: 32px; } }
+.install-card { border: 1px solid var(--gold-deep); border-radius: 12px; padding: 20px; background: radial-gradient(30rem 16rem at 0% 0%, rgba(212,160,75,.12), transparent 70%), rgba(30, 20, 12, 0.6); }
+.install-card p { color: var(--ink-soft); margin: 6px 0 14px; font-size: 1.02rem; }
+.install-card .btn { width: 100%; }
+@media (min-width: 560px) { .install-card .btn { width: auto; } }
+details.how { border: 1px solid var(--rule-soft); border-radius: 10px; background: var(--card); }
+details.how + details.how { margin-top: 8px; }
+details.how summary {
+  cursor: pointer; list-style: none; padding: 12px 16px; min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  font-size: 1.1rem; font-weight: 600;
+}
+details.how summary::-webkit-details-marker { display: none; }
+details.how summary::after { content: '+'; font-family: var(--mono); color: var(--gold); font-size: 1.2rem; transition: transform 150ms ease; }
+details.how[open] summary::after { transform: rotate(45deg); }
+details.how ol { padding: 0 16px 14px 36px; color: var(--ink-soft); font-size: 1rem; display: grid; gap: 4px; }
+details.how > p { color: var(--ink-soft); padding: 0 16px 14px; font-size: 1rem; }
+kbd {
+  font-family: var(--mono); font-size: 0.8em; background: rgba(60, 42, 24, 0.55); border: 1px solid var(--rule);
+  border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; color: var(--ink); white-space: nowrap;
+}
+
+/* About panel */
+.about-grid { display: grid; gap: 12px; }
+@media (min-width: 900px) { .about-grid { grid-template-columns: 1fr 1fr; gap: 16px; } }
+.about-grid .card { padding: 18px 20px; }
+.about-grid .card p + p { margin-top: 8px; }
+.label { font-family: var(--mono); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+.pull { font-style: italic; font-size: clamp(1.25rem, 3vw, 1.6rem); line-height: 1.35; border-left: 2px solid var(--gold); padding: 4px 0 4px 18px; margin: 24px 0 18px; max-width: 44rem; }
+.faq-title { font-size: 1.4rem; font-weight: 600; margin: 24px 0 10px; }
+
+/* Footer */
+footer { border-top: 1px solid var(--rule); padding: 24px 0 calc(28px + env(safe-area-inset-bottom)); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 28px; justify-content: space-between; align-items: center; }
+.foot-meta { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faded); }
+.foot-links { display: flex; flex-wrap: wrap; gap: 4px 18px; list-style: none; }
+.foot-links a { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; display: inline-block; padding: 8px 0; }
+.foot-links a:hover { color: var(--ink); text-decoration: underline; }
+
+/* Install sheet (dialog) */
+dialog.sheet {
+  border: 1px solid var(--gold-deep); border-radius: 16px 16px 0 0; padding: 0; color: var(--ink);
+  background: linear-gradient(180deg, #241a10, #150f0a);
+  width: 100%; max-width: 520px; margin: auto auto 0; max-height: 86vh;
+  box-shadow: 0 -20px 60px rgba(0,0,0,.6);
+}
+@media (min-width: 600px) { dialog.sheet { border-radius: 16px; margin: auto; } }
+dialog.sheet::backdrop { background: rgba(5, 3, 2, 0.7); }
+dialog.sheet[open] { animation: sheetIn 260ms var(--ease); }
+.sheet-inner { padding: 22px 22px calc(22px + env(safe-area-inset-bottom)); }
+.sheet-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.sheet-top h2 { font-size: 1.7rem; margin: 0; }
+.close {
+  width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; border: 1px solid var(--rule); background: transparent; color: var(--ink);
+  font-size: 1.4rem; cursor: pointer; display: grid; place-items: center;
+}
+.close:hover { border-color: var(--gold-deep); }
+.sheet p { color: var(--ink-soft); font-size: 1.02rem; }
+.sheet ol { margin: 16px 0 6px; padding-left: 0; list-style: none; counter-reset: s; display: grid; gap: 12px; }
+.sheet ol li { counter-increment: s; display: grid; grid-template-columns: 32px 1fr; gap: 12px; align-items: start; font-size: 1.05rem; color: var(--ink-soft); }
+.sheet ol li::before {
+  content: counter(s); width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+  font-family: var(--mono); font-size: 0.85rem; color: #1a120c; background: var(--gold);
+}
+.sheet ol b { color: var(--ink); }
+.share-ico { display: inline-block; width: 1.1em; height: 1.1em; vertical-align: -0.15em; color: var(--sky); }
+.sheet .fineprint { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-faded); margin-top: 14px; }
+.sheet .btn { margin-top: 16px; width: 100%; }
+
+@keyframes sheetIn { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes fadeUp { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes flicker { 0%, 100% { opacity: .9; } 40% { opacity: 1; } 70% { opacity: .82; } }
+.flame-glow { animation: flicker 3.2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+@media print {
+  .panels .panel[hidden] { display: block !important; }
+  .topbar, .tabs-wrap, dialog.sheet { display: none !important; }
+}
+@media (forced-colors: active) {
+  .btn, .chip, .card, .screen, details.how { border: 1px solid CanvasText; }
+  .tab[aria-selected="true"] { border: 2px solid Highlight; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#sections">Skip to content</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="fl" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#b8893a"/><stop offset=".55" stop-color="#e8b965"/><stop offset="1" stop-color="#fff1c9"/>
+    </linearGradient>
+    <pattern id="g" width="25" height="25" patternUnits="userSpaceOnUse"><path d="M25 0H0v25" fill="none" stroke="rgba(245,230,200,.09)"/></pattern>
+    <radialGradient id="fog" cx=".32" cy=".55" r=".55"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#050302" stop-opacity=".93"/></radialGradient>
+    <radialGradient id="fire"><stop offset="0" stop-color="#e8b965" stop-opacity=".55"/><stop offset="1" stop-color="#c25a4a" stop-opacity=".25"/></radialGradient>
+    <symbol id="flame" viewBox="0 0 36 36">
+      <path class="flame-glow" fill="url(#fl)" d="M18 6c1.4 4.2 6.6 6.8 6.6 13.2A6.6 6.6 0 0 1 18 26a6.6 6.6 0 0 1-6.6-6.8c0-3 1.6-4.6 2.8-6 .2 2 1 3.2 2.2 3.8C16 13.2 16.6 9.4 18 6z"/>
+      <path fill="#6e4828" d="M9 28.5h18v1.6H9z"/>
+    </symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M8 7l4-4 4 4M6 11H5v9h14v-9h-1"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></symbol>
+    <symbol id="i-open" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h13m-5-6 6 6-6 6"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4zm0 13a3 3 0 0 1 3-3h11M9 8h6"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2V6zm6-2v14m6-12v14"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm4 6v6m-3-3 3 3 3-3"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" d="M12 3c1 3 5 5 5 10a5 5 0 0 1-10 0c0-2.3 1.2-3.5 2.1-4.6.2 1.5.8 2.4 1.7 2.9C10.6 8.6 11 5.5 12 3zM6 21h12"/></symbol>
+  </defs>
+</svg>
+
+<header class="topbar">
+  <div class="wrap">
+    <a href="/" class="brand" aria-label="Hearth home">
+      <span class="brand-glyph" aria-hidden="true">
+        <svg viewBox="0 0 36 36"><use href="#flame"/></svg>
+        <img src="/icons/icon-192-v74.png" alt="" width="36" height="36" decoding="async" class="brand-img" />
+      </span>
+      <span class="brand-name">Hearth</span>
+    </a>
+    <span class="version-tag" data-version>v0.91.3</span>
+    <a href="#install" class="btn btn-primary btn-sm" data-install>
+      <svg aria-hidden="true"><use href="#i-down"/></svg><span>Install</span>
+    </a>
+  </div>
+</header>
+
+<main id="main">
+  <!-- ======================================================= HERO (compact) -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">A D&amp;D 5e companion</p>
+        <h1 id="hero-title">The party gathers <em>by the hearth.</em></h1>
+        <p class="lead">A calm character sheet for <strong>players</strong> and a battle table for <strong>DMs</strong>, in one free app that works offline.</p>
+        <div class="cta-row">
+          <a href="#install" class="btn btn-primary" data-install id="heroInstall">
+            <svg aria-hidden="true"><use href="#i-down"/></svg><span>Install Hearth</span>
+          </a>
+          <a href="/app/" class="btn btn-ghost" data-open-browser>
+            Open in browser <svg aria-hidden="true"><use href="#i-open"/></svg>
+          </a>
+        </div>
+        <p class="cta-note" id="ctaNote" aria-live="polite">Installs from your browser in seconds. No app store, no account.</p>
+
+        <!-- ============================================================
+             FUTURE ANDROID APP SLOT (v1.0.0). Hidden by default.
+             To show it, set ANDROID_APP_URL at the top of the script
+             (Google Play listing or a direct .apk link) and, for Play,
+             swap in the official "Get it on Google Play" badge.
+             ============================================================ -->
+        <p class="android-slot" id="androidSlot" hidden>
+          <a href="#" id="androidLink" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#8aa66a" d="M6 9h12v8a1 1 0 0 1-1 1h-1v3h-2v-3h-4v3H8v-3H7a1 1 0 0 1-1-1V9zm-3 0h2v6H3zm16 0h2v6h-2zM7.5 3.3l1 1.6A6 6 0 0 1 12 4a6 6 0 0 1 3.5.9l1-1.6.8.5-1 1.6A5.9 5.9 0 0 1 18 8H6a5.9 5.9 0 0 1 1.7-2.6l-1-1.6zM9.5 6a.6.6 0 1 0 0 1.2.6.6 0 0 0 0-1.2zm5 0a.6.6 0 1 0 0 1.2.6.6 0 0 0 0-1.2z"/></svg>
+            <span id="androidLabel">Get the Android app</span>
+          </a>
+        </p>
+
+        <ul class="trust" aria-label="Promises">
+          <li>Free</li><li>Works offline</li><li>No accounts</li><li>Data stays on device</li>
+        </ul>
+      </div>
+
+      <div class="art" role="img" aria-label="Illustration: a wizard's character sheet with hit points, concentration and spell slots, overlapping a battle map with fog of war, a fireball area and the initiative order.">
+        <div class="page page-map" aria-hidden="true">
+          <svg class="map-svg" viewBox="0 0 400 230">
+            <rect width="400" height="230" fill="#2a2016"/>
+            <path d="M0 150 C80 130 120 180 200 160 S330 110 400 130 V230 H0z" fill="#33281b"/>
+            <rect x="40" y="30" width="150" height="90" rx="4" fill="#3a2d1e" stroke="#4a3520"/>
+            <rect width="400" height="230" fill="url(#g)"/>
+            <circle cx="265" cy="100" r="50" fill="url(#fire)" stroke="#e8b965" stroke-dasharray="4 4"/>
+            <g font-family="JetBrains Mono, monospace" font-size="11" text-anchor="middle" font-weight="600">
+              <circle cx="112" cy="127" r="11" fill="#7fa6c4" stroke="#f5e6c8"/><text x="112" y="131" fill="#0c0906">Y</text>
+              <circle cx="87" cy="152" r="11" fill="#8aa66a" stroke="#f5e6c8"/><text x="87" y="156" fill="#0c0906">B</text>
+              <circle cx="137" cy="102" r="11" fill="#d4a04b" stroke="#fff1c9" stroke-width="2"/><text x="137" y="106" fill="#0c0906">T</text>
+              <circle cx="262" cy="102" r="11" fill="#c25a4a" stroke="#f5e6c8"/><text x="262" y="106" fill="#0c0906">G</text>
+              <circle cx="287" cy="77" r="11" fill="#c25a4a" stroke="#f5e6c8"/><text x="287" y="81" fill="#0c0906">G</text>
+            </g>
+            <rect width="400" height="230" fill="url(#fog)"/>
+          </svg>
+          <div class="init"><span class="now">▸ Thorne 19</span><span>Goblin 15</span><span>Ysolde 12</span><span>Bram 8</span></div>
+        </div>
+        <div class="page page-sheet" aria-hidden="true">
+          <div class="sheet-name">Ysolde Emberwake</div>
+          <div class="sheet-sub">High Elf Wizard · Level 7</div>
+          <div class="hp-row"><span>HP 32 / 44</span><span>+5 temp</span></div>
+          <div class="hp-bar"><i class="cur"></i><i class="tmp"></i></div>
+          <div class="chips"><span class="chip gold">Concentrating · Haste</span><span class="chip red">Poisoned</span></div>
+          <div class="pips"><span class="mini-label">Slots</span><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================= TABS
+       Without JS these are plain jump links and every section below shows.
+       With JS they become an ARIA tablist (one section at a time, deep-linkable). -->
+  <div class="tabs-wrap" id="sections">
+    <div class="wrap">
+      <nav class="tabs" id="tabs" aria-label="Sections">
+        <a class="tab" href="#players" id="tab-players" data-tab="players"><svg aria-hidden="true"><use href="#i-book"/></svg><span>Players</span></a>
+        <a class="tab" href="#dm" id="tab-dm" data-tab="dm"><svg aria-hidden="true"><use href="#i-map"/></svg><span class="short">DMs</span><span class="long">Dungeon Masters</span></a>
+        <a class="tab" href="#extras" id="tab-extras" data-tab="extras"><svg aria-hidden="true"><use href="#i-spark"/></svg><span>Extras</span></a>
+        <a class="tab" href="#install" id="tab-install" data-tab="install"><svg aria-hidden="true"><use href="#i-phone"/></svg><span>Install</span></a>
+        <a class="tab" href="#about" id="tab-about" data-tab="about"><svg aria-hidden="true"><use href="#i-flame"/></svg><span>About</span></a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="panels wrap">
+    <!-- ---------------------------------------------- PLAYERS -->
+    <section class="panel" id="players" aria-labelledby="h-players">
+      <div class="panel-head">
+        <h2 id="h-players">For players: <em>the character sheet</em></h2>
+        <p class="sub">A quiet sheet you reach for when you need it, then put back down. You still roll the dice.</p>
+      </div>
+      <div class="cards">
+        <div class="card"><span class="glyph" aria-hidden="true">✦</span><h3>Character Forge</h3><p>Race, class, subclass and background. Level to 20.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">♥</span><h3>Hit points</h3><p>HP, temp HP, conditions and death saves.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">◉</span><h3>Concentration</h3><p>Tracked per character, with a save prompt when you take damage.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">✺</span><h3>Spells and slots</h3><p>Prepared spells, slots, upcasting and rituals.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">❖</span><h3>Resources and rests</h3><p>Ki, rages, sorcery points and more, refilled on rest.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">⚔</span><h3>Gear and weapons</h3><p>Attunement, plus custom and magic weapons.</p></div>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------- DUNGEON MASTERS -->
+    <section class="panel" id="dm" aria-labelledby="h-dm">
+      <div class="panel-head">
+        <h2 id="h-dm">For DMs: <em>the battle table</em></h2>
+        <p class="sub">Run the whole fight from one screen, with no prep spreadsheet.</p>
+      </div>
+      <div class="cards">
+        <div class="card"><span class="glyph" aria-hidden="true">⚒</span><h3>Battle Forge</h3><p>Build encounters, then reset them for the next group.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">⌖</span><h3>Battle map</h3><p>Initiative, turn order, group moves, map images or video.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">☁</span><h3>Fog and darkvision</h3><p>Reveal the dungeon as the party explores.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">✹</span><h3>Areas of effect</h3><p>Drop fireballs, cones and lines on the grid.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">✎</span><h3>Floating notes</h3><p>Session notes in a window beside the map.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">⚄</span><h3>One-shot builder</h3><p>Roll an adventure offline, encounters ready to run.</p></div>
+      </div>
+
+      <div class="proj" aria-labelledby="h-proj">
+        <h3 id="h-proj">The projector screen</h3>
+        <p class="sub">Put a second window on a TV, projector or tablet. Players see only what they've earned.</p>
+        <div class="screens">
+          <figure class="screen">
+            <figcaption><b>Your laptop</b></figcaption>
+            <svg viewBox="0 0 400 220" role="img" aria-label="DM view: three heroes, two goblins, and a Lich Lord in an unexplored room, marked hidden from players.">
+              <rect width="400" height="220" fill="#2a2016"/>
+              <rect x="230" y="30" width="140" height="110" rx="4" fill="#3a2d1e" stroke="#c25a4a" stroke-dasharray="5 4"/>
+              <rect width="400" height="220" fill="url(#g)"/>
+              <g font-family="JetBrains Mono, monospace" font-weight="600" text-anchor="middle">
+                <circle cx="70" cy="150" r="13" fill="#7fa6c4"/><circle cx="100" cy="175" r="13" fill="#8aa66a"/><circle cx="110" cy="135" r="13" fill="#d4a04b"/>
+                <circle cx="180" cy="110" r="13" fill="#c25a4a"/><circle cx="195" cy="78" r="13" fill="#c25a4a"/>
+                <circle cx="300" cy="80" r="17" fill="#8a3f86" stroke="#f5e6c8"/>
+                <text x="300" y="122" fill="#f5e6c8" font-size="17">Lich Lord</text>
+              </g>
+            </svg>
+          </figure>
+          <figure class="screen">
+            <figcaption><b>The table</b></figcaption>
+            <svg viewBox="0 0 400 220" role="img" aria-label="Player view: the same map with the unexplored room under fog, the hidden monster not shown, and a player's fireball area placed on the goblins.">
+              <rect width="400" height="220" fill="#2a2016"/>
+              <rect width="400" height="220" fill="url(#g)"/>
+              <circle cx="186" cy="94" r="36" fill="url(#fire)" stroke="#e8b965" stroke-dasharray="4 4"/>
+              <rect x="215" y="0" width="185" height="220" fill="#050302" opacity=".94"/>
+              <g font-family="JetBrains Mono, monospace" font-weight="600" text-anchor="middle">
+                <circle cx="70" cy="150" r="13" fill="#7fa6c4"/><circle cx="100" cy="175" r="13" fill="#8aa66a"/><circle cx="110" cy="135" r="13" fill="#d4a04b"/>
+                <circle cx="180" cy="110" r="13" fill="#c25a4a"/><circle cx="195" cy="78" r="13" fill="#c25a4a"/>
+                <text x="307" y="116" fill="#b09468" font-size="17">fog</text>
+              </g>
+            </svg>
+          </figure>
+        </div>
+        <ul class="ticks">
+          <li><b>Hidden stays hidden.</b> Fogged monsters and secret names never reach the table.</li>
+          <li><b>Players move tokens,</b> and the fog lifts as they go.</li>
+          <li><b>Players place spell areas,</b> and they appear on your map at once.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------- EXTRAS -->
+    <section class="panel" id="extras" aria-labelledby="h-extras">
+      <div class="panel-head">
+        <h2 id="h-extras">Extras, <em>when you want them</em></h2>
+        <p class="sub">All optional, and all off until you use them.</p>
+      </div>
+      <div class="cards">
+        <div class="card"><span class="glyph" aria-hidden="true">✦</span><h3>Homebrew</h3><p>Make your own subclasses and magic items.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">◎</span><h3>Read from photos</h3><p>Snap an item description instead of typing it.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">❖</span><h3>Ask Hearth</h3><p>An offline helper that checks your character for mistakes.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">✺</span><h3>Bring your own AI</h3><p>Connect your own AI service. Nothing is sent unless you do.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">⇅</span><h3>Backups</h3><p>Export to a file and import it on any device.</p></div>
+        <div class="card"><span class="glyph" aria-hidden="true">☾</span><h3>Light and dark</h3><p>Parchment by day, candlelight by night.</p></div>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------- INSTALL -->
+    <section class="panel" id="install" aria-labelledby="h-install">
+      <div class="panel-head">
+        <h2 id="h-install">Install <em>Hearth</em></h2>
+        <p class="sub">It opens full screen and works offline. You can also just <a href="/app/">use it in your browser</a>.</p>
+      </div>
+      <div class="install-grid">
+        <div class="install-card">
+          <h3>One tap, where your browser allows it</h3>
+          <p>No app store, no account, nothing to sign.</p>
+          <a href="#install" class="btn btn-primary" data-install>
+            <svg aria-hidden="true"><use href="#i-down"/></svg><span>Install Hearth</span>
+          </a>
+        </div>
+        <div>
+          <details class="how" data-platform="ios">
+            <summary>iPhone and iPad</summary>
+            <ol>
+              <li>In <b>Safari</b> (or Chrome on iOS 16.4+), tap <kbd>Share</kbd> <svg class="share-ico" aria-hidden="true"><use href="#i-share"/></svg>.</li>
+              <li>Choose <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+            </ol>
+          </details>
+          <details class="how" data-platform="android">
+            <summary>Android</summary>
+            <ol>
+              <li>Tap <b>Install Hearth</b>, or open the browser menu <kbd>⋮</kbd>.</li>
+              <li>Choose <b>Install app</b> or <b>Add to Home screen</b>.</li>
+            </ol>
+          </details>
+          <details class="how" data-platform="desktop">
+            <summary>Computer</summary>
+            <ol>
+              <li><b>Chrome or Edge:</b> click <b>Install Hearth</b> or the install icon in the address bar.</li>
+              <li><b>Safari on a Mac:</b> <kbd>File</kbd> then <b>Add to Dock</b>.</li>
+              <li><b>Firefox:</b> can't install apps yet, so use Hearth in a tab.</li>
+            </ol>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------- ABOUT -->
+    <section class="panel" id="about" aria-labelledby="h-about">
+      <div class="panel-head">
+        <h2 id="h-about">About <em>Hearth</em></h2>
+      </div>
+      <div class="about-grid">
+        <div class="card">
+          <p class="label">Privacy</p>
+          <h3>Your table, your device</h3>
+          <p>No accounts, no tracking, no telemetry. Everything is stored in your browser and never leaves your device unless you export it. <a href="/privacy.html">Privacy policy</a>.</p>
+        </div>
+        <div class="card">
+          <p class="label">Honest warning</p>
+          <h3>This is hobby software</h3>
+          <p>Hearth is built by one person as a personal project, a single-file web app with no servers behind it. If you find a bug, it's a bug. You're an early reader of an unfinished book.</p>
+        </div>
+      </div>
+      <blockquote class="pull">The leather-bound spellbook has been a fantasy ideal for fifty years. Hearth is what that ideal feels like when it has a battery.</blockquote>
+      <h3 class="faq-title">Questions</h3>
+      <details class="how"><summary>Does it really work offline?</summary><p>Yes. After the first load everything is on your device, so it works at a table with no signal.</p></details>
+      <details class="how"><summary>Do I have to install it?</summary><p>No. The website and the installed app run the same code. Installing adds an icon and a full-screen window.</p></details>
+      <details class="how"><summary>How do I move characters to another device?</summary><p>Export a backup file in the app and import it on the other device. Clearing browser data deletes your characters, so back up now and then.</p></details>
+      <details class="how"><summary>Does it replace my DM or my dice?</summary><p>No. Hearth does the bookkeeping. You roll the dice, and the DM makes the rulings.</p></details>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="foot-meta">Hearth · A D&amp;D 5e companion · <span data-version>v0.91.3</span></span>
+    <ul class="foot-links">
+      <li><a href="/app/">Open Hearth</a></li>
+      <li><a href="#install">Install</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="/privacy.html">Privacy</a></li>
+    </ul>
+  </div>
+</footer>
+
+<!-- Install help sheet -->
+<dialog class="sheet" id="installSheet" aria-labelledby="sheetTitle">
+  <div class="sheet-inner">
+    <div class="sheet-top">
+      <h2 id="sheetTitle">Install Hearth</h2>
+      <button type="button" class="close" data-close aria-label="Close">×</button>
+    </div>
+    <div id="sheetBody"></div>
+    <button type="button" class="btn btn-primary" id="sheetPrompt" hidden>
+      <svg aria-hidden="true"><use href="#i-down"/></svg>Install now
+    </button>
+    <p class="fineprint">You can also <a href="/app/">use Hearth in your browser</a>. It works the same, with nothing to install.</p>
+  </div>
+</dialog>
+
+<script>
+/* =================================================================
+   RELEASE CONSTANTS: change these and nothing else on release.
+   HEARTH_VERSION should match HEARTH_VERSION in /app/index.html.
+   ANDROID_APP_URL: leave '' until the native Android app ships;
+   set it (Play Store or .apk URL) to reveal the Android slot.
+   ================================================================= */
+const HEARTH_VERSION = '0.91.3';
+const ANDROID_APP_URL = '';
+const ANDROID_APP_LABEL = 'Get it on Google Play';
+
+(function () {
+  'use strict';
+  const doc = document.documentElement;
+  doc.classList.add('js');
+
+  /* ---------- Version label (top bar + footer) ---------- */
+  document.querySelectorAll('[data-version]').forEach((el) => { el.textContent = 'v' + HEARTH_VERSION; });
+
+  /* ---------- Brand icon: fall back to the inline flame if /icons/ 404s ---------- */
+  document.querySelectorAll('.brand-img').forEach((img) => {
+    const hide = () => { img.style.display = 'none'; };
+    if (img.complete && img.naturalWidth === 0) hide();
+    img.addEventListener('error', hide);
+  });
+
+  /* ---------- Android slot ---------- */
+  if (ANDROID_APP_URL) {
+    const slot = document.getElementById('androidSlot');
+    document.getElementById('androidLink').href = ANDROID_APP_URL;
+    document.getElementById('androidLabel').textContent = ANDROID_APP_LABEL;
+    slot.hidden = false;
+  }
+
+  /* ---------- Platform detection ---------- */
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/i.test(ua);
+  const isFirefox = /Firefox|FxiOS/i.test(ua);
+  const isSamsung = /SamsungBrowser/i.test(ua);
+  const isMacSafari = !isIOS && /Macintosh/.test(ua) && /Safari/.test(ua) && !/Chrome|Chromium|Edg|Firefox/.test(ua);
+  const INSTALLED_KEY = 'hearth.landing.installed';
+
+  function isStandalone() {
+    return ['standalone', 'fullscreen', 'minimal-ui', 'window-controls-overlay']
+      .some((m) => window.matchMedia('(display-mode: ' + m + ')').matches) || navigator.standalone === true;
+  }
+  function storedInstalled() { try { return localStorage.getItem(INSTALLED_KEY) === '1'; } catch (e) { return false; } }
+  function setStoredInstalled(v) { try { v ? localStorage.setItem(INSTALLED_KEY, '1') : localStorage.removeItem(INSTALLED_KEY); } catch (e) {} }
+
+  /* state: 'installed' | 'prompt' | 'ios' | 'manual' */
+  let deferredPrompt = null;
+  let state = isStandalone() || storedInstalled() ? 'installed' : (isIOS ? 'ios' : 'manual');
+
+  const installEls = Array.from(document.querySelectorAll('[data-install]'));
+  const note = document.getElementById('ctaNote');
+  const sheet = document.getElementById('installSheet');
+  const sheetBody = document.getElementById('sheetBody');
+  const sheetTitle = document.getElementById('sheetTitle');
+  const sheetPrompt = document.getElementById('sheetPrompt');
+
+  const ICON_DOWN = '<svg aria-hidden="true"><use href="#i-down"/></svg>';
+  const ICON_OPEN = '<svg aria-hidden="true"><use href="#i-open"/></svg>';
+
+  function render() {
+    installEls.forEach((el) => {
+      const small = el.classList.contains('btn-sm');
+      if (state === 'installed') {
+        el.href = '/app/';
+        el.removeAttribute('role');
+        el.innerHTML = ICON_OPEN + '<span data-install-label>' + (small ? 'Open' : 'Open Hearth') + '</span>';
+      } else {
+        el.href = '#install';
+        el.setAttribute('role', 'button');
+        el.setAttribute('aria-haspopup', state === 'prompt' ? 'false' : 'dialog');
+        el.innerHTML = ICON_DOWN + '<span data-install-label>' + (small ? 'Install' : 'Install Hearth') + '</span>';
+      }
+      el.dataset.state = state;
+    });
+    // "Open in browser" is redundant once installed
+    document.querySelectorAll('[data-open-browser]').forEach((el) => { el.hidden = state === 'installed'; });
+    if (state === 'installed') note.textContent = isStandalone()
+      ? "You're running the installed app. Welcome back."
+      : 'Hearth is installed on this device. Open it from your home screen, app list or here.';
+    else if (state === 'prompt') note.textContent = 'One tap to install. Free, about 3 MB, works offline.';
+    else if (state === 'ios') note.textContent = 'On iPhone and iPad, install from Safari with Share, then Add to Home Screen.';
+    else note.textContent = 'Installs from your browser in seconds. No app store, no account.';
+    sheetPrompt.hidden = !deferredPrompt;
+  }
+
+  /* ---------- Sheet content per platform ---------- */
+  const SHARE = '<svg class="share-ico" aria-hidden="true"><use href="#i-share"/></svg>';
+  function sheetHTML() {
+    if (isIOS) {
+      const nonSafari = /CriOS|FxiOS|EdgiOS/.test(ua);
+      return '<p>Apple doesn\'t let websites install themselves, but it only takes three taps:</p><ol>' +
+        '<li><span>Tap <b>Share</b> ' + SHARE + (nonSafari ? ' in the address bar' : ' at the bottom of Safari (at the top on iPad)') + '.</span></li>' +
+        '<li><span>Scroll down and tap <b>Add to Home Screen</b>.</span></li>' +
+        '<li><span>Tap <b>Add</b>. Hearth opens full screen from your home screen and works offline.</span></li></ol>' +
+        (nonSafari ? '<p class="fineprint">On iOS older than 16.4, open this page in Safari first.</p>' : '');
+    }
+    if (isAndroid) {
+      const menu = isFirefox ? 'menu <kbd>⋮</kbd>' : isSamsung ? 'menu <kbd>≡</kbd>' : 'menu <kbd>⋮</kbd> at the top right';
+      return '<p>Your browser didn\'t offer one-tap install here, so use its menu instead:</p><ol>' +
+        '<li><span>Open the browser ' + menu + '.</span></li>' +
+        '<li><span>Tap <b>Install app</b> or <b>Add to Home screen</b>' + (isSamsung ? ' (Samsung Internet: <b>Add page to</b>, then <b>Home screen</b>)' : '') + '.</span></li>' +
+        '<li><span>Confirm. Hearth appears with your other apps and works offline.</span></li></ol>';
+    }
+    if (isMacSafari) {
+      return '<p>Safari on a Mac can add Hearth to your Dock (macOS Sonoma or later):</p><ol>' +
+        '<li><span>Open the <b>File</b> menu, or tap Share ' + SHARE + '.</span></li>' +
+        '<li><span>Choose <b>Add to Dock</b>, then <b>Add</b>.</span></li></ol>';
+    }
+    if (isFirefox) {
+      return '<p>Desktop Firefox can\'t install web apps yet. You can still use Hearth in a tab, and it works offline after the first load. Bookmark it to keep it handy.</p>' +
+        '<p style="margin-top:10px">To get an app window, open this page in <b>Chrome</b> or <b>Edge</b> and click <b>Install Hearth</b>.</p>';
+    }
+    return '<p>Your browser hasn\'t offered one-tap install yet. It usually does after a few seconds, or you can install from its menu:</p><ol>' +
+      '<li><span><b>Chrome:</b> click the install icon in the address bar, or open the menu <kbd>⋮</kbd> and choose <b>Cast, save and share</b>, then <b>Install page</b>.</span></li>' +
+      '<li><span><b>Edge:</b> open the menu <kbd>…</kbd> and choose <b>Apps</b>, then <b>Install this site as an app</b>.</span></li></ol>';
+  }
+
+  let lastFocus = null;
+  function openSheet() {
+    sheetTitle.textContent = isIOS ? 'Add Hearth to your Home Screen' : 'Install Hearth';
+    sheetBody.innerHTML = sheetHTML();
+    sheetPrompt.hidden = !deferredPrompt;
+    lastFocus = document.activeElement;
+    if (typeof sheet.showModal === 'function') sheet.showModal();
+    else { location.hash = '#install'; return; }
+    sheet.querySelector('[data-close]').focus();
+  }
+  function closeSheet() { if (sheet.open) sheet.close(); }
+  sheet.addEventListener('close', () => { if (lastFocus && lastFocus.focus) lastFocus.focus(); });
+  sheet.querySelector('[data-close]').addEventListener('click', closeSheet);
+  sheet.addEventListener('click', (e) => { if (e.target === sheet) closeSheet(); }); // backdrop tap
+
+  async function runPrompt(btn) {
+    const p = deferredPrompt;
+    if (!p) return openSheet();
+    deferredPrompt = null; // a prompt event can only be used once
+    if (btn) btn.setAttribute('aria-busy', 'true');
+    try {
+      await p.prompt();
+      const choice = await p.userChoice;
+      if (choice && choice.outcome === 'accepted') {
+        note.textContent = 'Installing Hearth. Look for it on your home screen or app list.';
+        state = 'installed'; setStoredInstalled(true);
+        setTimeout(render, 1500);
+      } else {
+        state = isIOS ? 'ios' : 'manual';
+        render();
+        note.textContent = 'No problem. You can install later from here or from your browser menu.';
+      }
+    } catch (err) {
+      state = 'manual'; render(); openSheet();
+    } finally {
+      if (btn) btn.removeAttribute('aria-busy');
+    }
+  }
+
+  installEls.forEach((el) => {
+    el.addEventListener('click', (e) => {
+      if (state === 'installed') return; // plain link to /app/
+      e.preventDefault();
+      if (deferredPrompt) runPrompt(el); else openSheet();
+    });
+  });
+  sheetPrompt.addEventListener('click', () => { closeSheet(); runPrompt(null); });
+
+  /* Chrome / Edge / Samsung Internet: capture the install prompt */
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!isStandalone()) { state = 'prompt'; setStoredInstalled(false); } // firing means "not installed"
+    render();
+  });
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null; state = 'installed'; setStoredInstalled(true); closeSheet(); render();
+  });
+  window.matchMedia('(display-mode: standalone)').addEventListener?.('change', (ev) => { if (ev.matches) { state = 'installed'; render(); } });
+
+  /* Android Chrome: ask whether the same web app is already installed (needs related_applications in the manifest; harmless otherwise) */
+  if (state !== 'installed' && 'getInstalledRelatedApps' in navigator) {
+    navigator.getInstalledRelatedApps().then((apps) => {
+      if (apps && apps.length && !deferredPrompt) { state = 'installed'; render(); }
+    }).catch(() => {});
+  }
+
+  render();
+
+  /* ---------- Section tabs (ARIA tabs + deep links + back button) ----------
+     Without JS: plain jump links, all sections visible.
+     With JS: one panel at a time; URL hash = selected tab; back/forward work. */
+  const TAB_IDS = ['players', 'dm', 'extras', 'install', 'about'];
+  const ALIASES = { dms: 'dm', projector: 'dm', faq: 'about', privacy: 'about' };
+  const tablist = document.getElementById('tabs');
+  const tabsWrap = document.getElementById('sections');
+  const tabs = TAB_IDS.map((id) => document.getElementById('tab-' + id));
+  const panels = TAB_IDS.map((id) => document.getElementById(id));
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let current = null;
+
+  tablist.setAttribute('role', 'tablist');
+  tablist.removeAttribute('aria-label');
+  tablist.setAttribute('aria-label', 'Hearth sections');
+  tabs.forEach((t, i) => {
+    t.setAttribute('role', 'tab');
+    t.setAttribute('aria-controls', TAB_IDS[i]);
+    panels[i].setAttribute('role', 'tabpanel');
+    panels[i].setAttribute('aria-labelledby', t.id);
+    panels[i].tabIndex = 0;
+  });
+
+  function idFromHash(h) {
+    const k = decodeURIComponent((h || '').replace(/^#/, '')).toLowerCase();
+    if (TAB_IDS.includes(k)) return k;
+    return ALIASES[k] || null;
+  }
+  function scrollToTabs() {
+    const bar = document.querySelector('.topbar').offsetHeight;
+    const top = tabsWrap.getBoundingClientRect().top + window.scrollY - bar;
+    window.scrollTo({ top: Math.max(0, top), behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+  }
+  function isStuck() {
+    const bar = document.querySelector('.topbar').offsetHeight;
+    const top = tabsWrap.getBoundingClientRect().top;
+    return top <= bar + 1 || top > window.innerHeight * 0.45; // stuck, or too low to see the panel
+  }
+  /* opts: push (add history entry), scroll ('always' | 'ifStuck' | false), focus (move focus to tab) */
+  function selectTab(id, opts) {
+    opts = opts || {};
+    if (!TAB_IDS.includes(id)) id = TAB_IDS[0];
+    const changed = id !== current;
+    current = id;
+    tabs.forEach((t, i) => {
+      const on = TAB_IDS[i] === id;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      panels[i].hidden = !on;
+      if (on && changed && !reduceMotion.matches) { panels[i].classList.remove('enter'); void panels[i].offsetWidth; panels[i].classList.add('enter'); }
+    });
+    if (opts.push && location.hash !== '#' + id) history.pushState({ tab: id }, '', '#' + id);
+    if (opts.focus) tabs[TAB_IDS.indexOf(id)].focus();
+    if (opts.scroll === 'always' || (opts.scroll === 'ifStuck' && isStuck())) scrollToTabs();
+  }
+
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', (e) => { e.preventDefault(); selectTab(TAB_IDS[i], { push: true, scroll: 'ifStuck' }); });
+  });
+  tablist.addEventListener('keydown', (e) => {
+    const i = tabs.indexOf(document.activeElement);
+    if (i < 0) return;
+    let n = null;
+    if (e.key === 'ArrowRight') n = (i + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft') n = (i - 1 + tabs.length) % tabs.length;
+    else if (e.key === 'Home') n = 0;
+    else if (e.key === 'End') n = tabs.length - 1;
+    else if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); selectTab(TAB_IDS[i], { push: true, scroll: 'ifStuck' }); return; }
+    if (n === null) return;
+    e.preventDefault();
+    selectTab(TAB_IDS[n], { push: true, focus: true, scroll: 'ifStuck' });
+  });
+  // Any other in-page link to a section (footer, copy) switches tab and brings it into view
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a || a.hasAttribute('data-install') || a.getAttribute('role') === 'tab') return;
+    const id = idFromHash(a.getAttribute('href'));
+    if (!id) return;
+    e.preventDefault();
+    selectTab(id, { push: true, scroll: 'always' });
+  });
+  // Back / forward buttons and manual hash edits
+  window.addEventListener('popstate', () => selectTab(idFromHash(location.hash) || TAB_IDS[0], { scroll: 'ifStuck' }));
+  window.addEventListener('hashchange', () => { const id = idFromHash(location.hash); if (id && id !== current) selectTab(id, { scroll: 'always' }); });
+
+  const initial = idFromHash(location.hash);
+  selectTab(initial || TAB_IDS[0]);
+  if (initial) requestAnimationFrame(() => { window.scrollTo(0, 0); requestAnimationFrame(() => { const b = document.querySelector('.topbar').offsetHeight; window.scrollTo(0, tabsWrap.getBoundingClientRect().top + window.scrollY - b); }); });
+
+  /* Open the matching "how to install" panel for this platform */
+  const plat = isIOS ? 'ios' : isAndroid ? 'android' : 'desktop';
+  const det = document.querySelector('details.how[data-platform="' + plat + '"]');
+  if (det) det.open = true;
+
+  /* ---------- Root service worker (unchanged from the old landing page):
+     caches the app shell so the installed app starts offline. ---------- */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+  }
+
+  /* Test hook (used by the automated checks; harmless in production) */
+  window.__hearthInstallState = () => ({ state, hasPrompt: !!deferredPrompt });
+  window.__hearthTab = () => current;
+})();
+</script>
+</body>
+</html>

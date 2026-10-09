@@ -1,0 +1,10 @@
+# Hearth redirect rules. Netlify reads top to bottom.
+
+# Pretty path for the app — both /app and /app/ serve the app
+/app    /app/index.html  200
+
+# SPA fallback for the app's internal routes
+/app/*  /app/index.html  200
+
+# Everything else: serve index.html for unknown paths (SPA-friendly)
+/*      /index.html      200

@@ -1,0 +1,15 @@
+{
+  "name": "CertMate — BS 7671 certs",
+  "short_name": "CertMate",
+  "description": "BS 7671 certificates — Minor Works, Schedule of Test Results, EIC & EICR — with live test checks and an M&S store database.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#e9edf1",
+  "theme_color": "#1c2836",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
