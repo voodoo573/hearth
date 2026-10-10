@@ -400,7 +400,7 @@ dialog.sheet[open] { animation: sheetIn 260ms var(--ease); }
       </span>
       <span class="brand-name">Hearth</span>
     </a>
-    <span class="version-tag" data-version>v0.92.0</span>
+    <span class="version-tag" data-version>v0.92.1</span>
     <a href="#install" class="btn btn-primary btn-sm" data-install>
       <svg aria-hidden="true"><use href="#i-down"/></svg><span>Install</span>
     </a>
@@ -648,7 +648,7 @@ dialog.sheet[open] { animation: sheetIn 260ms var(--ease); }
 
 <footer>
   <div class="wrap">
-    <span class="foot-meta">Hearth · A D&amp;D 5e companion · <span data-version>v0.92.0</span></span>
+    <span class="foot-meta">Hearth · A D&amp;D 5e companion · <span data-version>v0.92.1</span></span>
     <ul class="foot-links">
       <li><a href="/app/">Open Hearth</a></li>
       <li><a href="#install">Install</a></li>
@@ -680,7 +680,7 @@ dialog.sheet[open] { animation: sheetIn 260ms var(--ease); }
    ANDROID_APP_URL: leave '' until the native Android app ships;
    set it (Play Store or .apk URL) to reveal the Android slot.
    ================================================================= */
-const HEARTH_VERSION = '0.92.0';
+const HEARTH_VERSION = '0.92.1';
 const ANDROID_APP_URL = '/download/hearth-1.0.0.apk';
 const ANDROID_APP_LABEL = 'Download Android app (APK)';
 
@@ -958,10 +958,16 @@ const ANDROID_APP_LABEL = 'Download Android app (APK)';
   const det = document.querySelector('details.how[data-platform="' + plat + '"]');
   if (det) det.open = true;
 
-  /* ---------- Root service worker (unchanged from the old landing page):
-     caches the app shell so the installed app starts offline. ---------- */
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+  /* ---------- Service workers (v0.92.1):
+     /sw.js (scope /) caches the landing page; it no longer touches /app/.
+     /app/sw.js (scope /app/) is the app's own worker. Registering it here too,
+     with the exact URL the app uses, caches the app shell straight away, so an
+     app installed from this page starts offline on its first launch. ---------- */
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(() => {});
+      navigator.serviceWorker.register('/app/sw.js?v=' + encodeURIComponent('v' + HEARTH_VERSION), { scope: '/app/', updateViaCache: 'none' }).catch(() => {});
+    });
   }
 
   /* Test hook (used by the automated checks; harmless in production) */
