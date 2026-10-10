@@ -7915,7 +7915,7 @@ body.hearth-wide .app {
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '1.1.1';
+const HEARTH_VERSION = '1.1.2';
 // ============================================================
 // SRD 5.1 DATA v2 - structured for in-app casting
 // All content here is from the SRD 5.1 (CC-BY-4.0)
@@ -19731,7 +19731,7 @@ const SPELLS = [
   {"name": "Animal Friendship", "level": 1, "school": "enchantment", "classes": ["bard", "druid", "ranger"], "time": "action", "range": "See spell", "components": "V, S", "duration": "24 hours", "desc": "Convince a beast you mean no harm. Wis save negates.", "kind": "save", "save": "wis"},
   {"name": "Detect Evil and Good", "level": 1, "school": "divination", "classes": ["cleric", "paladin"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 10 min", "desc": "Sense aberrations, celestials, elementals, fey, fiends, undead and consecrated/desecrated places.", "kind": "utility", "concentration": true},
   {"name": "Detect Poison and Disease", "level": 1, "school": "divination", "classes": ["cleric", "druid", "paladin", "ranger"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 10 min", "desc": "Sense poisons, poisonous creatures and diseases within 30 ft.", "kind": "utility", "concentration": true, "ritual": true},
-  {"name": "Entangle", "level": 1, "school": "conjuration", "classes": ["druid"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 1 min", "desc": "20-ft square of grasping plants. Str save or restrained.", "kind": "save", "save": "str", "concentration": true},
+  {"name": "Entangle", "level": 1, "school": "conjuration", "classes": ["druid", "ranger"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 1 min", "desc": "20-ft square of grasping plants. Str save or restrained.", "kind": "save", "save": "str", "concentration": true},
   {"name": "Expeditious Retreat", "level": 1, "school": "transmutation", "classes": ["sorcerer", "warlock", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 10 min", "desc": "Dash as a bonus action while the spell lasts.", "kind": "utility", "concentration": true},
   {"name": "Heroism", "level": 1, "school": "enchantment", "classes": ["bard", "paladin"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 1 min", "desc": "Target immune to frightened and gains temp HP each turn.", "kind": "utility", "concentration": true, "scaleType": "slot", "scaleAt": {"extraTargets": 1}},
   {"name": "Hideous Laughter", "level": 1, "school": "enchantment", "classes": ["bard", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 1 min", "desc": "Wis save or target falls prone, incapacitated, and cannot stand.", "kind": "save", "save": "wis", "concentration": true},
@@ -23455,7 +23455,8 @@ function itemOwnWeaponId(d) {
   if (!d) return null;
   const norm = (x) => String(x || '').toLowerCase().replace(/[\s-]+/g, '_');
   const cand = d.baseWeapon || (d.mech && (d.mech.weapon || d.mech.baseWeapon)) || d.weapon || null;
-  if (cand && WEAPONS[norm(cand)]) return norm(cand);
+  // v1.1.2 — a named weapon is matched exactly; no guessing from type or text.
+  if (cand) return norm(cand);
   if (/^staff$/i.test(d.type || '') || /\bstaff\b/i.test(d.name || '')) return 'quarterstaff';
   const txt = String(d.desc || '').toLowerCase();
   const m = txt.match(/with this (?:magic(?:al)? )?([a-z][a-z ]{2,20}?)(?:[.,;]| and | to | you|$)/);
@@ -24937,6 +24938,7 @@ function restoreResource(ch, resource, amount = 1) {
 
 // Reset resources on a rest. type = 'short'|'long'|'day'
 function applyRestToResources(ch, restType) {
+  try { hbClearStates(ch); } catch (x) {}
   // Walk every available resource for this character (now multiclass-aware
   // and includes subclass resources like Portent). characterResources()
   // already handles class/subclass merging.
@@ -26169,6 +26171,15 @@ function weaponOnHitRiders(ch, weapon) {
         sublabel: oncePerTurn ? 'Once per turn — toggle on the hit you want' : null,
       });
     });
+    // v1.1.2 — riders from an active timed state (Roaring Fire: +1d6 fire on each hit).
+    try {
+      hbStatefulActives(ch).forEach(e => {
+        if (!isEffectActive(ch, hbStateId(e))) return;
+        const rd = hbActiveRider(e);
+        if (!rd) return;
+        out.push({ dice: { count: rd.count, sides: rd.sides }, type: rd.dtype || weapon.type, save: null, vs: null, requiresClass: null, conditional: false, label: null, sublabel: null });
+      });
+    } catch (x) {}
   }
   return out;
 }
@@ -38635,6 +38646,7 @@ function renderBonusTab(ch) {
           </div>
           ${f.kind === 'heal-self' ? `<button class="action-roll-btn ${f.empty ? 'used' : ''}" data-self-heal="${f.dice.count}|${f.dice.sides}|${f.bonus}|${escape(f.name)}|${f.resourceId || ''}" ${f.empty ? 'disabled' : ''}>${f.empty ? 'Used' : 'Roll'}</button>` :
             f.kind === 'roll' ? `<button class="action-roll-btn" data-quick-roll="${f.dice.count}|${f.dice.sides}|0|${escape(f.name)}">Roll</button>` :
+            (f.stateId && hbStateButton(f)) ? hbStateButton(f) :
             f.kind === 'resource' ? `<button class="action-roll-btn ${f.empty ? 'used' : ''}" data-feature-resource-use="${f.resourceId}" ${f.empty ? 'disabled' : ''}>${f.empty ? 'Used' : 'Use'}</button>` :
             f.kind === 'rage' ? `<button class="action-roll-btn" data-rage-open="1">${isRaging(ch) ? 'Manage' : 'Use'}</button>` :
             f.options === 'ki_spend' ? `<button class="action-roll-btn ${f.empty ? 'used' : ''}" data-ki-spend="${f.kiCost || 1}|${escape(f.name)}" ${f.empty ? 'disabled' : ''}>${f.empty ? 'No ki' : 'Use'}</button>` :
@@ -39304,7 +39316,8 @@ function renderAllSpellsTab(ch) {
   // v0.92.1 — always-prepared subclass spells (domain, oath, circle, …) get their
   // own "Always prepared" group: never listed under Prepared, never counted.
   const _alwaysSeen = new Set();
-  const alwaysPreparedSpells = (m.type === 'prepared')
+  // v1.1.2 — also for known casters (ranger: Gloom Stalker, Grove Warden).
+  const alwaysPreparedSpells = (m.type === 'prepared' || m.type === 'known')
     ? featureSpellGrantsForCharacter(ch)
         .filter(g => g.reset === 'known' && (g.level || 0) > 0)
         .map(g => SPELLS.find(sp => sp.name === g.spellName))
@@ -39420,8 +39433,9 @@ function renderAllSpellsTab(ch) {
   // ===== ALWAYS PREPARED (v0.92.1) =====
   if (alwaysPreparedSpells.length > 0) {
     const srcs = [...new Set(featureSpellGrantsForCharacter(ch).filter(g => g.reset === 'known' && _alwaysNames.has(g.spellName)).map(g => g.source).filter(Boolean))];
-    html += `<div class="section-mini always-prepared-head" style="margin-top:14px;">Always prepared</div>`;
-    html += `<div class="prep-status-hint" style="margin-bottom:6px;">${escape(srcs.join(' · ') || 'Subclass spells')} — always prepared, not counted against your limit.</div>`;
+    const _knownCaster = m.type === 'known';
+    html += `<div class="section-mini always-prepared-head" style="margin-top:14px;">${_knownCaster ? 'Always known' : 'Always prepared'}</div>`;
+    html += `<div class="prep-status-hint" style="margin-bottom:6px;">${escape(srcs.join(' · ') || 'Subclass spells')} — ${_knownCaster ? 'always known, not counted against your spells known' : 'always prepared, not counted against your limit'}.</div>`;
     for (let lvl = 1; lvl <= 9; lvl++) {
       const lvlSpells = alwaysPreparedSpells.filter(s => s.level === lvl).sort((a, b) => a.name.localeCompare(b.name));
       if (lvlSpells.length === 0) continue;
@@ -44684,6 +44698,17 @@ function wirePlay(ch) {
       if (!r || resourceRemaining(ch, r) <= 0) return;
       if (!spendResource(ch, r)) return;
       logRoll(`${r.name} used`, '', '');
+      // v1.1.2 — a timed active (Roaring Fire) turns on its state.
+      try { const se = hbStatefulActives(ch).find(e => `hb_active_${e._level}_${forgeSlug(e._feature || 'feat')}` === rid); if (se) hbStartState(ch, se); } catch (x) {}
+      saveCharacter(ch);
+      render();
+    });
+  });
+  document.querySelectorAll('[data-hb-state-start]').forEach(b => {
+    b.addEventListener('click', () => {
+      const se = hbStatefulActives(ch).find(e => hbStateId(e) === b.dataset.hbStateStart);
+      if (!se) return;
+      hbStartState(ch, se);
       saveCharacter(ch);
       render();
     });
@@ -46404,7 +46429,9 @@ function homebrewInferEffects(feat, explicit) {
   }
   // Activation: ki costs, Channel Divinity options and limited-use triggers.
   if (!has('active')) {
-    const ki = txt.match(/spend (\d+) ki points?/i);
+    // v1.1.2 — "when you spend 1 ki point as part of your Slow to Anger feature"
+    // boosts another feature's ki spend; it is not a ki ability of its own.
+    const ki = /as part of (?:your |the )?[A-Z]/.test(txt) ? null : txt.match(/spend (\d+) ki points?/i);
     const cdNames = []; const cdRe = /(?:^|\n)\s*([A-Z][A-Za-z' ]{2,40})\.\s+(?:As an action|As a bonus action|As a reaction)?,?\s*(?:you can )?use your Channel Divinity/g; let c;
     while ((c = cdRe.exec(txt))) cdNames.push(c[1].trim());
     const usesM = txt.match(/use this feature a number of times equal to your (proficiency bonus|(\w+) modifier)/i);
@@ -46430,14 +46457,26 @@ function homebrewInferEffects(feat, explicit) {
 // using it for both.
 function homebrewSaveInfo(ch, e) {
   if (!e) return null;
-  const txt = String(e._desc || '');
+  // v1.1.2 — dc: 'none' turns the DC off; dc: 'text' (or dcText) shows the
+  // rules' own formula, e.g. Uncanny Fortitude's "5 + damage taken".
+  if (e.dc === 'none' || e.saveAbility === 'none') return null;
+  const txt = String((e.desc || '') + ' ' + (e._desc || ''));
   let save = e.saveAbility || null;
   let dc = e.dc || e.dcAbility || null;
+  const dcTextOf = () => {
+    if (e.dcText) return String(e.dcText);
+    const m = txt.match(/\bDC (?:of |equal to |equals |= )?(\d+ \+ (?!your (?:proficiency|Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma))[^.;,)]+)/i);
+    return m ? m[1].replace(/\bthe\s+/i, '').trim() : null;
+  };
   if (!save) {
     const m = txt.match(/(?:make|succeed on) an? (Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) saving throw/i);
     if (m) save = hbAbilityKey(m[1]);
   }
   if (!save) return null;
+  if (dc === 'text' || (!dc && dcTextOf() && !/against your spell save DC/i.test(txt))) {
+    const t = dcTextOf();
+    return t ? { save, dc: 'text', value: t } : { save, dc: 'text', value: '—' };
+  }
   if (!dc) {
     if (/against your spell save DC/i.test(txt)) dc = 'spell';
     else {
@@ -46456,7 +46495,10 @@ function homebrewSaveInfo(ch, e) {
 function homebrewFeatureEffects(feat) {
   const ex = Array.isArray(feat && feat.effects) ? feat.effects : [];
   let inf = [];
-  try { inf = homebrewInferEffects(feat, ex); } catch (x) { inf = []; }
+  // v1.1.2 — data can switch text reading off: infer: false, or an explicit
+  // empty effects list ("this feature has no mechanics").
+  const noInfer = feat && (feat.infer === false || (Array.isArray(feat.effects) && feat.effects.length === 0));
+  if (!noInfer) { try { inf = homebrewInferEffects(feat, ex); } catch (x) { inf = []; } }
   return ex.concat(inf);
 }
 function homebrewSubclassEffects(ch) {
@@ -46735,12 +46777,68 @@ function hbKiResourceId(ch) {
   const res = (typeof characterResources === 'function') ? characterResources(ch) : [];
   return (res.find(r => r.id === 'ki') || res.find(r => r.id === 'focus_points_55') || {}).id || null;
 }
+// v1.1.2 — actives with a duration ("For 1 minute: … +1d6 fire on weapon hits")
+// become an active state on the Timed effects strip; while it is on, its
+// damage rider applies to every weapon hit. Data: duration: "1 minute",
+// rider: { count, sides, dtype }. Ends with End or on any rest.
+function hbActiveDuration(e) {
+  if (!e) return null;
+  if (e.duration === 'none') return null;
+  if (e.duration) return String(e.duration).slice(0, 40);
+  const m = String(e.desc || '').match(/^For (\d+ (?:rounds?|minutes?|hours?))\b/i) || String(e._desc || '').match(/\bFor (\d+ (?:rounds?|minutes?|hours?)), you (?:gain|have|can)/i);
+  return m ? m[1] : null;
+}
+function hbActiveRider(e) {
+  if (!e) return null;
+  const r = e.rider;
+  if (r && typeof r === 'object') {
+    const c = parseInt(r.count, 10) || 1, sd = parseInt(r.sides, 10);
+    return sd >= 2 ? { count: c, sides: sd, dtype: r.dtype || r.type || null } : null;
+  }
+  const m = String(e.desc || '').match(/\+(\d+)d(\d+) (\w+)(?: damage)? on (?:your )?(?:weapon )?hits/i)
+    || String(e._desc || '').match(/weapon attacks deal an extra (\d+)d(\d+) (\w+) damage on a hit/i);
+  return m ? { count: +m[1], sides: +m[2], dtype: m[3].toLowerCase() } : null;
+}
+function hbStateId(e) { return `hb_state_${e._level}_${forgeSlug(e._feature || 'feat')}`; }
+function hbStatefulActives(ch) {
+  if (typeof homebrewSubclassEffects !== 'function') return [];
+  return homebrewSubclassEffects(ch).filter(e => e.kind === 'active' && (hbActiveDuration(e) || (e.rider && typeof e.rider === 'object')));
+}
+function hbStartState(ch, e) {
+  if (!ch || !e) return;
+  const id = hbStateId(e);
+  if (!Array.isArray(ch.activeEffects)) ch.activeEffects = [];
+  ch.activeEffects = ch.activeEffects.filter(x => x.id !== id);
+  const dur = hbActiveDuration(e), rd = hbActiveRider(e);
+  const meta = [dur ? 'Lasts ' + dur : 'Active until ended', rd ? `+${rd.count}d${rd.sides}${rd.dtype ? ' ' + rd.dtype : ''} on weapon hits` : ''].filter(Boolean).join(' · ');
+  ch.activeEffects.push({ id, source: 'homebrew', startedAt: Date.now(), name: e._feature || 'Feature', meta, duration: dur || null });
+}
+function hbClearStates(ch) {
+  if (ch && Array.isArray(ch.activeEffects)) ch.activeEffects = ch.activeEffects.filter(x => !String(x.id || '').startsWith('hb_state_'));
+}
+function hbStateButton(f) {
+  if (!f || !f.stateId) return '';
+  if (f.stateActive) return `<button class="action-roll-btn danger" data-end-effect="${escape(f.stateId)}">End</button>`;
+  if (f.kind === 'note') return `<button class="action-roll-btn" data-hb-state-start="${escape(f.stateId)}">Start</button>`;
+  return '';
+}
 function homebrewActiveDescriptors(ch, cost) {
   if (typeof homebrewSubclassEffects !== 'function') return [];
   const res = (typeof characterResources === 'function') ? characterResources(ch) : [];
   return homebrewSubclassEffects(ch)
     .filter(e => e.kind === 'active' && hbActiveCost(e) === cost)
     .map(e => {
+      const d = hbDescriptorFor(ch, e, cost, res);
+      if (d && (hbActiveDuration(e) || (e.rider && typeof e.rider === 'object'))) {
+        d.stateId = hbStateId(e);
+        d.stateActive = isEffectActive(ch, d.stateId);
+        if (d.stateActive) d.desc += ' Active now.';
+      }
+      return d;
+    });
+}
+function hbDescriptorFor(ch, e, cost, res) {
+    {
       const sv = homebrewSaveInfo(ch, e);
       const dcTxt2 = sv ? ` · ${ABILITY_SHORT[sv.save] || sv.save} save DC ${sv.value}` : '';
       const costTxt = e.cost === 'triggered' ? 'Triggered' : (cost === 'none' ? 'No action' : '');
@@ -46765,7 +46863,7 @@ function homebrewActiveDescriptors(ch, cost) {
         desc: `${e.desc ? e.desc + ' ' : ''}${costTxt ? costTxt + ' · ' : ''}${remaining}/${max} left · resets on ${restLabel}${dcTxt}.`,
         kind: 'resource', resourceId: id, empty: remaining <= 0,
       };
-    });
+    }
 }
 
 // v0.21.164 — Action-tab section for action-cost forged actives. (Bonus-cost actives are
@@ -46781,7 +46879,7 @@ function homebrewActionFeatureCards(ch) {
           <div class="action-card-name">${escape(f.name)}</div>
           <div class="action-card-desc">${escape(f.desc)}</div>
         </div>
-        ${f.kind === 'ki' ? `<button class="action-roll-btn ${f.empty ? 'used' : ''}" data-ki-spend="${f.kiCost}|${escape(f.name)}" ${f.empty ? 'disabled' : ''}>${f.empty ? 'No ki' : 'Use'}</button>`
+        ${hbStateButton(f) ? hbStateButton(f) : f.kind === 'ki' ? `<button class="action-roll-btn ${f.empty ? 'used' : ''}" data-ki-spend="${f.kiCost}|${escape(f.name)}" ${f.empty ? 'disabled' : ''}>${f.empty ? 'No ki' : 'Use'}</button>`
           : f.kind === 'resource' ? `<button class="action-roll-btn ${f.empty ? 'used' : ''}" data-feature-resource-use="${f.resourceId}" ${f.empty ? 'disabled' : ''}>${f.empty ? 'Used' : 'Use'}</button>` : ''}
       </div>`).join('')}
   `;
@@ -46805,7 +46903,7 @@ function forgeFeatureDesc(kind, p, theme) {
     case 'resist':
       return `You have resistance to ${p.dtype} damage.`;
     case 'grant_spells':
-      return `You always have the following spells prepared, and they don't count against the number of spells you can prepare: ${(p.spells || []).join(', ')}.`;
+      return `You always have the following spells prepared, and they don't count against the number of spells you can prepare: ${(p.spells || []).map(x => (x && typeof x === 'object') ? x.name : x).filter(Boolean).join(', ')}.`;
     case 'active': {
       const ABN = { str: 'Strength', dex: 'Dexterity', con: 'Constitution', int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma' };
       const costTxt = p.cost === 'bonus' ? 'As a Bonus Action' : p.cost === 'reaction' ? 'As a Reaction' : p.cost === 'none' ? 'Without using an action' : p.cost === 'triggered' ? 'When its trigger occurs' : p.cost === 'channel_divinity' ? 'As an action, using your Channel Divinity' : 'As an action';
@@ -46894,6 +46992,7 @@ function injectHomebrewSubclassesIntoRegistry() {
     for (let i = FEATURE_SPELL_GRANTS.length - 1; i >= 0; i--) {
       if (FEATURE_SPELL_GRANTS[i] && FEATURE_SPELL_GRANTS[i]._homebrew) FEATURE_SPELL_GRANTS.splice(i, 1);
     }
+    for (let i = SPELLS.length - 1; i >= 0; i--) if (SPELLS[i] && SPELLS[i]._grantedInline) SPELLS.splice(i, 1);
     hb.filter(h => h && h.type === 'subclass' && h.data && h.data.klass && h.data.id).forEach(h => {
       const k = h.data.klass, subId = h.data.id;
       Object.keys(h.data.levelFeatures || {}).forEach(L => {
@@ -46905,8 +47004,28 @@ function injectHomebrewSubclassesIntoRegistry() {
           const freeAct = /without expending a spell slot/i.test(String(feat.desc || '')) ? allEff.find(e => e.kind === 'active' && hbActiveTracked(e)) : null;
           (feat.effects || []).forEach(eff => {
             if (eff.kind === 'grant_spells' && Array.isArray(eff.spells)) {
-              eff.spells.forEach(spName => {
-                if (!spName) return;
+              eff.spells.forEach(spRaw => {
+                if (!spRaw) return;
+                // v1.1.2 — a granted spell can carry its own stats
+                // ({ name, level, school, castTime, range, components, duration, desc })
+                // so a subclass can grant a spell Hearth doesn't have yet.
+                let spName = spRaw;
+                if (typeof spRaw === 'object') {
+                  spName = clStr(spRaw.name, 80);
+                  if (!spName) return;
+                  if (!SPELLS.some(sp => sp.name === spName)) {
+                    const lvl = clClampInt(spRaw.level, 0, 9, 1);
+                    SPELLS.push({
+                      name: spName, level: lvl, school: clStr(spRaw.school, 20).toLowerCase() || 'conjuration',
+                      classes: Array.isArray(spRaw.classes) ? spRaw.classes.map(c => clStr(c, 20).toLowerCase()).filter(Boolean) : [k],
+                      castTime: clStr(spRaw.castTime || spRaw.casting_time, 60) || '1 action', range: clStr(spRaw.range, 60) || 'Self',
+                      components: clStr(spRaw.components, 120) || 'V, S', duration: clStr(spRaw.duration, 60) || 'Instantaneous',
+                      ...(spRaw.concentration ? { concentration: true } : {}), ...(spRaw.ritual ? { ritual: true } : {}),
+                      desc: clStr(spRaw.desc, 3000), ...(spRaw.higher ? { higher: clStr(spRaw.higher, 1000) } : {}),
+                      _grantedInline: subId, _homebrew: true,
+                    });
+                  }
+                }
                 FEATURE_SPELL_GRANTS.push({
                   id: `hb_${subId}_${forgeSlug(spName)}_${L}`,
                   klass: k, subclass: subId, minLevel: Number(L),
@@ -47514,6 +47633,9 @@ function clNormaliseMagicItem(d, file) {
     mech = {};
     CL_MECH_INT_KEYS.forEach(k => { if (d.mech[k] != null) { const n = clClampInt(d.mech[k], -10, 50, 0); if (n) mech[k] = n; } });
     if (CL_DMG_TYPES.includes(d.mech.resistType)) mech.resistType = d.mech.resistType;
+    // v1.1.2 — keep the weapon the bonus belongs to (Staff of Gravity Bending: quarterstaff).
+    const mw = clStr(d.mech.weapon || d.mech.baseWeapon, 40).toLowerCase().replace(/[\s-]+/g, '_').replace(/[^a-z0-9_]/g, '');
+    if (mw) mech.weapon = mw;
     if (!Object.keys(mech).length) mech = null;
   }
   const id = forgeSlug(d.id || file.id) || forgeSlug(file.id);
@@ -47532,6 +47654,13 @@ function clNormaliseMagicItem(d, file) {
     ...(file && file.credits ? { credits: clStr(file.credits, 1000) } : {}),
     ...(file && file.license ? { license: clStr(file.license, 20) } : {}),
   };
+}
+// v1.1.2 — other movement speeds on community feats ({ climb: 30 }).
+function clSpeeds(v) {
+  if (!v || typeof v !== 'object') return null;
+  const out = {};
+  ['climb', 'swim', 'fly', 'burrow'].forEach(k => { if (v[k] === 'walk') { out[k] = 'walk'; return; } const n = clClampInt(v[k], 0, 120, 0); if (n >= 5) out[k] = n; });
+  return Object.keys(out).length ? out : null;
 }
 function clRegistryKey(registryHas, file, dataId) {
   let key = forgeSlug(dataId || file.id);
@@ -47610,7 +47739,7 @@ async function clInstall(entry) {
       const prereq = clStr(d.prerequisite || d.prereq, 160);
       const featInc = clAbilityIncrease(d.abilityIncrease);
       const featSpeed = clClampInt(d.speed, 0, 30, 0);
-      rec.data = { name: clStr(d.name, 80), desc: (prereq ? 'Prerequisite: ' + prereq.replace(/^requires\s+/i, '') + '. ' : '') + clStr(d.desc, 3000), ...(prereq ? { prerequisite: prereq } : {}), ...(d.hpPerLevel ? { hpPerLevel: clClampInt(d.hpPerLevel, 0, 5, 0) } : {}), ...(featInc ? { abilityIncrease: featInc } : {}), ...(featSpeed ? { speed: featSpeed } : {}) };
+      rec.data = { name: clStr(d.name, 80), desc: (prereq ? 'Prerequisite: ' + prereq.replace(/^requires\s+/i, '') + '. ' : '') + clStr(d.desc, 3000), ...(prereq ? { prerequisite: prereq } : {}), ...(d.hpPerLevel ? { hpPerLevel: clClampInt(d.hpPerLevel, 0, 5, 0) } : {}), ...(featInc ? { abilityIncrease: featInc } : {}), ...(featSpeed ? { speed: featSpeed } : {}), ...(clSpeeds(d.speeds) ? { speeds: clSpeeds(d.speeds) } : {}) };
       break;
     }
     case 'monster': {
@@ -47681,7 +47810,27 @@ async function clInstall(entry) {
   inst[entry.id] = rec;
   if (!saveCommunityInstalled(inst)) throw new Error('Device storage is full.');
   injectCommunityContentIntoRegistries();
+  if (entry.type === 'subclass') { try { rec.autoSpells = await clInstallGrantedSpells(d); } catch (e) { console.warn('Granted spells not installed:', e); } }
   return rec;
+}
+// v1.1.2 — a community subclass that grants a spell Hearth doesn't have
+// (Circle of Bees: Bombardment of Stings) also installs that spell from the
+// library when the library has it.
+async function clInstallGrantedSpells(d) {
+  const names = new Set();
+  Object.values((d && d.levelFeatures) || {}).forEach(list => (Array.isArray(list) ? list : []).forEach(f => (f && Array.isArray(f.effects) ? f.effects : []).forEach(e => {
+    if (e && e.kind === 'grant_spells' && Array.isArray(e.spells)) e.spells.forEach(n => { if (typeof n === 'string' && n.trim()) names.add(n.trim()); });
+  })));
+  const missing = [...names].filter(n => !SPELLS.some(sp => sp.name.toLowerCase() === n.toLowerCase()));
+  if (!missing.length) return [];
+  const shelf = CONTENT_LIBRARY[CL_TYPE_SHELF.spell] || [];
+  const done = [];
+  for (const n of missing) {
+    const ent = shelf.find(it => it.type === 'spell' && String(it.name).toLowerCase() === n.toLowerCase());
+    if (!ent || clIsInstalled(ent)) continue;
+    try { await clInstall(ent); done.push(ent.name); } catch (e) { console.warn('Could not install granted spell', n, e); }
+  }
+  return done;
 }
 function clRemove(id) {
   const inst = loadCommunityInstalled();
@@ -55644,7 +55793,7 @@ try { linkBoot(); } catch (e) { console.warn('Hearth live game boot failed:', e)
 // control the page reloads once by itself unless you are mid-edit (typing, a
 // popup open, or the character builder), in which case the toast stays up.
 (function () {
-  const APP_VERSION = 'v1.1.1';
+  const APP_VERSION = 'v1.1.2';
   window.HEARTH_VERSION = APP_VERSION;
 
   function hearthHasUnsavedEdits() {
