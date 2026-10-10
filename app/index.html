@@ -2406,6 +2406,7 @@
     color: var(--ink);
   }
   .vital-stat.feature .vital-stat-v { font-size: 24px; }
+  .vital-speeds-extra { margin-top: 6px; text-align: center; font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace; font-size: 10px; letter-spacing: 1px; color: var(--ink-faded); text-transform: uppercase; }
   .vital-stat-suffix {
     font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
     font-size: 8.5px; color: var(--ink-faded);
@@ -7914,7 +7915,7 @@ body.hearth-wide .app {
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '1.1.0';
+const HEARTH_VERSION = '1.1.1';
 // ============================================================
 // SRD 5.1 DATA v2 - structured for in-app casting
 // All content here is from the SRD 5.1 (CC-BY-4.0)
@@ -16067,19 +16068,26 @@ function featureSpellGrantsForCharacter(ch) {
   }
   // De-dupe by source id + spell, because duplicate lists are how madness gets office space.
   const seen = new Set();
-  return out.filter(g => { const k = `${g.id}:${g.spellName}`; if (seen.has(k)) return false; seen.add(k); return true; });
+  return out.filter(g => { const k = `${g.id}:${g.spellName}`; if (seen.has(k)) return false; seen.add(k); return true; })
+    .map(g => { if (!g.freeResource) return g; const r = featureFreeCastResource(ch, g); return r ? { ...g, _freeLeft: resourceRemaining(ch, r), _freeMax: resourceMax(ch, r) } : { ...g, freeResource: null }; });
 }
 
 function featureSpellGrantInfo(ch, spellName) {
   return featureSpellGrantsForCharacter(ch).find(g => g.spellName === spellName || g.spell === spellName) || null;
 }
 function featureFreeCastKey(info) { return info ? `feature:${info.id}:${info.spellName || info.spell}` : ''; }
+function featureFreeCastResource(ch, info) {
+  if (!info || !info.freeResource) return null;
+  return characterResources(ch).find(r => r.id === info.freeResource) || null;
+}
 function featureFreeCastUsed(ch, info) {
+  if (info && info.freeResource) { const r = featureFreeCastResource(ch, info); return !r || resourceRemaining(ch, r) <= 0; }
   if (!info || info.reset === 'atWill' || info.reset === 'known' || info.reset === 'ki') return false;
   if (!ch.freeCastUses) ch.freeCastUses = {};
   return !!ch.freeCastUses[featureFreeCastKey(info)];
 }
 function markFeatureFreeCastUsed(ch, info) {
+  if (info && info.freeResource) { const r = featureFreeCastResource(ch, info); if (r) spendResource(ch, r); return; }
   if (!info || info.reset === 'atWill' || info.reset === 'known' || info.reset === 'ki') return;
   if (!ch.freeCastUses) ch.freeCastUses = {};
   ch.freeCastUses[featureFreeCastKey(info)] = true;
@@ -16090,6 +16098,7 @@ function featureSpellTagHtml(info) {
 }
 function featureSpellCastLabel(info, used=false) {
   if (!info) return '';
+  if (info.freeResource) return info._freeLeft != null ? `${info._freeLeft}/${info._freeMax} free · long rest` : 'free casts';
   if (info.reset === 'known') return 'feature spell';
   if (info.reset === 'atWill') return 'at-will feature';
   if (info.reset === 'ki') return `${info.cost || 2} Ki`;
@@ -23218,7 +23227,7 @@ function activeSpeedBonus(ch) {
     : 0;
   // v0.21.164 — flat speed bonus granted by a forged subclass feature.
   const hbSpeed = (typeof homebrewSubclassEffects === 'function')
-    ? homebrewSubclassEffects(ch).reduce((s, e) => s + (e.kind === 'speed' ? (Number(e.amount) || 0) : 0), 0)
+    ? homebrewSubclassEffects(ch).reduce((s, e) => s + ((e.kind === 'speed' && (!e.type || e.type === 'walk')) ? (Number(e.amount) || 0) : 0), 0)
     : 0;
   // v0.26.6 — armor gating: Unarmored Movement requires no armor AND no shield;
   // Fast Movement is blocked only by heavy armor (handled in its helper).
@@ -24409,7 +24418,7 @@ function characterResources(ch) {
     if (typeof homebrewSubclassEffects === 'function') {
       const prof = profBonus(ch.level || 1);
       homebrewSubclassEffects(ch).forEach(e => {
-        if (e.kind !== 'active') return;
+        if (!hbActiveTracked(e)) return;
         const id = `hb_active_${e._level}_${forgeSlug(e._feature || 'feat')}`;
         if (r55.some(x => x.id === id)) return;
         r55.push({ id, name: e._feature || 'Feature', max: e.uses === 'pb' ? prof : homebrewEffectUses(ch, e),
@@ -24477,7 +24486,7 @@ function characterResources(ch) {
   // generic spend/remaining/rest-reset machinery handles them with no special-casing.
   if (typeof homebrewSubclassEffects === 'function') {
     homebrewSubclassEffects(ch).forEach(e => {
-      if (e.kind !== 'active') return;
+      if (!hbActiveTracked(e)) return;
       const id = `hb_active_${e._level}_${forgeSlug(e._feature || 'feat')}`;
       if (seen.has(id)) return;
       seen.add(id);
@@ -24587,6 +24596,11 @@ function resourceRecovery(ch, resource) {
 
 function resourceMax(ch, resource) {
   if (resource?.id === 'wild_shape') return wildShapeMaxUses(ch);
+  // v1.1.1 — a subclass can scale Second Wind uses (Pugilist: proficiency bonus).
+  if (resource && (resource.id === 'second_wind' || resource.id === 'second_wind_55') && !resource._hbSw) {
+    const sw = hbSecondWind(ch);
+    if (sw && sw.uses != null) return Math.max(resourceMax(ch, { ...resource, _hbSw: true }), homebrewEffectUses(ch, sw));
+  }
   // 2024 (b55) resources carry a direct numeric `max` and no maxFn.
   if (resource && typeof resource.max === 'number' && typeof resource.maxFn !== 'function') {
     return Math.max(0, resource.max);
@@ -25423,6 +25437,7 @@ function isProficient(d, type, key) {
 // Best ability for a weapon (finesse uses better of str/dex)
 function weaponAbility(weapon, ch) {
   const f = finalScores(ch);
+  if (weapon && weapon.hbAbility) return weapon.hbAbility; // v1.1.1 — e.g. Bee Stinger uses Wisdom
   // v0.20.2 — Hex Warrior: designated weapon uses CHA. Pact weapons
   // also qualify, but we don't currently track Pact of Blade summon
   // state, so the player must designate a specific inventory weapon
@@ -25492,7 +25507,7 @@ function characterWeapons(ch) {
     const ib = itemWeaponBonusFor(ch, w, claimed);
     return (ib.attack || ib.damage) ? { ...w, _itemAtk: ib.attack, _itemDmg: ib.damage, _itemName: ib.item } : w;
   }).concat(itemBoundExtraWeapons(ch, claimed));
-  return equipped.map(w => {
+  const _weaponsOut = equipped.map(w => {
     const weaponId = w.weaponId || w.id;
     let damage = w.damage;
     let type = w.type;
@@ -25566,6 +25581,8 @@ function characterWeapons(ch) {
       equipped: w.equipped,
     };
   });
+  // v1.1.1 — subclass unarmed strikes (Pugilist, Path of Thorns, Bee Stinger).
+  return hbApplyUnarmed(ch, _weaponsOut);
   // No fallback to class defaults — characters carry only what they picked at creation
   // or acquired via the Gear tab.
 }
@@ -33033,6 +33050,7 @@ function renderPlay() {
         ${vitalStatHtml('Passive', passivePerc,                                               'glass',     false)}
         ${vitalStatHtml('Prof',    `+${profBonus(ch.level)}`,                                 'star',      false)}
       </div>
+      ${otherSpeedsLineHtml(ch)}
     </div>
 
     <!-- XP strip — moved below everything, rarely used during combat -->
@@ -33191,7 +33209,7 @@ function renderPlay() {
             const hpLine = comp.maxHp ? `${comp.currentHp ?? comp.maxHp}/${comp.maxHp}` : `${cat.hp}`;
             return `
               <div class="companions-row">
-                <div class="companions-line"><strong>${escape(comp.name || cat.name)}</strong> · ${escape(cat.name)} · AC ${cat.ac} · HP ${hpLine}</div>
+                <div class="companions-line"><strong>${escape(comp.name || cat.name)}</strong> · ${escape(cat.name)} · AC ${companionDisplayAc(ch, comp, cat)} · HP ${hpLine}</div>
                 <button class="companions-mini-btn" data-companion-view="${escape(comp.id)}">Stat</button>
               </div>
             `;
@@ -38348,6 +38366,7 @@ function renderActionsTab(ch) {
               : `<div class="grip-row"><span class="grip-label">Grip</span><div class="grip-toggle"><button class="grip-opt ${w.grip === 'two-handed' ? 'active' : ''}" data-grip-toggle="${w.invId || w.id}|2h">Two-handed</button><button class="grip-opt ${w.grip === 'one-handed' ? 'active' : ''}" data-grip-toggle="${w.invId || w.id}|1h">One-handed</button></div></div>`
             ) : ''}
             ${showHint ? `<div class="weapon-card-hint">${hintText}</div>` : ''}
+            ${w.hbNote ? `<div class="weapon-card-hint">✦ ${escape(w.hbNote)}</div>` : ''}
             ${(w.extraDamage && w.extraDamage.length) ? `<div class="weapon-card-hint">+ ${w.extraDamage.map(d => `${d.count}d${d.sides} ${d.type}`).join(' + ')} on hit</div>` : ''}
           </div>
           <button class="action-roll-btn" data-attack="${w.invId || w.id}">Attack</button>
@@ -38509,9 +38528,9 @@ function renderBonusTab(ch) {
     const swRemaining = swRes ? resourceRemaining(ch, swRes) : 0;
     intrinsic.push({
       name: 'Second Wind',
-      desc: `Regain 1d10 + fighter level HP. ${swRes ? `${swRemaining}/${resourceMax(ch, swRes)} left · resets on short rest.` : 'Once per short rest.'}`,
+      desc: `Regain 1d10 + fighter level${hbSecondWindBonus(ch) ? ' + CON' : ''} HP. ${swRes ? `${swRemaining}/${resourceMax(ch, swRes)} left · resets on short rest.` : 'Once per short rest.'}`,
       dice: { count: 1, sides: 10 },
-      bonus: resourceLevel(ch, swRes || { id: 'second_wind' }),
+      bonus: resourceLevel(ch, swRes || { id: 'second_wind' }) + hbSecondWindBonus(ch),
       kind: 'heal-self',
       resourceId: 'second_wind',
       empty: swRes ? swRemaining <= 0 : false
@@ -38753,6 +38772,8 @@ function renderReactionTab(ch) {
                       ? `<button class="action-roll-btn ${f.empty ? 'used' : ''}" data-racial-reaction-use="${escape(f.racialId)}" ${f.empty ? 'disabled' : ''}>${f.empty ? 'Used' : 'Use'}</button>`
                       : f.options === 'hb_resource'
                         ? `<button class="action-roll-btn ${f.empty ? 'used' : ''}" data-feature-resource-use="${f.resourceId}" ${f.empty ? 'disabled' : ''}>${f.empty ? 'Used' : 'Use'}</button>`
+                      : f.options === 'hb_ki'
+                        ? `<button class="action-roll-btn ${f.empty ? 'used' : ''}" data-ki-spend="${f.kiCost}|${escape(f.name)}" ${f.empty ? 'disabled' : ''}>${f.empty ? 'No ki' : 'Use'}</button>`
                         : `<button class="action-roll-btn" data-reaction-use="${f.id}">Use</button>`
         ) : ''}
       </div>
@@ -38908,9 +38929,9 @@ function getIntrinsicReactions(ch) {
   // v0.21.165 — reaction-cost forged subclass actives. Reuse the feature-resource Use button
   // (data-feature-resource-use), so no bespoke reaction dialog is needed.
   if (typeof homebrewActiveDescriptors === 'function') {
-    homebrewActiveDescriptors(ch, 'reaction').forEach(d => list.push({
-      id: d.resourceId, name: d.name, desc: d.desc,
-      options: 'hb_resource', resourceId: d.resourceId, empty: d.empty,
+    homebrewActiveDescriptors(ch, 'reaction').forEach((d, i) => list.push({
+      id: d.resourceId || ('hb_reaction_' + i), name: d.name, desc: d.desc,
+      options: d.kind === 'ki' ? 'hb_ki' : d.kind === 'resource' ? 'hb_resource' : null, resourceId: d.resourceId, kiCost: d.kiCost, empty: d.empty,
     }));
   }
   return list;
@@ -39483,7 +39504,7 @@ function renderSpellCard(ch, s, opts = {}) {
   const usableSlots = slots.filter(slot => slot.level >= s.level && slot.remaining > 0);
   const invocationInfo = invocationFreeSpellInfo(ch, s.name);
   const featureInfo = featureSpellGrantInfo(ch, s.name);
-  const freeInfo = invocationInfo || (featureInfo && featureInfo.reset !== 'known' ? { ...featureInfo, kind: 'feature', label: featureInfo.source || 'Feature Spell', spell: featureInfo.spellName || featureInfo.spell } : null);
+  const freeInfo = invocationInfo || (featureInfo && (featureInfo.reset !== 'known' || featureInfo.freeResource) ? { ...featureInfo, kind: 'feature', label: featureInfo.source || 'Feature Spell', spell: featureInfo.spellName || featureInfo.spell } : null);
   const canFreeCast = !!freeInfo;
   const freeUsed = canFreeCast ? (freeInfo.kind === 'feature' ? featureFreeCastUsed(ch, freeInfo) : invocationFreeCastUsed(ch, freeInfo)) : false;
   const canCast = s.level === 0 || usableSlots.length > 0 || (canFreeCast && !freeUsed);
@@ -39541,7 +39562,7 @@ function renderSpellCard(ch, s, opts = {}) {
     const used = m.type === 'prepared' ? preparedCountForCap(ch) : ch.spells.length;
     const atCap = used >= cap;
     buttonHtml = `<button class="action-roll-btn ${atCap ? 'muted' : 'prep'}" data-prep="${escape(s.name)}" ${atCap ? 'disabled' : ''}>${atCap ? 'Full' : label}</button>`;
-  } else if (canFreeCast) {
+  } else if (canFreeCast && !(freeUsed && freeInfo.freeResource && usableSlots.length)) {
     const resetNote = freeInfo.reset === 'atWill' ? 'At-will' : freeInfo.reset === 'ki' ? `${freeInfo.cost || 2} Ki` : (freeInfo.reset === 'short' ? 'Short rest' : 'Long rest');
     buttonHtml = `<button class="action-roll-btn free-cast ${freeUsed ? 'used' : ''}" data-free-cast="${escape(s.name)}" ${freeUsed ? 'disabled' : ''}>${freeUsed ? 'Used' : (freeInfo.reset === 'ki' ? `Cast (${freeInfo.cost || 2} Ki)` : 'Free Cast')}</button>`;
     if (freeInfo.kind === 'feature') dieSummary += ` · ${featureSpellCastLabel(freeInfo, freeUsed)}`;
@@ -39636,13 +39657,15 @@ function renderCompanionPicker(ch) {
                   .sort((a, b) => a.name.localeCompare(b.name)),
   })).filter(g => g.list.length > 0);
 
-  const row = (c) => `
+  const famForms = hbFamiliarForms(ch);
+  const famInfo = hbFamiliarInfo(ch);
+  const row = (c, fam) => `
     <div class="browse-row" data-companion-pick="${escape(c.id)}">
       <div class="browse-info">
         <div class="browse-name">${escape(c.name)}</div>
-        <div class="browse-desc">${escape(companionPickerSummary(c))}</div>
+        <div class="browse-desc">${escape(companionPickerSummary(c))}${fam && famInfo && (famInfo.acBonus || famInfo.hpMin) ? escape(` · as familiar: AC ${c.ac + (famInfo.acBonus || 0)}, HP ${companionMaxHpFor(ch, c, true)}`) : ''}</div>
       </div>
-      <button class="browse-action-btn learn" data-companion-pick-btn="${escape(c.id)}">Pick</button>
+      <button class="browse-action-btn learn" data-companion-pick-btn="${escape(c.id)}"${fam ? ' data-companion-fam="1"' : ''}>Pick</button>
     </div>
   `;
   return `
@@ -39653,17 +39676,21 @@ function renderCompanionPicker(ch) {
         <div class="browse-body">
           ${showFamiliars ? `
             <div class="browse-section-head">Find Familiar (SRD)</div>
-            ${fam.map(row).join('')}
+            ${fam.map(c => row(c, true)).join('')}
+          ` : ''}
+          ${famForms.length ? `
+            <div class="browse-section-head">Familiar forms (${escape((famInfo && famInfo.maxSize) || 'Tiny')} or smaller beast, CR ${famInfo && famInfo.maxCR < 1 ? '1/' + Math.round(1 / famInfo.maxCR) : (famInfo ? famInfo.maxCR : '')} or lower)</div>
+            ${famForms.map(c => row(c, true)).join('')}
           ` : ''}
           ${showChain ? `
             <div class="browse-section-head">Pact of the Chain</div>
-            ${chain.map(row).join('')}
+            ${chain.map(c => row(c, true)).join('')}
           ` : ''}
           ${showAnimals ? `
             <div class="browse-section-head">Animal Friends</div>
             ${animalsBySize.map(g => `
               <div class="browse-subsection-head">${g.size}</div>
-              ${g.list.map(row).join('')}
+              ${g.list.map(c => row(c, false)).join('')}
             `).join('')}
           ` : ''}
         </div>
@@ -39713,7 +39740,7 @@ function renderCompanionStatblock(ch) {
         <div class="dialog-helper"><em>${escape(cat.size)} ${escape(cat.type)}, ${escape(cat.alignment || 'unaligned')}</em></div>
         <div class="browse-body">
           <div class="statblock-block">
-            <div class="statblock-row"><strong>Armor Class</strong> ${cat.ac}</div>
+            <div class="statblock-row"><strong>Armor Class</strong> ${companionDisplayAc(ch, comp, cat)}${companionDisplayAc(ch, comp, cat) !== cat.ac ? ' <span class="small-note">(Greater Familiar)</span>' : ''}</div>
             ${(() => {
               // v0.20.94 — Interactive HP tracker on the statblock.
               // The pet can take damage and heal via the +/- buttons.
@@ -40905,6 +40932,12 @@ function getChannelDivinityOptions(ch) {
       opts.push({ id: 'ironworks', name: 'Ironworks', desc: 'Action: touch your holy symbol to a Medium-or-smaller metal object and reshape it. Tool prof needed for skilled work.' });
     }
   }
+  // v1.1.1 — Channel Divinity options from an imported/Forge subclass.
+  hbEffectsOfKind(ch, 'active').filter(e => e.cost === 'channel_divinity').forEach(e => {
+    const nm = e.option || e.name || e._feature || 'Channel Divinity';
+    const sv = homebrewSaveInfo(ch, e);
+    opts.push({ id: 'hb_cd_' + forgeSlug(nm), name: nm, desc: `${e.desc || ''}${sv ? ` (${ABILITY_SHORT[sv.save] || sv.save} save DC ${sv.value})` : ''}`.trim() || (e._feature || '') });
+  });
   return opts;
 }
 
@@ -41164,9 +41197,15 @@ function renderForgeStepFeatures() {
             <option value="action">Action</option>
             <option value="bonus">Bonus Action</option>
             <option value="reaction">Reaction</option>
+            <option value="none">No action (free)</option>
+            <option value="triggered">Triggered</option>
+            <option value="channel_divinity">Channel Divinity option</option>
           </select>
           <select class="ai-select" id="forgeActiveUses" style="flex:1;">
             <option value="pb">Prof. bonus / rest</option>
+            <option value="unlimited">No use limit</option>
+            <option value="str">Str mod / rest</option><option value="dex">Dex mod / rest</option><option value="con">Con mod / rest</option>
+            <option value="int">Int mod / rest</option><option value="wis">Wis mod / rest</option><option value="cha">Cha mod / rest</option>
             <option value="1">1 / rest</option>
             <option value="2">2 / rest</option>
             <option value="3">3 / rest</option>
@@ -41186,7 +41225,17 @@ function renderForgeStepFeatures() {
           </select>
           <input class="ai-input" id="forgeActiveSaveEffect" placeholder="…or be frightened until end of your next turn" style="flex:1.8;" />
         </div>
-        <div class="ai-small">Save DC is computed automatically (8 + proficiency + your ability modifier).</div>
+        <div class="forge-row">
+          <select class="ai-select" id="forgeActiveDc" style="flex:1;">
+            <option value="">DC uses the save's ability</option>
+            <option value="spell">DC = your spell save DC</option>
+            <option value="str">DC uses Str</option><option value="dex">DC uses Dex</option><option value="con">DC uses Con</option>
+            <option value="int">DC uses Int</option><option value="wis">DC uses Wis</option><option value="cha">DC uses Cha</option>
+          </select>
+          <input class="ai-input" id="forgeActiveKi" type="number" min="0" max="10" value="0" style="flex:0.8;" aria-label="Ki cost" title="Ki points spent (0 = none)" />
+          <span class="ai-small" style="align-self:center;">ki</span>
+        </div>
+        <div class="ai-small">Save DC is computed automatically (8 + proficiency + the chosen ability modifier, or your spell save DC). A ki cost spends ki instead of a use counter.</div>
       </div>
       <div class="forge-eff-params" data-eff="extra_attack" style="display:none;">
         <div class="ai-small">Grants Extra Attack — you attack twice when you take the Attack action. No further settings.</div>
@@ -41203,7 +41252,14 @@ function renderForgeStepFeatures() {
         <div class="forge-row" style="align-items:center;">
           <span style="align-self:center;">+</span>
           <input class="ai-input" id="forgeSpeedAmount" type="number" min="5" max="30" step="5" value="10" style="flex:1;" />
-          <span style="align-self:center;">ft. walking speed</span>
+          <span style="align-self:center;">ft.</span>
+          <select class="ai-select" id="forgeSpeedType" style="flex:1.4;">
+            <option value="">walking speed</option>
+            <option value="climb">climbing speed</option>
+            <option value="swim">swimming speed</option>
+            <option value="fly">flying speed</option>
+            <option value="burrow">burrowing speed</option>
+          </select>
         </div>
       </div>
       <div class="forge-eff-params" data-eff="skill" style="display:none;">
@@ -41851,6 +41907,7 @@ function renderFeaturesTab(ch) {
         <div class="feature">
           <div class="feature-name">${escape(ftr.name)} <span style="color:var(--ink-faded);font-size:11px;">L${ftr.classLevel}</span></div>
           <div class="feature-desc">${escape(ftr.desc)}</div>
+          ${renderHomebrewFeatureChoices(ch, ftr.name)}
         </div>`).join('')}
     `).join('');
     return `
@@ -41940,6 +41997,7 @@ function renderFeaturesTab(ch) {
               <div class="feature-name">${f.name} <span class="feature-lvl">${escape(c.name)} L${f.level}</span></div>
               <div class="feature-desc">${f.desc}</div>
               ${renderFeatureResourceButton(ch, f, klassId)}
+              ${thisSubclass._homebrew ? renderHomebrewFeatureChoices(ch, f.name) : ''}
               ${effectId ? (isEffectActive(ch, effectId) ? `<button class="effect-start-btn danger" data-end-effect="${effectId}">End</button>` : `<button class="effect-start-btn" data-start-effect="${effectId}">Activate</button>`) : ""}
             </div>`;
           }).join('') : `<div class="small-note">No ${escape(thisSubclass.name)} features at this level yet.</div>`}
@@ -42935,14 +42993,17 @@ function wirePlay(ch) {
       // catalogue's listed average HP; the player can adjust via the
       // statblock dialog later (HP tracking will plug in next batch).
       if (!Array.isArray(ch.companions)) ch.companions = [];
+      const isFam = b.dataset.companionFam === '1';
+      const famHp = companionMaxHpFor(ch, cat, isFam);
       const newComp = {
         id: 'comp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
         companionId: compId,
         name: cat.name,
-        maxHp: cat.hp,
-        currentHp: cat.hp,
+        maxHp: famHp,
+        currentHp: famHp,
         addedAt: Date.now(),
       };
+      if (isFam) newComp.familiar = true;
       ch.companions.push(newComp);
       saveCharacter(ch);
       logRoll('Companion summoned', cat.name, companionPickerSummary(cat));
@@ -43070,7 +43131,7 @@ function wirePlay(ch) {
       const parts = b.dataset.kiSpend.split('|');
       const cost = parseInt(parts[0], 10) || 1;
       const name = parts[1] || 'Ki ability';
-      const r = characterResources(ch).find(x => x.id === 'ki');
+      const r = characterResources(ch).find(x => x.id === 'ki') || characterResources(ch).find(x => x.id === 'focus_points_55');
       if (!r) return;
       if (resourceRemaining(ch, r) < cost) return;
       spendResource(ch, r, cost);
@@ -43688,7 +43749,7 @@ function wirePlay(ch) {
       const spell = SPELLS.find(s => s.name === name);
       let info = invocationFreeSpellInfo(ch, name);
       const feat = featureSpellGrantInfo(ch, name);
-      if (!info && feat && feat.reset !== 'known') info = { ...feat, kind: 'feature', label: feat.source || 'Feature Spell', spell: feat.spellName || feat.spell };
+      if (!info && feat && (feat.reset !== 'known' || feat.freeResource)) info = { ...feat, kind: 'feature', label: feat.source || 'Feature Spell', spell: feat.spellName || feat.spell };
       if (!spell || !info) return;
       if (info.kind === 'feature' && info.reset === 'ki') {
         const kiRes = characterResources(ch).find(r => r.id === 'ki');
@@ -44176,26 +44237,36 @@ function wirePlay(ch) {
       // capped at 6 dice) since that bonus is conditional on the target type.
       if (classLevelFor(ch, 'paladin') >= 2 && weapon.kind === 'melee') {
         const usableSlots = slotsRemaining(ch).filter(s => s.remaining > 0);
+        // v1.1.1 — a subclass can change the smite's damage type and bonus target
+        // (Oath of the Hearth's Fiery Smite: fire or radiant, +1d8 vs undead or cold creatures).
+        const hbSm = moltenActive ? null : hbSmiteMods(ch);
+        const smTypes = hbSm ? hbSm.dtypes : [smiteDamageType];
+        const vsTxt = (hbSm && hbSm.vs) ? hbSm.vs : 'undead or fiend';
+        const vsShort = (hbSm && hbSm.vs) ? hbSm.vs : 'undead/fiend';
         usableSlots.forEach(s => {
           const dice = Math.min(5, 1 + s.level);
-          layeredOptions.push({
-            id: `smite_${s.level}`,
-            kind: 'smite',
-            slotLevel: s.level,
-            label: `Divine Smite (L${s.level} slot)`,
-            sublabel: `+${dice}d${smiteDieSize} ${smiteDamageType}${moltenActive ? ' · Molten Weapon active' : ''}`,
-            dice: { count: dice, sides: smiteDieSize },
-            damageType: smiteDamageType,
-          });
-          const undeadDice = Math.min(6, dice + 1);
-          layeredOptions.push({
-            id: `smite_${s.level}_undead`,
-            kind: 'smite',
-            slotLevel: s.level,
-            label: `Divine Smite (L${s.level}) vs undead/fiend`,
-            sublabel: `+${undeadDice}d${smiteDieSize} ${smiteDamageType} · +1 die vs undead or fiend`,
-            dice: { count: undeadDice, sides: smiteDieSize },
-            damageType: smiteDamageType,
+          smTypes.forEach((dt, ti) => {
+            const sfx = ti === 0 ? '' : '_' + dt;
+            const typeTag = smTypes.length > 1 ? ` · ${dt}` : '';
+            layeredOptions.push({
+              id: `smite_${s.level}${sfx}`,
+              kind: 'smite',
+              slotLevel: s.level,
+              label: `Divine Smite (L${s.level} slot)${typeTag}`,
+              sublabel: `+${dice}d${smiteDieSize} ${dt}${moltenActive ? ' · Molten Weapon active' : ''}${hbSm ? ' · ' + (hbSmiteSource(ch) || 'subclass') : ''}`,
+              dice: { count: dice, sides: smiteDieSize },
+              damageType: dt,
+            });
+            const undeadDice = Math.min(6, dice + 1);
+            layeredOptions.push({
+              id: `smite_${s.level}_undead${sfx}`,
+              kind: 'smite',
+              slotLevel: s.level,
+              label: `Divine Smite (L${s.level}) vs ${vsShort}${typeTag}`,
+              sublabel: `+${undeadDice}d${smiteDieSize} ${dt} · +1 die vs ${vsTxt}`,
+              dice: { count: undeadDice, sides: smiteDieSize },
+              damageType: dt,
+            });
           });
         });
       }
@@ -44597,6 +44668,15 @@ function wirePlay(ch) {
     });
   });
 
+  // v1.1.1 — subclass skill choice ("Acrobatics or Stealth").
+  document.querySelectorAll('select[data-hb-choice]').forEach(sel => {
+    sel.addEventListener('change', () => {
+      ch.hbChoices = { ...(ch.hbChoices || {}) };
+      if (sel.value) ch.hbChoices[sel.dataset.hbChoice] = sel.value; else delete ch.hbChoices[sel.dataset.hbChoice];
+      saveCharacter(ch);
+      render();
+    });
+  });
   document.querySelectorAll('[data-feature-resource-use]').forEach(b => {
     b.addEventListener('click', () => {
       const rid = b.dataset.featureResourceUse;
@@ -45141,7 +45221,7 @@ function wirePlay(ch) {
         }
         if (!spendResource(ch, r)) return;
         if (rid === 'second_wind') {
-          const lvl = resourceLevel(ch, r);
+          const lvl = resourceLevel(ch, r) + hbSecondWindBonus(ch);
           const healRoll = rollDie(10);
           const heal = Math.max(1, healRoll + lvl);
           ch.currentHp = Math.min(maxHp(ch), (ch.currentHp || 0) + heal);
@@ -46247,6 +46327,138 @@ function saveAiHomebrew(list) {
 // the same systems the built-in subclasses use. This helper returns every active effect
 // for a character (features at or below the character's level in that class), so the
 // resistance compiler, the on-hit rider system, etc. can each pick out what they need.
+const DAMAGE_TYPES_HB = ['acid','bludgeoning','cold','fire','force','lightning','necrotic','piercing','poison','psychic','radiant','slashing','thunder'];
+// v1.1.1 — effects read from a homebrew feature's rules text when the data has
+// no structured effect of that kind. Explicit effects always win; these only
+// fill gaps so community subclasses (Pugilist, Oath of the Hearth, Familiar
+// Master, Circle of Bees, Path of Thorns, Humble Elephant, Cat Burglar…) work
+// with today's data. Each inferred effect carries _inferred: true.
+const HB_ABILITY_WORDS = { strength: 'str', dexterity: 'dex', constitution: 'con', intelligence: 'int', wisdom: 'wis', charisma: 'cha' };
+function hbAbilityKey(word) { return HB_ABILITY_WORDS[String(word || '').toLowerCase()] || null; }
+function hbSkillKey(word) {
+  const w = String(word || '').trim().toLowerCase();
+  return Object.keys(SKILLS).find(k => SKILLS[k].name.toLowerCase() === w) || null;
+}
+// Level steps like "to 1d6 at 8th level and to 1d8 at 14th level" or
+// "The d6 becomes a d8 at 10th level and a d10 at 18th level".
+function hbDieSteps(txt) {
+  const steps = {}; const re = /(\d*)d(\d+)\s+at\s+(\d+)(?:st|nd|rd|th)\s+level/ig; let m;
+  while ((m = re.exec(txt))) steps[m[3]] = { count: m[1] ? Number(m[1]) : undefined, sides: Number(m[2]) };
+  return steps;
+}
+function hbCostFromText(txt) {
+  if (/\bas a bonus action\b|\buse a bonus action\b|\byour bonus action\b/i.test(txt)) return 'bonus';
+  if (/\buse your reaction\b|\bas a reaction\b/i.test(txt)) return 'reaction';
+  if (/\b(?:use|take) an action\b|\bas an action\b/i.test(txt)) return 'action';
+  return null;
+}
+function homebrewInferEffects(feat, explicit) {
+  const out = [];
+  const txt = String((feat && feat.desc) || '');
+  if (!txt) return out;
+  const has = (kind) => (explicit || []).some(e => e && e.kind === kind);
+  // Fiery Smite style: Divine Smite damage type choice and target bonus.
+  let m = txt.match(/Divine Smite[^.]*?(?:choose|chosen)[^.]*?(?:damage|extra damage)[^.]*?to be (\w+)(?:,\s*(\w+))?(?:,?\s*or\s+(\w+))?/i);
+  if (m && !has('smite')) {
+    const dtypes = [m[1], m[2], m[3]].filter(Boolean).map(s => s.toLowerCase()).filter(s => DAMAGE_TYPES_HB.includes(s));
+    const vs = (txt.match(/only if the target is (?:an? )?([^.]+?)\./i) || [])[1];
+    if (dtypes.length) out.push({ kind: 'smite', dtypes, vs: vs ? vs.replace(/\ban? /ig, '').trim() : null, _inferred: true });
+  }
+  // Second Wind uses scaling (Pugilist's Resilient Fighter) and its heal (+ CON).
+  if (!has('second_wind')) {
+    const sw = { kind: 'second_wind', _inferred: true }; let any = false;
+    if (/use Second Wind a number of times equal to your proficiency bonus/i.test(txt)) { sw.uses = 'pb'; any = true; }
+    if (/use Second Wind[^.]*?regain hit points equal to 1d10 \+ your fighter level \+ your Constitution modifier/i.test(txt)) { sw.addCon = true; any = true; }
+    if (any) out.push(sw);
+  }
+  // Unarmed strike die (Pugilist, Path of Thorns, Circle of Bees' stinger).
+  m = txt.match(/unarmed strikes? deals? (bludgeoning|piercing|slashing) damage equal to (\d+)d(\d+) \+ your (\w+) modifier/i);
+  if (m && !has('unarmed')) {
+    const before = txt.slice(0, m.index);
+    const after = txt.slice(m.index);
+    let when = 'always';
+    if (/while (?:you are )?raging/i.test(before + after.slice(0, 120))) when = 'rage';
+    else if (/while (?:this|the|your) (\w+) is active/i.test(before + after.slice(0, 120))) when = 'feature';
+    const useAb = (txt.match(/you use (\w+) instead of Strength for the attack/i) || [])[1];
+    const extra = after.match(/\+\s*(\w+) damage equal to (half )?your proficiency bonus/i);
+    out.push({ kind: 'unarmed', count: Number(m[2]), sides: Number(m[3]), dtype: m[1].toLowerCase(), ability: hbAbilityKey(useAb) || hbAbilityKey(m[4]) || 'str', when,
+      scale: hbDieSteps(after), extra: extra ? { dtype: extra[1].toLowerCase(), half: !!extra[2], fullAt: /poison damage dealt by your stinger equals your proficiency bonus/i.test(txt) ? Number((txt.match(/When you reach (\d+)(?:st|nd|rd|th) level in this class, your unarmed strikes count as magical/i) || [])[1]) || 6 : null } : null,
+      note: when === 'always' && /not wearing heavy armor/i.test(before) ? 'no heavy armor, weapons or shield' : null, _inferred: true });
+  }
+  // Skill choice: "proficiency in the Acrobatics or Stealth skill (your choice)".
+  m = txt.match(/proficiency in (?:the |one of the following skills: )?([A-Z][a-z]+(?: [A-Z][a-z]+)?)(?:, ([A-Z][a-z]+(?: [A-Z][a-z]+)?))? or ([A-Z][a-z]+(?: [A-Z][a-z]+)?) skills?/);
+  if (m && !has('skill_choice')) {
+    const options = [m[1], m[2], m[3]].filter(Boolean).map(hbSkillKey).filter(Boolean);
+    if (options.length >= 2) out.push({ kind: 'skill_choice', options, count: 1, _inferred: true });
+  }
+  // Permanent other speeds: "you have a climbing speed equal to your walking speed".
+  if (!(explicit || []).some(e => e && e.kind === 'speed' && e.type)) {
+    const re = /(?:^|[.!]\s+)([^.]*?)\byou (?:have|gain) a (climbing|swimming|flying|burrowing) speed (?:of (\d+) feet|equal to your walking speed)([^.]*)/ig; let s;
+    while ((s = re.exec(txt))) {
+      const ctx = (s[1] + ' ' + String(s[4]).split(/,\s*and\b|;/)[0]).toLowerCase();
+      if (/\b(until|while|during|for (?:1|one|an?) |whenever|when you use|as long as)\b/.test(ctx)) continue;
+      const lvlGate = (s[1].match(/when you reach (\d+)(?:st|nd|rd|th) level/i) || [])[1];
+      const type = { climbing: 'climb', swimming: 'swim', flying: 'fly', burrowing: 'burrow' }[s[2].toLowerCase()];
+      out.push({ kind: 'speed', type, amount: s[3] ? Number(s[3]) : 'walk', minLevel: lvlGate ? Number(lvlGate) : null, _inferred: true });
+    }
+  }
+  // Activation: ki costs, Channel Divinity options and limited-use triggers.
+  if (!has('active')) {
+    const ki = txt.match(/spend (\d+) ki points?/i);
+    const cdNames = []; const cdRe = /(?:^|\n)\s*([A-Z][A-Za-z' ]{2,40})\.\s+(?:As an action|As a bonus action|As a reaction)?,?\s*(?:you can )?use your Channel Divinity/g; let c;
+    while ((c = cdRe.exec(txt))) cdNames.push(c[1].trim());
+    const usesM = txt.match(/use this feature a number of times equal to your (proficiency bonus|(\w+) modifier)/i);
+    const onceM = txt.match(/Once you use this feature, you can't use it again until you finish a (short|long) rest/i);
+    if (cdNames.length) {
+      cdNames.forEach(n => {
+        const seg = txt.slice(txt.indexOf(n)); const next = seg.slice(n.length).search(/\n\s*[A-Z][A-Za-z' ]{2,40}\.\s+(?:As an action|As a bonus action)/);
+        out.push({ kind: 'active', cost: 'channel_divinity', option: n, desc: (next > 0 ? seg.slice(n.length + 1, n.length + next) : seg.slice(n.length + 1)).trim().slice(0, 600), _inferred: true });
+      });
+    } else if (ki) {
+      out.push({ kind: 'active', cost: hbCostFromText(txt) || 'none', ki: Number(ki[1]), _inferred: true });
+    } else if (usesM || onceM) {
+      const uses = usesM ? (/proficiency/i.test(usesM[1]) ? 'pb' : (hbAbilityKey(usesM[2]) || 1)) : 1;
+      const reset = /regain all expended uses when you finish a short or long rest/i.test(txt) || (onceM && onceM[1].toLowerCase() === 'short') ? 'short' : 'long';
+      out.push({ kind: 'active', cost: hbCostFromText(txt) || 'triggered', uses, reset, _inferred: true });
+    }
+  }
+  return out;
+}
+// Save / DC for an active effect: data fields first (saveAbility = the
+// target's save; dc = 'spell' or the ability behind the DC; dcAbility is an
+// alias), then the rules text. Legacy Forge effects with only saveAbility keep
+// using it for both.
+function homebrewSaveInfo(ch, e) {
+  if (!e) return null;
+  const txt = String(e._desc || '');
+  let save = e.saveAbility || null;
+  let dc = e.dc || e.dcAbility || null;
+  if (!save) {
+    const m = txt.match(/(?:make|succeed on) an? (Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) saving throw/i);
+    if (m) save = hbAbilityKey(m[1]);
+  }
+  if (!save) return null;
+  if (!dc) {
+    if (/against your spell save DC/i.test(txt)) dc = 'spell';
+    else {
+      const m = txt.match(/DC (?:equal to|equals|=) 8 \+ your (?:proficiency bonus \+ your )?(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) modifier/i);
+      if (m) dc = hbAbilityKey(m[1]);
+    }
+  }
+  let value;
+  if (dc === 'spell') {
+    const k = e._klass || (ch && ch.klass);
+    value = (typeof spellSaveDcForClass === 'function' && spellSaveDcForClass(ch, k)) || forgeSaveDC(ch, (CLASSES[k] && CLASSES[k].spellAbility) || 'wis');
+  } else value = forgeSaveDC(ch, dc || save);
+  return { save, dc: dc || save, value };
+}
+// v1.1.1 — a feature's effects: explicit data plus inferred-from-text gaps.
+function homebrewFeatureEffects(feat) {
+  const ex = Array.isArray(feat && feat.effects) ? feat.effects : [];
+  let inf = [];
+  try { inf = homebrewInferEffects(feat, ex); } catch (x) { inf = []; }
+  return ex.concat(inf);
+}
 function homebrewSubclassEffects(ch) {
   const out = [];
   if (!ch || !ch.klass) return out;
@@ -46261,7 +46473,7 @@ function homebrewSubclassEffects(ch) {
     if (!sc55 || !sc55._homebrew) return out;
     const lf = sc55.levelFeatures || sc55.features || {};
     Object.keys(lf).forEach(L => {
-      if (Number(L) <= (ch.level || 1)) (lf[L] || []).forEach(feat => (feat.effects || []).forEach(eff => out.push({ ...eff, _feature: feat.name, _level: Number(L), _desc: feat.desc || '', _classLevel: ch.level || 1 })));
+      if (Number(L) <= (ch.level || 1)) (lf[L] || []).forEach(feat => homebrewFeatureEffects(feat).forEach(eff => { if (eff.minLevel && (ch.level || 1) < eff.minLevel) return; out.push({ ...eff, _feature: feat.name, _level: Number(L), _desc: feat.desc || '', _classLevel: ch.level || 1, _klass: ch.klass }); }));
     });
     return out;
   }
@@ -46274,12 +46486,197 @@ function homebrewSubclassEffects(ch) {
     Object.keys(sc.levelFeatures).forEach(L => {
       if (Number(L) <= lvl) {
         (sc.levelFeatures[L] || []).forEach(feat => {
-          (feat.effects || []).forEach(eff => out.push({ ...eff, _feature: feat.name, _level: Number(L), _desc: feat.desc || '', _classLevel: lvl }));
+          homebrewFeatureEffects(feat).forEach(eff => { if (eff.minLevel && lvl < eff.minLevel) return; out.push({ ...eff, _feature: feat.name, _level: Number(L), _desc: feat.desc || '', _classLevel: lvl, _klass: klass }); });
         });
       }
     });
   });
   return out;
+}
+
+
+// v1.1.1 — subclass hooks read by the sheet (Second Wind, Divine Smite,
+// unarmed strikes, skill choices, other speeds, familiars).
+function hbEffectsOfKind(ch, kind) {
+  try { return (typeof homebrewSubclassEffects === 'function') ? homebrewSubclassEffects(ch).filter(e => e.kind === kind) : []; } catch (x) { return []; }
+}
+function hbSecondWind(ch) {
+  const list = hbEffectsOfKind(ch, 'second_wind');
+  if (!list.length) return null;
+  const out = { kind: 'second_wind' };
+  list.forEach(e => { if (e.uses != null) out.uses = e.uses; if (e.addCon) out.addCon = true; });
+  return out;
+}
+function hbSecondWindBonus(ch) {
+  const sw = hbSecondWind(ch);
+  return (sw && sw.addCon) ? mod(finalScores(ch).con) : 0;
+}
+function hbSmiteSource(ch) { const e = hbEffectsOfKind(ch, 'smite')[0]; return e ? e._feature : null; }
+function hbSmiteMods(ch) {
+  const list = hbEffectsOfKind(ch, 'smite');
+  if (!list.length) return null;
+  const dtypes = [];
+  let vs = null;
+  list.forEach(e => { (Array.isArray(e.dtypes) ? e.dtypes : [e.dtype]).filter(Boolean).forEach(t => { if (!dtypes.includes(t)) dtypes.push(String(t).toLowerCase()); }); if (e.vs) vs = e.vs; });
+  return { dtypes: dtypes.length ? dtypes : ['radiant'], vs };
+}
+function hbUnarmedDie(e) {
+  let count = Number(e.count) || 1, sides = Number(e.sides) || 4;
+  const lvl = Number(e._classLevel) || 0;
+  Object.keys(e.scale || {}).map(Number).sort((a, b) => a - b).forEach(L => {
+    const v = e.scale[L] || {};
+    if (lvl >= L) { if (v.count) count = Number(v.count); if (v.sides) sides = Number(v.sides); }
+  });
+  return { count, sides };
+}
+function hbUnarmedExtraText(ch, e) {
+  if (!e.extra || !e.extra.dtype) return '';
+  const pb = profBonus(ch.level || 1);
+  const full = e.extra.fullAt && (Number(e._classLevel) || 0) >= e.extra.fullAt;
+  const n = (e.extra.half && !full) ? Math.floor(pb / 2) : pb;
+  return n > 0 ? ` + ${n} ${e.extra.dtype}` : '';
+}
+function hbApplyUnarmed(ch, list) {
+  const effs = hbEffectsOfKind(ch, 'unarmed');
+  if (!effs.length) return list;
+  effs.forEach(e => {
+    if (e.when === 'rage' && !(typeof isRaging === 'function' && isRaging(ch))) return;
+    const die = hbUnarmedDie(e);
+    const tag = e._feature || 'Unarmed';
+    const ab = (e.ability && e.ability !== 'str') ? e.ability : null;
+    const note = [e.when === 'rage' ? 'while raging' : e.when === 'feature' ? 'while active' : null, e.note || null].filter(Boolean).join(', ');
+    const extraTxt = hbUnarmedExtraText(ch, e);
+    const hbNote = `${tag}${note ? ' · ' + note : ''}${extraTxt ? ' ·' + extraTxt : ''}`;
+    if (e.when !== 'feature') {
+      const existing = list.find(w => w.id === 'unarmed' && !String(w.invId || '').startsWith('hb_'));
+      if (existing) {
+        if (die.sides > ((existing.damage && existing.damage.sides) || 1)) { existing.damage = die; existing.type = e.dtype || existing.type; }
+        existing.hbNote = hbNote; if (ab) existing.hbAbility = ab;
+        return;
+      }
+    }
+    list.push({ id: 'unarmed', invId: 'hb_unarmed_' + forgeSlug(tag), name: `Unarmed Strike (${tag})`, damage: die, type: e.dtype || 'bludgeoning',
+      props: [], kind: 'melee', cat: 'simple', versatile: false, grip: null, gripLocked: false, magicBonus: 0, itemDamageExtra: 0, itemBonusFrom: null,
+      magicItemId: null, onHit: null, extraDamage: null, equipped: true, hbNote, hbAbility: ab, hbVirtual: true });
+  });
+  return list;
+}
+function hbChoiceKey(e) { return `${e.kind}_${e._level || 0}_${forgeSlug(e._feature || 'feat')}`; }
+function renderHomebrewFeatureChoices(ch, featName) {
+  const effs = hbEffectsOfKind(ch, 'skill_choice').filter(e => e._feature === featName);
+  if (!effs.length) return '';
+  const picks = ch.hbChoices || {};
+  return effs.map(e => {
+    const key = hbChoiceKey(e);
+    const cur = picks[key] || '';
+    return `<div class="hb-choice-row" style="margin-top:6px;"><label class="small-note" style="display:block;margin-bottom:4px;">${cur ? 'Skill proficiency' : 'Choose a skill proficiency'}</label>
+      <select class="ai-input" data-hb-choice="${escape(key)}" style="width:100%;max-width:260px;"><option value="">Choose…</option>${(e.options || []).map(k => `<option value="${escape(k)}"${cur === k ? ' selected' : ''}>${escape((SKILLS[k] && SKILLS[k].name) || k)}</option>`).join('')}</select></div>`;
+  }).join('');
+}
+const HB_SPEED_WORDS = { climbing: 'climb', swimming: 'swim', flying: 'fly', burrowing: 'burrow', climb: 'climb', swim: 'swim', fly: 'fly', burrow: 'burrow' };
+function hbSpeedsFromText(txt) {
+  const out = [];
+  // "Climbing speed 20 ft." / "Swim Speed of 30 feet" opening a sentence (built-in trait shorthand).
+  const re0 = /(?:^|[.!]\s+)(climbing|swimming|flying|burrowing|climb|swim|fly|burrow) speed (?:of )?(\d+) (?:feet|ft)/ig; let m0;
+  while ((m0 = re0.exec(String(txt || '')))) out.push({ type: HB_SPEED_WORDS[m0[1].toLowerCase()], amount: Number(m0[2]) });
+  const re = /(?:^|[.!]\s+)([^.]*?)\byou (?:have|gain) an? (climbing|swimming|flying|burrowing|climb|swim|fly|burrow) speed (?:of (\d+) (?:feet|ft)|equal to your walking speed)([^.]*)/ig; let m;
+  while ((m = re.exec(String(txt || '')))) {
+    const ctx = (m[1] + ' ' + String(m[4]).split(/,\s*and\b|;/)[0]).toLowerCase();
+    if (/\b(until|while|during|for (?:1|one|an?) |whenever|when you use|as long as|when you reach)\b/.test(ctx)) continue;
+    out.push({ type: HB_SPEED_WORDS[m[2].toLowerCase()], amount: m[3] ? Number(m[3]) : 'walk' });
+  }
+  return out;
+}
+function characterOtherSpeeds(ch) {
+  const out = {};
+  if (!ch) return out;
+  let walk = 30;
+  try { const rd = (typeof raceDataFor === 'function') ? raceDataFor(ch) : RACES[ch.race]; walk = ((rd && Number(rd.speed)) || 30) + activeSpeedBonus(ch); } catch (x) {}
+  const add = (type, amount) => {
+    if (!type || type === 'walk') return;
+    const v = amount === 'walk' ? walk : Number(amount) || 0;
+    if (v > 0 && (!out[type] || v > out[type])) out[type] = v;
+  };
+  const scan = (src) => {
+    if (!src) return;
+    if (src.speeds && typeof src.speeds === 'object') Object.keys(src.speeds).forEach(t => add(t, src.speeds[t]));
+    if (src.speed && typeof src.speed === 'object') Object.keys(src.speed).forEach(t => add(t, src.speed[t]));
+    ['climb', 'swim', 'fly', 'burrow'].forEach(t => { if (src[t + 'Speed']) add(t, src[t + 'Speed']); });
+    (src.traits || []).forEach(tr => hbSpeedsFromText(tr && tr.desc).forEach(x => add(x.type, x.amount)));
+  };
+  try {
+    const rd = (typeof raceDataFor === 'function') ? raceDataFor(ch) : RACES[ch.race];
+    scan(rd);
+    if (rd && rd.subraces && ch.subrace) scan(rd.subraces[ch.subrace]);
+  } catch (x) {}
+  try { characterFeats(ch).forEach(f => { const def = FEATS.find(x => x.id === f.id) || f; scan(def && { speeds: def.speeds }); }); } catch (x) {}
+  hbEffectsOfKind(ch, 'speed').forEach(e => { if (e.type && e.type !== 'walk') add(e.type, e.amount); });
+  return out;
+}
+function otherSpeedsLineHtml(ch) {
+  const sp = characterOtherSpeeds(ch);
+  const keys = ['climb', 'swim', 'fly', 'burrow'].filter(k => sp[k]);
+  if (!keys.length) return '';
+  const nm = { climb: 'Climb', swim: 'Swim', fly: 'Fly', burrow: 'Burrow' };
+  return `<div class="vital-speeds-extra" data-other-speeds="1">${keys.map(k => `${nm[k]} ${sp[k]} ft`).join(' · ')}</div>`;
+}
+// Familiar Master: Greater Familiar stats and the wider familiar forms.
+function hbFamiliarInfo(ch) {
+  if (!ch) return null;
+  let feats = [];
+  try { feats = (typeof homebrewSubclassFeatureTexts === 'function') ? homebrewSubclassFeatureTexts(ch) : []; } catch (x) {}
+  const all = feats.map(f => f.desc).join('\n');
+  if (!/familiar/i.test(all)) return null;
+  const info = {};
+  const wiz = classLevelFor(ch, 'wizard') || ch.level || 1;
+  if (/familiar adds your proficiency bonus to its Armor Class/i.test(all)) info.acBonus = profBonus(ch.level || 1);
+  if (/1 \+ your Intelligence modifier \+ three times your wizard level/i.test(all)) info.hpMin = 1 + mod(finalScores(ch).int) + 3 * wiz;
+  const cr = all.match(/any (Small|Tiny) or smaller beast that is CR ([\d/]+) or lower/i);
+  if (cr) {
+    const toNum = (v) => v.includes('/') ? Number(v.split('/')[0]) / Number(v.split('/')[1]) : Number(v);
+    info.maxSize = cr[1];
+    info.maxCR = toNum(cr[2]);
+    const up = all.match(/When you reach (\d+)(?:st|nd|rd|th) level in this class, your familiar can take the form of any (?:Small|Tiny) or smaller beast that is CR ([\d/]+) or lower/i);
+    if (up && wiz >= Number(up[1])) info.maxCR = toNum(up[2]);
+  }
+  return Object.keys(info).length ? info : null;
+}
+function homebrewSubclassFeatureTexts(ch) {
+  const out = [];
+  if (!ch) return out;
+  const klasses = ch.classLevels ? Object.keys(ch.classLevels) : [ch.klass];
+  klasses.forEach(klass => {
+    const subId = (typeof subclassIdFor === 'function') ? subclassIdFor(ch, klass) : ch.subclass;
+    const reg = (typeof characterEdition === 'function' && characterEdition(ch) === '5.5e' && typeof SUBCLASSES_55 !== 'undefined') ? SUBCLASSES_55 : SUBCLASSES;
+    const sc = subId && reg[klass] && reg[klass][subId];
+    if (!sc || !sc._homebrew) return;
+    const lvl = (typeof classLevelFor === 'function') ? classLevelFor(ch, klass) : (ch.level || 1);
+    const lf = sc.levelFeatures || sc.features || {};
+    Object.keys(lf).forEach(L => { if (Number(L) <= lvl) (lf[L] || []).forEach(f => out.push({ name: f.name, desc: String(f.desc || ''), level: Number(L) })); });
+  });
+  return out;
+}
+function hbFamiliarForms(ch) {
+  const fi = hbFamiliarInfo(ch);
+  if (!fi || fi.maxCR == null) return [];
+  const sizes = fi.maxSize === 'Small' ? ['Tiny', 'Small'] : ['Tiny'];
+  const famIds = new Set(companionsForSource('familiar').map(c => c.id));
+  return COMPANIONS.filter(c => c.type === 'beast' && sizes.includes(c.size) && Number(c.cr) <= fi.maxCR && !famIds.has(c.id))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+function companionIsFamiliar(comp) {
+  if (!comp) return false;
+  if (comp.familiar) return true;
+  const cat = findCompanion(comp.companionId);
+  return !!(cat && Array.isArray(cat.sources) && cat.sources.includes('familiar'));
+}
+function companionDisplayAc(ch, comp, cat) {
+  const fi = companionIsFamiliar(comp) ? hbFamiliarInfo(ch) : null;
+  return (cat ? cat.ac : 10) + ((fi && fi.acBonus) || 0);
+}
+function companionMaxHpFor(ch, cat, isFam) {
+  const fi = isFam ? hbFamiliarInfo(ch) : null;
+  return Math.max(cat.hp, (fi && fi.hpMin) || 0);
 }
 
 // v0.21.164 — Save DC for a forged "active" feature: 8 + proficiency + the chosen ability mod
@@ -46301,6 +46698,8 @@ function homebrewSkillGrant(ch, key) {
       if (e.level === 'expertise') best = 'expertise';
       else if (best !== 'expertise') best = 'prof';
     }
+    // v1.1.1 — "Acrobatics or Stealth (your choice)": the pick is stored per feature.
+    if (e.kind === 'skill_choice' && ch.hbChoices && ch.hbChoices[hbChoiceKey(e)] === key && best !== 'expertise') best = e.level === 'expertise' ? 'expertise' : 'prof';
   });
   return best;
 }
@@ -46319,21 +46718,51 @@ function homebrewEffectUses(ch, e) {
   }
   return Math.max(1, Number(e.uses) || 1);
 }
+// v1.1.1 — an active effect is tracked (gets a use counter) only when it has a
+// use limit; ki-cost and Channel Divinity options spend those pools instead.
+function hbActiveTracked(e) {
+  if (!e || e.kind !== 'active') return false;
+  if (e.cost === 'channel_divinity' || Number(e.ki) > 0) return false;
+  return !(e.uses == null || e.uses === '' || e.uses === 'unlimited' || e.uses === 0);
+}
+function hbActiveCost(e) {
+  const c = e && e.cost;
+  if (c === 'action' || c === 'bonus' || c === 'reaction' || c === 'channel_divinity') return c;
+  if (c === 'ki') return e.kiCost || 'none';
+  return 'none'; // none / triggered / missing: no action needed
+}
+function hbKiResourceId(ch) {
+  const res = (typeof characterResources === 'function') ? characterResources(ch) : [];
+  return (res.find(r => r.id === 'ki') || res.find(r => r.id === 'focus_points_55') || {}).id || null;
+}
 function homebrewActiveDescriptors(ch, cost) {
   if (typeof homebrewSubclassEffects !== 'function') return [];
   const res = (typeof characterResources === 'function') ? characterResources(ch) : [];
   return homebrewSubclassEffects(ch)
-    .filter(e => e.kind === 'active' && (e.cost || 'action') === cost)
+    .filter(e => e.kind === 'active' && hbActiveCost(e) === cost)
     .map(e => {
+      const sv = homebrewSaveInfo(ch, e);
+      const dcTxt2 = sv ? ` · ${ABILITY_SHORT[sv.save] || sv.save} save DC ${sv.value}` : '';
+      const costTxt = e.cost === 'triggered' ? 'Triggered' : (cost === 'none' ? 'No action' : '');
+      if (Number(e.ki) > 0) {
+        const kid = hbKiResourceId(ch);
+        const kr = kid ? res.find(x => x.id === kid) : null;
+        const left = kr ? resourceRemaining(ch, kr) : 0;
+        return { name: e._feature || 'Feature', desc: `${e.desc ? e.desc + ' ' : ''}${costTxt ? costTxt + ' · ' : ''}costs ${e.ki} ki (${left} left)${dcTxt2}.`,
+          kind: 'ki', options: 'ki_spend', kiCost: Number(e.ki), empty: left < Number(e.ki) };
+      }
+      if (!hbActiveTracked(e)) {
+        return { name: e._feature || 'Feature', desc: `${e.desc ? e.desc + ' ' : ''}${costTxt || 'Use'} · no use limit${dcTxt2}.`, kind: 'note', empty: false };
+      }
       const id = `hb_active_${e._level}_${forgeSlug(e._feature || 'feat')}`;
       const r = res.find(x => x.id === id);
       const remaining = r ? resourceRemaining(ch, r) : 0;
       const max = r ? resourceMax(ch, r) : homebrewEffectUses(ch, e);
       const restLabel = e.reset === 'short' ? 'short rest' : 'long rest';
-      const dcTxt = e.saveAbility ? ` · save DC ${forgeSaveDC(ch, e.saveAbility)} (${ABILITY_SHORT[e.saveAbility] || e.saveAbility})` : '';
+      const dcTxt = dcTxt2;
       return {
         name: e._feature || 'Feature',
-        desc: `${e.desc ? e.desc + ' ' : ''}${remaining}/${max} left · resets on ${restLabel}${dcTxt}.`,
+        desc: `${e.desc ? e.desc + ' ' : ''}${costTxt ? costTxt + ' · ' : ''}${remaining}/${max} left · resets on ${restLabel}${dcTxt}.`,
         kind: 'resource', resourceId: id, empty: remaining <= 0,
       };
     });
@@ -46342,7 +46771,7 @@ function homebrewActiveDescriptors(ch, cost) {
 // v0.21.164 — Action-tab section for action-cost forged actives. (Bonus-cost actives are
 // pushed into the bonus tab's intrinsic list instead.) Returns '' when there are none.
 function homebrewActionFeatureCards(ch) {
-  const items = homebrewActiveDescriptors(ch, 'action');
+  const items = homebrewActiveDescriptors(ch, 'action').concat(homebrewActiveDescriptors(ch, 'none'));
   if (!items.length) return '';
   return `
     <div class="tab-header-bar" style="margin-top:14px;"><div class="tab-header-title">✦ Subclass Features</div></div>
@@ -46352,14 +46781,15 @@ function homebrewActionFeatureCards(ch) {
           <div class="action-card-name">${escape(f.name)}</div>
           <div class="action-card-desc">${escape(f.desc)}</div>
         </div>
-        <button class="action-roll-btn ${f.empty ? 'used' : ''}" data-feature-resource-use="${f.resourceId}" ${f.empty ? 'disabled' : ''}>${f.empty ? 'Used' : 'Use'}</button>
+        ${f.kind === 'ki' ? `<button class="action-roll-btn ${f.empty ? 'used' : ''}" data-ki-spend="${f.kiCost}|${escape(f.name)}" ${f.empty ? 'disabled' : ''}>${f.empty ? 'No ki' : 'Use'}</button>`
+          : f.kind === 'resource' ? `<button class="action-roll-btn ${f.empty ? 'used' : ''}" data-feature-resource-use="${f.resourceId}" ${f.empty ? 'disabled' : ''}>${f.empty ? 'Used' : 'Use'}</button>` : ''}
       </div>`).join('')}
   `;
 }
 
 // Human label for an effect kind (used on the forge cards).
 function effectKindLabel(kind) {
-  return ({ rider: 'damage rider', resist: 'resistance', grant_spells: 'spells', active: 'active ability', extra_attack: 'extra attack', speed: 'speed', ac: 'AC bonus', skill: 'skill', tool: 'tool', passive: 'feature' })[kind] || 'feature';
+  return ({ rider: 'damage rider', resist: 'resistance', grant_spells: 'spells', active: 'active ability', extra_attack: 'extra attack', speed: 'speed', ac: 'AC bonus', skill: 'skill', skill_choice: 'skill choice', smite: 'smite', unarmed: 'unarmed strike', second_wind: 'second wind', tool: 'tool', passive: 'feature' })[kind] || 'feature';
 }
 
 // Auto-write a feature's rules text from its effect + chosen theme, so a forged subclass
@@ -46378,21 +46808,34 @@ function forgeFeatureDesc(kind, p, theme) {
       return `You always have the following spells prepared, and they don't count against the number of spells you can prepare: ${(p.spells || []).join(', ')}.`;
     case 'active': {
       const ABN = { str: 'Strength', dex: 'Dexterity', con: 'Constitution', int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma' };
-      const costTxt = p.cost === 'bonus' ? 'As a Bonus Action' : p.cost === 'reaction' ? 'As a Reaction' : 'As an action';
+      const costTxt = p.cost === 'bonus' ? 'As a Bonus Action' : p.cost === 'reaction' ? 'As a Reaction' : p.cost === 'none' ? 'Without using an action' : p.cost === 'triggered' ? 'When its trigger occurs' : p.cost === 'channel_divinity' ? 'As an action, using your Channel Divinity' : 'As an action';
+      const unlimited = p.uses === 'unlimited' || p.uses == null || p.uses === '';
       const usesTxt = p.uses === 'pb'
         ? 'a number of times equal to your proficiency bonus'
+        : (typeof p.uses === 'string' && ABN[p.uses]) ? `a number of times equal to your ${ABN[p.uses]} modifier (minimum of once)`
         : `${p.uses || 1} time${(Number(p.uses) || 1) > 1 ? 's' : ''}`;
       const restTxt = p.reset === 'short' ? 'short or long rest' : 'long rest';
       const body = p.desc ? ` ${p.desc}` : '';
+      const dcAb = p.dc && p.dc !== 'spell' ? p.dc : p.saveAbility;
       const saveTxt = p.saveAbility
-        ? ` A target must succeed on a ${ABN[p.saveAbility] || 'Charisma'} saving throw (DC = 8 + your proficiency bonus + your ${ABN[p.saveAbility] || 'Charisma'} modifier) or ${p.saveEffect || 'be affected'}.`
+        ? ` A target must succeed on a ${ABN[p.saveAbility] || 'Charisma'} saving throw (${p.dc === 'spell' ? 'against your spell save DC' : `DC = 8 + your proficiency bonus + your ${ABN[dcAb] || 'Charisma'} modifier`}) or ${p.saveEffect || 'be affected'}.`
         : '';
+      if (Number(p.ki) > 0) return `${costTxt}, you can spend ${p.ki} ki point${Number(p.ki) > 1 ? 's' : ''} to use this feature.${body}${saveTxt}`;
+      if (p.cost === 'channel_divinity' || unlimited) return `${costTxt}, you can use this feature.${body}${saveTxt}`;
       return `${costTxt}, you can use this feature ${usesTxt}, regaining all uses on a ${restTxt}.${body}${saveTxt}`;
     }
     case 'extra_attack':
       return 'You can attack twice, instead of once, whenever you take the Attack action on your turn.';
     case 'speed':
+      if (p.type && p.type !== 'walk') {
+        const nm = { climb: 'climbing', swim: 'swimming', fly: 'flying', burrow: 'burrowing' }[p.type] || p.type;
+        return p.amount === 'walk' ? `You have a ${nm} speed equal to your walking speed.` : `You have a ${nm} speed of ${p.amount || 30} feet.`;
+      }
       return `Your walking speed increases by ${p.amount || 10} feet.`;
+    case 'skill_choice': {
+      const nms = (p.options || []).map(k => (SKILLS[k] && SKILLS[k].name) || k);
+      return `You gain proficiency in ${nms.length > 1 ? nms.slice(0, -1).join(', ') + ' or ' + nms[nms.length - 1] : (nms[0] || 'a skill')} (your choice).`;
+    }
     case 'ac':
       return `You gain a +${p.amount || 1} bonus to your Armor Class${p.cond ? ' ' + p.cond : ''}.`;
     case 'skill': {
@@ -46455,6 +46898,11 @@ function injectHomebrewSubclassesIntoRegistry() {
       const k = h.data.klass, subId = h.data.id;
       Object.keys(h.data.levelFeatures || {}).forEach(L => {
         (h.data.levelFeatures[L] || []).forEach(feat => {
+          // v1.1.1 — "You can cast find familiar without expending a spell slot …
+          // a number of times equal to your proficiency bonus": the free casts
+          // spend that feature's use counter (Familiar Master).
+          const allEff = homebrewFeatureEffects(feat);
+          const freeAct = /without expending a spell slot/i.test(String(feat.desc || '')) ? allEff.find(e => e.kind === 'active' && hbActiveTracked(e)) : null;
           (feat.effects || []).forEach(eff => {
             if (eff.kind === 'grant_spells' && Array.isArray(eff.spells)) {
               eff.spells.forEach(spName => {
@@ -46465,6 +46913,7 @@ function injectHomebrewSubclassesIntoRegistry() {
                   spell: spName, reset: 'known',
                   source: h.data.name || 'Homebrew Subclass',
                   ability: eff.ability || 'cha', _homebrew: true,
+                  freeResource: freeAct ? `hb_active_${L}_${forgeSlug(feat.name || 'feat')}` : null,
                 });
               });
             }
@@ -48326,6 +48775,10 @@ function wireForge() {
         saveEffect: (document.getElementById('forgeActiveSaveEffect')?.value || '').trim(),
         desc: (document.getElementById('forgeActiveDesc')?.value || '').trim(),
       };
+      const dcSel = document.getElementById('forgeActiveDc')?.value || '';
+      if (dcSel) params.dc = dcSel;
+      const kiN = parseInt(document.getElementById('forgeActiveKi')?.value, 10) || 0;
+      if (kiN > 0) params.ki = kiN;
       effect = { kind: 'active', ...params };
     } else if (kind === 'extra_attack') {
       params = {};
@@ -48338,6 +48791,8 @@ function wireForge() {
       effect = { kind: 'ac', ...params };
     } else if (kind === 'speed') {
       params = { amount: parseInt(document.getElementById('forgeSpeedAmount')?.value, 10) || 10 };
+      const spT = document.getElementById('forgeSpeedType')?.value || '';
+      if (spT) params.type = spT;
       effect = { kind: 'speed', ...params };
     } else if (kind === 'skill') {
       params = {
@@ -55189,7 +55644,7 @@ try { linkBoot(); } catch (e) { console.warn('Hearth live game boot failed:', e)
 // control the page reloads once by itself unless you are mid-edit (typing, a
 // popup open, or the character builder), in which case the toast stays up.
 (function () {
-  const APP_VERSION = 'v1.1.0';
+  const APP_VERSION = 'v1.1.1';
   window.HEARTH_VERSION = APP_VERSION;
 
   function hearthHasUnsavedEdits() {

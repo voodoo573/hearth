@@ -11,7 +11,7 @@
 // Bump CACHE_VERSION whenever you ship a new build (keep it in step with
 // CACHE_VERSION in /app/sw.js).
 
-const CACHE_VERSION = 'hearth-site-v1.1.0';
+const CACHE_VERSION = 'hearth-site-v1.1.1';
 const PRECACHE = [
   '/',
   '/manifest.webmanifest',
