@@ -7880,6 +7880,57 @@ body.hearth-wide .app {
 .link-acct-unverified { color: #e8b04a; }
 
 </style>
+
+<style id="forgeV120">
+  /* v1.2.0 — Forge overhaul: tabs, readable labels, danger buttons, centred
+     confirm box, full-height background, wider wizards. */
+  html[data-theme="dark"] { background: var(--page); }
+  html[data-theme="dark"] body { background-color: var(--page); min-height: 100vh; }
+  .forge-tabs { display: flex; gap: 4px; margin: 4px 0 2px; border-bottom: 1px solid var(--rule-soft, rgba(184,137,61,0.3)); overflow-x: auto; scrollbar-width: none; }
+  .forge-tabs::-webkit-scrollbar { display: none; }
+  .forge-tab { flex: 1 1 0; min-width: 84px; background: transparent; border: 0; border-bottom: 2px solid transparent; color: var(--ink-soft); font-family: Georgia, 'Times New Roman', serif; font-size: 15px; padding: 10px 8px 9px; cursor: pointer; white-space: nowrap; }
+  .forge-tab[aria-selected="true"] { color: var(--gold, #d4a04b); border-bottom-color: var(--gold, #d4a04b); font-weight: 600; }
+  .forge-tab:focus-visible { outline: 2px solid var(--gold, #d4a04b); outline-offset: -2px; }
+  .forge-panel[hidden] { display: none !important; }
+  /* consistent sub-label / input fonts */
+  .ai-small, .forge-pill-meta, .forge-saved-meta, .forge-review-meta, .forge-level-tab-tier, .forge-current-label {
+    font-family: -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif !important; letter-spacing: 0.2px !important;
+  }
+  .ai-small { font-size: 12.5px; color: var(--ink-soft); }
+  .forge-pill-meta { font-size: 12px; opacity: 0.92; line-height: 1.35; white-space: normal; }
+  .forge-saved-meta { font-size: 12.5px; color: var(--ink-soft); }
+  .forge-review-meta { font-size: 12px; color: var(--ink-soft); text-transform: none; }
+  .forge-section-label { font-size: 12px; color: var(--ink-soft); letter-spacing: 1.5px; }
+  .forge-step-dot { font-size: 11.5px; letter-spacing: 1px; opacity: 0.75; }
+  .forge-step-num { width: 22px; height: 22px; font-size: 12px; }
+  .forge-level-tab { font-size: 14px; padding: 8px 12px; min-width: 56px; }
+  .forge-level-tab-tier { font-size: 11.5px; opacity: 0.9; }
+  .forge-helper, .forge-template-desc, .forge-current-desc, .forge-review-feature-desc { font-size: 13px; }
+  .ai-input, .ai-textarea, .ai-select { font-size: 15px; }
+  .forge-pill-name, .forge-template-name { font-size: 15px; }
+  /* wizards: use the height, wider on big screens, lists not clipped */
+  .forge-dialog.browse-dialog { max-height: min(94vh, 980px); }
+  .forge-dialog .forge-body { min-height: 0; }
+  @media (min-width: 760px) {
+    .dialog.forge-dialog { max-width: 720px; }
+    .forge-dialog .forge-pills .forge-pill { flex: 1 0 calc(33.33% - 6px); }
+  }
+  .forge-pill { min-height: 52px; }
+  /* danger buttons */
+  .btn.btn-danger, .forge-saved-actions .btn.btn-danger { background: transparent; color: #e0806e; border: 1px solid rgba(194,90,74,0.75); }
+  .btn.btn-danger:hover:not(:disabled) { background: rgba(122,30,26,0.55); color: #ffe9e4; border-color: #c25a4a; }
+  html:not([data-theme="dark"]) .btn.btn-danger { color: #7a1e1a; border-color: #7a1e1a; }
+  /* importer chips on the dark theme */
+  html[data-theme="dark"] .ai-pill { background: rgba(184,137,61,0.14); color: var(--ink); border: 1px solid rgba(184,137,61,0.45); }
+  .ai-pill { font-family: -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif; font-size: 11.5px; letter-spacing: 0.3px; text-transform: none; border-radius: 3px; }
+  /* centred confirm box (was pinned to the bottom edge under the Forge) */
+  html[data-theme="dark"] .file-pick-btn { background: rgba(184,137,61,0.16); color: var(--ink); border: 1px solid rgba(184,137,61,0.55); }
+  html[data-theme="dark"] .file-pick-btn:hover, html[data-theme="dark"] .file-pick-btn:active { background: rgba(184,137,61,0.3); border-color: var(--gold, #d4a04b); }
+  .file-pick-btn.file-pick-cam { margin-top: 6px; }
+  @media (pointer: fine) { .file-pick-btn.file-pick-cam { display: none; } }
+  .dialog-backdrop.confirm-backdrop { align-items: center; padding: 16px; z-index: 300; }
+  .dialog-backdrop.confirm-backdrop .dialog { max-width: 420px; border: 1px solid var(--rule-soft, rgba(184,137,61,0.4)); border-top: 3px double var(--leather, #8a5a2b); box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+</style>
 </head>
 <body>
 <div class="app">
@@ -7915,7 +7966,7 @@ body.hearth-wide .app {
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '1.1.2';
+const HEARTH_VERSION = '1.2.0';
 // ============================================================
 // SRD 5.1 DATA v2 - structured for in-app casting
 // All content here is from the SRD 5.1 (CC-BY-4.0)
@@ -11635,9 +11686,13 @@ function forgeValidSpells(names) {
   const have = new Set(SPELLS.map(s => s.name));
   return (names || []).filter(n => have.has(n));
 }
+// v1.2.0 — feature names come from the signature element (or how the subclass
+// fights), not the first word of its name ("Review Test Pact" gave "Review Grasp").
+const FORGE_ELEMENT_WORDS = { fire: 'Ember', cold: 'Frost', lightning: 'Storm', thunder: 'Thunder', necrotic: 'Grave', radiant: 'Dawn', poison: 'Venom', psychic: 'Dream', acid: 'Corrosion', force: 'Arcane' };
+const FORGE_DELIVERY_WORDS = { martial: 'Iron', mystic: 'Mystic', hybrid: 'Rune' };
 function forgeKw(draft) {
-  const w = ((draft && draft.name) || '').trim().split(/\s+/)[0];
-  return w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : 'Adept';
+  const d = draft || {};
+  return FORGE_ELEMENT_WORDS[d.element] || FORGE_DELIVERY_WORDS[d.delivery] || 'Iron';
 }
 
 // Per-role feature builders. Each gets a ctx { kw, el, ability, feat } and returns features.
@@ -28566,8 +28621,9 @@ function renderB55Origins() {
 function confirmDialog(message, onYes, opts) {
   const o = opts || {};
   const wrap = document.createElement('div');
-  wrap.className = 'dialog-backdrop';
+  wrap.className = 'dialog-backdrop confirm-backdrop';
   wrap.style.display = 'flex';
+  wrap.setAttribute('role', 'alertdialog');
   wrap.innerHTML = `
     <div class="dialog">
       <div class="dialog-title">${escape(o.title || 'Are you sure?')}</div>
@@ -41343,10 +41399,12 @@ function renderForgeStepImport() {
 
     <div class="ai-upload-box">
       <label class="file-pick-btn" for="forgeImportImage">
-        <span class="file-pick-icon">📷</span>
+        <span class="file-pick-icon">🖼️</span>
         <span class="file-pick-text" id="forgeImportImageLabel">Tap to choose photo(s)</span>
       </label>
       <input class="ai-file-input" id="forgeImportImage" type="file" accept="image/*" multiple />
+        <label class="file-pick-btn file-pick-cam" for="forgeImportImageCam"><span class="file-pick-icon">📸</span><span class="file-pick-text">Take a photo</span></label>
+        <input class="ai-file-input" id="forgeImportImageCam" type="file" accept="image/*" capture="environment" />
       <div class="ai-progress" id="forgeImportStatus">${escape(status || 'Tip: cropped, well-lit photos read better than full pages.')}</div>
       <div class="ai-image-preview" id="forgeImportPreview"></div>
     </div>
@@ -41593,10 +41651,12 @@ function renderMiForgeStepImport() {
 
     <div class="ai-upload-box">
       <label class="file-pick-btn" for="miForgeImportImage">
-        <span class="file-pick-icon">📷</span>
+        <span class="file-pick-icon">🖼️</span>
         <span class="file-pick-text" id="miForgeImportImageLabel">Tap to choose photo(s)</span>
       </label>
       <input class="ai-file-input" id="miForgeImportImage" type="file" accept="image/*" multiple />
+        <label class="file-pick-btn file-pick-cam" for="miForgeImportImageCam"><span class="file-pick-icon">📸</span><span class="file-pick-text">Take a photo</span></label>
+        <input class="ai-file-input" id="miForgeImportImageCam" type="file" accept="image/*" capture="environment" />
       <div class="ai-progress" id="miForgeImportStatus">${escape(status || 'Tip: a clean photo of just the item entry reads better than a whole page.')}</div>
       <div class="ai-image-preview" id="miForgeImportPreview"></div>
     </div>
@@ -47081,7 +47141,7 @@ function parseSubclassFromText(rawText, hintKlass = null) {
     if (lines[i].toLowerCase() !== klass) descParts.push(lines[i]);
     i++;
   }
-  const desc = descParts.join(' ').replace(/\s{2,}/g, ' ').trim();
+  let desc = descParts.join(' ').replace(/\s{2,}/g, ' ').trim();
   const levelFeatures = {};
   let curLvl = null;
   let curFeatures = [];
@@ -47117,6 +47177,14 @@ function parseSubclassFromText(rawText, hintKlass = null) {
     }
   }
   flushLevel();
+  // v1.2.0 — book-style text ("Ember Spark" heading, then "Starting at 2nd
+  // level, …") has no "2nd level" header lines; read headings and take each
+  // feature's level from its own text.
+  if (!Object.keys(levelFeatures).length) {
+    const fb = parseSubclassFeaturesByHeading(lines, name);
+    Object.assign(levelFeatures, fb.levelFeatures);
+    if (!desc && fb.intro) descParts = [fb.intro];
+  }
   return {
     id: forgeSlug(name || 'homebrew'),
     name: name || 'Untitled Subclass',
@@ -47124,6 +47192,36 @@ function parseSubclassFromText(rawText, hintKlass = null) {
     klass: klass || null,
     levelFeatures,
   };
+}
+
+function parseSubclassFeaturesByHeading(lines, name) {
+  const SMALL = new Set(['of', 'the', 'and', 'a', 'an', 'to', 'in', 'on', 'for', 'with', 'at', 'from', 'by']);
+  const isHeading = (line, prev) => {
+    const l = line.replace(/[*_#]+/g, '').trim();
+    if (!/^[A-Z][A-Za-z'’ \-]{2,44}$/.test(l) || /[.,;]$/.test(l)) return false;
+    const words = l.split(/\s+/);
+    if (words.length > 6) return false;
+    if (!words.every((w, i) => /^[A-Z]/.test(w) || (i > 0 && SMALL.has(w.toLowerCase())))) return false;
+    return !prev || /[.!?:)]$/.test(prev) || prev === name;
+  };
+  const feats = []; const intro = [];
+  let cur = null;
+  lines.forEach((line, i) => {
+    if (line === name && i < 3) return;
+    if (isHeading(line, i ? lines[i - 1] : '')) { cur = { name: line.replace(/[*_#]+/g, '').trim(), desc: '' }; feats.push(cur); return; }
+    if (cur) cur.desc = cur.desc ? (/-$/.test(cur.desc) ? cur.desc.slice(0, -1) + line : cur.desc + ' ' + line) : line;
+    else intro.push(line);
+  });
+  const levelFeatures = {};
+  let lastLvl = null;
+  feats.forEach(f => {
+    const m = f.desc.match(/\b(\d{1,2})(?:st|nd|rd|th)[\s-]+level\b/i);
+    const lvl = m ? parseInt(m[1], 10) : lastLvl;
+    if (!lvl || lvl > 20) return;
+    lastLvl = lvl;
+    (levelFeatures[lvl] = levelFeatures[lvl] || []).push({ name: f.name, desc: f.desc.replace(/\s{2,}/g, ' ').trim() });
+  });
+  return { levelFeatures, intro: intro.join(' ').trim() };
 }
 
 function fillTemplate(tpl, themeId) {
@@ -48269,15 +48367,23 @@ function runSafeAiRepairs() {
 
 function renderForge() {
   const hb = loadAiHomebrew();
+  // v1.2.0 — the Forge is split into tabs; the last one is remembered.
+  const tabs = [['subclass', 'Subclass'], ['item', 'Item'], ['rules', 'House rules'], ['import', 'Import']];
+  let cur = 'subclass';
+  try { const t = localStorage.getItem(FORGE_TAB_KEY); if (tabs.some(x => x[0] === t)) cur = t; } catch (e) {}
+  if (state.ui.forge) cur = 'subclass'; else if (state.ui.miForge) cur = 'item';
+  const panel = (id, html) => `<div class="forge-panel" id="forgePanel-${id}" role="tabpanel" aria-labelledby="forgeTab-${id}" ${cur === id ? '' : 'hidden'}>${html}</div>`;
   content.innerHTML = `
     <section class="ai-panel">
       <div class="section-label">The Forge</div>
       <div class="section-helper">Build and edit homebrew subclasses, magic items, and house rules. Saved entries are injected into the rest of the app immediately.</div>
-
-      ${forgeCardSubclass()}
-      ${forgeCardMagicItem()}
-      ${forgeCardDmMode()}
-      ${forgeCardHomebrewImporter(hb)}
+      <div class="forge-tabs" role="tablist" aria-label="Forge sections">
+        ${tabs.map(([id, label]) => `<button class="forge-tab" role="tab" id="forgeTab-${id}" data-forge-tab="${id}" aria-controls="forgePanel-${id}" aria-selected="${cur === id}" tabindex="${cur === id ? 0 : -1}">${label}</button>`).join('')}
+      </div>
+      ${panel('subclass', forgeCardSubclass())}
+      ${panel('item', forgeCardMagicItem())}
+      ${panel('rules', forgeCardDmMode())}
+      ${panel('import', forgeCardHomebrewImporter(hb))}
     </section>
     ${state.ui.forge ? renderForgeDialog() : ''}
     ${state.ui.miForge ? renderMiForgeDialog() : ''}
@@ -48285,6 +48391,26 @@ function renderForge() {
   wireAI(null);
   wireForge();
   wireMiForge();
+  wireForgeTabs();
+  wireOcrPickers();
+}
+const FORGE_TAB_KEY = 'hearth.forgeTab';
+function wireForgeTabs() {
+  const btns = [...document.querySelectorAll('[data-forge-tab]')];
+  const select = (id, focus) => {
+    btns.forEach(b => { const on = b.dataset.forgeTab === id; b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
+    document.querySelectorAll('.forge-panel').forEach(p => { p.hidden = p.id !== 'forgePanel-' + id; });
+    try { localStorage.setItem(FORGE_TAB_KEY, id); } catch (e) {}
+  };
+  btns.forEach((b, i) => {
+    b.addEventListener('click', () => select(b.dataset.forgeTab));
+    b.addEventListener('keydown', e => {
+      const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      select(btns[(i + d + btns.length) % btns.length].dataset.forgeTab, true);
+    });
+  });
 }
 
 function forgeCardDmMode() {
@@ -48323,7 +48449,7 @@ function forgeCardDmMode() {
         </select>
       </div>
       <textarea class="ai-textarea" id="houseRuleNote" placeholder="Optional note, e.g. Campaign is heroic fantasy, DM allows stat requirement exceptions."></textarea>
-      <div class="ai-row"><button class="btn primary" id="addHouseRuleBtn">Save house rule</button><button class="btn" id="clearHouseRulesBtn">Clear house rules</button></div>
+      <div class="ai-row"><button class="btn primary" id="addHouseRuleBtn">Save house rule</button><button class="btn btn-danger" id="clearHouseRulesBtn">Clear house rules</button></div>
       <div class="ai-small"><strong>Active house rules:</strong> ${dm.houseRules && dm.houseRules.length ? dm.houseRules.map(r => `<span class="ai-pill">${escape(r.title)}</span>`).join('') : 'none'}</div>
       <div class="ai-small"><strong>Recent overrides:</strong> ${dm.overrideLog && dm.overrideLog.length ? dm.overrideLog.slice(0,5).map(o => `<span class="ai-pill">${escape(o.kind)}</span>`).join('') : 'none'}</div>
     </div>
@@ -48351,20 +48477,24 @@ function forgeCardHomebrewImporter(hb) {
       <div class="ai-upload-box">
         <div class="ai-helper" style="margin-bottom:6px;">Upload a homebrew screenshot/photo. The app will try to read the text and drop it into the box above.</div>
         <label class="file-pick-btn" for="aiHomebrewImage">
-          <span class="file-pick-icon">📷</span>
+          <span class="file-pick-icon">🖼️</span>
           <span class="file-pick-text" id="aiHomebrewImageLabel">Tap to choose photo(s)</span>
         </label>
         <input class="ai-file-input" id="aiHomebrewImage" type="file" accept="image/*" multiple />
+        <label class="file-pick-btn file-pick-cam" for="aiHomebrewImageCam"><span class="file-pick-icon">📸</span><span class="file-pick-text">Take a photo</span></label>
+        <input class="ai-file-input" id="aiHomebrewImageCam" type="file" accept="image/*" capture="environment" />
         <div class="ai-progress" id="aiImageStatus">Tip: clear, straight screenshots work best. Blurry pub-table prophecy photos may need manual tidying.</div>
         <div class="ai-image-preview" id="aiImagePreview"></div>
       </div>
       <div class="ai-row">
         <button class="btn" id="aiExtractImageBtn">Read image text</button>
         <button class="btn primary" id="aiImportBtn">Check & Save</button>
-        <button class="btn" id="aiClearHomebrewBtn">Clear vault</button>
+        <button class="btn btn-danger" id="aiClearHomebrewBtn">Clear vault</button>
       </div>
       <div id="aiHomebrewResult"></div>
-      <div class="ai-small">Saved homebrew: ${hb.length ? hb.map(h => `<span class="ai-pill">${escape(h.type)} · ${escape(h.title)}</span>`).join('') : 'none yet'}</div>
+      ${(() => { const other = hb.filter(h => h && h.type !== 'subclass' && h.type !== 'magic_item'); const nSub = hb.filter(h => h && h.type === 'subclass').length, nMi = hb.filter(h => h && h.type === 'magic_item').length;
+        return `<div class="ai-small">Saved homebrew notes: ${other.length ? other.map(h => `<span class="ai-pill">${escape(String(h.type || 'note').replace(/_/g, ' '))} · ${escape(h.title || '')}</span>`).join('') : 'none yet'}</div>`
+          + ((nSub || nMi) ? `<div class="ai-small">Subclasses (${nSub}) and magic items (${nMi}) are listed on their own tabs.</div>` : ''); })()}
     </div>
   `;
 }
@@ -48382,7 +48512,7 @@ function forgeCardSubclass() {
           </div>
           <div class="forge-saved-actions">
             <button class="btn" data-forge-edit="${escape(h.data?.id || '')}|${escape(h.data?.klass || '')}">Edit</button>
-            <button class="btn ghost" data-forge-delete="${escape(h.data?.id || '')}|${escape(h.data?.klass || '')}">Delete</button>
+            <button class="btn btn-danger" data-forge-delete="${escape(h.data?.id || '')}|${escape(h.data?.klass || '')}">Delete</button>
           </div>
         </div>
       `).join('')}
@@ -48414,7 +48544,7 @@ function forgeCardMagicItem() {
           </div>
           <div class="forge-saved-actions">
             <button class="btn" data-mi-edit="${escape(h.data?.id || '')}">Edit</button>
-            <button class="btn ghost" data-mi-delete="${escape(h.data?.id || '')}">Delete</button>
+            <button class="btn btn-danger" data-mi-delete="${escape(h.data?.id || '')}">Delete</button>
           </div>
         </div>
       `).join('')}
@@ -48434,23 +48564,96 @@ function forgeCardMagicItem() {
 }
 
 
+// v1.2.0 — photo reading (OCR). Tesseract.js is loaded on demand from the
+// jsDelivr CDN at a pinned version (script, worker, WASM core and English
+// data, about 5 MB the first time). The language data is then kept in this
+// device's IndexedDB by Tesseract, and on the web the app's service worker
+// keeps the CDN files, so later reads also work offline. With no connection
+// and nothing cached, it says so instead of hanging.
+const OCR_VERSION = '5.1.1';
+const OCR_SCRIPT_URL = `https://cdn.jsdelivr.net/npm/tesseract.js@${OCR_VERSION}/dist/tesseract.min.js`;
+const OCR_WORKER_URL = `https://cdn.jsdelivr.net/npm/tesseract.js@${OCR_VERSION}/dist/worker.min.js`;
+const OCR_CORE_URL = `https://cdn.jsdelivr.net/npm/tesseract.js-core@${OCR_VERSION}`;
+const OCR_LOAD_TIMEOUT_MS = 45000;
+let _ocrScriptP = null;
+function ocrWithTimeout(p, ms, msg) {
+  let t; return Promise.race([p, new Promise((_, rej) => { t = setTimeout(() => rej(new Error(msg)), ms); })]).finally(() => clearTimeout(t));
+}
 async function ensureOcrEngine() {
   if (window.Tesseract) return window.Tesseract;
-  await new Promise((resolve, reject) => {
-    const existing = document.querySelector('script[data-hearth-ocr="tesseract"]');
-    if (existing) { existing.addEventListener('load', resolve, { once: true }); existing.addEventListener('error', reject, { once: true }); return; }
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-    script.async = true;
-    script.dataset.hearthOcr = 'tesseract';
-    script.onload = resolve;
-    script.onerror = () => reject(new Error('Could not load the OCR reader. Check internet connection, or paste the text manually.'));
-    document.head.appendChild(script);
-  });
-  if (!window.Tesseract) throw new Error('OCR reader did not start. Paste the text manually or try again online.');
-  return window.Tesseract;
+  if (!_ocrScriptP) {
+    _ocrScriptP = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = OCR_SCRIPT_URL;
+      script.async = true;
+      script.crossOrigin = 'anonymous';
+      script.dataset.hearthOcr = 'tesseract';
+      script.onload = () => window.Tesseract ? resolve(window.Tesseract) : reject(new Error('The photo reader did not start.'));
+      script.onerror = () => reject(new Error(navigator.onLine === false
+        ? 'Reading photos needs an internet connection the first time (about 5 MB). Connect and try again, or paste the text below.'
+        : 'Could not download the photo reader. Check your connection and try again, or paste the text below.'));
+      document.head.appendChild(script);
+    }).catch(e => { _ocrScriptP = null; document.querySelectorAll('script[data-hearth-ocr]').forEach(x => x.remove()); throw e; });
+  }
+  return ocrWithTimeout(_ocrScriptP, OCR_LOAD_TIMEOUT_MS, 'The photo reader is taking too long to download. Check your connection and try again, or paste the text below.');
 }
-
+const OCR_STAGE_TEXT = {
+  'loading tesseract core': 'Downloading the photo reader',
+  'initializing tesseract': 'Starting the photo reader',
+  'initialized tesseract': 'Starting the photo reader',
+  'loading language traineddata': 'Downloading English text data',
+  'loading language traineddata (from cache)': 'Loading English text data',
+  'initializing api': 'Getting ready',
+  'initialized api': 'Getting ready',
+  'recognizing text': 'Reading',
+};
+let _ocrWorkerP = null, _ocrIdleT = null, _ocrLogger = null;
+async function ocrWorker() {
+  if (_ocrIdleT) { clearTimeout(_ocrIdleT); _ocrIdleT = null; }
+  if (!_ocrWorkerP) {
+    _ocrWorkerP = (async () => {
+      const T = await ensureOcrEngine();
+      return ocrWithTimeout(T.createWorker('eng', 1, {
+        workerPath: OCR_WORKER_URL, corePath: OCR_CORE_URL,
+        logger: m => { try { _ocrLogger && _ocrLogger(m); } catch (e) {} },
+        errorHandler: e => { try { console.warn('Hearth OCR:', e); } catch (x) {} },
+      }), 120000, 'The photo reader could not finish downloading. Check your connection and try again, or paste the text below.');
+    })().catch(e => { _ocrWorkerP = null; throw e; });
+  }
+  return _ocrWorkerP;
+}
+function ocrReleaseLater() {
+  if (_ocrIdleT) clearTimeout(_ocrIdleT);
+  _ocrIdleT = setTimeout(() => { const p = _ocrWorkerP; _ocrWorkerP = null; _ocrIdleT = null; if (p) p.then(w => w.terminate()).catch(() => {}); }, 120000);
+}
+// v1.2.0 — each photo box has "Choose photo(s)" and "Take a photo" (camera;
+// in the Android app this opens the camera after the permission prompt).
+// Picking or taking a photo starts reading straight away.
+const _ocrPicked = {};
+function ocrFilesFor(id) {
+  const main = document.getElementById(id), cam = document.getElementById(id + 'Cam');
+  if (_ocrPicked[id] && _ocrPicked[id].length) return _ocrPicked[id];
+  if (main && main.files && main.files.length) return Array.from(main.files);
+  if (cam && cam.files && cam.files.length) return Array.from(cam.files);
+  return [];
+}
+function wireOcrPickers() {
+  [['forgeImportImage', 'forgeImportReadBtn', 'forgeImportImageLabel'], ['miForgeImportImage', 'miForgeImportReadBtn', 'miForgeImportImageLabel'], ['aiHomebrewImage', 'aiExtractImageBtn', 'aiHomebrewImageLabel']].forEach(([id, btnId, labelId]) => {
+    [id, id + 'Cam'].forEach(inpId => {
+      const inp = document.getElementById(inpId);
+      if (!inp || inp.dataset.ocrWired) return;
+      inp.dataset.ocrWired = '1';
+      inp.addEventListener('change', () => {
+        const files = inp.files ? Array.from(inp.files) : [];
+        _ocrPicked[id] = files;
+        const lab = document.getElementById(labelId);
+        if (lab && files.length) lab.textContent = `${files.length} photo${files.length > 1 ? 's' : ''} selected — tap to change`;
+        const btn = document.getElementById(btnId);
+        if (files.length && btn && !btn.disabled) setTimeout(() => btn.click(), 0);
+      });
+    });
+  });
+}
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -48473,7 +48676,9 @@ async function preprocessImageForOcr(file) {
       // wants ~30px x-height for reliable recognition; phone photos of book
       // pages often come in too small.
       const longEdge = Math.max(img.width, img.height);
-      const scale = Math.min(3, Math.max(1, 1800 / longEdge));
+      // v1.2.0 — and scale big phone photos (4000 px+) down to 2400 px, which
+      // reads just as well and doesn't run a phone WebView out of memory.
+      const scale = longEdge > 2400 ? 2400 / longEdge : Math.min(3, Math.max(1, 1800 / longEdge));
       const w = Math.round(img.width * scale);
       const h = Math.round(img.height * scale);
 
@@ -48548,48 +48753,50 @@ function cleanupOcrText(text) {
 }
 
 async function extractHomebrewTextFromImages(files, statusEl, previewEl) {
-  if (!files || !files.length) {
-    if (statusEl) statusEl.textContent = 'Choose one or more images first.';
-    return '';
-  }
-  if (statusEl) statusEl.textContent = 'Loading OCR reader...';
-  const Tesseract = await ensureOcrEngine();
+  Object.keys(_ocrPicked).forEach(k => { delete _ocrPicked[k]; });
+  const say = (t) => { if (statusEl) statusEl.textContent = t; };
+  if (!files || !files.length) { say('Choose one or more images first.'); return ''; }
+  const list = Array.from(files).filter(f => !f.type || /^image\//.test(f.type));
+  if (!list.length) { say('That file is not an image. Choose a photo or screenshot.'); return ''; }
+  if (statusEl) statusEl.setAttribute('aria-live', 'polite');
+  say(window.Tesseract ? 'Starting the photo reader…' : 'Downloading the photo reader (first time only, about 5 MB)…');
+  let cur = 0;
+  _ocrLogger = (m) => {
+    const label = OCR_STAGE_TEXT[m.status] || null;
+    if (!label) return;
+    const pct = (typeof m.progress === 'number' && m.progress > 0 && m.progress < 1) ? ` ${Math.round(m.progress * 100)}%` : '';
+    say(m.status === 'recognizing text' ? `Reading image ${cur + 1} of ${list.length}…${pct}` : `${label}…${pct}`);
+  };
+  let worker;
+  try { worker = await ocrWorker(); }
+  finally { if (!worker) _ocrLogger = null; }
   const chunks = [];
   if (previewEl) { previewEl.innerHTML = ''; previewEl.style.display = 'block'; }
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    if (statusEl) statusEl.textContent = `Preparing image ${i + 1} of ${files.length}...`;
-    // Preprocess for better OCR; fall back to original on failure
-    let imageUrl;
-    try {
-      imageUrl = await preprocessImageForOcr(file);
-    } catch (e) {
-      console.warn('Preprocess failed, using original:', e);
-      imageUrl = await readFileAsDataUrl(file);
+  try {
+    for (let i = 0; i < list.length; i++) {
+      cur = i;
+      const file = list[i];
+      say(`Preparing image ${i + 1} of ${list.length}…`);
+      let imageUrl;
+      try { imageUrl = await preprocessImageForOcr(file); }
+      catch (e) {
+        try { imageUrl = await readFileAsDataUrl(file); } catch (e2) { throw new Error(`Could not open image ${i + 1}. Try a JPEG or PNG.`); }
+      }
+      if (previewEl && i === 0) previewEl.innerHTML = `<img alt="Homebrew image preview" src="${imageUrl}" />`;
+      say(`Reading image ${i + 1} of ${list.length}…`);
+      const result = await ocrWithTimeout(worker.recognize(imageUrl), 180000, `Reading image ${i + 1} took too long. Try a smaller or cropped photo.`);
+      const raw = (result && result.data && result.data.text ? result.data.text : '').trim();
+      const cleaned = cleanupOcrText(raw);
+      if (cleaned) chunks.push(list.length > 1 ? `--- Image ${i + 1}: ${file.name} ---\n${cleaned}` : cleaned);
     }
-    if (previewEl && i === 0) previewEl.innerHTML = `<img alt="Homebrew image preview" src="${imageUrl}" />`;
-    if (statusEl) statusEl.textContent = `Reading image ${i + 1} of ${files.length}...`;
-    // pageSegMode 6 = "Assume a single uniform block of text" — works better
-    // for homebrew cards than the default (auto), which often misorders columns.
-    const result = await Tesseract.recognize(imageUrl, 'eng', {
-      logger: m => {
-        if (!statusEl || m.status !== 'recognizing text') return;
-        const pct = Math.round((m.progress || 0) * 100);
-        statusEl.textContent = `Reading image ${i + 1} of ${files.length}: ${pct}%`;
-      },
-      tessedit_pageseg_mode: '6',
-      preserve_interword_spaces: '1',
-    });
-    const raw = (result && result.data && result.data.text ? result.data.text : '').trim();
-    const cleaned = cleanupOcrText(raw);
-    if (cleaned) {
-      chunks.push(files.length > 1 ? `--- Image ${i + 1}: ${file.name} ---\n${cleaned}` : cleaned);
-    }
+  } finally {
+    _ocrLogger = null;
+    ocrReleaseLater();
   }
   const combined = chunks.join('\n\n').trim();
-  if (statusEl) statusEl.textContent = combined
-    ? 'Done. Read the text below — fix any OCR mistakes, then tap Apply.'
-    : 'No readable text found. Try a clearer photo, better lighting, or paste the text manually.';
+  say(combined
+    ? 'Done. Check the text below, fix any misread words, then tap Apply.'
+    : 'No readable text found. Try a clearer, straight-on photo with good light, or paste the text.');
   return combined;
 }
 
@@ -48646,7 +48853,7 @@ function wireAI(active) {
     confirmDialog('Clear all house rules and override logs?', () => {
       saveDmSettings({ ...loadDmSettings(), dmMode: false, houseRules: [], overrideLog: [] });
       render();
-    });
+    }, { title: 'Clear house rules?', yes: 'Clear', danger: true });
   });
   const imageInput = document.getElementById('aiHomebrewImage');
   const extractBtn = document.getElementById('aiExtractImageBtn');
@@ -48671,12 +48878,12 @@ function wireAI(active) {
   if (extractBtn) extractBtn.addEventListener('click', async () => {
     try {
       extractBtn.disabled = true;
-      const extracted = await extractHomebrewTextFromImages(imageInput ? imageInput.files : [], statusEl, previewEl);
+      const extracted = await extractHomebrewTextFromImages(ocrFilesFor('aiHomebrewImage'), statusEl, previewEl);
       if (extracted && textEl) {
         textEl.value = textEl.value.trim() ? `${textEl.value.trim()}\n\n${extracted}` : extracted;
       }
     } catch (err) {
-      if (statusEl) statusEl.textContent = err.message || String(err);
+      if (statusEl) statusEl.textContent = 'Could not read the photo: ' + (err.message || String(err));
     } finally {
       extractBtn.disabled = false;
     }
@@ -48697,7 +48904,7 @@ function wireAI(active) {
   });
   const clearBtn = document.getElementById('aiClearHomebrewBtn');
   if (clearBtn) clearBtn.addEventListener('click', () => {
-    confirmDialog('Clear all saved AI homebrew notes?', () => { saveAiHomebrew([]); render(); });
+    confirmDialog('This deletes every saved homebrew entry on this device, including Forge subclasses and magic items.', () => { saveAiHomebrew([]); injectHomebrewSubclassesIntoRegistry(); injectHomebrewMagicItemsIntoRegistry(); render(); }, { title: 'Clear the homebrew vault?', yes: 'Clear vault', danger: true });
   });
   const askOfflineBtn = document.getElementById('aiAskOfflineBtn');
   if (askOfflineBtn) askOfflineBtn.addEventListener('click', () => {
@@ -48767,7 +48974,7 @@ function wireForge() {
       if (!entry) return;
       const draft = { ...emptyForgeDraft(), ...entry.data };
       // Pick a sensible step based on what's filled
-      const next = { step: draft.klass ? 'identity' : 'class', draft, activeLevelIdx: 0, importText: '', importStatus: '' };
+      const next = { step: draft.klass ? 'identity' : 'class', draft, origKey: entry.data.klass + '|' + entry.data.id, activeLevelIdx: 0, importText: '', importStatus: '' };
       state.ui.forge = next;
       render();
     });
@@ -48775,10 +48982,10 @@ function wireForge() {
   document.querySelectorAll('[data-forge-delete]').forEach(b => {
     b.addEventListener('click', () => {
       const [id, klass] = b.dataset.forgeDelete.split('|');
-      confirmDialog('Delete this homebrew subclass? Characters using it will keep the choice but won\'t see updates.', () => {
+      confirmDialog('Characters using it will keep the choice but won\'t see updates.', () => {
         deleteForgeSubclass(klass, id);
         render();
-      });
+      }, { title: 'Delete this subclass?', yes: 'Delete', danger: true });
     });
   });
 
@@ -48841,7 +49048,7 @@ function wireForge() {
   });
   const cancel = document.getElementById('forgeCancelBtn');
   if (cancel) cancel.addEventListener('click', () => {
-    confirmDialog('Discard this Forge session?', () => {
+    confirmDialog('Anything you have not saved is lost.', () => {
       state.ui.forge = null;
       render();
     });
@@ -48979,10 +49186,13 @@ function wireForge() {
   const saveBtn = document.getElementById('forgeSaveBtn');
   if (saveBtn) saveBtn.addEventListener('click', () => {
     f.draft.id = forgeSlug(f.draft.name);
+    const oldKey = f.origKey && f.origKey !== (f.draft.klass + '|' + f.draft.id) ? f.origKey : null;
     if (saveForgeSubclass(f.draft)) {
+      if (oldKey) { const [ok, oi] = oldKey.split('|'); deleteForgeSubclass(ok, oi); }
       logRoll('Subclass forged', '', `${f.draft.name} saved for ${CLASSES[f.draft.klass]?.name || f.draft.klass}`);
       state.ui.forge = null;
       render();
+      showToast(`Saved "${f.draft.name}" — it now appears in character creation.`);
     } else {
       showToast('Couldn\'t save — make sure name and class are set.');
     }
@@ -48996,23 +49206,27 @@ function wireForge() {
 
   const readImagesBtn = document.getElementById('forgeImportReadBtn');
   if (readImagesBtn) readImagesBtn.addEventListener('click', async () => {
-    const imgInput = document.getElementById('forgeImportImage');
+    const imgInput = { files: ocrFilesFor('forgeImportImage') };
     const statusEl = document.getElementById('forgeImportStatus');
     const previewEl = document.getElementById('forgeImportPreview');
     const textEl = document.getElementById('forgeImportText');
-    if (!imgInput || !imgInput.files || !imgInput.files.length) {
+    if (!imgInput.files || !imgInput.files.length) {
       if (statusEl) statusEl.textContent = 'Choose one or more images first, or paste text below.';
       return;
     }
     try {
+      readImagesBtn.disabled = true;
       const text = await extractHomebrewTextFromImages(imgInput.files, statusEl, previewEl);
       if (textEl) {
         textEl.value = (textEl.value ? textEl.value.trim() + '\n\n' : '') + text;
         f.importText = textEl.value;
       }
+      f.importStatus = statusEl ? statusEl.textContent : '';
       render();
     } catch (e) {
-      if (statusEl) statusEl.textContent = 'OCR failed: ' + (e.message || e);
+      f.importStatus = 'Could not read the photo: ' + (e.message || e);
+      if (statusEl) statusEl.textContent = f.importStatus;
+      readImagesBtn.disabled = false;
     }
   });
 
@@ -49073,22 +49287,23 @@ function wireMiForge() {
       const id = b.dataset.miEdit;
       const entry = loadAiHomebrew().find(h => h.type === 'magic_item' && h.data && h.data.id === id);
       if (!entry) return;
-      state.ui.miForge = { step: 'review', draft: { ...emptyMagicItemDraft(), ...entry.data }, importText: '', importStatus: '' };
+      state.ui.miForge = { step: 'review', draft: { ...emptyMagicItemDraft(), ...entry.data }, origId: entry.data.id, importText: '', importStatus: '' };
       render();
     });
   });
   document.querySelectorAll('[data-mi-delete]').forEach(b => {
     b.addEventListener('click', () => {
       const id = b.dataset.miDelete;
-      confirmDialog('Delete this homebrew magic item?', () => {
+      confirmDialog('It is removed from the item picker. Copies already in inventories stay.', () => {
         deleteForgeMagicItem(id);
         render();
-      });
+      }, { title: 'Delete this magic item?', yes: 'Delete', danger: true });
     });
   });
 
   if (!state.ui.miForge) return;
   const f = state.ui.miForge;
+  const keepName = () => { const el = document.getElementById('miForgeNameInput'); if (el) f.draft.name = el.value; };
 
   const next = document.getElementById('miForgeNextBtn');
   if (next) next.addEventListener('click', () => {
@@ -49112,24 +49327,29 @@ function wireMiForge() {
   });
   const cancel = document.getElementById('miForgeCancelBtn');
   if (cancel) cancel.addEventListener('click', () => {
-    confirmDialog('Discard this Magic Item Forge session?', () => {
+    keepName();
+    confirmDialog('Anything you have not saved is lost.', () => {
       state.ui.miForge = null;
       render();
-    });
+    }, { title: 'Discard this item?', yes: 'Discard', danger: true });
   });
 
-  // Basics step pills
+  // Basics step pills. v1.2.0 — read the typed name before re-rendering so
+  // picking a type, rarity or theme doesn't wipe it (read on demand, not per
+  // keystroke, so Gboard glide typing isn't disturbed).
+  const keepScroll = () => { const bd = document.querySelector('.forge-dialog .forge-body'); return bd ? bd.scrollTop : 0; };
+  const rerender = (top) => { render(); const bd = document.querySelector('.forge-dialog .forge-body'); if (bd) bd.scrollTop = top; };
   document.querySelectorAll('[data-mi-type]').forEach(b => {
-    b.addEventListener('click', () => { f.draft.type = b.dataset.miType; render(); });
+    b.addEventListener('click', () => { keepName(); const t = keepScroll(); f.draft.type = b.dataset.miType; rerender(t); });
   });
   document.querySelectorAll('[data-mi-rarity]').forEach(b => {
-    b.addEventListener('click', () => { f.draft.rarity = b.dataset.miRarity; render(); });
+    b.addEventListener('click', () => { keepName(); const t = keepScroll(); f.draft.rarity = b.dataset.miRarity; rerender(t); });
   });
   document.querySelectorAll('[data-mi-theme]').forEach(b => {
-    b.addEventListener('click', () => { f.draft.theme = b.dataset.miTheme; render(); });
+    b.addEventListener('click', () => { keepName(); const t = keepScroll(); f.draft.theme = b.dataset.miTheme; rerender(t); });
   });
   document.querySelectorAll('[data-mi-attune]').forEach(b => {
-    b.addEventListener('click', () => { f.draft.attune = b.dataset.miAttune === '1'; render(); });
+    b.addEventListener('click', () => { keepName(); const t = keepScroll(); f.draft.attune = b.dataset.miAttune === '1'; rerender(t); });
   });
 
   // Template step
@@ -49138,7 +49358,8 @@ function wireMiForge() {
       const tpl = MITEM_TEMPLATES.find(t => t.id === b.dataset.miTemplate);
       if (!tpl) return;
       const filled = fillMagicItemTemplate(tpl, f.draft.theme);
-      f.draft.name = filled.name;
+      // v1.2.0 — never overwrite a name the user typed.
+      if (!String(f.draft.name || '').trim()) f.draft.name = filled.name;
       f.draft.desc = filled.desc;
       f.draft.type = filled.type;
       f.draft.rarity = filled.rarity;
@@ -49179,10 +49400,15 @@ function wireMiForge() {
     if (rAttuneEl) f.draft.attune = rAttuneEl.checked;
     if (!f.draft.name) { showToast('Give the item a name first.'); return; }
     f.draft.id = forgeSlug(f.draft.name);
+    // v1.2.0 — a rename while editing replaces the original entry instead of
+    // leaving the old one behind under the old name.
+    const renamedFrom = (f.origId && f.origId !== f.draft.id) ? f.origId : null;
     if (saveForgeMagicItem(f.draft)) {
+      if (renamedFrom) deleteForgeMagicItem(renamedFrom);
       logRoll('Item forged', '', `${f.draft.name} (${MAGIC_ITEM_RARITIES[f.draft.rarity]?.name || f.draft.rarity}) saved`);
       state.ui.miForge = null;
       render();
+      showToast(`Saved "${f.draft.name}" to your magic items.`);
     } else {
       showToast('Couldn\'t save — make sure the name is set.');
     }
@@ -49196,23 +49422,27 @@ function wireMiForge() {
 
   const readImagesBtn = document.getElementById('miForgeImportReadBtn');
   if (readImagesBtn) readImagesBtn.addEventListener('click', async () => {
-    const imgInput = document.getElementById('miForgeImportImage');
+    const imgInput = { files: ocrFilesFor('miForgeImportImage') };
     const statusEl = document.getElementById('miForgeImportStatus');
     const previewEl = document.getElementById('miForgeImportPreview');
     const textEl = document.getElementById('miForgeImportText');
-    if (!imgInput || !imgInput.files || !imgInput.files.length) {
+    if (!imgInput.files || !imgInput.files.length) {
       if (statusEl) statusEl.textContent = 'Choose one or more images first, or paste text below.';
       return;
     }
     try {
+      readImagesBtn.disabled = true;
       const text = await extractHomebrewTextFromImages(imgInput.files, statusEl, previewEl);
       if (textEl) {
         textEl.value = (textEl.value ? textEl.value.trim() + '\n\n' : '') + text;
         f.importText = textEl.value;
       }
+      f.importStatus = statusEl ? statusEl.textContent : '';
       render();
     } catch (e) {
-      if (statusEl) statusEl.textContent = 'OCR failed: ' + (e.message || e);
+      f.importStatus = 'Could not read the photo: ' + (e.message || e);
+      if (statusEl) statusEl.textContent = f.importStatus;
+      readImagesBtn.disabled = false;
     }
   });
 
@@ -50791,7 +51021,7 @@ const BATTLE_MAPS = [
 // projector gets only the id + grid and reads the same IndexedDB entry (or
 // paints it itself — the output is deterministic).
 // ============================================================
-const PAINTED_VERSION = 'v5';      // bump when the renderer or packs change
+const PAINTED_VERSION = 'v6';      // bump when the renderer or packs change (v1.2.0: Jenny's v6 touch-ups)
 const PAINTED_PX = 64;             // px per square for the cached bitmap
 const PAINTED_WEBP_Q = 0.75;
 const PAINTED_SCRIPT = 'painted/painted-maps.js';
@@ -50883,92 +51113,33 @@ async function paintedRenderRecord(H, id, cols, rows, px) {
   const blob = await H.toWebP(canvas, 0.75);
   return { blob: blob, meta: { id: id, cols: cols, rows: rows, px: px, overlays: overlays } };
 }
-// Light animated layer for the cached bitmap: fire/torch flicker, water and
-// lava shimmer, crystal pulse, mountain wind. Units are grid squares.
-function paintedOverlaySVG(overlays, cols, rows) {
-  const r2 = function (n) { return Math.round(n * 100) / 100; };
-  const pts = function (a) { return a.map(function (p) { return r2(p[0]) + ',' + r2(p[1]); }).join(' '); };
-  let out = '', i = 0;
-  (overlays || []).forEach(function (o) {
-    i++;
-    const d = function (k) { return 'animation-delay:-' + r2(((i * 0.73 + k * 0.41) % 3)) + 's'; };
-    if (o.kind === 'fire') {
-      const r = Math.max(o.w || 0.6, o.h || 0.6) * 0.5;
-      out += '<circle class="pm-flick" cx="' + r2(o.x) + '" cy="' + r2(o.y) + '" r="' + r2(r * 2.4) + '" fill="url(#pmFire)" style="' + d(0) + '"/>';
-      out += '<ellipse class="pm-flick pm-fast" cx="' + r2(o.x) + '" cy="' + r2(o.y) + '" rx="' + r2(r * 0.75) + '" ry="' + r2(r * 0.65) + '" fill="url(#pmCore)" style="' + d(1) + '"/>';
-      for (let k = 0; k < 3; k++) out += '<circle class="pm-ember" cx="' + r2(o.x + (k - 1) * r * 0.35) + '" cy="' + r2(o.y) + '" r="' + r2(Math.max(0.035, r * 0.07)) + '" fill="#ffbe6a" opacity="0" style="animation-delay:-' + r2(k * 0.8 + i * 0.3) + 's"/>';
-    } else if (o.kind === 'torch') {
-      const r = o.r || 0.3;
-      out += '<circle class="pm-flick" cx="' + r2(o.x) + '" cy="' + r2(o.y) + '" r="' + r2(r * 4) + '" fill="url(#pmFire)" style="' + d(0) + '"/>';
-    } else if (o.kind === 'lamp') {
-      out += '<circle class="pm-pulse" cx="' + r2(o.x) + '" cy="' + r2(o.y) + '" r="1.2" fill="url(#pmLamp)" style="' + d(0) + '"/>';
-    } else if (o.kind === 'crystal-pulse') {
-      out += '<circle class="pm-pulse" cx="' + r2(o.x) + '" cy="' + r2(o.y) + '" r="' + r2(o.r || 1.5) + '" fill="url(#pmCrystal)" style="' + d(0) + '"/>';
-    } else if (o.kind === 'water' || o.kind === 'lava') {
-      const lava = o.kind === 'lava';
-      const col = lava ? '#ff8a3a' : '#e4f4ff';
-      if (Array.isArray(o.pts)) {
-        if (o.surf || !o.w) {
-          out += '<polyline class="pm-surf" points="' + pts(o.pts) + '" fill="none" stroke="' + col + '" stroke-width="0.22" stroke-linecap="round" stroke-dasharray="0.7 0.45" opacity="0.35"/>';
-        } else if (lava) {
-          out += '<polyline class="pm-pulse pm-slow" points="' + pts(o.pts) + '" fill="none" stroke="#ff7a2a" stroke-width="' + r2(o.w * 0.75) + '" stroke-linecap="round" stroke-linejoin="round" opacity="0.32" style="' + d(0) + '"/>';
-        } else {
-          out += '<polyline class="pm-flow" points="' + pts(o.pts) + '" fill="none" stroke="' + col + '" stroke-width="' + r2(o.w * 0.08) + '" stroke-dasharray="0.25 0.9" stroke-linecap="round" opacity="0.32"/>';
-          out += '<polyline class="pm-flow pm-slow" points="' + pts(o.pts.map(function (p) { return [p[0], p[1] + o.w * 0.22]; })) + '" fill="none" stroke="' + col + '" stroke-width="' + r2(o.w * 0.05) + '" stroke-dasharray="0.25 0.9" stroke-linecap="round" opacity="0.24"/>';
-        }
-      } else {
-        const x0 = o.x - o.w / 2, y0 = o.y - o.h / 2;
-        if (lava) {
-          out += '<ellipse class="pm-pulse pm-slow" cx="' + r2(o.x) + '" cy="' + r2(o.y) + '" rx="' + r2(o.w * 0.55) + '" ry="' + r2(o.h * 0.55) + '" fill="url(#pmLava)" style="' + d(0) + '"/>';
-        } else if (o.flow) {
-          for (let k = 0; k < 2; k++) {
-            const x = r2(x0 + o.w * (k ? 0.68 : 0.32));
-            out += '<line class="pm-flow' + (k ? ' pm-slow' : '') + '" x1="' + x + '" y1="' + r2(y0) + '" x2="' + x + '" y2="' + r2(y0 + o.h) + '" stroke="' + col + '" stroke-width="0.07" stroke-dasharray="0.25 0.9" stroke-linecap="round" opacity="0.3"/>';
-          }
-        } else {
-          for (let k = 0; k < 4; k++) {
-            const gx = x0 + o.w * (0.2 + ((k * 0.37 + i * 0.13) % 0.6)), gy = y0 + o.h * (0.2 + ((k * 0.53 + i * 0.29) % 0.6));
-            out += '<line class="pm-glint" x1="' + r2(gx) + '" y1="' + r2(gy) + '" x2="' + r2(gx + 0.5) + '" y2="' + r2(gy) + '" stroke="' + col + '" stroke-width="0.06" stroke-linecap="round" opacity="0.3" style="animation-delay:-' + r2(k * 0.9) + 's"/>';
-          }
-        }
-      }
-    } else if (o.kind === 'wind') {
-      for (let k = 1; k <= 3; k++) {
-        const y = r2(o.y + o.h * k / 4);
-        out += '<line class="pm-wind" x1="' + r2(o.x) + '" y1="' + y + '" x2="' + r2(o.x + o.w) + '" y2="' + y + '" stroke="#eef3f6" stroke-width="0.05" stroke-dasharray="1.5 3" stroke-linecap="round" opacity="0.22" style="animation-delay:-' + r2(k * 1.7) + 's"/>';
-      }
-    }
-  });
-  if (!out) return '';
-  return '<svg class="pm-ov" viewBox="0 0 ' + cols + ' ' + rows + '" preserveAspectRatio="none" aria-hidden="true">'
-    + '<defs>'
-    + '<radialGradient id="pmFire"><stop offset="0" stop-color="#ffc56a" stop-opacity="0.55"/><stop offset="0.45" stop-color="#ff8a2a" stop-opacity="0.22"/><stop offset="1" stop-color="#ff6a1a" stop-opacity="0"/></radialGradient>'
-    + '<radialGradient id="pmCore"><stop offset="0" stop-color="#fff2c4" stop-opacity="0.7"/><stop offset="1" stop-color="#ffb04a" stop-opacity="0"/></radialGradient>'
-    + '<radialGradient id="pmLamp"><stop offset="0" stop-color="#ffe2a8" stop-opacity="0.45"/><stop offset="1" stop-color="#ffe2a8" stop-opacity="0"/></radialGradient>'
-    + '<radialGradient id="pmLava"><stop offset="0" stop-color="#ffb04a" stop-opacity="0.45"/><stop offset="0.6" stop-color="#ff5a1a" stop-opacity="0.18"/><stop offset="1" stop-color="#ff5a1a" stop-opacity="0"/></radialGradient>'
-    + '<radialGradient id="pmCrystal"><stop offset="0" stop-color="#9dffb0" stop-opacity="0.55"/><stop offset="0.5" stop-color="#4be37a" stop-opacity="0.2"/><stop offset="1" stop-color="#2bd36a" stop-opacity="0"/></radialGradient>'
-    + '</defs>' + out + '</svg>';
+// v1.2.0 — the animated layer is Jenny's v6 canvas overlay
+// (HearthPaintedMaps.createOverlay): noise-driven fire/torch/lamp flicker,
+// flowing water and lava, crystal glints; no wind. 30 fps (15 on slow
+// devices), pauses while hidden, static under reduced motion. The canvas
+// carries the pm-ov class and sits above the bitmap, under tokens and fog.
+const PAINTED_OVERLAY_CSS = '.pm-ov{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:0;display:block;}';
+let _paintedOvCtl = null;
+function paintedStopOverlay() {
+  if (_paintedOvCtl) { try { _paintedOvCtl.stop(); } catch (e) {} }
+  _paintedOvCtl = null;
+  if (_paintedOvNode) { try { _paintedOvNode.remove(); } catch (e) {} }
+  _paintedOvNode = null;
 }
-const PAINTED_OVERLAY_CSS = '.pm-ov{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:0;}'
-  + '.pm-ov .pm-flick,.pm-ov .pm-pulse{transform-box:fill-box;transform-origin:center;}'
-  + '.pm-ov .pm-flick{animation:pmFlick 2.3s ease-in-out infinite;}'
-  + '.pm-ov .pm-fast{animation-duration:1.15s;}'
-  + '.pm-ov .pm-pulse{animation:pmPulse 3.4s ease-in-out infinite;}'
-  + '.pm-ov .pm-slow{animation-duration:6s;}'
-  + '.pm-ov .pm-ember{transform-box:view-box;animation:pmEmber 2.4s linear infinite;}'
-  + '.pm-ov .pm-glint{animation:pmGlint 3.8s ease-in-out infinite;}'
-  + '.pm-ov .pm-flow{animation:pmFlow 3.5s linear infinite;}'
-  + '.pm-ov .pm-flow.pm-slow{animation-duration:5.5s;}'
-  + '.pm-ov .pm-surf{animation:pmSurf 4.5s ease-in-out infinite;}'
-  + '.pm-ov .pm-wind{animation:pmWind 7s linear infinite;}'
-  + '@keyframes pmFlick{0%,100%{opacity:.9;transform:scale(1)}18%{opacity:.62;transform:scale(.93)}42%{opacity:1;transform:scale(1.04)}66%{opacity:.7;transform:scale(.96)}84%{opacity:.95;transform:scale(1.01)}}'
-  + '@keyframes pmPulse{0%,100%{opacity:.5;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}'
-  + '@keyframes pmEmber{0%{opacity:0;transform:translate(0,0)}15%{opacity:.9}100%{opacity:0;transform:translate(.25px,-1.3px)}}'
-  + '@keyframes pmGlint{0%,100%{opacity:0}45%{opacity:.6}60%{opacity:.15}}'
-  + '@keyframes pmFlow{to{stroke-dashoffset:-2.3}}'
-  + '@keyframes pmSurf{0%,100%{opacity:.18;stroke-dashoffset:0}50%{opacity:.5;stroke-dashoffset:-1.15}}'
-  + '@keyframes pmWind{to{stroke-dashoffset:-9}}'
-  + '@media (prefers-reduced-motion: reduce){.pm-ov *{animation:none !important;}}';
+function paintedAttachOverlay(slot, v) {
+  if (!slot || !v) return;
+  if (_paintedOvCtl) { try { _paintedOvCtl.stop(); } catch (e) {} _paintedOvCtl = null; }
+  _paintedOvNode = slot;
+  const key = slot.dataset.key;
+  loadPaintedMaps().then(H => {
+    if (!H.createOverlay || _paintedOvNode !== slot || slot.dataset.key !== key) return;
+    const ctl = H.createOverlay({ id: v.id, cols: v.cols, rows: v.rows, px: (v.meta && v.meta.px) || PAINTED_PX });
+    _paintedOvCtl = ctl;
+    slot.innerHTML = '';
+    slot.appendChild(ctl.el);
+    try { window.__hearthOv = ctl; } catch (e) {}
+  }).catch(err => { try { console.warn('Hearth painted overlay:', err && err.message); } catch (e) {} });
+}
 function ensurePaintedOverlayCss() {
   if (document.getElementById('pmOvCss')) return;
   const st = document.createElement('style');
@@ -51058,7 +51229,7 @@ function paintedBaseLayerHTML(id, cols, rows) {
   const v = _paintedMem.get(key);
   if (v) {
     return `<div class="dm-map-img" id="dmPaintedBase" data-key="${key}" style="background-image:url('${v.url}');"></div>`
-      + `<div class="pm-ov-slot" id="dmPaintedOv" data-key="${key}">${paintedOverlaySVG(v.meta.overlays, cols, rows)}</div>`;
+      + `<div class="pm-ov-slot" id="dmPaintedOv" data-key="${key}"></div>`;
   }
   const m = BATTLE_MAPS.find(x => x.id === id);
   const svg = m ? m.svg.replace('<svg ', '<svg style="position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;" ') : '';
@@ -51071,10 +51242,12 @@ function paintedHydrateDM(id, cols, rows) {
   const key = paintedKey(id, cols, rows);
   const slot = document.getElementById('dmPaintedOv');
   if (slot) {
-    if (_paintedOvNode && _paintedOvNode.dataset.key === key && _paintedOvNode !== slot) slot.replaceWith(_paintedOvNode);
-    else _paintedOvNode = slot;
+    if (_paintedOvNode && _paintedOvNode.dataset.key === key && _paintedOvCtl) { if (_paintedOvNode !== slot) slot.replaceWith(_paintedOvNode); }
+    else { const v = _paintedMem.get(key); if (v) paintedAttachOverlay(slot, v); }
     return;
   }
+  // The map or its size changed: stop the old animation now.
+  paintedStopOverlay();
   // Short settle delay so a burst of grid +/- taps paints only the final size.
   setTimeout(() => {
     const cur = document.getElementById('dmPaintedBase');
@@ -51090,9 +51263,8 @@ function paintedHydrateFetch(id, cols, rows, key) {
     base.style.backgroundImage = `url('${v.url}')`;
     const ov = document.createElement('div');
     ov.className = 'pm-ov-slot'; ov.id = 'dmPaintedOv'; ov.dataset.key = key;
-    ov.innerHTML = paintedOverlaySVG(v.meta.overlays, cols, rows);
     base.after(ov);
-    _paintedOvNode = ov;
+    paintedAttachOverlay(ov, v);
     const badge = document.getElementById('dmPaintingBadge');
     if (badge) badge.remove();
     broadcastMap(loadEncounter());
@@ -51486,6 +51658,7 @@ function wireDMMap(enc, cell, cols, rows) {
     const pEnc = loadEncounter();
     const pid = encPaintedId(pEnc);
     if (pid) paintedHydrateDM(pid, pEnc.mapCols || 20, pEnc.mapRows || 15);
+    else if (_paintedOvCtl || _paintedOvNode) paintedStopOverlay(); // v1.2.0 — left the painted map
   })();
   // v0.31.0 — hydrate the imported video/gif element from IndexedDB.
   (function () {
@@ -52398,8 +52571,8 @@ function projectorDocumentHTML() {
     var PM_SCRIPT = ${JSON.stringify(paintedAbsUrl(PAINTED_SCRIPT))};
     ${paintedShiftOverlay.toString()}
     ${paintedRenderRecord.toString()}
-    ${paintedOverlaySVG.toString()}
-    var _pm = { key: null, url: null, node: null, busy: false, t: null, sp: null };
+    var _pm = { key: null, url: null, node: null, ctl: null, busy: false, t: null, sp: null };
+    function pmStop(){ if (_pm.ctl) { try { _pm.ctl.stop(); } catch(x){} } _pm.ctl = null; if (_pm.node && _pm.node.parentNode) _pm.node.parentNode.removeChild(_pm.node); _pm.node = null; }
     function idbPutMapp(id, val){ return idbMapDBp().then(function(db){ return new Promise(function(res,rej){ var tx=db.transaction('assets','readwrite'); tx.objectStore('assets').put(val,id); tx.oncomplete=function(){ res(); }; tx.onerror=function(){ rej(tx.error); }; }); }); }
     function pmLoadScript(){
       if (window.HearthPaintedMaps) return Promise.resolve(window.HearthPaintedMaps);
@@ -52410,14 +52583,20 @@ function projectorDocumentHTML() {
       if (_pm.key !== key || !rec || !rec.blob) return;
       if (_pm.url) { try { URL.revokeObjectURL(_pm.url); } catch(x){} }
       _pm.url = URL.createObjectURL(rec.blob);
-      var m = rec.meta || {}; var d = document.createElement('div');
-      d.innerHTML = paintedOverlaySVG(m.overlays || [], m.cols || 20, m.rows || 15);
-      _pm.node = d.firstChild || null;
+      var m = rec.meta || {};
       window.__pmSource = rec.__src || 'cache';
       if (last) draw(last);
+      // v1.2.0 — v6 canvas overlay (same renderer as the DM screen).
+      pmLoadScript().then(function(H){
+        if (_pm.key !== key || !H.createOverlay) return;
+        pmStop();
+        _pm.ctl = H.createOverlay({ id: m.id, cols: m.cols || 20, rows: m.rows || 15, px: m.px || 64 });
+        _pm.node = _pm.ctl.el; window.__pmOv = _pm.ctl;
+        if (last) draw(last);
+      }).catch(function(){});
     }
     function pmEnsure(p){
-      if (_pm.key !== p.key) { if (_pm.url) { try { URL.revokeObjectURL(_pm.url); } catch(x){} } clearTimeout(_pm.t); _pm.key = p.key; _pm.url = null; _pm.node = null; _pm.busy = false; }
+      if (_pm.key !== p.key) { if (_pm.url) { try { URL.revokeObjectURL(_pm.url); } catch(x){} } clearTimeout(_pm.t); pmStop(); _pm.key = p.key; _pm.url = null; _pm.busy = false; }
       if (_pm.url || _pm.busy) return;
       _pm.busy = true; var key = p.key;
       idbGetMapp(key).then(function(rec){
@@ -52436,6 +52615,7 @@ function projectorDocumentHTML() {
       var showGrid = state.gridOverlay !== false;
       var pmImg = null;
       if (state.painted) { pmEnsure(state.painted); if (_pm.key === state.painted.key && _pm.url) pmImg = _pm.url; }
+      else if (_pm.key) { pmStop(); _pm.key = null; if (_pm.url) { try { URL.revokeObjectURL(_pm.url); } catch(x){} } _pm.url = null; }
       var baseImg = state.image || pmImg;
       if (baseImg) {
         grid.style.backgroundImage = "url('" + baseImg + "')"
@@ -55793,7 +55973,7 @@ try { linkBoot(); } catch (e) { console.warn('Hearth live game boot failed:', e)
 // control the page reloads once by itself unless you are mid-edit (typing, a
 // popup open, or the character builder), in which case the toast stays up.
 (function () {
-  const APP_VERSION = 'v1.1.2';
+  const APP_VERSION = 'v1.2.0';
   window.HEARTH_VERSION = APP_VERSION;
 
   function hearthHasUnsavedEdits() {
