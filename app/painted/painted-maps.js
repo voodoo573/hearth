@@ -27,13 +27,19 @@
   let packBase = 'packs/', packLoader = null;
   try { const cs = typeof document !== 'undefined' && document.currentScript; if (cs && cs.src) packBase = cs.src.replace(/[^/?#]*([?#].*)?$/, '') + 'packs/'; } catch (e) { /* non-DOM */ }
   function decode(src) {
-    return Promise.all(Object.keys(src).map(k => new Promise((res, rej) => { const im = new Image(); im.onload = () => res([k, im]); im.onerror = () => rej(new Error('HearthPaintedMaps: asset ' + k)); im.src = src[k]; })))
+    // Hearth v0.93.1 — inside a Web Worker there is no Image: decode via createImageBitmap.
+    const one = (typeof Image === 'undefined')
+      ? (k => fetch(src[k]).then(r => r.blob()).then(b => createImageBitmap(b)).then(im => [k, im], () => { throw new Error('HearthPaintedMaps: asset ' + k); }))
+      : (k => new Promise((res, rej) => { const im = new Image(); im.onload = () => res([k, im]); im.onerror = () => rej(new Error('HearthPaintedMaps: asset ' + k)); im.src = src[k]; }));
+    return Promise.all(Object.keys(src).map(one))
       .then(list => { for (const [k, im] of list) { _imgs[k] = im; if (k.startsWith('spr_')) { const c = cv(im.width, im.height), x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = '#000'; x.fillRect(0, 0, c.width, c.height); _sil[k] = c; } } });
   }
   function registerPack(name, src) { _packSrc[name] = src; }
   function fetchPack(name) {
     const url = packBase + PACK_FILES[name];
     if (packLoader) return Promise.resolve(packLoader(name, url)).then(src => { if (src && !_packSrc[name]) registerPack(name, src); });
+    // Hearth v0.93.1 — Web Worker: load the pack with importScripts.
+    if (typeof document === 'undefined' && typeof importScripts === 'function') return new Promise((res, rej) => { try { importScripts(url); } catch (e) { return rej(new Error('HearthPaintedMaps: failed to load ' + url)); } if (!_packSrc[name] && root.__hearthPaintedPacks && root.__hearthPaintedPacks[name]) registerPack(name, root.__hearthPaintedPacks[name]); _packSrc[name] ? res() : rej(new Error('pack ' + name + ' did not register')); });
     return new Promise((res, rej) => { if (typeof document === 'undefined') return rej(new Error('HearthPaintedMaps: no DOM to load pack ' + name + '; use setPackLoader()'));
       const s = document.createElement('script'); s.src = url; s.async = true; s.onload = () => _packSrc[name] ? res() : rej(new Error('pack ' + name + ' did not register')); s.onerror = () => { delete _packLoading[name]; rej(new Error('HearthPaintedMaps: failed to load ' + url)); }; document.head.appendChild(s); });
   }
@@ -45,7 +51,7 @@
   function ready() { return loadPack('core').then(() => _imgs); }
   function ensurePack(mapId) { return ready().then(() => Promise.all((MAP_PACKS[mapId] || []).map(loadPack))).then(() => undefined); }
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-  function cv(w, h) { const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(h)); return c; }
+  function cv(w, h) { const c = (typeof document !== 'undefined') ? document.createElement('canvas') : new OffscreenCanvas(1, 1); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(h)); return c; }
 
   // ------------------------------------------------------------------ painter
   function Painter(cols, rows, S, seed) {
@@ -1137,7 +1143,7 @@
     return P.c;
   }
   async function render(mapId, cols, rows, pxPerSquare, opts) { await ensurePack(mapId); return renderSync(mapId, cols, rows, pxPerSquare, opts); }
-  function toWebP(canvas, quality) { return new Promise((res, rej) => canvas.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/webp', quality == null ? 0.75 : quality)); }
+  function toWebP(canvas, quality) { if (typeof canvas.convertToBlob === 'function') return canvas.convertToBlob({ type: 'image/webp', quality: quality == null ? 0.75 : quality }); return new Promise((res, rej) => canvas.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/webp', quality == null ? 0.75 : quality)); }
   if (root.__hearthPaintedPacks) for (const k of Object.keys(root.__hearthPaintedPacks)) registerPack(k, root.__hearthPaintedPacks[k]);
   root.HearthPaintedMaps = { version: '0.5.0', maps: CATALOG.map(m => m[0]),
     list: () => CATALOG.map(([id, name, cat]) => ({ id, name, cat })),
