@@ -7804,7 +7804,7 @@
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '0.92.1';
+const HEARTH_VERSION = '0.93.0';
 // ============================================================
 // SRD 5.1 DATA v2 - structured for in-app casting
 // All content here is from the SRD 5.1 (CC-BY-4.0)
@@ -21420,6 +21420,18 @@ function activeGame(coll) {
 
 // Return the ACTIVE encounter of the ACTIVE game as a runtime object:
 // shared players (with this encounter's combat state) + monsters.
+// v0.93.0 — map fields for loadEncounter: painted id, or the stored image.
+function encMapFields(enc) {
+  let mapImage = enc.mapImage || null;
+  let mapId = enc.mapId || null, mapKind = enc.mapKind || null;
+  if (!mapKind && mapImage && typeof mapImage === 'string' && mapImage.indexOf('data:image/svg+xml;base64,') === 0 && typeof legacyBattleMapId === 'function') {
+    let mid = null;
+    try { mid = legacyBattleMapId(mapImage); } catch (e) { mid = null; }
+    if (mid) { mapId = mid; mapKind = 'painted'; mapImage = null; }
+  }
+  if (mapKind !== 'painted') { mapId = null; mapKind = null; }
+  return { mapImage, mapId, mapKind };
+}
 function loadEncounter() {
   const coll = loadGames();
   const g = activeGame(coll);
@@ -21464,7 +21476,9 @@ function loadEncounter() {
     // v0.21.44 — grid config for the projector map.
     mapCols: enc.mapCols || 20, mapRows: enc.mapRows || 15,
     // v0.21.46 — per-encounter battle map image (data URL) + grid overlay toggle.
-    mapImage: enc.mapImage || null,
+    // v0.93.0 — built-in maps are painted and stored by id (mapKind 'painted' +
+    // mapId); a legacy built-in SVG data URL migrates to its id here.
+    ...encMapFields(enc),
     mapVideo: enc.mapVideo || null,   // v0.91.0
     mapGridOverlay: enc.mapGridOverlay !== false,
     // v0.21.96 — AoE templates were never loaded here, so any saveEncounter()
@@ -21510,6 +21524,9 @@ function saveEncounter(runtime) {
     mapRows: runtime.mapRows || g.encounters[ti].mapRows || 15,
     // v0.21.46 — persist per-encounter battle map image + overlay toggle.
     mapImage: runtime.mapImage !== undefined ? runtime.mapImage : (g.encounters[ti].mapImage || null),
+    // v0.93.0 — painted built-in map, stored by id (the bitmap lives in IndexedDB).
+    mapId: runtime.mapId !== undefined ? (runtime.mapId || null) : (g.encounters[ti].mapId || null),
+    mapKind: runtime.mapKind !== undefined ? (runtime.mapKind || null) : (g.encounters[ti].mapKind || null),
     mapGridOverlay: runtime.mapGridOverlay !== undefined ? runtime.mapGridOverlay : (g.encounters[ti].mapGridOverlay !== false),
     // v0.91.0 — persist the video/GIF map reference (the file itself lives in
     // IndexedDB). It was missing from this rebuild, so a video map vanished on
@@ -48449,7 +48466,15 @@ function buildMapState(enc) {
     type: 'hearth-map',
     cols: enc.mapCols || 20,
     rows: enc.mapRows || 15,
-    image: enc.mapImage || null,
+    // v0.93.0 — a painted map travels as its id + grid only; the projector reads
+    // the shared IndexedDB copy (or paints it itself).
+    image: encPaintedId(enc) ? null : (enc.mapImage || null),
+    painted: (function () {
+      const pid = encPaintedId(enc);
+      if (!pid) return null;
+      const c = enc.mapCols || 20, r = enc.mapRows || 15, key = paintedKey(pid, c, r);
+      return { id: pid, cols: c, rows: r, px: PAINTED_PX, key, ready: _paintedMem.has(key) };
+    })(),
     video: enc.mapVideo || null,
     videoLoop: enc.mapVideoLoop !== false,
     gridOverlay: enc.mapGridOverlay !== false,
@@ -49052,6 +49077,7 @@ async function applyLibraryMap(id) {
     });
     if (state && state.ui) state.ui.dmMapZoomInit = false;
   }
+  e.mapId = null; e.mapKind = null; // v0.93.0
   saveEncounter(e);
   broadcastMap(e);
 }
@@ -49116,13 +49142,28 @@ const MAP_DEFS =
   + '<linearGradient id="wd" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#07202c" stop-opacity="0.55"/><stop offset="50%" stop-color="#07202c" stop-opacity="0"/><stop offset="100%" stop-color="#07202c" stop-opacity="0.55"/></linearGradient>'
   + '<radialGradient id="mc" cx="46%" cy="44%" r="60%"><stop offset="0%" stop-color="#fff4cf"/><stop offset="30%" stop-color="#ffb43a"/><stop offset="62%" stop-color="#ff5a1a"/><stop offset="100%" stop-color="#6a1806"/></radialGradient>'
   + '</defs>';
+// v0.93.0 — same defs plus a single-octave, low-res mottle (#mo1) for mapWrap.
+const MAP_DEFS_LIGHT = MAP_DEFS.replace('</defs>',
+  '<filter id="mo1" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="1" stitchTiles="stitch" seed="9" result="t"/><feColorMatrix in="t" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0"/></filter></defs>');
 
+// v0.93.0 — the full-map grain (3-octave feTurbulence) and mottle filters were
+// about half the draw cost of every built-in SVG map on every repaint. Grain is
+// gone; mottle is kept as one cheap octave at lower strength. _mapWrapLegacy
+// rebuilds the pre-0.93 markup only to recognise maps saved by older versions.
+let _mapWrapLegacy = false;
 function mapWrap(inner, w, h, mottle) {
   w = w || 800; h = h || 600;
+  if (_mapWrapLegacy) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">`
+      + MAP_DEFS + inner
+      + (mottle === false ? '' : `<rect width="${w}" height="${h}" filter="url(#mo)" opacity="0.25"/>`)
+      + `<rect width="${w}" height="${h}" filter="url(#gr)" opacity="0.28"/>`
+      + `<rect width="${w}" height="${h}" fill="url(#v)"/>`
+      + `</svg>`;
+  }
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">`
-    + MAP_DEFS + inner
-    + (mottle === false ? '' : `<rect width="${w}" height="${h}" filter="url(#mo)" opacity="0.25"/>`)
-    + `<rect width="${w}" height="${h}" filter="url(#gr)" opacity="0.28"/>`
+    + MAP_DEFS_LIGHT + inner
+    + (mottle === false ? '' : `<rect width="${w}" height="${h}" filter="url(#mo1)" opacity="0.18"/>`)
     + `<rect width="${w}" height="${h}" fill="url(#v)"/>`
     + `</svg>`;
 }
@@ -49618,41 +49659,348 @@ function mapCanyon() {
 }
 
 const BATTLE_MAPS = [
-  { id: 'grassland', name: 'Grassland', cat: 'Wilderness', svg: mapGrassland() },
-  { id: 'forest', name: 'Forest Clearing', cat: 'Wilderness', svg: mapForest() },
-  { id: 'denseforest', name: 'Dense Forest', cat: 'Wilderness', svg: mapDenseForest() },
-  { id: 'autumnforest', name: 'Autumn Wood', cat: 'Wilderness', svg: mapAutumnForest() },
-  { id: 'deadforest', name: 'Dead Forest', cat: 'Wilderness', svg: mapDeadForest() },
-  { id: 'jungle', name: 'Jungle', cat: 'Wilderness', svg: mapJungle() },
-  { id: 'desert', name: 'Desert', cat: 'Wilderness', svg: mapDesert() },
-  { id: 'river', name: 'River Crossing', cat: 'Wilderness', svg: mapRiver() },
-  { id: 'mountain', name: 'Mountain Bridge', cat: 'Wilderness', svg: mapMountainBridge() },
-  { id: 'snow', name: 'Snowfield', cat: 'Wilderness', svg: mapSnow() },
-  { id: 'swamp', name: 'Swamp', cat: 'Wilderness', svg: mapSwamp() },
-  { id: 'canyon', name: 'Canyon', cat: 'Wilderness', svg: mapCanyon() },
-  { id: 'dungeon', name: 'Dungeon Chamber', cat: 'Underground', svg: mapDungeon() },
-  { id: 'cavern', name: 'Cavern', cat: 'Underground', svg: mapCavern() },
-  { id: 'crypt', name: 'Crypt', cat: 'Underground', svg: mapCrypt() },
-  { id: 'sewer', name: 'Sewer', cat: 'Underground', svg: mapSewer() },
-  { id: 'temple', name: 'Temple', cat: 'Underground', svg: mapTemple() },
-  { id: 'tavern', name: 'Tavern', cat: 'Settlement', svg: mapTavern() },
-  { id: 'townsquare', name: 'Town Square', cat: 'Settlement', svg: mapTownSquare() },
-  { id: 'village', name: 'Village', cat: 'Settlement', svg: mapVillage() },
-  { id: 'estate', name: 'Estate & Manor', cat: 'Settlement', svg: mapEstate() },
-  { id: 'farm', name: 'Farmstead', cat: 'Settlement', svg: mapFarm() },
-  { id: 'camp', name: 'Camp', cat: 'Settlement', svg: mapCamp() },
-  { id: 'throne', name: 'Throne Room', cat: 'Settlement', svg: mapThrone() },
-  { id: 'ruins', name: 'Ruins', cat: 'Settlement', svg: mapRuins() },
-  { id: 'dock', name: 'Dock & Harbor', cat: 'Water', svg: mapDock() },
-  { id: 'ship', name: 'Ship Deck', cat: 'Water', svg: mapShipDeck() },
-  { id: 'coast', name: 'Coast', cat: 'Water', svg: mapCoast() },
-  { id: 'frozenlake', name: 'Frozen Lake', cat: 'Water', svg: mapFrozenLake() },
-  { id: 'volcanic', name: 'Volcanic', cat: 'Hazard', svg: mapVolcanic() },
-].map(m => ({ ...m, url: svgDataUrl(m.svg) }));
+  { id: 'grassland', name: 'Grassland', cat: 'Wilderness', fn: mapGrassland },
+  { id: 'forest', name: 'Forest Clearing', cat: 'Wilderness', fn: mapForest },
+  { id: 'denseforest', name: 'Dense Forest', cat: 'Wilderness', fn: mapDenseForest },
+  { id: 'autumnforest', name: 'Autumn Wood', cat: 'Wilderness', fn: mapAutumnForest },
+  { id: 'deadforest', name: 'Dead Forest', cat: 'Wilderness', fn: mapDeadForest },
+  { id: 'jungle', name: 'Jungle', cat: 'Wilderness', fn: mapJungle },
+  { id: 'desert', name: 'Desert', cat: 'Wilderness', fn: mapDesert },
+  { id: 'river', name: 'River Crossing', cat: 'Wilderness', fn: mapRiver },
+  { id: 'mountain', name: 'Mountain Bridge', cat: 'Wilderness', fn: mapMountainBridge },
+  { id: 'snow', name: 'Snowfield', cat: 'Wilderness', fn: mapSnow },
+  { id: 'swamp', name: 'Swamp', cat: 'Wilderness', fn: mapSwamp },
+  { id: 'canyon', name: 'Canyon', cat: 'Wilderness', fn: mapCanyon },
+  { id: 'dungeon', name: 'Dungeon Chamber', cat: 'Underground', fn: mapDungeon },
+  { id: 'cavern', name: 'Cavern', cat: 'Underground', fn: mapCavern },
+  { id: 'crypt', name: 'Crypt', cat: 'Underground', fn: mapCrypt },
+  { id: 'sewer', name: 'Sewer', cat: 'Underground', fn: mapSewer },
+  { id: 'temple', name: 'Temple', cat: 'Underground', fn: mapTemple },
+  { id: 'tavern', name: 'Tavern', cat: 'Settlement', fn: mapTavern },
+  { id: 'townsquare', name: 'Town Square', cat: 'Settlement', fn: mapTownSquare },
+  { id: 'village', name: 'Village', cat: 'Settlement', fn: mapVillage },
+  { id: 'estate', name: 'Estate & Manor', cat: 'Settlement', fn: mapEstate },
+  { id: 'farm', name: 'Farmstead', cat: 'Settlement', fn: mapFarm },
+  { id: 'camp', name: 'Camp', cat: 'Settlement', fn: mapCamp },
+  { id: 'throne', name: 'Throne Room', cat: 'Settlement', fn: mapThrone },
+  { id: 'ruins', name: 'Ruins', cat: 'Settlement', fn: mapRuins },
+  // v0.93.0 — painted-only map; the Ruins SVG stands in while it paints.
+  { id: 'chapel', name: 'Ruined Chapel', cat: 'Settlement', fn: mapRuins, paintedOnly: true },
+  { id: 'dock', name: 'Dock & Harbor', cat: 'Water', fn: mapDock },
+  { id: 'ship', name: 'Ship Deck', cat: 'Water', fn: mapShipDeck },
+  { id: 'coast', name: 'Coast', cat: 'Water', fn: mapCoast },
+  { id: 'frozenlake', name: 'Frozen Lake', cat: 'Water', fn: mapFrozenLake },
+  { id: 'volcanic', name: 'Volcanic', cat: 'Hazard', fn: mapVolcanic },
+].map(m => {
+  // v0.93.0 — the SVG fallback is built lazily (only when it's actually shown),
+  // so app start no longer builds and base64-encodes 30 SVG maps up front.
+  let svg = null, url = null;
+  return Object.defineProperties({ ...m }, {
+    svg: { get() { if (svg == null) svg = m.fn(); return svg; } },
+    url: { get() { if (url == null) url = svgDataUrl(this.svg); return url; } },
+  });
+});
+
+// ============================================================
+// PAINTED BATTLE MAPS (v0.93.0) — Jenny's painted renderer. The renderer and
+// its texture packs live in painted/ next to this file and are loaded on first
+// use (never inlined here). A built-in map is stored on the encounter by id
+// (enc.mapKind = 'painted', enc.mapId), painted once per grid size at
+// PAINTED_PX per square, kept as a WebP Blob in IndexedDB ('hearthMaps' /
+// 'assets', the same store as video maps) and shown via an object URL. The
+// projector gets only the id + grid and reads the same IndexedDB entry (or
+// paints it itself — the output is deterministic).
+// ============================================================
+const PAINTED_VERSION = 'v5';      // bump when the renderer or packs change
+const PAINTED_PX = 64;             // px per square for the cached bitmap
+const PAINTED_WEBP_Q = 0.75;
+const PAINTED_SCRIPT = 'painted/painted-maps.js';
+const PAINTED_THUMBS = 'painted/thumbs.webp';   // 6x6 sprite, 160x120 cells
+const PAINTED_THUMB_ORDER = ['grassland','forest','denseforest','autumnforest','deadforest','jungle','desert','river','mountain','snow','swamp','canyon','dungeon','cavern','crypt','sewer','temple','tavern','townsquare','village','estate','farm','camp','throne','ruins','chapel','dock','ship','coast','frozenlake','volcanic'];
+const PAINTED_KEYS_STORE = 'hearth.paintedKeys.v1';
+const PAINTED_KEEP = 24;           // painted bitmaps kept on the device
+
+function isPaintedMapId(id) { return !!id && BATTLE_MAPS.some(m => m.id === id); }
+function encPaintedId(enc) { return (enc && enc.mapKind === 'painted' && isPaintedMapId(enc.mapId)) ? enc.mapId : null; }
+function encHasMap(enc) { return !!(enc && (enc.mapImage || enc.mapVideo || encPaintedId(enc))); }
+function paintedKey(id, cols, rows, px) { return 'painted:' + PAINTED_VERSION + ':' + id + ':' + cols + 'x' + rows + ':' + (px || PAINTED_PX); }
+function paintedAbsUrl(rel) { try { return new URL(rel, document.baseURI).href; } catch (e) { return rel; } }
+
+let _paintedScriptP = null;
+function loadPaintedMaps() {
+  if (window.HearthPaintedMaps) return Promise.resolve(window.HearthPaintedMaps);
+  if (!_paintedScriptP) {
+    _paintedScriptP = new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = PAINTED_SCRIPT; // relative: works on hearthdnd.org/app/ and inside the Android wrap
+      s.async = true;
+      s.onload = () => window.HearthPaintedMaps ? res(window.HearthPaintedMaps) : rej(new Error('Painted maps did not load'));
+      s.onerror = () => { _paintedScriptP = null; rej(new Error('Could not load ' + PAINTED_SCRIPT)); };
+      document.head.appendChild(s);
+    });
+  }
+  return _paintedScriptP;
+}
+
+// --- Pure helpers (no outer references): also embedded in the projector. ---
+function paintedShiftOverlay(o, dx, dy) {
+  const c = Object.assign({}, o);
+  if (Array.isArray(o.pts)) c.pts = o.pts.map(function (p) { return [p[0] + dx, p[1] + dy]; });
+  if (typeof o.x === 'number') c.x = o.x + dx;
+  if (typeof o.y === 'number') c.y = o.y + dy;
+  return c;
+}
+// Paint id at cols x rows (px per square) and encode it. The renderer paints
+// 8..40 squares a side, so a smaller grid paints at 8 and crops the centre —
+// still exactly one square per grid cell, never stretched.
+async function paintedRenderRecord(H, id, cols, rows, px) {
+  const rc = Math.max(8, cols), rr = Math.max(8, rows);
+  let canvas = await H.render(id, rc, rr, px);
+  let overlays = ((canvas.hearthMeta && canvas.hearthMeta.overlays) || []).slice();
+  if (rc !== cols || rr !== rows) {
+    const ox = Math.floor((rc - cols) / 2), oy = Math.floor((rr - rows) / 2);
+    const c2 = document.createElement('canvas');
+    c2.width = cols * px; c2.height = rows * px;
+    c2.getContext('2d').drawImage(canvas, ox * px, oy * px, cols * px, rows * px, 0, 0, cols * px, rows * px);
+    overlays = overlays.map(function (o) { return paintedShiftOverlay(o, -ox, -oy); });
+    canvas = c2;
+  }
+  const blob = await H.toWebP(canvas, 0.75);
+  return { blob: blob, meta: { id: id, cols: cols, rows: rows, px: px, overlays: overlays } };
+}
+// Light animated layer for the cached bitmap: fire/torch flicker, water and
+// lava shimmer, crystal pulse, mountain wind. Units are grid squares.
+function paintedOverlaySVG(overlays, cols, rows) {
+  const r2 = function (n) { return Math.round(n * 100) / 100; };
+  const pts = function (a) { return a.map(function (p) { return r2(p[0]) + ',' + r2(p[1]); }).join(' '); };
+  let out = '', i = 0;
+  (overlays || []).forEach(function (o) {
+    i++;
+    const d = function (k) { return 'animation-delay:-' + r2(((i * 0.73 + k * 0.41) % 3)) + 's'; };
+    if (o.kind === 'fire') {
+      const r = Math.max(o.w || 0.6, o.h || 0.6) * 0.5;
+      out += '<circle class="pm-flick" cx="' + r2(o.x) + '" cy="' + r2(o.y) + '" r="' + r2(r * 2.4) + '" fill="url(#pmFire)" style="' + d(0) + '"/>';
+      out += '<ellipse class="pm-flick pm-fast" cx="' + r2(o.x) + '" cy="' + r2(o.y) + '" rx="' + r2(r * 0.75) + '" ry="' + r2(r * 0.65) + '" fill="url(#pmCore)" style="' + d(1) + '"/>';
+      for (let k = 0; k < 3; k++) out += '<circle class="pm-ember" cx="' + r2(o.x + (k - 1) * r * 0.35) + '" cy="' + r2(o.y) + '" r="' + r2(Math.max(0.035, r * 0.07)) + '" fill="#ffbe6a" opacity="0" style="animation-delay:-' + r2(k * 0.8 + i * 0.3) + 's"/>';
+    } else if (o.kind === 'torch') {
+      const r = o.r || 0.3;
+      out += '<circle class="pm-flick" cx="' + r2(o.x) + '" cy="' + r2(o.y) + '" r="' + r2(r * 4) + '" fill="url(#pmFire)" style="' + d(0) + '"/>';
+    } else if (o.kind === 'lamp') {
+      out += '<circle class="pm-pulse" cx="' + r2(o.x) + '" cy="' + r2(o.y) + '" r="1.2" fill="url(#pmLamp)" style="' + d(0) + '"/>';
+    } else if (o.kind === 'crystal-pulse') {
+      out += '<circle class="pm-pulse" cx="' + r2(o.x) + '" cy="' + r2(o.y) + '" r="' + r2(o.r || 1.5) + '" fill="url(#pmCrystal)" style="' + d(0) + '"/>';
+    } else if (o.kind === 'water' || o.kind === 'lava') {
+      const lava = o.kind === 'lava';
+      const col = lava ? '#ff8a3a' : '#e4f4ff';
+      if (Array.isArray(o.pts)) {
+        if (o.surf || !o.w) {
+          out += '<polyline class="pm-surf" points="' + pts(o.pts) + '" fill="none" stroke="' + col + '" stroke-width="0.22" stroke-linecap="round" stroke-dasharray="0.7 0.45" opacity="0.35"/>';
+        } else if (lava) {
+          out += '<polyline class="pm-pulse pm-slow" points="' + pts(o.pts) + '" fill="none" stroke="#ff7a2a" stroke-width="' + r2(o.w * 0.75) + '" stroke-linecap="round" stroke-linejoin="round" opacity="0.32" style="' + d(0) + '"/>';
+        } else {
+          out += '<polyline class="pm-flow" points="' + pts(o.pts) + '" fill="none" stroke="' + col + '" stroke-width="' + r2(o.w * 0.08) + '" stroke-dasharray="0.25 0.9" stroke-linecap="round" opacity="0.32"/>';
+          out += '<polyline class="pm-flow pm-slow" points="' + pts(o.pts.map(function (p) { return [p[0], p[1] + o.w * 0.22]; })) + '" fill="none" stroke="' + col + '" stroke-width="' + r2(o.w * 0.05) + '" stroke-dasharray="0.25 0.9" stroke-linecap="round" opacity="0.24"/>';
+        }
+      } else {
+        const x0 = o.x - o.w / 2, y0 = o.y - o.h / 2;
+        if (lava) {
+          out += '<ellipse class="pm-pulse pm-slow" cx="' + r2(o.x) + '" cy="' + r2(o.y) + '" rx="' + r2(o.w * 0.55) + '" ry="' + r2(o.h * 0.55) + '" fill="url(#pmLava)" style="' + d(0) + '"/>';
+        } else if (o.flow) {
+          for (let k = 0; k < 2; k++) {
+            const x = r2(x0 + o.w * (k ? 0.68 : 0.32));
+            out += '<line class="pm-flow' + (k ? ' pm-slow' : '') + '" x1="' + x + '" y1="' + r2(y0) + '" x2="' + x + '" y2="' + r2(y0 + o.h) + '" stroke="' + col + '" stroke-width="0.07" stroke-dasharray="0.25 0.9" stroke-linecap="round" opacity="0.3"/>';
+          }
+        } else {
+          for (let k = 0; k < 4; k++) {
+            const gx = x0 + o.w * (0.2 + ((k * 0.37 + i * 0.13) % 0.6)), gy = y0 + o.h * (0.2 + ((k * 0.53 + i * 0.29) % 0.6));
+            out += '<line class="pm-glint" x1="' + r2(gx) + '" y1="' + r2(gy) + '" x2="' + r2(gx + 0.5) + '" y2="' + r2(gy) + '" stroke="' + col + '" stroke-width="0.06" stroke-linecap="round" opacity="0.3" style="animation-delay:-' + r2(k * 0.9) + 's"/>';
+          }
+        }
+      }
+    } else if (o.kind === 'wind') {
+      for (let k = 1; k <= 3; k++) {
+        const y = r2(o.y + o.h * k / 4);
+        out += '<line class="pm-wind" x1="' + r2(o.x) + '" y1="' + y + '" x2="' + r2(o.x + o.w) + '" y2="' + y + '" stroke="#eef3f6" stroke-width="0.05" stroke-dasharray="1.5 3" stroke-linecap="round" opacity="0.22" style="animation-delay:-' + r2(k * 1.7) + 's"/>';
+      }
+    }
+  });
+  if (!out) return '';
+  return '<svg class="pm-ov" viewBox="0 0 ' + cols + ' ' + rows + '" preserveAspectRatio="none" aria-hidden="true">'
+    + '<defs>'
+    + '<radialGradient id="pmFire"><stop offset="0" stop-color="#ffc56a" stop-opacity="0.55"/><stop offset="0.45" stop-color="#ff8a2a" stop-opacity="0.22"/><stop offset="1" stop-color="#ff6a1a" stop-opacity="0"/></radialGradient>'
+    + '<radialGradient id="pmCore"><stop offset="0" stop-color="#fff2c4" stop-opacity="0.7"/><stop offset="1" stop-color="#ffb04a" stop-opacity="0"/></radialGradient>'
+    + '<radialGradient id="pmLamp"><stop offset="0" stop-color="#ffe2a8" stop-opacity="0.45"/><stop offset="1" stop-color="#ffe2a8" stop-opacity="0"/></radialGradient>'
+    + '<radialGradient id="pmLava"><stop offset="0" stop-color="#ffb04a" stop-opacity="0.45"/><stop offset="0.6" stop-color="#ff5a1a" stop-opacity="0.18"/><stop offset="1" stop-color="#ff5a1a" stop-opacity="0"/></radialGradient>'
+    + '<radialGradient id="pmCrystal"><stop offset="0" stop-color="#9dffb0" stop-opacity="0.55"/><stop offset="0.5" stop-color="#4be37a" stop-opacity="0.2"/><stop offset="1" stop-color="#2bd36a" stop-opacity="0"/></radialGradient>'
+    + '</defs>' + out + '</svg>';
+}
+const PAINTED_OVERLAY_CSS = '.pm-ov{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:0;}'
+  + '.pm-ov .pm-flick,.pm-ov .pm-pulse{transform-box:fill-box;transform-origin:center;}'
+  + '.pm-ov .pm-flick{animation:pmFlick 2.3s ease-in-out infinite;}'
+  + '.pm-ov .pm-fast{animation-duration:1.15s;}'
+  + '.pm-ov .pm-pulse{animation:pmPulse 3.4s ease-in-out infinite;}'
+  + '.pm-ov .pm-slow{animation-duration:6s;}'
+  + '.pm-ov .pm-ember{transform-box:view-box;animation:pmEmber 2.4s linear infinite;}'
+  + '.pm-ov .pm-glint{animation:pmGlint 3.8s ease-in-out infinite;}'
+  + '.pm-ov .pm-flow{animation:pmFlow 3.5s linear infinite;}'
+  + '.pm-ov .pm-flow.pm-slow{animation-duration:5.5s;}'
+  + '.pm-ov .pm-surf{animation:pmSurf 4.5s ease-in-out infinite;}'
+  + '.pm-ov .pm-wind{animation:pmWind 7s linear infinite;}'
+  + '@keyframes pmFlick{0%,100%{opacity:.9;transform:scale(1)}18%{opacity:.62;transform:scale(.93)}42%{opacity:1;transform:scale(1.04)}66%{opacity:.7;transform:scale(.96)}84%{opacity:.95;transform:scale(1.01)}}'
+  + '@keyframes pmPulse{0%,100%{opacity:.5;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}'
+  + '@keyframes pmEmber{0%{opacity:0;transform:translate(0,0)}15%{opacity:.9}100%{opacity:0;transform:translate(.25px,-1.3px)}}'
+  + '@keyframes pmGlint{0%,100%{opacity:0}45%{opacity:.6}60%{opacity:.15}}'
+  + '@keyframes pmFlow{to{stroke-dashoffset:-2.3}}'
+  + '@keyframes pmSurf{0%,100%{opacity:.18;stroke-dashoffset:0}50%{opacity:.5;stroke-dashoffset:-1.15}}'
+  + '@keyframes pmWind{to{stroke-dashoffset:-9}}'
+  + '@media (prefers-reduced-motion: reduce){.pm-ov *{animation:none !important;}}';
+function ensurePaintedOverlayCss() {
+  if (document.getElementById('pmOvCss')) return;
+  const st = document.createElement('style');
+  st.id = 'pmOvCss';
+  st.textContent = PAINTED_OVERLAY_CSS
+    + '.dm-map-grid .pm-ov-slot{position:absolute;inset:0;z-index:0;pointer-events:none;}'
+    + '.dm-painting-badge{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:3;pointer-events:none;background:rgba(20,15,10,0.82);color:#f3e2bd;border:1px solid rgba(212,160,75,0.7);border-radius:999px;padding:5px 12px;font-size:12px;letter-spacing:0.4px;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,0.35);}'
+    + '.dm-maplib-thumb.pm-thumb{background-size:600% 600%;background-repeat:no-repeat;}';
+  document.head.appendChild(st);
+}
+
+// In-memory object URLs for the last few painted bitmaps, plus in-flight jobs.
+const _paintedMem = new Map();
+const _paintedJobs = new Map();
+if (typeof window !== 'undefined') window.__hearthPaintedStats = window.__hearthPaintedStats || [];
+function paintedRemember(key) {
+  let keys = [];
+  try { keys = JSON.parse(localStorage.getItem(PAINTED_KEYS_STORE) || '[]'); } catch (e) { keys = []; }
+  if (!Array.isArray(keys)) keys = [];
+  keys = keys.filter(k => k !== key); keys.push(key);
+  while (keys.length > PAINTED_KEEP) idbDelMap(keys.shift());
+  try { localStorage.setItem(PAINTED_KEYS_STORE, JSON.stringify(keys)); } catch (e) {}
+}
+function paintedEnsure(id, cols, rows) {
+  const px = PAINTED_PX, key = paintedKey(id, cols, rows, px);
+  const hit = _paintedMem.get(key);
+  if (hit) { _paintedMem.delete(key); _paintedMem.set(key, hit); return Promise.resolve(hit); }
+  if (_paintedJobs.has(key)) return _paintedJobs.get(key);
+  const job = (async () => {
+    const t0 = performance.now();
+    let rec = null, source = 'cache';
+    try { rec = await idbGetMap(key); } catch (e) { rec = null; }
+    if (!rec || !rec.blob) {
+      source = 'render';
+      const H = await loadPaintedMaps();
+      rec = await paintedRenderRecord(H, id, cols, rows, px);
+      try { await idbPutMap(key, rec); paintedRemember(key); } catch (e) {}
+    }
+    const v = { key, id, cols, rows, url: URL.createObjectURL(rec.blob), meta: rec.meta || { overlays: [] }, bytes: rec.blob.size };
+    _paintedMem.set(key, v);
+    while (_paintedMem.size > 4) {
+      const k0 = _paintedMem.keys().next().value, o = _paintedMem.get(k0);
+      _paintedMem.delete(k0);
+      try { URL.revokeObjectURL(o.url); } catch (e) {}
+    }
+    try { window.__hearthPaintedStats.push({ key, source, ms: Math.round(performance.now() - t0), bytes: rec.blob.size }); } catch (e) {}
+    return v;
+  })();
+  _paintedJobs.set(key, job);
+  job.then(() => _paintedJobs.delete(key), () => _paintedJobs.delete(key));
+  return job;
+}
+
+// Legacy encounters stored a built-in map as its SVG data URL in enc.mapImage.
+// Recognise those (current or pre-0.93 markup) so they migrate to the id.
+const _legacyMapIdMemo = new Map();
+function legacyBattleMapId(url) {
+  if (typeof url !== 'string' || url.indexOf('data:image/svg+xml;base64,') !== 0) return null;
+  if (_legacyMapIdMemo.has(url)) return _legacyMapIdMemo.get(url);
+  let found = null;
+  try {
+    for (const m of BATTLE_MAPS) {
+      if (m.paintedOnly) continue;
+      if (m.url === url) { found = m.id; break; }
+    }
+    if (!found) {
+      const prev = _mapWrapLegacy;
+      _mapWrapLegacy = true;
+      try {
+        for (const m of BATTLE_MAPS) {
+          if (m.paintedOnly) continue;
+          if (svgDataUrl(m.fn()) === url) { found = m.id; break; }
+        }
+      } finally { _mapWrapLegacy = prev; }
+    }
+  } catch (e) { found = null; }
+  if (_legacyMapIdMemo.size > 8) _legacyMapIdMemo.clear();
+  _legacyMapIdMemo.set(url, found);
+  return found;
+}
+
+// DM map base layer for a painted map: the cached bitmap if it's ready, else
+// the simple SVG version with a "Painting map…" badge until it is.
+let _paintedOvNode = null;
+function paintedBaseLayerHTML(id, cols, rows) {
+  ensurePaintedOverlayCss();
+  const key = paintedKey(id, cols, rows);
+  const v = _paintedMem.get(key);
+  if (v) {
+    return `<div class="dm-map-img" id="dmPaintedBase" data-key="${key}" style="background-image:url('${v.url}');"></div>`
+      + `<div class="pm-ov-slot" id="dmPaintedOv" data-key="${key}">${paintedOverlaySVG(v.meta.overlays, cols, rows)}</div>`;
+  }
+  const m = BATTLE_MAPS.find(x => x.id === id);
+  const svg = m ? m.svg.replace('<svg ', '<svg style="position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;" ') : '';
+  return `<div class="dm-map-img" id="dmPaintedBase" data-key="${key}">${svg}</div>`
+    + `<div class="dm-painting-badge" id="dmPaintingBadge">Painting map\u2026</div>`;
+}
+// After renderDMMap: keep the overlay node alive across re-renders (so the
+// flicker doesn't restart on every token move), or paint and swap in place.
+function paintedHydrateDM(id, cols, rows) {
+  const key = paintedKey(id, cols, rows);
+  const slot = document.getElementById('dmPaintedOv');
+  if (slot) {
+    if (_paintedOvNode && _paintedOvNode.dataset.key === key && _paintedOvNode !== slot) slot.replaceWith(_paintedOvNode);
+    else _paintedOvNode = slot;
+    return;
+  }
+  // Short settle delay so a burst of grid +/- taps paints only the final size.
+  setTimeout(() => {
+    const cur = document.getElementById('dmPaintedBase');
+    if (!cur || cur.dataset.key !== key) return;
+    paintedHydrateFetch(id, cols, rows, key);
+  }, 200);
+}
+function paintedHydrateFetch(id, cols, rows, key) {
+  paintedEnsure(id, cols, rows).then(v => {
+    const base = document.getElementById('dmPaintedBase');
+    if (!base || base.dataset.key !== key) return;
+    base.innerHTML = '';
+    base.style.backgroundImage = `url('${v.url}')`;
+    const ov = document.createElement('div');
+    ov.className = 'pm-ov-slot'; ov.id = 'dmPaintedOv'; ov.dataset.key = key;
+    ov.innerHTML = paintedOverlaySVG(v.meta.overlays, cols, rows);
+    base.after(ov);
+    _paintedOvNode = ov;
+    const badge = document.getElementById('dmPaintingBadge');
+    if (badge) badge.remove();
+    broadcastMap(loadEncounter());
+  }).catch(err => {
+    const badge = document.getElementById('dmPaintingBadge');
+    if (badge) badge.textContent = 'Painted map unavailable \u2014 showing the simple version';
+    try { console.warn('Hearth painted map:', err && err.message); } catch (e) {}
+  });
+}
+function paintedThumbStyle(id) {
+  const i = PAINTED_THUMB_ORDER.indexOf(id);
+  if (i < 0) return null;
+  return `background-image:url('${PAINTED_THUMBS}');background-position:${(i % 6) * 20}% ${Math.floor(i / 6) * 20}%;`;
+}
 
 // v0.21.50 — Built-in battle-map picker dialog (grouped by category v0.21.51).
 function dmMapLibraryDialogHTML() {
   if (!state.ui.dmMapLibrary) return '';
+  // v0.93.0 — thumbnails come from one small pre-painted sprite; warm up the
+  // renderer's core pack in the background so the first pick paints sooner.
+  ensurePaintedOverlayCss();
+  loadPaintedMaps().then(H => H.ready()).catch(() => {});
   const cats = [];
   BATTLE_MAPS.forEach(m => { if (!cats.includes(m.cat)) cats.push(m.cat); });
   const groups = cats.map(cat => `
@@ -49660,7 +50008,7 @@ function dmMapLibraryDialogHTML() {
             <div class="dm-maplib-grid">
               ${BATTLE_MAPS.filter(m => m.cat === cat).map(m => `
                 <button class="dm-maplib-card" data-dm-maplib-pick="${m.id}">
-                  <span class="dm-maplib-thumb" style="background-image:url('${m.url}');"></span>
+                  <span class="dm-maplib-thumb pm-thumb" style="${paintedThumbStyle(m.id) || `background-image:url('${m.url}');`}"></span>
                   <span class="dm-maplib-name">${escape(m.name)}</span>
                 </button>
               `).join('')}
@@ -49805,17 +50153,17 @@ function renderDMMap() {
           </div>
           <div class="dm-map-toolbar">
             <span class="dm-map-tool-label">Map</span>
-            <button class="dm-map-tool dm-map-addmap" id="dmMapAdd">${(enc.mapImage || enc.mapVideo) ? '🗺 Replace map' : '🗺 Add map'}</button>
+            <button class="dm-map-tool dm-map-addmap" id="dmMapAdd">${encHasMap(enc) ? '🗺 Replace map' : '🗺 Add map'}</button>
             <button class="dm-map-tool" id="dmMapLibrary">📚 Map library</button>
-            ${(enc.mapImage || enc.mapVideo) ? `<button class="dm-map-tool" id="dmMapRemove">Remove map</button>` : ''}
-            ${(enc.mapImage || enc.mapVideo) ? `<button class="dm-map-tool ${enc.mapGridOverlay ? 'on' : ''}" id="dmMapGridToggle">${enc.mapGridOverlay ? '☑' : '☐'} Grid lines</button>` : ''}
+            ${encHasMap(enc) ? `<button class="dm-map-tool" id="dmMapRemove">Remove map</button>` : ''}
+            ${encHasMap(enc) ? `<button class="dm-map-tool ${enc.mapGridOverlay ? 'on' : ''}" id="dmMapGridToggle">${enc.mapGridOverlay ? '☑' : '☐'} Grid lines</button>` : ''}
             <input type="file" id="dmMapFile" accept="image/*,video/mp4,video/webm,video/ogg" style="display:none;" />
           </div>
           <div class="dm-map-scroll" id="dmMapScroll">
             <div class="dm-map-zoom" id="dmMapZoom" style="transform:scale(${state.ui.dmMapZoom || 1});transform-origin:top left;width:${gridW}px;height:${gridH}px;">
-            <div class="dm-map-grid ${(enc.mapImage || enc.mapVideo) ? 'has-image' : ''} ${(enc.mapImage || enc.mapVideo) && !enc.mapGridOverlay ? 'no-overlay' : ''} ${state.ui.dmRulerTool ? 'ruler-active' : ''} ${state.ui.dmFogTool ? 'fog-active' : ''}" id="dmMapGrid"
-              style="width:${gridW}px;height:${gridH}px;background-size:${cell}px ${cell}px;${enc.mapImage ? `--map-image:url('${enc.mapImage}');` : ''}">
-              ${enc.mapVideo ? mapVideoLayerHTML(enc.mapVideo) : (enc.mapImage ? mapBaseLayerHTML(enc.mapImage) : '')}
+            <div class="dm-map-grid ${encHasMap(enc) ? 'has-image' : ''} ${encHasMap(enc) && !enc.mapGridOverlay ? 'no-overlay' : ''} ${state.ui.dmRulerTool ? 'ruler-active' : ''} ${state.ui.dmFogTool ? 'fog-active' : ''}" id="dmMapGrid"
+              style="width:${gridW}px;height:${gridH}px;background-size:${cell}px ${cell}px;">
+              ${encPaintedId(enc) ? paintedBaseLayerHTML(encPaintedId(enc), cols, rows) : (enc.mapVideo ? mapVideoLayerHTML(enc.mapVideo) : (enc.mapImage ? mapBaseLayerHTML(enc.mapImage) : ''))}
               <svg class="dm-aoe-layer" id="dmAoeLayer" width="${gridW}" height="${gridH}" viewBox="0 0 ${gridW} ${gridH}">
                 <defs><filter id="fogWave" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="1" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="11" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
                 ${(enc.aoes || []).map(a => aoeShapeSVG(a, cell, true, enc)).join('')}
@@ -49934,7 +50282,10 @@ function wireDMMap(enc, cell, cols, rows) {
       if (!m) return;
       const e = loadEncounter();
       clearMapVideo(e);
-      e.mapImage = m.url;
+      // v0.93.0 — store the id; the painted bitmap is made and cached on render.
+      e.mapImage = null;
+      e.mapId = m.id;
+      e.mapKind = 'painted';
       saveEncounter(e);
       broadcastMap(e);
       state.ui.dmMapLibrary = false;
@@ -50013,6 +50364,12 @@ function wireDMMap(enc, cell, cols, rows) {
 
   // v0.21.46 — Add / replace map image.
   const addBtn = document.getElementById('dmMapAdd');
+  // v0.93.0 — painted map: swap in the cached bitmap (painting it first if needed).
+  (function () {
+    const pEnc = loadEncounter();
+    const pid = encPaintedId(pEnc);
+    if (pid) paintedHydrateDM(pid, pEnc.mapCols || 20, pEnc.mapRows || 15);
+  })();
   // v0.31.0 — hydrate the imported video/gif element from IndexedDB.
   (function () {
     const vEnc = loadEncounter();
@@ -50048,9 +50405,11 @@ function wireDMMap(enc, cell, cols, rows) {
           try { const u = URL.createObjectURL(file); if (_mapVideoCache.url) URL.revokeObjectURL(_mapVideoCache.url); _mapVideoCache = { id, url: u }; } catch (x) {}
           e.mapImage = null;
           e.mapVideo = { id, type: file.type, name: file.name || 'map' };
+          e.mapId = null; e.mapKind = null; // v0.93.0
         } else {
           clearMapVideo(e);
           e.mapImage = await compressImageToDataUrl(file, 1400, 0.8);
+          e.mapId = null; e.mapKind = null; // v0.93.0
         }
         saveEncounter(e);
         broadcastMap(e);
@@ -50067,6 +50426,7 @@ function wireDMMap(enc, cell, cols, rows) {
     const e = loadEncounter();
     clearMapVideo(e);
     e.mapImage = null;
+    e.mapId = null; e.mapKind = null; // v0.93.0
     saveEncounter(e);
     broadcastMap(e);
     render();
@@ -50853,6 +51213,8 @@ function projectorDocumentHTML() {
   .fsbtn.show { opacity:0.9; }
   .fsbtn:hover { opacity:1; }
   body.cursor-hidden { cursor:none; }
+  ${PAINTED_OVERLAY_CSS}
+  .grid > .pm-ov { z-index:1; }
 </style></head>
 <body>
   <button class="fsbtn" id="fsBtn" title="Fill this screen for the players">⛶ Fullscreen</button>
@@ -50910,6 +51272,40 @@ function projectorDocumentHTML() {
       if (_projVid.id !== v.id) { _projVid.id = v.id; idbGetMapp(v.id).then(function(blob){ if (!blob || _projVid.id !== v.id) return; if (_projVid.url) { try { URL.revokeObjectURL(_projVid.url); } catch(x){} } _projVid.url = URL.createObjectURL(blob); if (_projVidEl) { _projVidEl.src = _projVid.url; if (_projVidEl.tagName.toLowerCase()==='video') { try{ _projVidEl.play(); }catch(x){} } } }); }
     }
     function removeProjVideo(){ if (_projVid.url) { try { URL.revokeObjectURL(_projVid.url); } catch(x){} } _projVidEl = null; _projVid = { id: null, url: null }; }
+    // v0.93.0 — painted maps arrive as { id, cols, rows, px, key, ready }. Read
+    // the DM's cached bitmap from the shared IndexedDB; if it isn't there once
+    // the DM says it's ready (or after a short wait), paint it here instead.
+    var PM_SCRIPT = ${JSON.stringify(paintedAbsUrl(PAINTED_SCRIPT))};
+    ${paintedShiftOverlay.toString()}
+    ${paintedRenderRecord.toString()}
+    ${paintedOverlaySVG.toString()}
+    var _pm = { key: null, url: null, node: null, busy: false, t: null, sp: null };
+    function idbPutMapp(id, val){ return idbMapDBp().then(function(db){ return new Promise(function(res,rej){ var tx=db.transaction('assets','readwrite'); tx.objectStore('assets').put(val,id); tx.oncomplete=function(){ res(); }; tx.onerror=function(){ rej(tx.error); }; }); }); }
+    function pmLoadScript(){
+      if (window.HearthPaintedMaps) return Promise.resolve(window.HearthPaintedMaps);
+      if (!_pm.sp) _pm.sp = new Promise(function(res,rej){ var s=document.createElement('script'); s.src=PM_SCRIPT; s.async=true; s.onload=function(){ window.HearthPaintedMaps ? res(window.HearthPaintedMaps) : rej(new Error('no renderer')); }; s.onerror=function(){ _pm.sp=null; rej(new Error('load failed')); }; document.head.appendChild(s); });
+      return _pm.sp;
+    }
+    function pmUse(key, rec){
+      if (_pm.key !== key || !rec || !rec.blob) return;
+      if (_pm.url) { try { URL.revokeObjectURL(_pm.url); } catch(x){} }
+      _pm.url = URL.createObjectURL(rec.blob);
+      var m = rec.meta || {}; var d = document.createElement('div');
+      d.innerHTML = paintedOverlaySVG(m.overlays || [], m.cols || 20, m.rows || 15);
+      _pm.node = d.firstChild || null;
+      window.__pmSource = rec.__src || 'cache';
+      if (last) draw(last);
+    }
+    function pmEnsure(p){
+      if (_pm.key !== p.key) { if (_pm.url) { try { URL.revokeObjectURL(_pm.url); } catch(x){} } clearTimeout(_pm.t); _pm.key = p.key; _pm.url = null; _pm.node = null; _pm.busy = false; }
+      if (_pm.url || _pm.busy) return;
+      _pm.busy = true; var key = p.key;
+      idbGetMapp(key).then(function(rec){
+        if (rec && rec.blob) { _pm.busy = false; rec.__src = 'cache'; pmUse(key, rec); return; }
+        if (!p.ready) { _pm.busy = false; clearTimeout(_pm.t); _pm.t = setTimeout(function(){ if (_pm.key === key && !_pm.url) pmEnsure({ id:p.id, cols:p.cols, rows:p.rows, px:p.px, key:key, ready:true }); }, 4000); return; }
+        return pmLoadScript().then(function(H){ return paintedRenderRecord(H, p.id, p.cols, p.rows, p.px); }).then(function(rec2){ idbPutMapp(key, rec2).catch(function(){}); _pm.busy = false; rec2.__src = 'render'; pmUse(key, rec2); });
+      }).catch(function(){ _pm.busy = false; });
+    }
     function draw(state){
       last = state;
       var cell = fit(state.cols, state.rows);
@@ -50917,8 +51313,11 @@ function projectorDocumentHTML() {
       grid.style.width = (state.cols*cell)+'px';
       grid.style.height = (state.rows*cell)+'px';
       var showGrid = state.gridOverlay !== false;
-      if (state.image) {
-        grid.style.backgroundImage = "url('" + state.image + "')"
+      var pmImg = null;
+      if (state.painted) { pmEnsure(state.painted); if (_pm.key === state.painted.key && _pm.url) pmImg = _pm.url; }
+      var baseImg = state.image || pmImg;
+      if (baseImg) {
+        grid.style.backgroundImage = "url('" + baseImg + "')"
           + (showGrid ? ", linear-gradient(rgba(184,137,61,0.30) 1px, transparent 1px), linear-gradient(90deg, rgba(184,137,61,0.30) 1px, transparent 1px)" : "");
         grid.style.backgroundSize = showGrid ? ("100% 100%, " + cell + "px " + cell + "px, " + cell + "px " + cell + "px") : "100% 100%";
         grid.style.backgroundRepeat = "no-repeat";
@@ -50984,6 +51383,7 @@ function projectorDocumentHTML() {
         html += '<div class="pfog-wrap">' + fogHtml + '</div>';
       }
       grid.innerHTML = html;
+      if (pmImg && _pm.node) grid.insertBefore(_pm.node, grid.firstChild);
       if (state.video) {
         ensureProjVideo(state.video, state.videoLoop !== false);
         if (_projVidEl) {
@@ -52311,7 +52711,7 @@ render();
 // control the page reloads once by itself unless you are mid-edit (typing, a
 // popup open, or the character builder), in which case the toast stays up.
 (function () {
-  const APP_VERSION = 'v0.92.1';
+  const APP_VERSION = 'v0.93.0';
   window.HEARTH_VERSION = APP_VERSION;
 
   function hearthHasUnsavedEdits() {
