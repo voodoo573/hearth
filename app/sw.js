@@ -13,7 +13,7 @@
 // Bump CACHE_VERSION whenever you ship a new build (keep it in step with
 // CACHE_VERSION in /sw.js).
 
-const CACHE_VERSION = 'hearth-v1.1.0';
+const CACHE_VERSION = 'hearth-v1.1.1';
 const APP_SHELL = [
   './',
   './index.html',
