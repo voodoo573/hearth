@@ -1,0 +1,65 @@
+name: Bug report
+description: Something in Hearth isn't working the way it should.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. If you opened this from Hearth (Settings → Report a bug), the device details below are already filled in.
+        Please don't paste personal information. Character names are fine.
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: Settings → About shows it (for example 1.4.0).
+      placeholder: "1.4.0"
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: Web (in a browser), PWA (installed from the browser) or Android app.
+      placeholder: "Web / PWA / Android app"
+    validations:
+      required: true
+  - type: input
+    id: useragent
+    attributes:
+      label: User agent
+      description: Filled in automatically when you report from Hearth.
+  - type: input
+    id: screen
+    attributes:
+      label: Screen size
+      description: CSS pixels, for example 390×844.
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What did you tap, in order?
+      placeholder: |
+        1. Open a character
+        2. Tap …
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead?
+      description: Screenshots help a lot. You can paste or drag them in here.
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Theme (light or dark), whether you were offline, in a live game, signed in with Google, and so on.

@@ -317,6 +317,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 28px; justify-content: s
 .foot-links { display: flex; flex-wrap: wrap; gap: 4px 18px; list-style: none; }
 .foot-links a { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; display: inline-block; padding: 8px 0; }
 .foot-links a:hover { color: var(--ink); text-decoration: underline; }
+.foot-links a.foot-email { text-transform: none; letter-spacing: 0.02em; }
+.foot-note { flex-basis: 100%; margin: 8px 0 0; font-size: 0.85rem; line-height: 1.45; color: var(--ink-soft); }
 
 /* Install sheet (dialog) */
 dialog.sheet {
@@ -432,7 +434,7 @@ dialog.sheet[open] { animation: sheetIn 260ms var(--ease); }
       </span>
       <span class="brand-name">Hearth</span>
     </a>
-    <span class="version-tag" data-version>v1.3.0</span>
+    <span class="version-tag" data-version>v1.4.0</span>
     <a href="#install" class="btn btn-primary btn-sm" data-install>
       <svg aria-hidden="true"><use href="#i-down"/></svg><span>Install</span>
     </a>
@@ -680,13 +682,16 @@ dialog.sheet[open] { animation: sheetIn 260ms var(--ease); }
 
 <footer>
   <div class="wrap">
-    <span class="foot-meta">Hearth · A D&amp;D 5e companion · <span data-version>v1.3.0</span></span>
+    <span class="foot-meta">Hearth · A D&amp;D 5e companion · <span data-version>v1.4.0</span></span>
     <ul class="foot-links">
       <li><a href="/app/">Open Hearth</a></li>
       <li><a href="#install">Install</a></li>
       <li><a href="#about">About</a></li>
       <li><a href="/privacy.html">Privacy</a></li>
+      <li><a href="https://github.com/voodoo573/hearth/issues/new?template=bug_report.yml" id="bugLink" target="_blank" rel="noopener noreferrer">Report a bug</a></li>
+      <li id="contactSlot" hidden><a href="#" id="contactLink" class="foot-email">Contact</a></li>
     </ul>
+    <p class="foot-note" id="bugNote" role="status" hidden></p>
   </div>
 </footer>
 
@@ -712,9 +717,12 @@ dialog.sheet[open] { animation: sheetIn 260ms var(--ease); }
    ANDROID_APP_URL: leave '' until the native Android app ships;
    set it (Play Store or .apk URL) to reveal the Android slot.
    ================================================================= */
-const HEARTH_VERSION = '1.3.0';
+const HEARTH_VERSION = '1.4.0';
 const ANDROID_APP_URL = '/download/hearth-1.3.0.apk';
 const ANDROID_APP_LABEL = 'Download Android app (APK)';
+/* CONTACT_EMAIL: leave '' to hide the footer Contact link; set it to show one. */
+const CONTACT_EMAIL = 'hearthdnd@gmail.com';
+const ISSUES_URL = 'https://github.com/voodoo573/hearth/issues/new';
 
 (function () {
   'use strict';
@@ -730,6 +738,37 @@ const ANDROID_APP_LABEL = 'Download Android app (APK)';
     if (img.complete && img.naturalWidth === 0) hide();
     img.addEventListener('error', hide);
   });
+
+  /* ---------- Report a bug (footer): prefilled GitHub issue; offline, copy the details instead ---------- */
+  (function () {
+    const link = document.getElementById('bugLink');
+    if (!link) return;
+    const standalone = ['standalone', 'fullscreen', 'minimal-ui'].some((m) => window.matchMedia('(display-mode: ' + m + ')').matches) || navigator.standalone === true;
+    const d = {
+      version: HEARTH_VERSION, platform: standalone ? 'PWA (installed)' : 'Web',
+      ua: navigator.userAgent, screen: Math.round(innerWidth) + '\u00d7' + Math.round(innerHeight) + ' (screen ' + screen.width + '\u00d7' + screen.height + ', ' + (Math.round((devicePixelRatio || 1) * 100) / 100) + 'x)',
+    };
+    const q = new URLSearchParams({ template: 'bug_report.yml', title: '[Bug]: ', version: d.version, platform: d.platform, useragent: d.ua, screen: d.screen, extra: 'Reported from the hearthdnd.org landing page.' });
+    link.href = ISSUES_URL + '?' + q.toString();
+    const note = document.getElementById('bugNote');
+    const text = ['Hearth bug report', '', 'App version: ' + d.version, 'Platform: ' + d.platform, 'User agent: ' + d.ua, 'Screen size: ' + d.screen, '',
+      'Steps to reproduce:', '1. ', '', 'What I expected:', '', 'What happened instead:', '', 'Report at: ' + ISSUES_URL + '?template=bug_report.yml'].join('\n');
+    link.addEventListener('click', (e) => {
+      if (navigator.onLine !== false) return;
+      e.preventDefault();
+      const say = (m) => { note.textContent = m; note.hidden = false; };
+      const fail = () => say('You\u2019re offline. Reporting a bug needs internet: try again when you\u2019re back online.');
+      try {
+        navigator.clipboard.writeText(text).then(() => say('You\u2019re offline, so the details were copied to your clipboard. Open Report a bug again when you\u2019re back online and paste them in.'), fail);
+      } catch (err) { fail(); }
+    });
+    if (CONTACT_EMAIL) {
+      const c = document.getElementById('contactLink');
+      c.href = 'mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('Hearth ' + HEARTH_VERSION);
+      c.textContent = CONTACT_EMAIL;
+      document.getElementById('contactSlot').hidden = false;
+    }
+  })();
 
   /* ---------- Android slot ---------- */
   if (ANDROID_APP_URL) {
