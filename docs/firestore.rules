@@ -1,0 +1,92 @@
+rules_version = '2';
+// Hearth (hearth-ae2e0) — Firestore security rules for v1.1.0.
+// Everything Hearth stores in the cloud is opt-in (Sign in with Google).
+//
+//   users/{uid}/characters/{charId}   a player's own characters (sync between their devices)
+//   games/{gameId}                    a DM's game: who is invited + the live code
+//   games/{gameId}/joins/{uid}        an invited player's "this is my device" handshake note
+//
+// Deny by default; every write is validated by shape and size.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function myEmail() {
+      return request.auth.token.email != null && request.auth.token.email_verified == true
+        ? request.auth.token.email.lower() : '';
+    }
+    function isStr(v, max) { return v is string && v.size() <= max; }
+    function isId(v) { return v is string && v.matches('^[A-Za-z0-9_.:-]{1,64}$'); }
+    function onlyKeys(d, keys) { return d.keys().hasOnly(keys) && d.keys().hasAll(keys); }
+
+    // ---------- A player's own characters ----------
+    match /users/{uid}/characters/{charId} {
+      allow read, delete: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid && validChar(request.resource.data, charId);
+    }
+    function validChar(d, charId) {
+      return onlyKeys(d, ['id', 'ed', 'updatedAt', 'deleted', 'data', 'name', 'v'])
+        && d.id == charId && isId(charId)
+        && d.ed in ['5e', '5.5e']
+        && d.updatedAt is int && d.updatedAt > 0
+        && d.deleted is bool
+        && d.v == 1
+        && isStr(d.name, 80)
+        && d.data is string && d.data.size() <= 900000
+        && (d.deleted == false || d.data.size() == 0);
+    }
+    // Nothing else under users/ is used.
+    match /users/{uid} { allow read, write: if false; }
+
+    // ---------- DM games and invites ----------
+    match /games/{gameId} {
+      // Readable by the DM who owns it and by the Google accounts the DM invited.
+      // (The uid prefix check comes first so a DM can also watch their own game
+      // doc before it exists; create/update force owner == that same uid.)
+      allow read: if signedIn() && (gameId.matches('^' + request.auth.uid + '_[A-Za-z0-9_.:-]{1,64}$')
+                                    || resource.data.owner == request.auth.uid
+                                    || (myEmail() != '' && myEmail() in resource.data.invited));
+      allow create: if signedIn() && request.resource.data.owner == request.auth.uid
+                    && gameId.matches('^' + request.auth.uid + '_[A-Za-z0-9_.:-]{1,64}$')
+                    && validGame(request.resource.data);
+      allow update: if signedIn() && resource.data.owner == request.auth.uid
+                    && request.resource.data.owner == resource.data.owner
+                    && validGame(request.resource.data);
+      allow delete: if signedIn() && resource.data.owner == request.auth.uid;
+
+      // An invited player says "this device is me" before connecting, so the DM's
+      // accept prompt can show a verified Google account. The DM still accepts.
+      match /joins/{uid} {
+        allow read: if signedIn() && (request.auth.uid == uid
+                                      || get(/databases/$(database)/documents/games/$(gameId)).data.owner == request.auth.uid);
+        allow create, update: if signedIn() && request.auth.uid == uid
+                              && myEmail() != ''
+                              && myEmail() in get(/databases/$(database)/documents/games/$(gameId)).data.invited
+                              && validJoin(request.resource.data, uid);
+        allow delete: if signedIn() && (request.auth.uid == uid
+                                        || get(/databases/$(database)/documents/games/$(gameId)).data.owner == request.auth.uid);
+      }
+    }
+    function validGame(d) {
+      return onlyKeys(d, ['owner', 'ownerName', 'name', 'invited', 'code', 'live', 'updatedAt'])
+        && isStr(d.ownerName, 60) && isStr(d.name, 60)
+        && d.invited is list && d.invited.size() <= 50
+        && (d.code == null || (d.code is string && d.code.matches('^HEARTH-[2-9A-HJ-NP-Z]{4,6}$')))
+        && d.live is bool
+        && d.updatedAt == request.time;
+    }
+    function validJoin(d, uid) {
+      return onlyKeys(d, ['uid', 'email', 'name', 'deviceId', 'nonce', 'code', 'at'])
+        && d.uid == uid
+        && d.email == myEmail()
+        && isStr(d.name, 60)
+        && d.deviceId is string && d.deviceId.matches('^[a-z0-9]{12,40}$')
+        && d.nonce is string && d.nonce.matches('^[a-z0-9]{16,40}$')
+        && d.code is string && d.code.matches('^HEARTH-[2-9A-HJ-NP-Z]{4,6}$')
+        && d.at == request.time;
+    }
+
+    // Everything else is closed.
+    match /{document=**} { allow read, write: if false; }
+  }
+}
