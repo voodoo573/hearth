@@ -54775,6 +54775,51 @@ async function hearthGoogleSignOut() {
   hearthOnAuth(null);
   linkStore(HEARTH_SYNC_KEY, null); // characters stay on this device
 }
+// "Delete my cloud data": removes everything Hearth stored in Firebase for this
+// account (synced characters, the DM's game/invite docs and join notes) and then
+// the Firebase sign-in record itself. Characters on this device are kept.
+async function hearthDeleteCloudData() {
+  const fb = HearthGoogle.fb, u = HearthGoogle.user;
+  if (!fb || !u) return { ok: false, msg: 'Not signed in.' };
+  const F = fb.F, uid = u.uid;
+  const invitedIds = (HearthGoogle.games.invited || []).map(g => g.id).filter(linkIsId);
+  hearthSyncStop(); hearthGamesStop();
+  try {
+    const chars = await F.getDocs(F.collection(fb.db, 'users', uid, 'characters'));
+    for (const d of chars.docs) await F.deleteDoc(d.ref);
+    const games = await F.getDocs(F.query(F.collection(fb.db, 'games'), F.where('owner', '==', uid)));
+    for (const g of games.docs) {
+      try { const js = await F.getDocs(F.collection(fb.db, 'games', g.id, 'joins')); for (const j of js.docs) await F.deleteDoc(j.ref); } catch (e) {}
+      await F.deleteDoc(g.ref);
+    }
+    for (const id of invitedIds) { try { await F.deleteDoc(F.doc(fb.db, 'games', id, 'joins', uid)); } catch (e) {} }
+  } catch (e) {
+    hearthSyncStart(); hearthGamesWatch();
+    return { ok: false, msg: navigator.onLine ? 'Couldn\'t delete your cloud data (' + ((e && e.code) || 'error') + '). Nothing on this device was changed.' : 'You\'re offline. Deleting cloud data needs internet.' };
+  }
+  linkStore(HEARTH_SYNC_KEY, null);
+  let accountGone = false;
+  try { await fb.A.deleteUser(u); accountGone = true; }
+  catch (e) {
+    if (e && e.code === 'auth/requires-recent-login') {
+      try {
+        const native = hearthNativeAuth();
+        if (native) {
+          const r = await native.signInWithGoogle();
+          const t = r && r.credential && r.credential.idToken;
+          if (t) await fb.A.reauthenticateWithCredential(u, fb.A.GoogleAuthProvider.credential(t));
+        } else {
+          await fb.A.reauthenticateWithPopup(u, new fb.A.GoogleAuthProvider());
+        }
+        await fb.A.deleteUser(u); accountGone = true;
+      } catch (e2) {}
+    }
+  }
+  await hearthGoogleSignOut();
+  return { ok: true, accountGone, msg: accountGone
+    ? 'Done. Your synced characters, games and invites were deleted from Hearth\'s cloud, and your Hearth sign-in record was removed. Your characters are still on this device.'
+    : 'Your synced characters, games and invites were deleted from Hearth\'s cloud and you\'re signed out. Google asked for a fresh sign-in before removing the sign-in record itself: sign in again and tap “Delete my cloud data” once more to finish.' };
+}
 function hearthAccountIdentity() {
   const u = HearthGoogle.user;
   return u ? { provider: 'google', uid: u.uid, email: (u.email || '').toLowerCase(), displayName: String(u.displayName || '').slice(0, 60) } : null;
@@ -55024,6 +55069,16 @@ function hearthAccountOpen() {
     if (act === 'signin') hearthGoogleSignIn();
     if (act === 'signout') { wrap.remove(); hearthSyncShellState(); } if (act === 'signout') confirmDialog('Sign out of Google on this device? Your characters stay on this device; they just stop syncing.', () => hearthGoogleSignOut(), { title: 'Sign out', yes: 'Sign out' });
     if (act === 'sync') hearthSyncReconcile(_hearthRemoteChars);
+    if (act === 'delete') {
+      wrap.remove(); hearthSyncShellState();
+      confirmDialog('Delete everything Hearth stored in the cloud for this Google account (synced characters, your games and invites) and remove your Hearth sign-in? Characters on this device are kept. This can\'t be undone.', async () => {
+        const r = await hearthDeleteCloudData();
+        HearthGoogle.error = null;
+        hearthAccountOpen();
+        const dlg = document.querySelector('#hearthAccountDlg .dialog');
+        if (dlg) { const n = document.createElement('div'); n.className = r.ok ? 'dialog-helper hearth-acct-deleted' : 'dm-link-error'; n.textContent = r.msg; dlg.insertBefore(n, dlg.querySelector('.dialog-actions')); }
+      }, { title: 'Delete cloud data', yes: 'Delete' });
+    }
   });
   hearthSyncShellState();
 }
@@ -55040,6 +55095,7 @@ function hearthAccountDialogFill(wrap) {
         ${s.skipped.length ? `<div class="dialog-helper">Too big to sync (large portrait): ${escape(s.skipped.join(', '))}.</div>` : ''}
         <div class="dialog-helper">Your characters sync between devices where you're signed in. This device keeps its own copy and works offline. DMs can invite this email to their games; you'll find them under Player → 🔗 Join a game.</div>
         <div class="dialog-actions"><button class="btn" data-acct="signout">Sign out</button><button class="btn" data-acct="sync">Sync now</button><button class="btn primary" data-acct="close">Done</button></div>
+        <button class="link-acct-link hearth-acct-delete" type="button" data-acct="delete">Delete my cloud data…</button>
       ` : `
         <div class="dialog-helper">Hearth works fully without an account. Signing in with Google is optional and adds two things:</div>
         <ul class="hearth-acct-list"><li>Your characters sync between your phone, tablet and computer.</li><li>A DM can invite you to their game by email.</li></ul>

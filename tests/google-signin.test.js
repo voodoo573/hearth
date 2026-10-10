@@ -152,6 +152,29 @@ async function waitFor(p, fn, arg, ms = 20000) { try { await p.waitForFunction(f
   await a.reload();
   check('Signed-in device stays signed in after reload', await waitFor(a, () => HearthGoogle.user && HearthGoogle.user.email === 'player@example.com', null, 20000));
 
+  // ---- 7. "Delete my cloud data" (player A, then the DM) ----
+  const FS = 'http://127.0.0.1:8085/v1/projects/hearth-ae2e0/databases/(default)/documents';
+  const owner = { headers: { Authorization: 'Bearer owner' } };
+  const countDocs = async (path) => { const r = await fetch(FS + path, owner); const j = await r.json(); return (j.documents || []).length; };
+  const aUid = await a.evaluate(() => HearthGoogle.user.uid);
+  const before = await countDocs(`/users/${aUid}/characters`);
+  await a.evaluate(() => hearthAccountOpen());
+  await a.click('[data-acct="delete"]'); await a.click('[data-confirm-yes]');
+  const delDone = await waitFor(a, () => !HearthGoogle.user && document.querySelector('.hearth-acct-deleted'), null, 20000);
+  const after = await countDocs(`/users/${aUid}/characters`);
+  const localKept = await a.evaluate(() => loadCharacters().length);
+  const accts = await (await fetch('http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/projects/hearth-ae2e0/accounts:query', { method: 'POST', headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' }, body: '{}' })).json();
+  const aStill = (accts.userInfo || []).some(u => u.localId === aUid);
+  const msg = await a.evaluate(() => (document.querySelector('.hearth-acct-deleted') || {}).textContent || '');
+  check('Delete my cloud data: characters removed from Firestore, kept on device, sign-in record removed', delDone && before > 0 && after === 0 && localKept > 0 && !aStill, { before, after, localKept, aStill, msg: msg.slice(0, 60) });
+  const dmUid = await dm.evaluate(() => HearthGoogle.user.uid);
+  const gBefore = (await (await fetch(FS + '/games', owner)).json()).documents || [];
+  await dm.evaluate(() => { document.querySelectorAll('.dialog-backdrop').forEach(d => { if (d.id !== 'hearthAccountDlg') d.style.display = 'none'; }); hearthAccountOpen(); });
+  await dm.click('[data-acct="delete"]'); await dm.click('[data-confirm-yes]');
+  await waitFor(dm, () => !HearthGoogle.user && document.querySelector('.hearth-acct-deleted'), null, 20000);
+  const gAfter = ((await (await fetch(FS + '/games', owner)).json()).documents || []).filter(d => d.name.includes('/games/' + dmUid + '_'));
+  check('Delete my cloud data: DM game/invite docs removed', gBefore.length > 0 && gAfter.length === 0, { gBefore: gBefore.length, gAfter: gAfter.length });
+
   const realErrs = errs.filter(e => !/peerjs|Could not connect to peer|peer-unavailable|ERR_INTERNET_DISCONNECTED|PERMISSION_DENIED|WebChannelConnection|Firestore \(|offline|net::ERR/i.test(e));
   check('No unexpected console/page errors', realErrs.length === 0, realErrs);
   const fails = results.filter(r => !r.ok);

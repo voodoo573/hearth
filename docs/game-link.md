@@ -70,6 +70,7 @@ Where to find it: Home → Player → **☁ Sync with Google**; the **My games**
 - **Account slot**: the Google provider is registered with `HearthAccount.register({ id: 'google', ... })` and selected on sign-in.
 - **Web**: `signInWithPopup`, falling back to `signInWithRedirect` if the popup is blocked.
 - **Android app**: Google blocks sign-in inside a WebView, so the APK uses `@capacitor-firebase/authentication` 7.5 (`skipNativeAuth: true`, provider `google.com`). The native Google account sheet returns an ID token, and the web SDK signs in with `signInWithCredential`, so Firestore works the same as on the web.
+- **Delete my cloud data** (account dialog). Deletes `users/{uid}/characters/*`, the DM's own `games/*` docs with their `joins`, and this user's join notes in games they were invited to. It then deletes the Firebase Auth user, re-authenticating once if Google asks for a recent sign-in, and signs out. Local characters are kept. This is the in-app and web account-deletion path that Google Play requires; the privacy policy points to it.
 - **Security rules**: `docs/firestore.rules` (same as `/workspace/firebase/firestore.rules`). Users read and write only their own characters. Game docs are readable only by the DM (owner) and by invited accounts with a verified email matching the invite list. Every write is validated by key set, types, sizes and formats; the server sets timestamps. Everything else is denied.
 - **Firebase project**: `hearth-ae2e0` (config inlined as `HEARTH_FIREBASE_CONFIG`; these values are public by design).
 

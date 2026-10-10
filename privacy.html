@@ -17,32 +17,47 @@
 </head>
 <body>
   <h1>Hearth — Privacy Policy</h1>
-  <div class="updated">Last updated: May 2026</div>
+  <div class="updated">Last updated: 10 October 2026 (Hearth 1.1.0)</div>
 
-  <p>Hearth is a companion app for the tabletop game Dungeons &amp; Dragons. This policy explains, plainly, what happens to your information when you use it. The short version: <strong>Hearth collects nothing and sends nothing anywhere.</strong></p>
-
-  <h2>What we collect</h2>
-  <p>Nothing. Hearth does not collect, transmit, or share any personal information. There are no accounts, no sign-up, no logins, and no analytics or tracking of any kind.</p>
+  <p>Hearth is a companion app for the tabletop game Dungeons &amp; Dragons. This policy explains, plainly, what happens to your information when you use it, on the website (hearthdnd.org) and in the Android app. The short version: <strong>Hearth works fully on your device without an account. Nothing leaves your device unless you choose one of the optional features below.</strong> There are no ads, no analytics and no tracking of any kind.</p>
 
   <h2>Where your data lives</h2>
-  <p>Everything you create in Hearth — your characters, notes, settings, and any photos you add — is stored only on your own device, in the app's local storage. It never leaves your device and is never sent to us or to any third party. If you uninstall the app or clear its data, that information is gone, because it only ever existed on your device.</p>
+  <p>Everything you create in Hearth (characters, campaigns, encounters, maps, notes, settings and any photos you add) is stored on your own device, in the app's local storage. If you uninstall the app or clear its data, that information is gone, unless you exported it or turned on the optional Google sync below.</p>
 
-  <h2>Internet use</h2>
-  <p>Hearth is designed to work fully offline and does not require an internet connection. Two optional features can use the internet only if you choose to use them:</p>
+  <h2>Optional: Sign in with Google (character sync and game invites)</h2>
+  <p>Signing in is never required. If you choose <em>Sync with Google</em>:</p>
   <ul>
-    <li><strong>Text recognition (OCR):</strong> if you use the optional feature to read text from an image, the app loads a recognition library over the internet at that moment. The image is processed on your device; it is not uploaded to us.</li>
+    <li><strong>What Google shares with Hearth:</strong> your Google account's email address, display name and a unique account ID. Hearth does not get your password, contacts or anything else from your Google account.</li>
+    <li><strong>What Hearth stores in the cloud:</strong> a copy of your characters (so they appear on your other devices). If you are a Dungeon Master and invite players, Hearth also stores the game's name, your display name, the email addresses you invited and the current join code. When an invited player joins, a short note with their account ID, email, display name and a random device ID is stored so the DM can see the invite is genuine.</li>
+    <li><strong>Where:</strong> in Google Firebase (Firebase Authentication and Cloud Firestore), operated by Google on Hearth's behalf. Data is encrypted in transit. Security rules let only you read and change your own characters, and only the DM and the people they invited can see a game's invite details.</li>
+    <li><strong>What it is used for:</strong> only to sync your characters and run game invites. It is never sold, shared with advertisers, or used for any other purpose.</li>
+  </ul>
+
+  <h2 id="delete">Deleting your cloud data and account</h2>
+  <p>You can delete everything Hearth stores in the cloud at any time, in the app or on hearthdnd.org: open <em>Sync with Google</em>, then tap <strong>Delete my cloud data</strong>. This permanently deletes your synced characters, any games and invites you created, your join notes, and your Hearth sign-in record. Characters on your device are kept. Signing out (without deleting) stops syncing but leaves the cloud copy in place until you delete it. If you can't use the app, you can ask for deletion through the contact details on Hearth's Google Play listing. We delete the data within 30 days.</p>
+
+  <h2>Optional: Live game (linking phones at the table)</h2>
+  <p>When a DM starts a live game and players join, the devices connect directly to each other (peer-to-peer WebRTC). To find each other they briefly use a free public connection service (PeerJS) and standard STUN servers, which see the devices' IP addresses and a random session code. The game data itself (character names, hit points, conditions and similar) goes directly between the devices in the game, encrypted, and is not stored on any server.</p>
+
+  <h2 id="camera">Camera</h2>
+  <p>The camera is used only if you tap <em>Scan QR</em> to join a DM's live game. The picture is processed on your device just to read the code. It is never recorded, saved or sent anywhere. You can always type the code instead, and you can deny the camera permission.</p>
+
+  <h2>Other internet use</h2>
+  <p>Two other optional features use the internet only if you choose them:</p>
+  <ul>
+    <li><strong>Text recognition (OCR):</strong> if you use the feature to read text from an image, the app loads a recognition library over the internet at that moment. The image is processed on your device; it is not uploaded to us.</li>
     <li><strong>Optional AI features:</strong> if you choose to connect your own AI service by entering its address, requests go directly to the service you specify. Hearth does not provide, operate, or receive any of that data.</li>
   </ul>
-  <p>If you never use those features, Hearth makes no network connections at all.</p>
+  <p>The website also loads app updates from hearthdnd.org. If you use none of the optional features, Hearth sends nothing about you anywhere.</p>
 
   <h2>Children's privacy</h2>
-  <p>Because Hearth collects no personal information from anyone, it collects none from children.</p>
+  <p>Hearth is not directed at children under 13. The optional Google sign-in is subject to Google's own age requirements. Without signing in, Hearth collects no personal information from anyone.</p>
 
   <h2>Changes to this policy</h2>
-  <p>If this policy ever changes, the updated version will be posted at this address with a new "last updated" date.</p>
+  <p>If this policy changes, the updated version will be posted at this address with a new "last updated" date.</p>
 
   <h2>Contact</h2>
-  <p>Questions about this policy can be sent to the contact address listed on the Hearth website.</p>
+  <p>Questions about this policy, or deletion requests, can be sent to the contact address listed on the Hearth website and on Hearth's Google Play listing.</p>
 
   <div class="footer">Hearth is an independent fan-made tool and is not affiliated with or endorsed by Wizards of the Coast.</div>
 </body>
