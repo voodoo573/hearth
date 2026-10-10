@@ -13,7 +13,7 @@
 // Bump CACHE_VERSION whenever you ship a new build (keep it in step with
 // CACHE_VERSION in /sw.js).
 
-const CACHE_VERSION = 'hearth-v0.93.0';
+const CACHE_VERSION = 'hearth-v0.93.1';
 const APP_SHELL = [
   './',
   './index.html',
@@ -26,6 +26,7 @@ const APP_SHELL = [
   // precached so maps paint offline after the first visit. Relative paths keep
   // them working under the Android (Capacitor) origin too.
   './painted/painted-maps.js',
+  './painted/painted-worker.js',
   './painted/packs/wilderness.js',
   './painted/packs/underground.js',
   './painted/packs/settlement.js',

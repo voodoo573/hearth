@@ -7768,6 +7768,36 @@
 .roll-toast-crit .hearth-roll-toast-card { box-shadow:0 0 0 2px var(--gold), 0 12px 30px rgba(0,0,0,.25); }
 @media (max-width:620px){ .spell-filter-row{grid-template-columns:1fr;} }
 
+
+/* v0.93.1 — safe areas. On Android 15 edge-to-edge (and iOS home-screen apps
+   with a translucent status bar) the page runs under the status and gesture
+   bars; these keep the header, sticky bars, dialogs and toasts clear of them.
+   In a normal browser tab every env() value is 0, so nothing moves. */
+.app {
+  padding-top: calc(18px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(16px + env(safe-area-inset-left, 0px));
+  padding-right: calc(16px + env(safe-area-inset-right, 0px));
+}
+body.hearth-wide .app {
+  padding-left: calc(28px + env(safe-area-inset-left, 0px));
+  padding-right: calc(28px + env(safe-area-inset-right, 0px));
+}
+.dm-run-top, .dm-map-top, body.hearth-wide .os-controls { top: env(safe-area-inset-top, 0px); }
+.dm-run-toolbar, .enemy-done-bar { padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+.death-lock-backdrop, .death-outcome-backdrop {
+  padding: calc(18px + env(safe-area-inset-top, 0px)) calc(18px + env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) calc(18px + env(safe-area-inset-left, 0px));
+}
+.dialog-backdrop {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+.dialog-backdrop { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.skills-dialog-backdrop {
+  padding: calc(16px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px));
+}
+.hearth-roll-toast { bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
 </style>
 </head>
 <body>
@@ -7804,7 +7834,7 @@
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '0.93.0';
+const HEARTH_VERSION = '0.93.1';
 // ============================================================
 // SRD 5.1 DATA v2 - structured for in-app casting
 // All content here is from the SRD 5.1 (CC-BY-4.0)
@@ -20874,6 +20904,7 @@ const EQUIPMENT_PACKS = {
 const BACKGROUNDS = {
   acolyte: {
     name: 'Acolyte',
+    languageChoice: 2, // v0.93.1
     skills: ['insight', 'religion'],
     gold: 15,
     equipment: ['Holy symbol', 'Prayer book or prayer wheel', 'Vestments', 'Common clothes'],
@@ -20881,6 +20912,7 @@ const BACKGROUNDS = {
   },
   charlatan: {
     name: 'Charlatan',
+    tools: ['Disguise kit', 'Forgery kit'], // v0.93.1
     skills: ['deception', 'sleight_of_hand'],
     gold: 15,
     equipment: ['Fine clothes', 'Disguise kit', 'Con tools', 'Signet ring or fake papers'],
@@ -20888,6 +20920,7 @@ const BACKGROUNDS = {
   },
   criminal: {
     name: 'Criminal',
+    tools: ["Thieves' tools"], toolChoice: { count: 1, from: ['gaming'] }, // v0.93.1
     skills: ['deception', 'stealth'],
     gold: 15,
     equipment: ['Crowbar', 'Dark common clothes with hood'],
@@ -20895,6 +20928,7 @@ const BACKGROUNDS = {
   },
   entertainer: {
     name: 'Entertainer',
+    tools: ['Disguise kit'], toolChoice: { count: 1, from: ['instrument'] }, // v0.93.1
     skills: ['acrobatics', 'performance'],
     gold: 15,
     equipment: ['Musical instrument', 'Costume', 'Admirer\'s favour'],
@@ -20902,6 +20936,7 @@ const BACKGROUNDS = {
   },
   folk_hero: {
     name: 'Folk Hero',
+    tools: ['Vehicles (land)'], toolChoice: { count: 1, from: ['artisan'] }, // v0.93.1
     skills: ['animal_handling', 'survival'],
     gold: 10,
     equipment: ['Artisan tools', 'Shovel', 'Iron pot', 'Common clothes'],
@@ -20909,6 +20944,7 @@ const BACKGROUNDS = {
   },
   guild_artisan: {
     name: 'Guild Artisan',
+    toolChoice: { count: 1, from: ['artisan'] }, languageChoice: 1, // v0.93.1
     skills: ['insight', 'persuasion'],
     gold: 15,
     equipment: ['Artisan tools', 'Letter of introduction', 'Traveler\'s clothes'],
@@ -20916,6 +20952,7 @@ const BACKGROUNDS = {
   },
   hermit: {
     name: 'Hermit',
+    tools: ['Herbalism kit'], languageChoice: 1, // v0.93.1
     skills: ['medicine', 'religion'],
     gold: 5,
     equipment: ['Herbalism kit', 'Scroll case of notes', 'Winter blanket', 'Common clothes'],
@@ -20923,6 +20960,7 @@ const BACKGROUNDS = {
   },
   noble: {
     name: 'Noble',
+    toolChoice: { count: 1, from: ['gaming'] }, languageChoice: 1, // v0.93.1
     skills: ['history', 'persuasion'],
     gold: 25,
     equipment: ['Fine clothes', 'Signet ring', 'Scroll of pedigree'],
@@ -20930,6 +20968,7 @@ const BACKGROUNDS = {
   },
   outlander: {
     name: 'Outlander',
+    toolChoice: { count: 1, from: ['instrument'] }, languageChoice: 1, // v0.93.1
     skills: ['athletics', 'survival'],
     gold: 10,
     equipment: ['Staff', 'Hunting trap', 'Traveler\'s clothes', 'Trophy from an animal'],
@@ -20937,6 +20976,7 @@ const BACKGROUNDS = {
   },
   sage: {
     name: 'Sage',
+    languageChoice: 2, // v0.93.1
     skills: ['arcana', 'history'],
     gold: 10,
     equipment: ['Bottle of black ink', 'Quill', 'Small knife', 'Letter from a dead colleague', 'Common clothes'],
@@ -20944,6 +20984,7 @@ const BACKGROUNDS = {
   },
   sailor: {
     name: 'Sailor',
+    tools: ["Navigator's tools", 'Vehicles (water)'], // v0.93.1
     skills: ['athletics', 'perception'],
     gold: 10,
     equipment: ['Belaying pin', 'Silk rope (50 ft)', 'Lucky charm', 'Common clothes'],
@@ -20951,6 +20992,7 @@ const BACKGROUNDS = {
   },
   soldier: {
     name: 'Soldier',
+    tools: ['Vehicles (land)'], toolChoice: { count: 1, from: ['gaming'] }, // v0.93.1
     skills: ['athletics', 'intimidation'],
     gold: 10,
     equipment: ['Insignia of rank', 'Trophy from a fallen enemy', 'Gaming set', 'Common clothes'],
@@ -20958,6 +21000,7 @@ const BACKGROUNDS = {
   },
   urchin: {
     name: 'Urchin',
+    tools: ['Disguise kit', "Thieves' tools"], // v0.93.1
     skills: ['sleight_of_hand', 'stealth'],
     gold: 10,
     equipment: ['Small knife', 'City map', 'Pet mouse', 'Token from your parents', 'Common clothes'],
@@ -20965,6 +21008,7 @@ const BACKGROUNDS = {
   },
   far_traveler: {
     name: 'Far Traveler',
+    toolChoice: { count: 1, from: ['instrument', 'gaming'] }, languageChoice: 1, // v0.93.1
     skills: ['insight', 'perception'],
     gold: 5,
     equipment: ['Traveller\'s clothes from your homeland', 'Small memento of home', 'Map fragment of a distant region', 'Pouch with foreign coins'],
@@ -20976,6 +21020,121 @@ function backgroundSkillNames(bg) {
 }
 function characterBackground(ch) {
   return ch && ch.background ? BACKGROUNDS[ch.background] : null;
+}
+
+// ===== v0.93.1 — Background choices (Create Character step 'bgchoices') =====
+// Ability +1 picks, tool and language picks, and generic gear ("Artisan's tools",
+// "Prayer book or prayer wheel") resolved to one item. Picks live on
+// d.bgChoices = { abilities: {dex:1}, tools: [...], languages: [...], equipment: {index: name} }.
+const ARTISAN_TOOLS = ["Alchemist's supplies", "Brewer's supplies", "Calligrapher's supplies", "Carpenter's tools", "Cartographer's tools", "Cobbler's tools", "Cook's utensils", "Glassblower's tools", "Jeweler's tools", "Leatherworker's tools", "Mason's tools", "Painter's supplies", "Potter's tools", "Smith's tools", "Tinker's tools", "Weaver's tools", "Woodcarver's tools"];
+const MUSICAL_INSTRUMENTS = ['Bagpipes', 'Drum', 'Dulcimer', 'Flute', 'Lute', 'Lyre', 'Horn', 'Pan flute', 'Shawm', 'Viol'];
+const GAMING_SETS = ['Dice set', 'Dragonchess set', 'Playing card set', 'Three-Dragon Ante set'];
+const VEHICLE_PROFS = ['Vehicles (land)', 'Vehicles (water)'];
+const LANGUAGE_OPTIONS = ['Common', 'Dwarvish', 'Elvish', 'Giant', 'Gnomish', 'Goblin', 'Halfling', 'Orc', 'Abyssal', 'Celestial', 'Draconic', 'Deep Speech', 'Infernal', 'Primordial', 'Sylvan', 'Undercommon'];
+const TOOL_GROUPS = { artisan: ARTISAN_TOOLS, instrument: MUSICAL_INSTRUMENTS, gaming: GAMING_SETS, vehicle: VEHICLE_PROFS };
+function toolGroupOptions(from) {
+  const list = [];
+  (Array.isArray(from) ? from : [from || 'artisan']).forEach(g => {
+    if (TOOL_GROUPS[g]) list.push(...TOOL_GROUPS[g]);
+    else if (g === 'any') list.push(...ARTISAN_TOOLS, ...MUSICAL_INSTRUMENTS, ...GAMING_SETS, 'Disguise kit', 'Forgery kit', 'Herbalism kit', "Navigator's tools", "Poisoner's kit", "Thieves' tools", ...VEHICLE_PROFS);
+    else if (typeof g === 'string' && g) list.push(normaliseToolName(g));
+  });
+  return [...new Set(list)];
+}
+function bgSourceText(bg) { return String((bg && (bg._sourceDesc || bg.desc)) || ''); }
+// What a background asks the player to choose. null when there's nothing to pick.
+function bgChoiceInfo(d) {
+  const bg = characterBackground(d);
+  if (!bg) return null;
+  const txt = bgSourceText(bg).replace(/[’‘]/g, "'");
+  const info = { abilities: null, tools: null, languages: 0, equipment: [] };
+  // Ability increases (2014-rules backgrounds only; 2024 builds use their own builder).
+  if (characterEdition(d) !== '5.5e') {
+    const ai = bg.abilityIncrease || {};
+    const fixed = ABILITIES.filter(a => Number(ai[a]) > 0);
+    let ch = ai.choose && typeof ai.choose === 'object' ? ai.choose : null;
+    if (!ch && /and one other ability score/i.test(txt)) ch = { count: 1, amount: 1 };
+    if (!ch) { const m = txt.match(/\+1 to (one|two|three) (?:different )?ability scores? of your choice/i); if (m) ch = { count: { one: 1, two: 2, three: 3 }[m[1].toLowerCase()], amount: 1 }; }
+    if (ch) {
+      const from = (Array.isArray(ch.from) && ch.from.length ? ch.from : ABILITIES).filter(a => ABILITIES.includes(a) && !fixed.includes(a));
+      info.abilities = { count: Math.max(1, Math.min(3, Number(ch.count) || 1)), amount: Math.max(1, Math.min(2, Number(ch.amount) || 1)), from, fixed };
+    }
+  }
+  // Tools.
+  let tc = bg.toolChoice ? (typeof bg.toolChoice === 'number' ? { count: bg.toolChoice } : bg.toolChoice) : null;
+  if (!tc) {
+    const m = txt.match(/Tool Proficienc(?:y|ies):\s*([^.]*)\./i);
+    if (m && /(either|one|choice|any)/i.test(m[1])) {
+      const t = m[1].toLowerCase(), from = [];
+      if (/artisan/.test(t)) from.push('artisan');
+      if (/instrument/.test(t)) from.push('instrument');
+      if (/gaming/.test(t)) from.push('gaming');
+      if (/vehicle/.test(t)) from.push('vehicle');
+      if (from.length) tc = { count: /two/.test(t) ? 2 : 1, from };
+    }
+  }
+  if (tc) {
+    const opts = toolGroupOptions(tc.from).filter(o => !(bg.tools || []).some(t => normaliseToolName(t).toLowerCase() === o.toLowerCase()));
+    if (opts.length) info.tools = { count: Math.max(1, Math.min(3, Number(tc.count) || 1)), options: opts };
+  }
+  // Languages: the background's plus any "of choice" languages from the race.
+  let lc = Number(bg.languageChoice) || 0;
+  if (!lc) { const m = txt.match(/Languages?:\s*(one|two|three|any one|any two)[^.]*(?:of your choice|choice)/i); if (m) lc = /two/i.test(m[1]) ? 2 : /three/i.test(m[1]) ? 3 : 1; }
+  info.bgLanguages = lc;
+  info.raceLanguages = raceLanguageChoiceCount(d);
+  info.languages = lc + info.raceLanguages;
+  // Gear lines that are a choice, not an item.
+  const eqSrc = (txt.match(/Equipment:\s*([^.]*)\./i) || [])[1] || '';
+  (bg.equipment || []).forEach((name, idx) => {
+    const n = String(name || '').trim();
+    const nl = n.toLowerCase().replace(/[’‘]/g, "'");
+    let options = null;
+    if (/^(?:a |one |set of |one set of )*artisan'?s? tools$/.test(nl)) {
+      options = /artisan'?s tools or (?:one |a )?(?:musical )?instrument/i.test(eqSrc) ? [...ARTISAN_TOOLS, ...MUSICAL_INSTRUMENTS] : [...ARTISAN_TOOLS];
+    } else if (/^(?:a |one )?musical instrument$/.test(nl)) options = [...MUSICAL_INSTRUMENTS];
+    else if (/^(?:a |one )?gaming set$/.test(nl)) options = [...GAMING_SETS];
+    else if (/\bor\b/.test(nl) && n.length <= 80) {
+      const parts = n.split(/\s*,\s*|\s+or\s+/i).map(x => x.replace(/^(?:a|an|one|one set of)\s+/i, '').trim()).filter(Boolean);
+      const expanded = [];
+      parts.forEach(pt => { const pl = pt.toLowerCase(); if (/^artisan'?s? tools$/.test(pl)) expanded.push(...ARTISAN_TOOLS); else if (/^(?:musical )?instrument$/.test(pl)) expanded.push(...MUSICAL_INSTRUMENTS); else if (/^gaming set$/.test(pl)) expanded.push(...GAMING_SETS); else expanded.push(pt.charAt(0).toUpperCase() + pt.slice(1)); });
+      if (expanded.length >= 2) options = [...new Set(expanded)];
+    }
+    if (options) info.equipment.push({ idx, label: n, options });
+  });
+  if (!info.abilities && !info.tools && !info.languages && !info.equipment.length) return null;
+  return info;
+}
+function raceLanguageChoiceCount(d) {
+  const r = d && d.race && RACES[d.race];
+  if (!r) return 0;
+  const sr = d.subrace && r.subraces ? r.subraces[d.subrace] : null;
+  const langs = (sr && sr.languages) || r.languages || [];
+  let n = 0;
+  langs.forEach(l => { const m = String(l).match(/(\+?\s*(\d+)|one|two)\s*(?:extra\s*)?(?:of (?:your )?choice)/i); if (m) n += m[2] ? Number(m[2]) : (/two/i.test(m[1]) ? 2 : 1); });
+  return n;
+}
+function bgChoicesComplete(d) {
+  const info = bgChoiceInfo(d);
+  if (!info) return true;
+  const c = d.bgChoices || {};
+  if (info.abilities && Object.keys(c.abilities || {}).filter(a => info.abilities.from.includes(a)).length !== info.abilities.count) return false;
+  if (info.tools && (c.tools || []).filter(t => info.tools.options.includes(t)).length !== info.tools.count) return false;
+  if (info.languages && (c.languages || []).length !== info.languages) return false;
+  if (info.equipment.some(e => !e.options.includes((c.equipment || {})[e.idx]))) return false;
+  return true;
+}
+// Languages the character knows: the race's named languages plus the picks.
+function characterLanguages(ch) {
+  const out = [];
+  const add = (l) => { const v = String(l || '').trim(); if (v && !out.some(x => x.toLowerCase() === v.toLowerCase())) out.push(v); };
+  const r = ch && ch.race && RACES[ch.race];
+  if (r) {
+    const sr = ch.subrace && r.subraces ? r.subraces[ch.subrace] : null;
+    ((sr && sr.languages) || r.languages || []).forEach(l => { if (!/choice/i.test(String(l))) add(l); });
+  }
+  ((ch && ch.bgChoices && ch.bgChoices.languages) || []).forEach(add);
+  ((ch && ch.extraLanguages) || []).forEach(add);
+  return out;
 }
 
 function packContents(pack) {
@@ -21093,7 +21252,7 @@ function charactersKey() {
 function gamesKey() {
   return currentEdition() === '5.5e' ? 'hearth.dmGames.55.v1' : DM_GAMES_KEY;
 }
-const WIZARD_STEPS = ['name', 'race', 'class', 'subclass', 'style', 'background', 'abilities', 'skills', 'spells', 'equipment', 'identity', 'review'];
+const WIZARD_STEPS = ['name', 'race', 'class', 'subclass', 'style', 'background', 'bgchoices', 'abilities', 'skills', 'spells', 'equipment', 'identity', 'review'];
 
 
 const FEATS = [
@@ -22837,6 +22996,8 @@ function finalScoresNoEffects(d) {
   if (characterEdition(d) !== '5.5e' && d.background) {
     const bgDef = (typeof characterBackground === 'function') ? characterBackground(d) : null;
     if (bgDef && bgDef.abilityIncrease) addInc(bgDef.abilityIncrease);
+    // v0.93.1 — the background's chosen +1s (Create Character background choices).
+    if (bgDef && d.bgChoices && d.bgChoices.abilities && (!d._bgChoicesFor || d._bgChoicesFor === d.background)) addInc(d.bgChoices.abilities);
   }
   // v0.91.2 — Primal Champion (Barbarian 20): STR and CON +4, maximum 24.
   if (d.klass && characterEdition(d) !== '5.5e' && typeof hasPrimalChampion === 'function' && hasPrimalChampion(d)) {
@@ -23179,12 +23340,79 @@ function itemBonuses(ch) {
     if (!inSlot) out.ac += d.mech.acBonus || 0;
     out.save += d.mech.saveBonus || 0;
     out.hp += d.mech.hpBonus || 0;
-    out.attack += d.mech.attackBonus || 0;
-    out.damage += d.mech.damageBonus || 0;
+    // v0.93.1 — an item's attack/damage bonus belongs to the item's own weapon
+    // (Staff of Gravity Bending -> its quarterstaff), never to every weapon. It is
+    // applied per weapon in characterWeapons(); see itemWeaponBonusFor().
     if (!d.mech.spellClass) {
       out.spell += d.mech.spellAttackBonus || 0;
       out.spellDc += d.mech.spellDcBonus || 0;
     }
+  });
+  return out;
+}
+// v0.93.1 — the weapon an item's attack/damage bonus belongs to: explicit
+// baseWeapon / mech.weapon, a staff -> quarterstaff, or a weapon named in the
+// item's own text ("with this magic quarterstaff"). null when it can't be told.
+function itemOwnWeaponId(d) {
+  if (!d) return null;
+  const norm = (x) => String(x || '').toLowerCase().replace(/[\s-]+/g, '_');
+  const cand = d.baseWeapon || (d.mech && (d.mech.weapon || d.mech.baseWeapon)) || d.weapon || null;
+  if (cand && WEAPONS[norm(cand)]) return norm(cand);
+  if (/^staff$/i.test(d.type || '') || /\bstaff\b/i.test(d.name || '')) return 'quarterstaff';
+  const txt = String(d.desc || '').toLowerCase();
+  const m = txt.match(/with this (?:magic(?:al)? )?([a-z][a-z ]{2,20}?)(?:[.,;]| and | to | you|$)/);
+  if (m) { const k = norm(m[1].replace(/s$/, '')); if (WEAPONS[k] && k !== 'unarmed') return k; }
+  return null;
+}
+// Attack/damage bonus an active item grants to one character weapon (inventory
+// entry w). Weapons linked by magicItemId get their own item's bonus (on top of
+// any per-weapon +N already counted in magicBonus); an unlinked weapon of the
+// item's own type picks up a non-weapon item's bonus (the staff's quarterstaff).
+function itemWeaponBonusFor(ch, w, claimed) {
+  const out = { attack: 0, damage: 0, item: null };
+  const items = ((ch && ch.inventory) || {}).items || [];
+  const wid = w && (w.weaponId || w.id);
+  if (!wid) return out;
+  if (w.magicItemId) {
+    const d = MAGIC_ITEMS[w.magicItemId];
+    if (d && d.mech) {
+      const mb = w.magicBonus || 0;
+      const linkedItem = items.find(it => it.magicItemId === w.magicItemId);
+      if (!linkedItem || itemBonusActive(linkedItem) || !d.attune) {
+        out.attack = Math.max(0, (d.mech.attackBonus || 0) - mb);
+        out.damage = Math.max(0, (d.mech.damageBonus || 0) - mb);
+        out.item = d.name;
+      }
+    }
+    return out;
+  }
+  for (const it of items) {
+    if (!itemBonusActive(it)) continue;
+    const d = itemMagicData(it);
+    if (!d || !d.mech || !(d.mech.attackBonus || d.mech.damageBonus)) continue;
+    if (d.type === 'weapon' && d.baseWeapon) continue; // real magic weapons live in the weapons list
+    if (claimed && claimed.has(it.id)) continue;
+    if (itemOwnWeaponId(d) !== wid) continue;
+    if (claimed) claimed.add(it.id);
+    out.attack = d.mech.attackBonus || 0; out.damage = d.mech.damageBonus || 0; out.item = d.name;
+    return out;
+  }
+  return out;
+}
+// Active non-weapon items with an attack/damage bonus whose own weapon isn't in
+// the weapons list: they become an extra usable weapon (e.g. the staff itself).
+function itemBoundExtraWeapons(ch, claimed) {
+  const items = ((ch && ch.inventory) || {}).items || [];
+  const out = [];
+  items.forEach(it => {
+    if (!itemBonusActive(it) || (claimed && claimed.has(it.id))) return;
+    const d = itemMagicData(it);
+    if (!d || !d.mech || !(d.mech.attackBonus || d.mech.damageBonus)) return;
+    if (d.type === 'weapon' && d.baseWeapon) return;
+    const wid = itemOwnWeaponId(d);
+    const base = wid && WEAPONS[wid];
+    if (!base) return;
+    out.push({ id: 'mi_' + it.id, weaponId: wid, magicItemBound: it.id, name: d.name, damage: { ...base.damage }, type: base.type, props: [...(base.props || [])], kind: base.kind, cat: base.cat, equipped: true, _itemAtk: d.mech.attackBonus || 0, _itemDmg: d.mech.damageBonus || 0, _itemName: d.name });
   });
   return out;
 }
@@ -25170,7 +25398,11 @@ function characterWeapons(ch) {
   // Read from inventory; only equipped weapons are usable in combat.
   // Each inventory weapon has { id (uuid), weaponId (e.g. 'longsword'), name, damage, type, props, kind, equipped, custom?, source? }
   const inv = ch.inventory || {};
-  const equipped = (inv.weapons || []).filter(w => w.equipped !== false);
+  const claimed = new Set();
+  const equipped = (inv.weapons || []).filter(w => w.equipped !== false).map(w => {
+    const ib = itemWeaponBonusFor(ch, w, claimed);
+    return (ib.attack || ib.damage) ? { ...w, _itemAtk: ib.attack, _itemDmg: ib.damage, _itemName: ib.item } : w;
+  }).concat(itemBoundExtraWeapons(ch, claimed));
   return equipped.map(w => {
     const weaponId = w.weaponId || w.id;
     let damage = w.damage;
@@ -25234,7 +25466,11 @@ function characterWeapons(ch) {
       gripLocked,
       // v0.21.73 — carry magic data through so the Play tab + attack roller
       // see the right name, per-weapon bonus, and on-hit riders.
-      magicBonus: w.magicBonus || 0,
+      // v0.93.1 — magicBonus also carries the bonus of the item bound to THIS
+      // weapon (attack); itemDamageExtra covers an item whose damage bonus differs.
+      magicBonus: (w.magicBonus || 0) + (w._itemAtk || 0),
+      itemDamageExtra: (w._itemDmg || 0) - (w._itemAtk || 0),
+      itemBonusFrom: w._itemName || null,
       magicItemId: w.magicItemId || null,
       onHit: w.onHit || null,
       extraDamage: Array.isArray(w.extraDamage) ? w.extraDamage : null,
@@ -25731,7 +25967,7 @@ function rollWeaponAttack(ch, weapon, mode = 'normal') {
     }
     riderResults.push({ type: r.type || weapon.type, rolls, critExtra, sum, count: c, sides: s, save: r.save || null });
   });
-  const dmgTotal = dmgSum + abMod + duelingBonus + lifedrinkerBonus + idsSum + magicBonus + riderSum;
+  const dmgTotal = dmgSum + abMod + duelingBonus + lifedrinkerBonus + idsSum + magicBonus + (weapon.itemDamageExtra || 0) + riderSum;
 
   let attackDetail = `d20${d20.mode !== 'normal' ? '(' + d20.mode + ')' : ''} [${d20.rolls.join(', ')}] + ${fmtMod(attackBonus)} = ${attackTotal}`;
   if (archeryBonus) attackDetail += ` (Archery +2)`;
@@ -25814,7 +26050,8 @@ function weaponOnHitRiders(ch, weapon) {
   if (typeof homebrewSubclassEffects === 'function' && weapon.kind) {
     homebrewSubclassEffects(ch).forEach(e => {
       if (e.kind !== 'rider') return;
-      const c = parseInt(e.count, 10), s = parseInt(e.sides, 10);
+      const sc = homebrewRiderDice(e);
+      const c = sc.count, s = sc.sides;
       if (!(c >= 1 && s >= 2)) return;
       const oncePerTurn = e.freq !== 'each_hit';
       const type = e.dtype || weapon.type;
@@ -25828,6 +26065,21 @@ function weaponOnHitRiders(ch, weapon) {
     });
   }
   return out;
+}
+
+// v0.93.1 — a rider's dice at the character's class level: data 'scale'
+// ({ "14": 2 } or { "14": { count: 2, sides: 8 } }) or the feature text
+// ("When you reach 14th level, the extra damage increases to 2d8").
+function homebrewRiderDice(e) {
+  let count = parseInt(e.count, 10), sides = parseInt(e.sides, 10);
+  const lvl = Number(e._classLevel) || 0;
+  const steps = [];
+  if (e.scale && typeof e.scale === 'object') Object.keys(e.scale).forEach(L => { const v = e.scale[L]; steps.push([Number(L), typeof v === 'object' ? v : { count: v }]); });
+  const re = /(?:reach|at)\s+(\d+)(?:st|nd|rd|th)\s+level,?\s+(?:the\s+)?(?:extra\s+)?damage\s+increases\s+to\s+(\d+)d(\d+)/ig;
+  let m; const txt = String(e._desc || '');
+  if (!steps.length) while ((m = re.exec(txt))) steps.push([Number(m[1]), { count: Number(m[2]), sides: Number(m[3]) }]);
+  steps.sort((a, b) => a[0] - b[0]).forEach(([L, v]) => { if (lvl >= L) { if (v.count) count = parseInt(v.count, 10); if (v.sides) sides = parseInt(v.sides, 10); } });
+  return { count, sides };
 }
 
 // Add Divine Smite damage to an attack (paladin only, melee, requires slot)
@@ -29476,7 +29728,9 @@ function wireDMEncounter() {
     const nBar = document.getElementById('dmNotesTitlebar');
     if (!nWin || !nBar) return;
     nBar.addEventListener('pointerdown', (ev) => {
-      if (ev.target.closest('[data-dm-notes-close]')) return;
+      // v0.93.1 — never start a drag from a titlebar button: the pointer capture
+      // swallowed the click, so "+ New" did nothing.
+      if (ev.target.closest('[data-dm-notes-close], button, a, input')) return;
       const rect = nWin.getBoundingClientRect();
       const offX = ev.clientX - rect.left, offY = ev.clientY - rect.top;
       try { nBar.setPointerCapture(ev.pointerId); } catch (e) {}
@@ -31269,6 +31523,7 @@ function renderBuild() {
   else if (stepName === 'subclass') body = renderStepSubclass();
   else if (stepName === 'style') body = renderStepStyle();
   else if (stepName === 'background') body = renderStepBackground();
+  else if (stepName === 'bgchoices') body = renderStepBgChoices();
   else if (stepName === 'abilities') body = renderStepAbilities();
   else if (stepName === 'skills') body = renderStepSkills();
   else if (stepName === 'spells') body = renderStepSpells();
@@ -31288,6 +31543,7 @@ function renderBuild() {
         if (stepName === 'style' && state.draft.klass) {
           if (!shouldHaveFightingStyle(state.draft)) return '';
         }
+        if (stepName === 'bgchoices' && !bgChoiceInfo(state.draft)) return '';
         let cls = 'step-dot';
         if (i < state.wizardStep) cls += ' done';
         if (i === state.wizardStep) cls += ' current';
@@ -31345,6 +31601,7 @@ function wizardStepNumber(stepName) {
     if (st === 'subclass') { const pl = d.klass ? subclassPickLevel(d.klass) : null; if (!pl || (d.level || 1) < pl) continue; }
     if (st === 'style' && !(d.klass && shouldHaveFightingStyle(d))) continue;
     if (st === 'spells' && !(d.klass && CLASSES[d.klass] && CLASSES[d.klass].spellcaster)) continue;
+    if (st === 'bgchoices' && !bgChoiceInfo(d)) continue;
     if (st === 'review') continue;
     n++;
     if (st === stepName) return n;
@@ -31376,6 +31633,7 @@ function canAdvance() {
     return !!d.fightingStyle;
   }
   if (step === 'background') return !!d.background;
+  if (step === 'bgchoices') return bgChoicesComplete(d) || isEditingExistingCharacter(d);
   if (step === 'abilities') {
     // v0.92.1 — a levelled character's scores include ASIs, so point-buy totals
     // don't apply when editing; don't trap the player on this step.
@@ -31473,8 +31731,11 @@ function materializeStartingInventory(d) {
     d.inventory.currency.gp = Math.max(0, (Number(d.inventory.currency.gp) || 0) - prevBgGold + (Number(bg.gold) || 0));
     d._bgGoldGranted = Number(bg.gold) || 0;
     d.backgroundFeature = bg.feature ? { ...bg.feature } : null;
-    d.backgroundEquipment = [...(bg.equipment || [])];
-    (bg.equipment || []).forEach(itemName => { if (!isDupe(itemName)) d.inventory.items.push({ id: rid('bg'), name: itemName, qty: 1, notes: 'Background equipment', source: 'background' }); });
+    // v0.93.1 — gear lines that are a choice ("Artisan's tools", "X or Y") use the pick.
+    const eqPicks = (d.bgChoices && d.bgChoices.equipment) || {};
+    const bgEquip = (bg.equipment || []).map((n, i) => eqPicks[i] || n);
+    d.backgroundEquipment = [...bgEquip];
+    bgEquip.forEach(itemName => { if (!isDupe(itemName)) d.inventory.items.push({ id: rid('bg'), name: itemName, qty: 1, notes: 'Background equipment', source: 'background' }); });
   }
 }
 
@@ -31489,6 +31750,7 @@ function startingEquipSignature(x) {
     klass: c.klass || null, background: c.background || null,
     w: (c.startingWeapons || []).slice().sort(), a: c.startingArmor || null, s: !!c.startingShield,
     pack: c.pack || null, items: (c.startEquipItems || []).map(i => (i && i.name) + 'x' + ((i && i.qty) || 1)).sort(),
+    bgeq: JSON.stringify((c.bgChoices && c.bgChoices.equipment) || {}), // v0.93.1
   });
 }
 function reconcileEditedStartingEquipment(d, done) {
@@ -31623,6 +31885,7 @@ function wireWizardNav() {
         }
         // Skip fighting-style step if class doesn't get one (or not yet at pick level)
         if (WIZARD_STEPS[nextStep] === 'style' && !shouldHaveFightingStyle(state.draft)) nextStep++;
+        if (WIZARD_STEPS[nextStep] === 'bgchoices' && !bgChoiceInfo(state.draft)) nextStep++;
         if (WIZARD_STEPS[nextStep] === 'spells' && !CLASSES[state.draft.klass].spellcaster) nextStep++;
         state.wizardStep = nextStep;
         saveDraftProgress();
@@ -31635,6 +31898,7 @@ function wireWizardNav() {
       if (state.wizardStep === 0) return;
       let prev = state.wizardStep - 1;
       if (WIZARD_STEPS[prev] === 'spells' && !CLASSES[state.draft.klass].spellcaster) prev--;
+      if (WIZARD_STEPS[prev] === 'bgchoices' && !bgChoiceInfo(state.draft)) prev--;
       if (WIZARD_STEPS[prev] === 'style' && !shouldHaveFightingStyle(state.draft)) prev--;
       if (WIZARD_STEPS[prev] === 'subclass') {
         const pickLvl = subclassPickLevel(state.draft.klass);
@@ -31927,6 +32191,48 @@ function renderStepBackground() {
       ` : ''}
     </section>
   `;
+}
+
+function renderStepBgChoices() {
+  const d = state.draft;
+  const bg = characterBackground(d);
+  const info = bgChoiceInfo(d);
+  if (!bg || !info) return `<section class="section"><div class="section-helper">Nothing to choose for this background.</div></section>`;
+  const c = d.bgChoices || {};
+  const pill = (attr, val, on, disabled, label, meta) => `<button class="card ${on ? 'selected' : ''}" ${attr}="${escape(val)}" ${disabled ? 'disabled style="opacity:0.35;cursor:not-allowed;"' : ''}><div class="card-name" style="font-size:15px;">${escape(label)}</div>${meta ? `<div class="card-meta">${escape(meta)}</div>` : ''}</button>`;
+  let html = '';
+  if (info.abilities) {
+    const picks = c.abilities || {};
+    const n = Object.keys(picks).filter(a => info.abilities.from.includes(a)).length;
+    html += `<div class="trait" style="margin-top:6px;"><strong>Ability Score Increase.</strong> <span class="trait-desc">Choose ${info.abilities.count} for +${info.abilities.amount} each${info.abilities.fixed.length ? ' (' + info.abilities.fixed.map(a => ABILITY_NAMES[a]).join(', ') + ' already +' + (bg.abilityIncrease[info.abilities.fixed[0]] || 1) + ')' : ''}. ${n}/${info.abilities.count} chosen.</span></div>
+      <div class="card-grid" style="margin-top:8px;grid-template-columns:repeat(3, 1fr);">${ABILITIES.map(a => {
+        const fixed = info.abilities.fixed.includes(a), on = !!picks[a];
+        return pill('data-bgc-ability', a, on, fixed || !info.abilities.from.includes(a) || (!on && n >= info.abilities.count), ABILITY_SHORT[a], fixed ? 'fixed' : on ? '+' + info.abilities.amount : '');
+      }).join('')}</div>`;
+  }
+  if (info.tools) {
+    const picks = (c.tools || []).filter(t => info.tools.options.includes(t));
+    html += `<div class="trait" style="margin-top:14px;"><strong>Tool Proficiency.</strong> <span class="trait-desc">Choose ${info.tools.count}. ${picks.length}/${info.tools.count} chosen.</span></div>
+      <div class="card-grid" style="margin-top:8px;grid-template-columns:repeat(2, 1fr);">${info.tools.options.map(t => pill('data-bgc-tool', t, picks.includes(t), !picks.includes(t) && picks.length >= info.tools.count, t, '')).join('')}</div>`;
+  }
+  if (info.languages) {
+    const known = characterLanguages({ ...d, bgChoices: { languages: [] } }).map(x => x.toLowerCase());
+    const picks = c.languages || [];
+    const parts = []; if (info.raceLanguages) parts.push('race ' + info.raceLanguages); if (info.bgLanguages) parts.push('background ' + info.bgLanguages);
+    html += `<div class="trait" style="margin-top:14px;"><strong>Languages.</strong> <span class="trait-desc">Choose ${info.languages} (${parts.join(', ')}). ${picks.length}/${info.languages} chosen.</span></div>
+      <div class="card-grid" style="margin-top:8px;grid-template-columns:repeat(3, 1fr);">${LANGUAGE_OPTIONS.filter(l => !known.includes(l.toLowerCase())).map(l => pill('data-bgc-lang', l, picks.includes(l), !picks.includes(l) && picks.length >= info.languages, l, '')).join('')}</div>`;
+  }
+  info.equipment.forEach(e => {
+    const cur = (c.equipment || {})[e.idx];
+    html += `<div class="trait" style="margin-top:14px;"><strong>Equipment: ${escape(e.label)}.</strong> <span class="trait-desc">Pick one.</span></div>
+      <select class="ai-input" data-bgc-equip="${e.idx}" style="margin-top:8px;width:100%;"><option value="">Choose…</option>${e.options.map(o => `<option value="${escape(o)}" ${cur === o ? 'selected' : ''}>${escape(o)}</option>`).join('')}</select>`;
+  });
+  return `
+    <section class="section">
+      <div class="section-label">Step ${wizardStepNumber('bgchoices')} — ${escape(bg.name)} Choices</div>
+      <div class="section-helper">Your background lets you choose these. They're applied to your sheet when you save.</div>
+      ${html}
+    </section>`;
 }
 
 function renderStepAbilities() {
@@ -36171,8 +36477,8 @@ function playerGearHTML(ch) {
         if (b.ac) parts.push(`AC ${fmtMod(b.ac)}`);
         if (b.save) parts.push(`saves ${fmtMod(b.save)}`);
         if (b.hp) parts.push(`max HP ${fmtMod(b.hp)}`);
-        if (b.attack) parts.push(`attack ${fmtMod(b.attack)}`);
-        if (b.damage) parts.push(`damage ${fmtMod(b.damage)}`);
+        // v0.93.1 — weapon-bound item bonuses are listed against their own weapon.
+        characterWeapons(ch).filter(w => w.itemBonusFrom).forEach(w => parts.push(`${escape(w.itemBonusFrom)}: ${fmtMod(w.magicBonus || 0)} with ${escape((WEAPONS[w.id] || {}).name || w.name)}`));
         return `
           <div class="attune-strip">
             <div class="attune-count ${aCount >= ATTUNEMENT_LIMIT ? 'full' : ''}">Attuned ${aCount}/${ATTUNEMENT_LIMIT}</div>
@@ -36423,9 +36729,11 @@ function renderWeaponInventoryCard(ch, w, isEquipped) {
   // Use weaponAbility-like logic for display
   const fakeWeapon = { kind: w.kind, props: w.props || [] };
   const ab = weaponAbility(fakeWeapon, ch);
-  const mag = w.magicBonus || 0;
+  // v0.93.1 — include the bonus of an item bound to this weapon (e.g. a staff's quarterstaff).
+  const cwv = isEquipped ? characterWeapons(ch).find(x => x.invId === w.id) : null;
+  const mag = cwv ? (cwv.magicBonus || 0) : (w.magicBonus || 0);
   const atkBonus = mod(f[ab]) + profBonus(ch.level) + mag + ((ch.fightingStyle === 'archery' && shouldHaveFightingStyle(ch) && w.kind === 'ranged') ? 2 : 0);
-  const dmgMod = mod(f[ab]) + mag;
+  const dmgMod = mod(f[ab]) + mag + ((cwv && cwv.itemDamageExtra) || 0);
   // v0.21.155 — show the monk's effective Unarmed Strike die (Martial Arts),
   // matching the Play tab, instead of the stored 1d1. Same upgrade characterWeapons
   // applies; guarded to 5e (2024 monk attacks come from b55Attacks).
@@ -37917,7 +38225,7 @@ function renderActionsTab(ch) {
       // v0.91.2 — include the Archery fighting style, as the roll does.
       const archery = (ch.fightingStyle === 'archery' && shouldHaveFightingStyle(ch) && w.kind === 'ranged') ? 2 : 0;
       const atkBonus = mod(f[ab]) + profBonus(ch.level) + mag + archery;
-      const dmgBonus = mod(f[ab]) + rageDamageBonus(ch, w) + mag;
+      const dmgBonus = mod(f[ab]) + rageDamageBonus(ch, w) + mag + (w.itemDamageExtra || 0);
       const rageHint = rageDamageBonus(ch, w) ? ` · rage +${rageDamageBonus(ch, w)}` : '';
       const showHint = hintText && (w.kind === 'melee' || hasSneak);
       return `
@@ -38245,7 +38553,7 @@ function renderBonusTab(ch) {
           const ab = weaponAbility(w, ch);
           const abM = mod(fsX[ab]);
           const magB = w.magicBonus || 0;
-          const dmgM = (twf ? abM : Math.min(abM, 0)) + magB;
+          const dmgM = (twf ? abM : Math.min(abM, 0)) + magB + (w.itemDamageExtra || 0);
           const atkB = abM + profBonus(ch.level) + magB;
           return `
             <div class="action-card weapon-card">
@@ -38519,7 +38827,7 @@ function renderReactionDialog(ch) {
           const ab = weaponAbility(w, ch);
           const mag = w.magicBonus || 0;
           const atkBonus = mod(f[ab]) + profBonus(ch.level) + mag + ((ch.fightingStyle === 'archery' && shouldHaveFightingStyle(ch) && w.kind === 'ranged') ? 2 : 0);
-          const dmgMod = mod(f[ab]) + mag;
+          const dmgMod = mod(f[ab]) + mag + (w.itemDamageExtra || 0);
           return `<button class="dialog-option" data-react-weapon="${w.id}">
             <span>${w.name}</span>
             <span class="dialog-option-meta">atk ${fmtMod(atkBonus)} · ${w.damage.count}d${w.damage.sides}${fmtMod(dmgMod)}</span>
@@ -38682,10 +38990,30 @@ function renderSpellDetailDialog(ch) {
         </div>
         ${canRitualCast(ch, spell, (ch.preparedSpells || []).includes(spell.name) || (ch.spells || []).includes(spell.name) || (featureSpellGrantInfo(ch, spell.name) || {}).reset === 'known')
           ? `<button class="btn primary" data-ritual-cast="${escape(spell.name)}" style="width:100%;margin-top:10px;">Cast as ritual (+10 min, no slot)</button>` : ''}
+        ${spellDetailManageButtons(ch, spell)}
         <button class="dialog-close" id="dialogClose">Close</button>
       </div>
     </div>
   `;
+}
+
+// v0.93.1 — unprepare / forget / erase from the spell's detail dialog (the
+// spell card has no expanded state any more, so these were unreachable).
+function spellDetailManageButtons(ch, spell) {
+  if (!ch || !spell) return '';
+  const n = escape(spell.name);
+  const out = [];
+  const st = 'style="width:100%;margin-top:8px;"';
+  if (spell.level === 0) {
+    if ((ch.cantrips || []).includes(spell.name)) out.push(`<button class="btn" data-forget-cantrip="${n}" data-from-detail="1" ${st}>Forget cantrip</button>`);
+  } else {
+    const m = prepModel(ch.klass, ch);
+    const prepared = (ch.preparedSpells || []).includes(spell.name);
+    if (m && m.type === 'prepared' && prepared) out.push(`<button class="btn" data-unprep="${n}" data-from-detail="1" ${st}>Remove preparation</button>`);
+    else if (m && m.type === 'known' && (ch.spells || []).includes(spell.name)) out.push(`<button class="btn" data-unprep="${n}" data-from-detail="1" ${st}>Forget spell</button>`);
+    if (classLevelFor(ch, 'wizard') >= 1 && (ch.spells || []).includes(spell.name) && !prepared) out.push(`<button class="btn" data-erase-spellbook="${n}" data-from-detail="1" ${st}>Erase from spellbook</button>`);
+  }
+  return out.join('');
 }
 
 function spellLevelHasUsableSlot(ch, level) {
@@ -39680,6 +40008,15 @@ function renderRangerChoiceDialog(ch, kind) {
 }
 
 
+// v0.93.1 — one spelling for a tool name: straight apostrophes, spaces for
+// underscores, single spaces, first letter capitalised, "tools"/"kit" lower-case.
+function normaliseToolName(v) {
+  let t = String(v || '').replace(/[’‘`´]/g, "'").replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!t) return '';
+  if (/^thieves'? ?tools?$/i.test(t) || /^thieves tools$/i.test(t)) return "Thieves' tools";
+  t = t.replace(/\b(Tools|Kit|Supplies|Set|Utensils|Instrument)\b/g, (m) => m.toLowerCase());
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
 function prettyProfName(v) {
   if (!v) return '';
   const map = {
@@ -39711,11 +40048,14 @@ const MULTICLASS_ENTRY_GRANTS = {
 function collectCharacterProficiencies(ch) {
   const armour = new Set();
   const weapons = new Set();
-  const tools = new Set();
+  // v0.93.1 — tools are de-duplicated on a normalised key so "Thieves' tools",
+  // "Thieves’ Tools" and "thieves_tools" are one entry.
+  const toolMap = new Map();
+  const tools = { add: (x) => { const disp = normaliseToolName(x); const k = disp.toLowerCase(); if (k && !toolMap.has(k)) toolMap.set(k, disp); } };
   const saves = new Set();
   const skills = new Set();
 
-  const addList = (set, arr) => (arr || []).forEach(x => { if (x) set.add(x); });
+  const addList = (set, arr) => (Array.isArray(arr) ? arr : (arr ? [arr] : [])).forEach(x => { if (x) set.add(x); });
   const addFromText = (txt) => {
     const d = String(txt || '').toLowerCase();
     if (/light armou?r/.test(d)) armour.add('light');
@@ -39725,7 +40065,7 @@ function collectCharacterProficiencies(ch) {
     if (/\bshields?\b/.test(d)) armour.add('shields');
     if (/simple weapons?/.test(d)) weapons.add('simple');
     if (/martial weapons?/.test(d)) weapons.add('martial');
-    if (/thieves[’'] tools?/.test(d)) tools.add('Thieves’ tools');
+    if (/thieves[’'‘`]? tools?/.test(d)) tools.add("Thieves' tools");
     if (/musical instrument/.test(d)) tools.add('Musical instrument');
   };
 
@@ -39757,10 +40097,14 @@ function collectCharacterProficiencies(ch) {
   // effects: [{ kind: 'proficiency', armor: [...], weapons: [...], tools: [...] }].
   if (typeof homebrewSubclassEffects === 'function') {
     homebrewSubclassEffects(ch).forEach(e => {
+      // v0.93.1 — the Subclass Forge saves tools as { kind: 'tool', tool: '...' };
+      // read that form too (and a 'tools' list on either kind).
+      if (e.kind === 'tool') { addList(tools, e.tool); addList(tools, e.tools); return; }
       if (e.kind !== 'proficiency') return;
       addList(armour, e.armor || e.armour);
       addList(weapons, e.weapons);
       addList(tools, e.tools);
+      addList(tools, e.tool);
     });
   }
   Object.keys(SKILLS).forEach(k => { if (skillProfMultiplier(ch, k) > 0) skills.add(k); });
@@ -39768,6 +40112,9 @@ function collectCharacterProficiencies(ch) {
   // Background tool proficiencies where the app has them.
   const bg = characterBackground(ch);
   if (bg && bg.tools) addList(tools, bg.tools.map(t => t.replace(/_/g, ' ')));
+  // v0.93.1 — tool proficiencies picked in the background choices step / stored on the character.
+  addList(tools, ch.bgChoices && ch.bgChoices.tools);
+  addList(tools, ch.toolProfs);
 
   const cleanArmour = [...armour];
   if (cleanArmour.includes('all')) {
@@ -39793,7 +40140,7 @@ function collectCharacterProficiencies(ch) {
   return {
     armour: cleanArmour.map(prettyProfName),
     weapons: cleanWeapons.map(prettyProfName),
-    tools: [...tools].map(prettyProfName),
+    tools: [...toolMap.values()],
     saves: [...saves].map(a => ABILITY_SHORT[a] || a.toUpperCase()),
     skills: [...skills].map(k => SKILLS[k]?.name || prettyProfName(k))
   };
@@ -39813,6 +40160,7 @@ function renderProficiencySummaryBlock(ch) {
     ${row('Shield', [shieldText])}
     ${row('Weapons', p.weapons)}
     ${row('Saving Throws', p.saves)}
+    ${(() => { const L = characterLanguages(ch); return L.length ? row('Languages', L) : ''; })()}
     ${row('Skills', p.skills)}
     ${p.tools.length ? row('Tools', p.tools) : ''}
   `;
@@ -43058,10 +43406,14 @@ function wirePlay(ch) {
     b.addEventListener('click', e => {
       e.stopPropagation();
       const name = b.dataset.forgetCantrip;
-      ch.cantrips = ch.cantrips.filter(n => n !== name);
+      const doIt = () => {
+        ch.cantrips = ch.cantrips.filter(n => n !== name);
         cleanInvalidInvocations(ch);
-      saveCharacter(ch);
-      render();
+        if (b.dataset.fromDetail) { state.ui.spellDetail = null; showToast(name + ' forgotten'); }
+        saveCharacter(ch);
+        render();
+      };
+      if (b.dataset.fromDetail) confirmDialog('Forget the cantrip ' + name + '?', doIt); else doIt();
     });
   });
 
@@ -43165,11 +43517,15 @@ function wirePlay(ch) {
     b.addEventListener('click', e => {
       e.stopPropagation();
       const name = b.dataset.eraseSpellbook;
-      ch.spells = ch.spells.filter(n => n !== name);
-      if (Array.isArray(ch.foundSpells)) ch.foundSpells = ch.foundSpells.filter(n => n !== name);
-      ch.preparedSpells = (ch.preparedSpells || []).filter(n => n !== name);
-      saveCharacter(ch);
-      render();
+      const doIt = () => {
+        ch.spells = ch.spells.filter(n => n !== name);
+        if (Array.isArray(ch.foundSpells)) ch.foundSpells = ch.foundSpells.filter(n => n !== name);
+        ch.preparedSpells = (ch.preparedSpells || []).filter(n => n !== name);
+        if (b.dataset.fromDetail) { state.ui.spellDetail = null; showToast(name + ' erased from your spellbook'); }
+        saveCharacter(ch);
+        render();
+      };
+      if (b.dataset.fromDetail) confirmDialog('Erase ' + name + ' from your spellbook?', doIt); else doIt();
     });
   });
 
@@ -43197,13 +43553,19 @@ function wirePlay(ch) {
       e.stopPropagation();
       const name = b.dataset.unprep;
       const m = prepModel(ch.klass, ch);
-      if (m && m.type === 'prepared') {
-        ch.preparedSpells = (ch.preparedSpells || []).filter(n => n !== name);
-      } else {
-        ch.spells = ch.spells.filter(n => n !== name);
-      }
-      saveCharacter(ch);
-      render();
+      const prepared = m && m.type === 'prepared';
+      const doIt = () => {
+        if (prepared) {
+          ch.preparedSpells = (ch.preparedSpells || []).filter(n => n !== name);
+        } else {
+          ch.spells = ch.spells.filter(n => n !== name);
+        }
+        if (b.dataset.fromDetail) { state.ui.spellDetail = null; showToast(prepared ? name + ' unprepared' : name + ' forgotten'); }
+        saveCharacter(ch);
+        render();
+      };
+      // Unpreparing is easy to undo (prepare it again); forgetting a known spell asks first.
+      if (b.dataset.fromDetail && !prepared) confirmDialog('Forget ' + name + '?', doIt); else doIt();
     });
   });
 
@@ -43944,7 +44306,7 @@ function wirePlay(ch) {
       // the Two-Weapon Fighting style is taken (then the full mod applies).
       const twfStyleActive = ch.fightingStyle === 'two_weapon' && (typeof shouldHaveFightingStyle !== 'function' || shouldHaveFightingStyle(ch));
       const dmgAbMod = (offhand && !twfStyleActive) ? Math.min(abMod, 0) : abMod;
-      const baseDamageMod = dmgAbMod + rageDamageBonus(ch, weapon) + duelingBonus + weaponMagicBonus;
+      const baseDamageMod = dmgAbMod + rageDamageBonus(ch, weapon) + duelingBonus + weaponMagicBonus + (weapon.itemDamageExtra || 0);
       const damageFormula = `${weapon.damage.count}d${weapon.damage.sides} ${fmtMod(baseDamageMod)} ${weapon.type}${offhand ? (twfStyleActive ? ' (off-hand · TWF style)' : ' (off-hand · no ability mod)') : ''}${rageDamageBonus(ch, weapon) ? ' (rage included)' : ''}${duelingBonus ? ' (Dueling +2)' : ''}${weaponMagicBonus ? ` (magic +${weaponMagicBonus})` : ''}${extraFormulaSuffix}`;
 
       const builtLines = [];
@@ -45789,7 +46151,7 @@ function homebrewSubclassEffects(ch) {
     if (!sc55 || !sc55._homebrew) return out;
     const lf = sc55.levelFeatures || sc55.features || {};
     Object.keys(lf).forEach(L => {
-      if (Number(L) <= (ch.level || 1)) (lf[L] || []).forEach(feat => (feat.effects || []).forEach(eff => out.push({ ...eff, _feature: feat.name, _level: Number(L) })));
+      if (Number(L) <= (ch.level || 1)) (lf[L] || []).forEach(feat => (feat.effects || []).forEach(eff => out.push({ ...eff, _feature: feat.name, _level: Number(L), _desc: feat.desc || '', _classLevel: ch.level || 1 })));
     });
     return out;
   }
@@ -45802,7 +46164,7 @@ function homebrewSubclassEffects(ch) {
     Object.keys(sc.levelFeatures).forEach(L => {
       if (Number(L) <= lvl) {
         (sc.levelFeatures[L] || []).forEach(feat => {
-          (feat.effects || []).forEach(eff => out.push({ ...eff, _feature: feat.name, _level: Number(L) }));
+          (feat.effects || []).forEach(eff => out.push({ ...eff, _feature: feat.name, _level: Number(L), _desc: feat.desc || '', _classLevel: lvl }));
         });
       }
     });
@@ -46670,6 +47032,9 @@ async function clInstall(entry) {
       if (!d.name) throw new Error('This background has no name.');
       rec.key = (prev && prev.key) || clRegistryKey(k => !!BACKGROUNDS[k] && !BACKGROUNDS[k]._community, file, null);
       rec.data = JSON.parse(JSON.stringify(d));
+      // v0.93.1 — keep the source text so the background choices step can read
+      // "+1 to Constitution and one other", tool and language choices.
+      if (file.description && !rec.data._sourceDesc) rec.data._sourceDesc = clStr(file.description, 4000);
       break;
     }
     case 'spell': {
@@ -49753,6 +50118,41 @@ function paintedShiftOverlay(o, dx, dy) {
 // Paint id at cols x rows (px per square) and encode it. The renderer paints
 // 8..40 squares a side, so a smaller grid paints at 8 and crops the centre —
 // still exactly one square per grid cell, never stretched.
+// v0.93.1 — paint in a Web Worker (OffscreenCanvas) when the browser allows,
+// so a slow phone's UI isn't frozen while a map paints. Any worker failure
+// falls back to painting on the page, as before.
+let _paintedWorker = null, _paintedWorkerBroken = false, _paintedWorkerSeq = 0;
+const _paintedWorkerWait = new Map();
+function paintedWorkerOk() {
+  if (_paintedWorkerBroken || typeof Worker === 'undefined' || typeof OffscreenCanvas === 'undefined') return false;
+  try { return !!new OffscreenCanvas(1, 1).getContext('2d') && typeof OffscreenCanvas.prototype.convertToBlob === 'function' && typeof createImageBitmap === 'function'; } catch (e) { return false; }
+}
+function paintedWorkerRender(id, cols, rows, px) {
+  return new Promise((resolve, reject) => {
+    try {
+      if (!_paintedWorker) {
+        _paintedWorker = new Worker(PAINTED_SCRIPT.replace(/[^/]*$/, '') + 'painted-worker.js');
+        _paintedWorker.onmessage = (e) => { const m = e.data || {}; const w = _paintedWorkerWait.get(m.jid); if (!w) return; _paintedWorkerWait.delete(m.jid); clearTimeout(w.t); m.ok ? w.res(m) : w.rej(new Error(m.error || 'worker failed')); };
+        _paintedWorker.onerror = (ev) => { try { ev.preventDefault(); } catch (e) {} _paintedWorkerBroken = true; _paintedWorkerWait.forEach(w => { clearTimeout(w.t); w.rej(new Error('worker error')); }); _paintedWorkerWait.clear(); try { _paintedWorker.terminate(); } catch (e) {} _paintedWorker = null; };
+      }
+      const jid = ++_paintedWorkerSeq;
+      const t = setTimeout(() => { _paintedWorkerWait.delete(jid); reject(new Error('worker timeout')); }, 90000);
+      _paintedWorkerWait.set(jid, { res: resolve, rej: reject, t });
+      _paintedWorker.postMessage({ jid, id, cols, rows, px });
+    } catch (e) { _paintedWorkerBroken = true; reject(e); }
+  });
+}
+async function paintedRenderBest(id, cols, rows, px) {
+  if (paintedWorkerOk()) {
+    try {
+      const m = await paintedWorkerRender(id, cols, rows, px);
+      const overlays = (m.ox || m.oy) ? (m.overlays || []).map(function (o) { return paintedShiftOverlay(o, -m.ox, -m.oy); }) : (m.overlays || []);
+      return { blob: m.blob, meta: { id: id, cols: cols, rows: rows, px: px, overlays: overlays } };
+    } catch (e) { _paintedWorkerBroken = true; }
+  }
+  return paintedRenderRecord(await loadPaintedMaps(), id, cols, rows, px);
+}
+// Pure (embedded in the projector via toString): no outer references.
 async function paintedRenderRecord(H, id, cols, rows, px) {
   const rc = Math.max(8, cols), rr = Math.max(8, rows);
   let canvas = await H.render(id, rc, rr, px);
@@ -49888,8 +50288,7 @@ function paintedEnsure(id, cols, rows) {
     try { rec = await idbGetMap(key); } catch (e) { rec = null; }
     if (!rec || !rec.blob) {
       source = 'render';
-      const H = await loadPaintedMaps();
-      rec = await paintedRenderRecord(H, id, cols, rows, px);
+      rec = await paintedRenderBest(id, cols, rows, px);
       try { await idbPutMap(key, rec); paintedRemember(key); } catch (e) {}
     }
     const v = { key, id, cols, rows, url: URL.createObjectURL(rec.blob), meta: rec.meta || { overlays: [] }, bytes: rec.blob.size };
@@ -52042,6 +52441,29 @@ document.addEventListener('click', e => {
     state.draft.background = backgroundBtn.dataset.background;
     const bg = characterBackground(state.draft);
     if (bg && bg.skills) state.draft.skills = (state.draft.skills || []).filter(k => !bg.skills.includes(k));
+    // v0.93.1 — a different background clears its choices.
+    if (state.draft._bgChoicesFor !== state.draft.background) { const keepLang = (state.draft.bgChoices || {}).languages; state.draft.bgChoices = keepLang && keepLang.length ? { languages: keepLang } : {}; state.draft._bgChoicesFor = state.draft.background; }
+    saveDraftProgress();
+    render();
+    return;
+  }
+  const bgcBtn = e.target.closest('[data-bgc-ability], [data-bgc-tool], [data-bgc-lang]');
+  if (bgcBtn && state.draft && WIZARD_STEPS[state.wizardStep] === 'bgchoices') {
+    const info = bgChoiceInfo(state.draft);
+    if (!info) return;
+    const c = state.draft.bgChoices = { ...(state.draft.bgChoices || {}) };
+    state.draft._bgChoicesFor = state.draft.background;
+    if (bgcBtn.dataset.bgcAbility && info.abilities) {
+      const a = bgcBtn.dataset.bgcAbility, picks = { ...(c.abilities || {}) };
+      if (picks[a]) delete picks[a]; else if (info.abilities.from.includes(a) && Object.keys(picks).length < info.abilities.count) picks[a] = info.abilities.amount;
+      c.abilities = picks;
+    } else if (bgcBtn.dataset.bgcTool && info.tools) {
+      const t = bgcBtn.dataset.bgcTool, picks = (c.tools || []).filter(x => info.tools.options.includes(x));
+      c.tools = picks.includes(t) ? picks.filter(x => x !== t) : (picks.length < info.tools.count ? [...picks, t] : picks);
+    } else if (bgcBtn.dataset.bgcLang && info.languages) {
+      const l = bgcBtn.dataset.bgcLang, picks = c.languages || [];
+      c.languages = picks.includes(l) ? picks.filter(x => x !== l) : (picks.length < info.languages ? [...picks, l] : picks);
+    }
     saveDraftProgress();
     render();
     return;
@@ -52156,6 +52578,17 @@ document.addEventListener('click', e => {
 
 // v0.29.0 - 5e starting-equipment per-line picker: dropdown change handling.
 document.addEventListener('change', (e) => {
+  // v0.93.1 — background gear choice ("Artisan's tools" -> Smith's tools).
+  const bgEq = e.target.closest('[data-bgc-equip]');
+  if (bgEq && state.draft) {
+    const c = state.draft.bgChoices = { ...(state.draft.bgChoices || {}) };
+    c.equipment = { ...(c.equipment || {}) };
+    if (bgEq.value) c.equipment[bgEq.dataset.bgcEquip] = bgEq.value; else delete c.equipment[bgEq.dataset.bgcEquip];
+    state.draft._bgChoicesFor = state.draft.background;
+    saveDraftProgress();
+    render();
+    return;
+  }
   const optSel = e.target.closest('[data-se-opt]');
   if (optSel) {
     const d = state.draft; if (!d) return;
@@ -52711,7 +53144,7 @@ render();
 // control the page reloads once by itself unless you are mid-edit (typing, a
 // popup open, or the character builder), in which case the toast stays up.
 (function () {
-  const APP_VERSION = 'v0.93.0';
+  const APP_VERSION = 'v0.93.1';
   window.HEARTH_VERSION = APP_VERSION;
 
   function hearthHasUnsavedEdits() {
