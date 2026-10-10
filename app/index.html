@@ -7931,6 +7931,728 @@ body.hearth-wide .app {
   .dialog-backdrop.confirm-backdrop { align-items: center; padding: 16px; z-index: 300; }
   .dialog-backdrop.confirm-backdrop .dialog { max-width: 420px; border: 1px solid var(--rule-soft, rgba(184,137,61,0.4)); border-top: 3px double var(--leather, #8a5a2b); box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
 </style>
+<style id="hearthRestyle130">
+/* Generated: every head rule that set a monospace face. Small labels (<11px) become a readable sans label; larger mono text keeps its size, swaps to sans with tabular figures. */
+html:root :is(.se-line-label,
+  .points-remaining,
+  .ref-pill,
+  .dm-xp-diff,
+  .dm-diff-btn,
+  .cm-run-stats,
+  .os-stepval,
+  .cs-ab-v,
+  .dm-map-exit,
+  .dm-map-project,
+  .dm-map-tool,
+  .dm-map-dim,
+  .dm-aoe-label,
+  .armor-bonus-btn,
+  .ms-panel-count,
+  .cl-cat-count,
+  .aoe-size-val,
+  .aoe-size-preset,
+  .dm-battle-track-empty,
+  .dm-proj-steps,
+  .dm-proj-dontshow,
+  .dm-run-exit,
+  .dm-run-round,
+  .run-card-token.boss,
+  .run-card-hptext,
+  .run-hp-btn,
+  .ds-btn,
+  .ds-result,
+  .run-enemy-amt,
+  .run-enemy-act,
+  .dm-run-tool,
+  .dm-hp-btn,
+  .dm-hp-val,
+  .enemy-search,
+  .enemy-row-qty,
+  .dm-tie-badge,
+  .hp-label,
+  .hp-quick-btn,
+  .companion-hp-btn,
+  .ds-roll-btn,
+  .death-lock-pickup-btn,
+  .death-save-num-btn,
+  .death-save-roll-btn,
+  .asi-btn,
+  .item-added-toast,
+  .item-qty,
+  .active-charge-val,
+  .item-charge-val,
+  .roll-crit-note,
+  .weapon-magic-val,
+  .coin-val,
+  .coin-btn,
+  .forge-level-tab,
+  .xp-preset,
+  .flex-meta-prompt,
+  .skill-roll-mod,
+  .stat-edit-skill-mod,
+  .skills-edit-hint,
+  .skills-edit-mod,
+  .skill-choice-btn,
+  .roll-outcome-formula,
+  .roll-outcome-detail,
+  .roll-outcome-empowered-label,
+  .roll-die-chip-btn,
+  .arcane-ward-label,
+  .arcane-ward-bar-text,
+  .third-eye-label,
+  .roll-next-btn,
+  .roll-line-btn,
+  .levelup-list-item,
+  .prep-status-count,
+  .levelup-stat-delta,
+  .skill-roll,
+  .file-pick-text,
+  html[data-theme="dark"] body.hearth-beyond-play .hp-slash,
+  html[data-theme="dark"] body.hearth-beyond-play .hp-max,
+  html[data-theme="dark"] .hp-slash,
+  html[data-theme="dark"] .hp-max,
+  html[data-theme="dark"] .stat-cell-score) {
+  font-family: var(--rs-sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+html:root :is(.settings-size-desc,
+  .home-brand-meta,
+  .header .subtitle,
+  .section-label,
+  .section-mini,
+  .card-meta,
+  .subrace-trait-chip,
+  .subrace-tap-hint,
+  .ability-label,
+  .ability-mod,
+  .stat-mode-btn,
+  .skill-ability,
+  .spell-meta,
+  .spell-level-header,
+  .ref-mon-meta,
+  .saved-item-tag,
+  .saved-item-menu-row,
+  .dm-game-label,
+  .dm-level-pick,
+  .dm-difficulty-label,
+  .dm-enc-picker-meta,
+  .dm-map-tool-label,
+  .atk-log-head,
+  .ms-pick-meta,
+  .cl-chip-n,
+  .dm-map-hint,
+  .dm-maplib-cat,
+  .dm-maplib-name,
+  .dm-xp-label,
+  .dm-run-turnpos,
+  .run-card-sub,
+  .run-status-chip,
+  .run-no-status,
+  .ds-title,
+  .ds-label,
+  .ds-mini,
+  .run-enemy-list-label,
+  .run-enemy-token.boss,
+  .run-enemy-hp,
+  .boss-scale-note,
+  .statblock-abilities,
+  .statblock-head,
+  .dm-tile-init-lbl,
+  .dm-tile-kind,
+  .dm-status-pill,
+  .dm-tile-conc-tag,
+  .dm-tile-mini,
+  .enemy-cr-chip,
+  .enemy-row-meta,
+  .enemy-row-add,
+  .enemy-qty-label,
+  .dm-status-choice,
+  .skills-under-stats-btn,
+  .vital-stat-l,
+  .vital-speeds-extra,
+  .vital-stat-suffix,
+  .effect-meta,
+  .boost-meta,
+  .effect-end-btn,
+  .effect-start-btn,
+  .tactical-toggles-label,
+  .tactical-chip,
+  .resources-label,
+  .defenses-label,
+  .defense-chip-type,
+  .defense-chip-src,
+  .resource-count-max,
+  .slot-cluster-label,
+  .slots-meta,
+  .action-tab,
+  .companions-add-btn,
+  .companions-mini-btn,
+  .racial-spell-tag,
+  .action-card-meta,
+  .conc-mark,
+  .free-cast-mark,
+  .spell-expanded-meta,
+  .spell-section-slots,
+  .layered-section-label,
+  .layered-add-sub,
+  .tab-header-add,
+  .defense-meta,
+  .browse-section-head,
+  .browse-subsection-head,
+  .statblock-ab-l,
+  .statblock-ab-m,
+  .companion-hp-formula,
+  .companion-hp-warn,
+  .browse-damage,
+  .browse-scaling,
+  .browse-badge,
+  .browse-action-btn,
+  .weapon-card-hint,
+  .stat-cell-label,
+  .stat-cell-save,
+  .misc-stat-label,
+  .stats-bar-hint,
+  .concentration-end,
+  .ds-group-label,
+  .death-saves-hint,
+  .death-lock-feature-meta,
+  .death-lock-feature-btn,
+  .death-outcome-btn,
+  .death-save-side-title,
+  .death-save-rules,
+  .death-survival-title,
+  .asi-ability,
+  .gear-section-label,
+  .gear-card-meta,
+  .gear-card-btn,
+  .bc-counter,
+  .bm-tag,
+  .gear-add-btn,
+  .gear-edit-btn,
+  .currency-label,
+  .shield-meta,
+  .shield-toggle,
+  .item-toggle-btn,
+  .attune-tag,
+  .attune-count,
+  .active-count,
+  .active-attune-tag,
+  .active-item-effects,
+  .active-charge-rec,
+  .attune-bonuses,
+  .item-mech,
+  .weapon-magic-tag,
+  .weapon-onhit-tag,
+  .weapon-magic-btn.wide,
+  .item-charge-label,
+  .item-charge-rec,
+  .roll-weapon-note,
+  .weapon-magic-label,
+  .layered-option-helper,
+  .layered-btn,
+  .roll-log-header,
+  .adv-mini-btn,
+  .roll-log-detail,
+  .cond-strip-label,
+  .cond-pill,
+  .light-label,
+  .light-btn,
+  .coin-strip-label,
+  .coin-name,
+  .dialog-option-meta,
+  .dialog-close,
+  .forge-step-dot,
+  .forge-section-label,
+  .forge-review-level-title,
+  .forge-homebrew-badge,
+  .xp-label,
+  .xp-numbers,
+  .xp-action,
+  .xp-to-next,
+  .subclass-nag-btn,
+  .flex-cast-cost,
+  .flex-cast-btn,
+  .meta-pick-flag,
+  .adv-toggle,
+  .skill-group-label,
+  .stat-edit-sub,
+  .stat-edit-roll-label,
+  .stat-edit-skills-label,
+  .skills-edit-legend,
+  .skills-edit-group-title,
+  .skill-choice-meta,
+  .roll-meta-line,
+  .roll-line-locked-note,
+  .roll-line-label,
+  .roll-line-detail,
+  .roll-line-adv,
+  .crit-badge,
+  .prep-status-hint,
+  .spell-level-divider .spell-section-slots,
+  .spellbook-slots-title,
+  .spellbook-slot-label,
+  .spell-unavailable-note,
+  .ritual-mark,
+  .spell-unprep-btn,
+  .levelup-stat-label,
+  .hp-control-label,
+  .hp-apply-btn,
+  .feature-lvl,
+  .cdev-jump-btn,
+  .cdev-prof,
+  .cdev-current-tag,
+  .cdev-slots,
+  .cdev-feats-label,
+  .ability-readout .a-name,
+  .ability-readout .a-mod,
+  .stat-list-ability,
+  .spell-card-meta,
+  .spell-card-stats,
+  .legal-note,
+  .welcome-note,
+  .ruleset-card-meta,
+  .home-tile-meta,
+  .ruleset-switch-btn,
+  .ai-finding-title,
+  .ai-output,
+  .ai-progress,
+  html[data-theme="dark"] body.hearth-beyond-play .play-subtitle,
+  html[data-theme="dark"] body.hearth-beyond-play .hp-label,
+  html[data-theme="dark"] .hp-label,
+  html[data-theme="dark"] body.hearth-beyond-play .vital-stat-l,
+  html[data-theme="dark"] .vital-stat-l,
+  html[data-theme="dark"] body.hearth-beyond-play .vital-stat-suffix,
+  html[data-theme="dark"] .vital-stat-suffix,
+  html[data-theme="dark"] .stat-cell-label,
+  html[data-theme="dark"] .stat-cell-save,
+  html[data-theme="dark"] .section-label,
+  html[data-theme="dark"] .strip-label,
+  html[data-theme="dark"] .resources-label,
+  html[data-theme="dark"] body.hearth-beyond-play .section-label,
+  html[data-theme="dark"] body.hearth-beyond-play .resources-label,
+  html[data-theme="dark"] body.hearth-beyond-play .strip-label) {
+  font-family: var(--rs-sans);
+  font-size: var(--rs-label-size);
+  font-weight: 600;
+  letter-spacing: var(--rs-label-track);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==================================================================
+   Hearth 1.3.0 restyle (proposal) — "bound in leather, lit by candle".
+   One self-contained layer on top of the existing styles: theme tokens
+   first, then components. Remove this <style> block to roll back.
+   Colour rules kept: gold = whose turn, blue = DM selection (no new
+   gold/blue states are introduced here; turn/selection rules are left
+   untouched). Safe-area padding is left to the v0.93.1 rules. No
+   entrance animations on dialogs (they re-render; see v0.14.11).
+   ================================================================== */
+:root {
+  /* radius scale */
+  --rs-r-xs: 6px;  --rs-r-sm: 8px;  --rs-r-md: 12px;
+  --rs-r-lg: 14px; --rs-r-xl: 20px; --rs-r-pill: 999px;
+  /* motion */
+  --rs-dur: 170ms; --rs-ease: cubic-bezier(.2, .7, .2, 1);
+  /* type */
+  --rs-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --rs-serif: Georgia, 'Times New Roman', serif;
+  --rs-label-size: 11px; --rs-label-track: 0.06em;
+  /* spacing */
+  --rs-gap: 14px; --rs-pad: 16px;
+  /* touch */
+  --rs-touch: 44px;
+  /* parchment theme surfaces */
+  --ink-faded: #6e5230;                       /* was #8a6a40 (3.3:1) → 5:1 */
+  --rs-label-ink: #6a4d2b;
+  --rs-card: linear-gradient(180deg, rgba(255, 249, 232, .55) 0%, rgba(255, 249, 232, .12) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(120, 80, 30, .06), rgba(120, 80, 30, .02)), var(--page-deep);
+  --rs-card-border: rgba(122, 88, 40, .30);
+  --rs-gold-line: rgba(168, 124, 56, .55);
+  --rs-gold-soft: rgba(168, 124, 56, .16);
+  --rs-shadow-1: 0 1px 1px rgba(70, 42, 12, .08), 0 2px 6px rgba(70, 42, 12, .08);
+  --rs-shadow-2: 0 1px 2px rgba(70, 42, 12, .10), 0 6px 18px rgba(70, 42, 12, .12);
+  --rs-shadow-3: 0 2px 6px rgba(40, 22, 6, .18), 0 18px 48px rgba(40, 22, 6, .30);
+  --rs-inset: inset 0 1px 0 rgba(255, 252, 240, .55);
+  --rs-btn: linear-gradient(180deg, #4b2f1d 0%, #36210f 100%);
+  --rs-btn-hover: linear-gradient(180deg, #5a3a24 0%, #3e2614 100%);
+  --rs-btn-ink: #f3e3c0;
+  --rs-btn2: linear-gradient(180deg, rgba(255, 249, 232, .55), rgba(255, 249, 232, .15)), var(--page-deep);
+  --rs-focus: #9a6a1c;
+  --rs-backdrop: rgba(30, 18, 8, .55);
+}
+html[data-theme="dark"] {
+  --ink-faded: #b9a27a;                       /* was #a08a60 → 6.3:1 on cards */
+  --rs-label-ink: #c4ad84;
+  --rs-card: linear-gradient(180deg, rgba(255, 214, 150, .065) 0%, rgba(255, 214, 150, .015) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(212, 164, 90, .20);
+  --rs-gold-line: rgba(212, 160, 75, .55);
+  --rs-gold-soft: rgba(212, 160, 75, .14);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(255, 226, 170, .07);
+  --rs-btn: linear-gradient(180deg, #7a5030 0%, #5c3a20 100%);
+  --rs-btn-hover: linear-gradient(180deg, #8a5c38 0%, #684226 100%);
+  --rs-btn-ink: #fbefd6;
+  --rs-btn2: linear-gradient(180deg, rgba(255, 214, 150, .08), rgba(255, 214, 150, .02)), #2a1f16;
+  --rs-focus: #e2b45e;
+  --rs-backdrop: rgba(6, 4, 2, .70);
+}
+
+/* ---------- motion & focus ---------- */
+html:root :is(.btn, .tab, .forge-tab, .home-tile, .action-tab-card, .action-tab, .action-roll-btn,
+  .tab-header-add, .gear-edit-btn, .gear-card-btn, .gear-add-btn, .shield-toggle, .rest-btn, .xp-action,
+  .companions-add-btn, .cond-pill, .chip, .ai-pill, .forge-pill, .dm-map-tool, .dm-tile-mini, .dm-hp-btn,
+  .back-btn, .hearth-menu-btn, .hp-btn, .hp-quickstep-btn, .coin-btn, .skills-under-stats-btn, .stat-cell,
+  .vital-stat-btn, .gear-summary-card, .file-pick-btn, .weapon-magic-btn, .dm-map-exit, .dm-map-project,
+  input, select, textarea) {
+  transition: background-color var(--rs-dur) var(--rs-ease), border-color var(--rs-dur) var(--rs-ease),
+    box-shadow var(--rs-dur) var(--rs-ease), color var(--rs-dur) var(--rs-ease), transform var(--rs-dur) var(--rs-ease),
+    filter var(--rs-dur) var(--rs-ease);
+}
+html:root :is(button, [role="button"], [role="tab"], a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--rs-focus);
+  outline-offset: 2px;
+}
+html:root .forge-tab:focus-visible { outline-offset: -3px; }
+
+/* ---------- page & header ---------- */
+html:root .header {
+  border-radius: var(--rs-r-xl);
+  box-shadow: var(--rs-shadow-2), var(--rs-inset);
+  border-color: var(--rs-gold-line);
+}
+html:root .header .subtitle { color: #c9ad7a; letter-spacing: .16em; } /* the header plate is dark leather in both themes */
+
+/* ---------- main tab bar: a soft segmented control ---------- */
+html:root .tabs {
+  gap: 2px;
+  padding: 4px;
+  margin: 2px 0 22px;
+  border: 1px solid var(--rs-card-border);
+  border-radius: var(--rs-r-pill);
+  background: var(--rs-card-sunk);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, .12);
+}
+html:root .tab {
+  min-height: var(--rs-touch);
+  padding: 0 4px;
+  border-radius: var(--rs-r-pill);
+  font-size: 13.5px;
+  letter-spacing: .03em;
+  color: var(--ink-soft);
+}
+html:root .tab:hover { color: var(--ink); background: var(--rs-gold-soft); }
+html:root .tab.active {
+  color: var(--ink);
+  font-weight: 700;
+  background: var(--rs-card);
+  box-shadow: var(--rs-shadow-1), inset 0 0 0 1px var(--rs-gold-line);
+}
+html:root .tab.active::after {
+  width: 18px; height: 2px; bottom: 6px; border-radius: 2px;
+  background: var(--gold); box-shadow: none;
+}
+
+/* ---------- cards ---------- */
+html:root :is(.home-tile, .ai-card, .vitals, .gear-summary-card, .action-card, .gear-section, .gear-card,
+  .defense-item, .prep-status, .spellbook-slots-top, .spell-group, .cond-strip, .coin-strip, .xp-strip,
+  .slots-bar, .rest-status, .vellum-box, .card, .feature, .panel, .browse-row, .stat-card, .ability-card,
+  .settings-size-card, .saved-list .saved-row, .rules-home, .companions-row, .dm-map-top, .spell-card,
+  .option-card, .forge-saved-row, .cl-card) {
+  border-radius: var(--rs-r-md);
+  /* left edge colour is often meaningful (equipped, monster, player…), keep it */
+  border-top-color: var(--rs-card-border); border-right-color: var(--rs-card-border); border-bottom-color: var(--rs-card-border);
+}
+html:root :is(.home-tile, .ai-card, .vitals, .gear-summary-card, .gear-section, .defense-item, .prep-status,
+  .spellbook-slots-top, .cond-strip, .coin-strip, .xp-strip, .slots-bar, .rest-status, .vellum-box, .card,
+  .feature, .panel, .stat-card, .ability-card, .settings-size-card, .rules-home, .option-card, .spell-card) {
+  background: var(--rs-card);
+  box-shadow: var(--rs-shadow-1), var(--rs-inset);
+}
+/* nested cards sit "in" the parent rather than on it */
+html:root :is(.action-card, .gear-card, .spell-group, .companions-row, .browse-row, .saved-list .saved-row) {
+  background: var(--rs-card-sunk);
+  box-shadow: none;
+}
+html:root .gear-section { padding: 16px; margin-bottom: 12px; }
+html:root .gear-card { padding: 14px; }
+html:root .action-card { padding: 14px 16px; margin-bottom: 10px; }
+html:root .spell-group { overflow: hidden; }
+html:root .spell-group-title { border-radius: var(--rs-r-md) var(--rs-r-md) 0 0; background: transparent; }
+html:root .action-card-meta { color: var(--rs-label-ink); }
+
+/* coloured left-edge accents become soft inner bars that respect the radius */
+html:root :is(.defense-item, .prep-status, .spellbook-slots-top, .rest-status) {
+  border-left-width: 1px; border-left-color: var(--rs-card-border);
+}
+html:root .prep-status, html:root .rest-status { box-shadow: var(--rs-shadow-1), inset 3px 0 0 var(--gold); }
+html:root .spellbook-slots-top { box-shadow: var(--rs-shadow-1), inset 3px 0 0 var(--indigo); }
+html:root .defense-item { box-shadow: var(--rs-shadow-1), inset 3px 0 0 var(--moss); }
+
+/* home */
+html:root .home-tile {
+  border-left-width: 1px; border-left-color: var(--rs-card-border);
+  padding: 16px 18px;
+  min-height: 72px;
+  box-shadow: var(--rs-shadow-1), var(--rs-inset), inset 3px 0 0 var(--rs-gold-line);
+}
+html:root .home-tile.home-tile-create { box-shadow: var(--rs-shadow-1), var(--rs-inset), inset 3px 0 0 var(--gold); }
+@media (hover: hover) {
+  html:root .home-tile:hover { transform: translateY(-1px); box-shadow: var(--rs-shadow-2), var(--rs-inset), inset 3px 0 0 var(--gold); }
+}
+html:root .home-row { gap: var(--rs-gap); margin-bottom: var(--rs-gap); }
+html:root .home-menu-grid { gap: var(--rs-gap); }
+html:root .home-tile-side { border-radius: 0 var(--rs-r-md) var(--rs-r-md) 0; }
+html:root .home-tile-row > .home-tile { border-radius: var(--rs-r-md) 0 0 var(--rs-r-md); }
+html:root #content > .section:has(> .home-row),
+html:root .section:has(.home-row) { background: transparent; border: 0; box-shadow: none; padding: 0; }
+html:root .home-tile-name { font-size: 18px; }
+html:root .home-tile-meta { margin-top: 4px; color: var(--rs-label-ink); }
+html:root .section { margin-bottom: 24px; }
+
+/* ---------- labels: readable small caps-style sans ---------- */
+html:root :is(.section-label, .gear-section-label, .cond-strip-label, .coin-strip-label, .xp-label,
+  .slots-bar-label, .spellbook-slots-title, .dm-map-tool-label, .home-tile-meta, .vital-stat-l,
+  .stat-cell-label, .hp-label, .currency-label, .coin-name, .weapon-magic-label, .section-mini,
+  .spellbook-slot-label, .spell-section-slots, .forge-section-label, .dm-tile-kind, .legal-note,
+  .stats-bar-hint, .prep-status-hint, .dm-map-hint, .home-games-label) {
+  color: var(--rs-label-ink);
+}
+html:root :is(.stats-bar-hint, .prep-status-hint, .dm-map-hint, .legal-note) {
+  text-transform: none; letter-spacing: .01em; font-weight: 500; line-height: 1.5;
+}
+html:root .dm-tile-init-lbl, html:root .slot-cluster-label { font-size: 10px; letter-spacing: .04em; }
+
+/* ---------- buttons ---------- */
+html:root .btn {
+  min-height: var(--rs-touch);
+  border-radius: var(--rs-r-sm);
+  padding: 11px 16px;
+  font-size: 14px;
+  letter-spacing: .03em;
+  background: var(--rs-btn2);
+  border: 1px solid var(--rs-card-border);
+  box-shadow: var(--rs-shadow-1), var(--rs-inset);
+}
+html:root .btn:hover:not(:disabled) {
+  background: var(--rs-btn2); color: var(--ink);
+  border-color: var(--rs-gold-line);
+  box-shadow: var(--rs-shadow-2), var(--rs-inset);
+}
+html:root .btn:active:not(:disabled) { transform: translateY(1px); box-shadow: var(--rs-shadow-1); }
+html:root .btn.primary, html:root .action-roll-btn:not(.prep):not(.free-cast):not(.muted):not(.disabled), html:root .dm-tile-mini:not(.danger):not(.revive) {
+  background: var(--rs-btn);
+  color: var(--rs-btn-ink);
+  border: 1px solid rgba(212, 160, 75, .45);
+  box-shadow: var(--rs-shadow-1), inset 0 1px 0 rgba(255, 220, 160, .18);
+}
+html:root .btn.primary:hover:not(:disabled), html:root .action-roll-btn:not(.prep):not(.free-cast):not(.muted):not(.disabled):hover, html:root .dm-tile-mini:not(.danger):not(.revive):hover {
+  background: var(--rs-btn-hover); color: var(--rs-btn-ink); border-color: var(--gold);
+}
+html:root .btn.ghost { box-shadow: none; background: transparent; border-color: transparent; }
+html:root .action-roll-btn { min-height: 40px; min-width: 76px; border-radius: var(--rs-r-sm); font-size: 14px; }
+html:root .dm-tile-mini { border-radius: var(--rs-r-sm); font-size: 11px; }
+
+/* small outline actions: consistent quiet buttons with a gold edge */
+html:root :is(.tab-header-add, .gear-edit-btn, .gear-card-btn, .shield-toggle, .rest-btn, .xp-action,
+  .companions-add-btn, .skills-under-stats-btn, .file-pick-btn) {
+  min-height: 36px; padding: 0 14px; border-radius: var(--rs-r-sm);
+  font-family: var(--rs-sans); font-size: 12px; font-weight: 600; letter-spacing: .06em;
+  position: relative;
+}
+html:root :is(.tab-header-add, .gear-edit-btn, .gear-card-btn:not(.danger):not(.disabled), .shield-toggle, .rest-btn, .xp-action:not(.levelup),
+  .companions-add-btn, .skills-under-stats-btn, .file-pick-btn) {
+  padding: 0 14px;
+  border-radius: var(--rs-r-sm);
+  border: 1px solid var(--rs-gold-line);
+  background: var(--rs-btn2);
+  color: var(--ink);
+  font-family: var(--rs-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  box-shadow: var(--rs-shadow-1), var(--rs-inset);
+  position: relative;
+}
+/* 44px touch target without making the buttons look chunky */
+html:root :is(.tab-header-add, .gear-edit-btn, .gear-card-btn, .shield-toggle, .rest-btn, .xp-action,
+  .companions-add-btn, .weapon-magic-btn, .cond-pill, .dm-map-tool, .dm-tile-mini, .coin-btn, .hp-quickstep-btn,
+  .back-btn, .hearth-menu-btn, .action-roll-btn, .dm-hp-btn, .dm-map-exit, .dm-tile-rename-btn, .dm-hp-val,
+  .aoe-color-chip, .char-popup-close, .item-delete, .item-qty-btn)::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 50%;
+  height: max(100%, var(--rs-touch)); transform: translateY(-50%);
+}
+html:root :is(.weapon-magic-btn, .cond-pill, .dm-map-tool, .dm-tile-mini, .coin-btn, .hp-quickstep-btn, .back-btn, .hearth-menu-btn, .action-roll-btn, .dm-hp-btn, .dm-map-exit, .dm-tile-rename-btn, .dm-hp-val, .aoe-color-chip, .char-popup-close, .item-delete, .item-qty-btn) { position: relative; }
+html:root .rest-btn, html:root .skills-under-stats-btn { min-height: var(--rs-touch); }
+html:root .skills-under-stats-btn { border-radius: var(--rs-r-pill); }
+@media (hover: hover) {
+  html:root :is(.tab-header-add, .gear-edit-btn, .gear-card-btn:not(.danger):not(.disabled), .shield-toggle, .rest-btn, .xp-action:not(.levelup),
+    .companions-add-btn, .skills-under-stats-btn, .file-pick-btn):hover {
+    border-color: var(--gold); background: var(--rs-btn2); color: var(--ink);
+    box-shadow: var(--rs-shadow-2), var(--rs-inset);
+  }
+}
+html:root .gear-add-btn {
+  min-height: var(--rs-touch);
+  border-radius: var(--rs-r-sm);
+  border: 1px dashed var(--rs-gold-line);
+  font-family: var(--rs-sans); font-size: 12px; font-weight: 600; letter-spacing: .06em;
+}
+html:root .gear-add-btn:hover { background: var(--rs-gold-soft); border-style: solid; }
+
+/* hp controls */
+html:root .hp-btn { border-radius: var(--rs-r-sm); min-height: var(--rs-touch); font-family: var(--rs-sans); font-weight: 700; letter-spacing: .05em; }
+html:root .hp-input { border-radius: var(--rs-r-sm); min-height: var(--rs-touch); }
+html:root .hp-quickstep-btn { border-radius: var(--rs-r-sm); min-width: 36px; }
+html:root .back-btn { border-radius: var(--rs-r-sm); min-height: 40px; min-width: 40px; }
+html:root .hearth-menu-btn { min-width: 40px; min-height: 40px; }
+html:root .vital-stat { border-radius: var(--rs-r-md); box-shadow: var(--rs-shadow-1), var(--rs-inset); }
+
+/* ability scores: the inverted ink band becomes a leather plate */
+html:root .stats-bar {
+  border-radius: var(--rs-r-lg);
+  overflow: hidden;
+  background: linear-gradient(180deg, #3d2817 0%, #2a1b0f 100%);
+  box-shadow: var(--rs-shadow-2), inset 0 1px 0 rgba(255, 220, 160, .12);
+  border: 1px solid rgba(212, 160, 75, .35);
+  padding-bottom: 12px;
+}
+html:root .stats-bar-scores { background: transparent; gap: 1px; }
+html:root .stat-cell { border-radius: 0; background: rgba(255, 230, 190, .04); border-color: rgba(212, 160, 75, .14); }
+html:root .stat-cell:first-child { border-top-left-radius: var(--rs-r-lg); }
+html:root .stat-cell:last-child { border-top-right-radius: var(--rs-r-lg); }
+html:root .stats-bar .stat-cell-label, html:root .stats-bar .stat-cell-score { color: #c9b089; }
+html:root .stats-bar :is(.stat-cell-mod, .stat-cell-val) { color: #f6e7c6; }
+html:root .stats-bar .skills-under-stats-btn {
+  background: rgba(255, 230, 190, .06); color: #f3e3c0; border-color: rgba(212, 160, 75, .55);
+  box-shadow: inset 0 1px 0 rgba(255, 220, 160, .1);
+}
+
+/* action economy cards & sub-tabs */
+html:root .action-tab-card {
+  border-radius: var(--rs-r-md);
+  box-shadow: var(--rs-shadow-1), var(--rs-inset);
+}
+html:root .action-tab-card.active { box-shadow: var(--rs-shadow-2), inset 0 0 0 1px var(--gold); }
+html:root .action-tab {
+  min-height: var(--rs-touch);
+  border-radius: var(--rs-r-pill);
+  font-family: var(--rs-sans); font-size: 12px; font-weight: 600; letter-spacing: .08em;
+  border-color: transparent;
+}
+html:root .action-tab.active { background: var(--rs-card); box-shadow: var(--rs-shadow-1), inset 0 0 0 1px var(--rs-gold-line); }
+html:root .action-tab.active::after { display: none; }
+
+/* ---------- chips / pills ---------- */
+html:root :is(.chip, .cond-pill, .browse-badge, .ai-pill, .weapon-magic-btn, .dm-status-choice, .ref-pill, .attune-count) {
+  border-radius: var(--rs-r-pill);
+}
+html:root .cond-pill {
+  padding: 7px 12px;
+  font-family: var(--rs-sans);
+  font-size: 11px; font-weight: 600; letter-spacing: .06em;
+}
+html:root .cond-pill:not(.active) { background: var(--rs-card-sunk); border-color: var(--rs-card-border); }
+html:root .cond-pill:hover { border-color: var(--rs-gold-line); }
+html:root .cond-strip, html:root .coin-strip, html:root .xp-strip, html:root .slots-bar { padding: 14px 16px; }
+html:root :is(.coin-cell, .currency-cell, .spellbook-slot-chip) {
+  border-radius: var(--rs-r-sm);
+  background: var(--rs-card-sunk);
+  border-color: var(--rs-card-border);
+}
+html:root .coin-btn { border-radius: var(--rs-r-xs); }
+html:root .forge-pill { border-radius: var(--rs-r-md); }
+
+/* ---------- inputs ---------- */
+html:root :is(input[type="text"], input[type="number"], input[type="search"], input:not([type]), select, textarea,
+  .ai-input, .ai-select, .ai-textarea, .spell-filter-input, .spell-filter-select) {
+  border-radius: var(--rs-r-sm);
+}
+html:root :is(input[type="text"], input[type="search"], input:not([type]), select, .ai-input, .ai-select,
+  .spell-filter-input, .spell-filter-select) { min-height: var(--rs-touch); }
+html:root :is(input, select, textarea):focus { border-color: var(--rs-gold-line); }
+
+/* ---------- dialogs ---------- */
+html:root .dialog-backdrop { background: var(--rs-backdrop); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+html:root .dialog {
+  border: 1px solid var(--rs-card-border);
+  border-top: 1px solid var(--rs-gold-line);
+  border-radius: var(--rs-r-xl) var(--rs-r-xl) 0 0;
+  box-shadow: var(--rs-shadow-3), var(--rs-inset);
+  padding: 26px 22px calc(18px + env(safe-area-inset-bottom, 0px));
+}
+html:root[data-theme="dark"] .dialog {
+  background: radial-gradient(120% 60% at 50% 0%, rgba(212, 160, 75, .10), transparent 60%), #1c140d;
+}
+html:root .dialog::before {
+  content: ''; display: block; width: 40px; height: 4px; border-radius: 4px;
+  background: var(--rs-gold-line); opacity: .7; margin: -14px auto 14px;
+}
+@media (min-width: 600px) {
+  html:root .dialog-backdrop:not(.skills-dialog-backdrop) { align-items: center; padding: 24px; }
+  html:root .dialog { border-radius: var(--rs-r-xl); border-top-color: var(--rs-gold-line); padding-bottom: 18px; }
+  html:root .dialog::before { display: none; }
+}
+html:root .dialog-backdrop.confirm-backdrop .dialog {
+  border-radius: var(--rs-r-xl);
+  border: 1px solid var(--rs-gold-line);
+  padding-bottom: 18px;
+}
+html:root .dialog-backdrop.confirm-backdrop .dialog::before { display: none; }
+html:root .dialog-title { letter-spacing: .01em; color: var(--gold); }
+html:root:not([data-theme="dark"]) .dialog-title { color: var(--leather); }
+html:root .dialog :is(.btn) { min-height: 46px; }
+html:root .dialog-close, html:root [data-dialog-close] { min-width: var(--rs-touch); min-height: var(--rs-touch); border-radius: var(--rs-r-pill); }
+
+/* ---------- Forge tabs: same segmented control as the main bar ---------- */
+html:root .forge-tabs {
+  gap: 2px; padding: 4px; margin: 6px 0 16px;
+  border: 1px solid var(--rs-card-border);
+  border-radius: var(--rs-r-pill);
+  background: var(--rs-card-sunk);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, .12);
+}
+html:root .forge-tab {
+  min-height: var(--rs-touch); min-width: 72px; border: 0; border-radius: var(--rs-r-pill);
+  font-size: 14.5px; padding: 0 10px;
+}
+html:root .forge-tab[aria-selected="true"] {
+  color: var(--ink); background: var(--rs-card);
+  box-shadow: var(--rs-shadow-1), inset 0 0 0 1px var(--rs-gold-line);
+}
+html:root[data-theme="dark"] .forge-tab[aria-selected="true"] { color: var(--gold); }
+
+/* ---------- DM ---------- */
+html:root .dm-map-top { border-radius: var(--rs-r-lg); box-shadow: var(--rs-shadow-1), var(--rs-inset); background: var(--rs-card); }
+html:root .dm-map-tool { min-height: 38px; border-radius: var(--rs-r-sm); box-shadow: var(--rs-shadow-1), var(--rs-inset); }
+html:root .dm-map-tool:not(.on):not(.dm-map-addmap) { background: var(--rs-btn2); border-color: var(--rs-card-border); }
+html:root .dm-map-tool:hover { border-color: var(--rs-gold-line); }
+html:root .dm-map-project { border-radius: var(--rs-r-sm); box-shadow: var(--rs-shadow-1), inset 0 1px 0 rgba(255, 245, 220, .4); }
+html:root .dm-map-grid { border-radius: var(--rs-r-md); box-shadow: var(--rs-shadow-2); }
+/* combat cards: radius and depth only — the gold turn edge and the blue
+   selection stay exactly as they are */
+html:root .dm-tile { border-radius: var(--rs-r-md); }
+html:root .dm-tile:not(.active-turn):not(.dm-tile-highlight) { box-shadow: var(--rs-shadow-1); }
+html:root .dm-tile-init { border-radius: var(--rs-r-sm); }
+html:root .dm-hp-btn { border-radius: var(--rs-r-sm); min-height: 32px; }
+
+/* parchment theme: filter fields were invisible on the page; give them a sunk field */
+html:root:not([data-theme="dark"]) :is(.spell-filter-input, .spell-filter-select) {
+  background: rgba(255, 249, 232, .45);
+  border: 1px solid var(--rs-card-border);
+  box-shadow: inset 0 1px 2px rgba(70, 42, 12, .08);
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  :root, html[data-theme="dark"] { --rs-dur: 0ms; }
+  html:root .home-tile:hover, html:root .btn:active:not(:disabled) { transform: none; }
+}
+
+</style>
 </head>
 <body>
 <div class="app">
