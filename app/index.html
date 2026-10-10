@@ -8378,7 +8378,7 @@ html:root :is(.action-card, .gear-card, .spell-group, .companions-row, .browse-r
   box-shadow: none;
 }
 html:root .gear-section { padding: 16px; margin-bottom: 12px; }
-html:root .gear-card { padding: 14px; }
+html:root .gear-card { padding: 12px; }
 html:root .action-card { padding: 14px 16px; margin-bottom: 10px; }
 html:root .spell-group { overflow: hidden; }
 html:root .spell-group-title { border-radius: var(--rs-r-md) var(--rs-r-md) 0 0; background: transparent; }
@@ -8481,11 +8481,11 @@ html:root :is(.tab-header-add, .gear-edit-btn, .gear-card-btn:not(.danger):not(.
 html:root :is(.tab-header-add, .gear-edit-btn, .gear-card-btn, .shield-toggle, .rest-btn, .xp-action,
   .companions-add-btn, .weapon-magic-btn, .cond-pill, .dm-map-tool, .dm-tile-mini, .coin-btn, .hp-quickstep-btn,
   .back-btn, .hearth-menu-btn, .action-roll-btn, .dm-hp-btn, .dm-map-exit, .dm-tile-rename-btn, .dm-hp-val,
-  .aoe-color-chip, .char-popup-close, .item-delete, .item-qty-btn)::after {
+  .aoe-color-chip, .char-popup-close, .item-delete, .item-qty-btn, .dm-map-project)::after {
   content: ''; position: absolute; left: 0; right: 0; top: 50%;
   height: max(100%, var(--rs-touch)); transform: translateY(-50%);
 }
-html:root :is(.weapon-magic-btn, .cond-pill, .dm-map-tool, .dm-tile-mini, .coin-btn, .hp-quickstep-btn, .back-btn, .hearth-menu-btn, .action-roll-btn, .dm-hp-btn, .dm-map-exit, .dm-tile-rename-btn, .dm-hp-val, .aoe-color-chip, .char-popup-close, .item-delete, .item-qty-btn) { position: relative; }
+html:root :is(.weapon-magic-btn, .cond-pill, .dm-map-tool, .dm-tile-mini, .coin-btn, .hp-quickstep-btn, .back-btn, .hearth-menu-btn, .action-roll-btn, .dm-hp-btn, .dm-map-exit, .dm-tile-rename-btn, .dm-hp-val, .aoe-color-chip, .char-popup-close, .item-delete, .item-qty-btn, .dm-map-project) { position: relative; }
 html:root .rest-btn, html:root .skills-under-stats-btn { min-height: var(--rs-touch); }
 html:root .skills-under-stats-btn { border-radius: var(--rs-r-pill); }
 @media (hover: hover) {
@@ -8505,7 +8505,7 @@ html:root .gear-add-btn:hover { background: var(--rs-gold-soft); border-style: s
 
 /* hp controls */
 html:root .hp-btn { border-radius: var(--rs-r-sm); min-height: var(--rs-touch); font-family: var(--rs-sans); font-weight: 700; letter-spacing: .05em; }
-html:root .hp-input { border-radius: var(--rs-r-sm); min-height: var(--rs-touch); }
+html:root .hp-input { border-radius: var(--rs-r-sm); min-height: var(--rs-touch); font-family: var(--rs-sans); font-variant-numeric: tabular-nums; }
 html:root .hp-quickstep-btn { border-radius: var(--rs-r-sm); min-width: 36px; }
 html:root .back-btn { border-radius: var(--rs-r-sm); min-height: 40px; min-width: 40px; }
 html:root .hearth-menu-btn { min-width: 40px; min-height: 40px; }
@@ -8646,6 +8646,29 @@ html:root:not([data-theme="dark"]) :is(.spell-filter-input, .spell-filter-select
   box-shadow: inset 0 1px 2px rgba(70, 42, 12, .08);
 }
 
+
+/* ---------- 1.3.0 polish ---------- */
+.rs-sr { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* desktop: the segmented tab bar is capped and centred rather than spanning the page */
+@media (min-width: 900px) {
+  html:root .tabs { max-width: 640px; margin-left: auto; margin-right: auto; }
+}
+/* parchment theme: the small ability modifiers use the serif numerals like the scores */
+html:root:not([data-theme="dark"]) .stat-cell-mod {
+  font-family: var(--rs-serif); font-size: 14px; font-weight: 600; letter-spacing: 0;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+/* dense list metadata: readable sans, but a notch smaller so lists keep their rhythm */
+html:root :is(.spell-card-meta, .dm-xp-label, .gear-card-meta, .action-card-meta, .defense-meta, .shield-meta,
+  .dm-tile-kind, .dm-level-pick, .item-qty, .attune-bonuses, .home-tile-meta) {
+  font-size: 10px !important; letter-spacing: .03em !important;
+}
+html:root .spell-card-meta, html:root .dm-xp-label { font-size: 9.5px !important; letter-spacing: .02em !important; }
+html:root :is(.slots-bar-label, .effects-label, .boosts-label, .resource-meta, .hp-temp-pip) { font-family: var(--rs-sans); font-size: var(--rs-label-size); font-weight: 600; letter-spacing: var(--rs-label-track); }
+/* AoE custom colour: labelled, 44px tap area */
+html:root .aoe-color-custom { position: relative; min-width: var(--rs-touch); min-height: var(--rs-touch); justify-content: center; cursor: pointer; }
+html:root .aoe-color-custom input { width: 28px; height: 28px; border-radius: var(--rs-r-xs); }
+
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   :root, html[data-theme="dark"] { --rs-dur: 0ms; }
@@ -8688,7 +8711,7 @@ html:root:not([data-theme="dark"]) :is(.spell-filter-input, .spell-filter-select
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '1.2.0';
+const HEARTH_VERSION = '1.3.0';
 // ============================================================
 // SRD 5.1 DATA v2 - structured for in-app casting
 // All content here is from the SRD 5.1 (CC-BY-4.0)
@@ -23987,12 +24010,27 @@ function featureLiveNote(ch, f) {
 // Back-compat alias (older name).
 const monkFeatureLiveNote = featureLiveNote;
 
+// v1.3.0 — relative feat speed bonuses: speedBonus { all, walk, climb, swim, fly, burrow }.
+// "all" raises every speed the character already has (e.g. Skirmisher: { all: 10 }).
+function featSpeedBonusFor(ch, type) {
+  let t = 0;
+  try {
+    characterFeats(ch).forEach(f => {
+      const def = FEATS.find(x => x.id === f.id) || f;
+      const sb = def && def.speedBonus;
+      if (!sb || typeof sb !== 'object') return;
+      if (type === 'all') t += Number(sb.all) || 0;
+      else t += Number(sb[type]) || 0;
+    });
+  } catch (x) {}
+  return t;
+}
 function activeSpeedBonus(ch) {
   // v0.92.1 — community/homebrew feats can carry a fixed speed bonus (data.speed).
   const featSpeed = (hasFeat(ch, 'mobile') ? 10 : 0) + characterFeats(ch).reduce((t, f) => {
     const def = FEATS.find(x => x.id === f.id) || f;
     return t + (def && def.id !== 'mobile' ? (Number(def.speed) || 0) : 0);
-  }, 0);
+  }, 0) + featSpeedBonusFor(ch, 'all') + featSpeedBonusFor(ch, 'walk');
   // v0.20.82 — Feline Agility (Tabaxi). When the player taps "Use",
   // ch.felineAgilityActive flips true and stays so until they tap
   // Refresh after ending a turn without moving. While active, the
@@ -47416,10 +47454,11 @@ function characterOtherSpeeds(ch) {
   if (!ch) return out;
   let walk = 30;
   try { const rd = (typeof raceDataFor === 'function') ? raceDataFor(ch) : RACES[ch.race]; walk = ((rd && Number(rd.speed)) || 30) + activeSpeedBonus(ch); } catch (x) {}
+  const fromWalk = {};
   const add = (type, amount) => {
     if (!type || type === 'walk') return;
     const v = amount === 'walk' ? walk : Number(amount) || 0;
-    if (v > 0 && (!out[type] || v > out[type])) out[type] = v;
+    if (v > 0 && (!out[type] || v > out[type])) { out[type] = v; fromWalk[type] = amount === 'walk'; }
   };
   const scan = (src) => {
     if (!src) return;
@@ -47435,6 +47474,8 @@ function characterOtherSpeeds(ch) {
   } catch (x) {}
   try { characterFeats(ch).forEach(f => { const def = FEATS.find(x => x.id === f.id) || f; scan(def && { speeds: def.speeds }); }); } catch (x) {}
   hbEffectsOfKind(ch, 'speed').forEach(e => { if (e.type && e.type !== 'walk') add(e.type, e.amount); });
+  // v1.3.0 — relative feat bonuses. Speeds equal to the walking speed already include "all".
+  Object.keys(out).forEach(t => { out[t] += (fromWalk[t] ? 0 : featSpeedBonusFor(ch, 'all')) + featSpeedBonusFor(ch, t); });
   return out;
 }
 function otherSpeedsLineHtml(ch) {
@@ -48476,6 +48517,12 @@ function clNormaliseMagicItem(d, file) {
   };
 }
 // v1.1.2 — other movement speeds on community feats ({ climb: 30 }).
+function clSpeedBonus(v) {
+  if (!v || typeof v !== 'object') return null;
+  const out = {};
+  ['all', 'walk', 'climb', 'swim', 'fly', 'burrow'].forEach(k => { const n = clClampInt(v[k], 0, 30, 0); if (n >= 5) out[k] = n; });
+  return Object.keys(out).length ? out : null;
+}
 function clSpeeds(v) {
   if (!v || typeof v !== 'object') return null;
   const out = {};
@@ -48559,7 +48606,7 @@ async function clInstall(entry) {
       const prereq = clStr(d.prerequisite || d.prereq, 160);
       const featInc = clAbilityIncrease(d.abilityIncrease);
       const featSpeed = clClampInt(d.speed, 0, 30, 0);
-      rec.data = { name: clStr(d.name, 80), desc: (prereq ? 'Prerequisite: ' + prereq.replace(/^requires\s+/i, '') + '. ' : '') + clStr(d.desc, 3000), ...(prereq ? { prerequisite: prereq } : {}), ...(d.hpPerLevel ? { hpPerLevel: clClampInt(d.hpPerLevel, 0, 5, 0) } : {}), ...(featInc ? { abilityIncrease: featInc } : {}), ...(featSpeed ? { speed: featSpeed } : {}), ...(clSpeeds(d.speeds) ? { speeds: clSpeeds(d.speeds) } : {}) };
+      rec.data = { name: clStr(d.name, 80), desc: (prereq ? 'Prerequisite: ' + prereq.replace(/^requires\s+/i, '') + '. ' : '') + clStr(d.desc, 3000), ...(prereq ? { prerequisite: prereq } : {}), ...(d.hpPerLevel ? { hpPerLevel: clClampInt(d.hpPerLevel, 0, 5, 0) } : {}), ...(featInc ? { abilityIncrease: featInc } : {}), ...(featSpeed ? { speed: featSpeed } : {}), ...(clSpeeds(d.speeds) ? { speeds: clSpeeds(d.speeds) } : {}), ...(clSpeedBonus(d.speedBonus) ? { speedBonus: clSpeedBonus(d.speedBonus) } : {}) };
       break;
     }
     case 'monster': {
@@ -52108,8 +52155,8 @@ function renderDMMap() {
             <button class="dm-map-tool dm-aoe-tool ${state.ui.dmAoeTool === 'line' ? 'on' : ''}" data-aoe-tool="line">▬ Line</button>
             <button class="dm-map-tool dm-aoe-tool ${state.ui.dmAoeTool === 'square' ? 'on' : ''}" data-aoe-tool="square">■ Square</button>
             <span class="dm-map-tool-label">Colour</span>
-            ${AOE_SPELL_COLORS.map(sc => `<button class="aoe-color-chip ${state.ui.dmAoeColor === sc.color ? 'sel' : ''}" data-aoe-color="${sc.color}" title="${sc.label}" style="background:${sc.color};"></button>`).join('')}
-            <label class="aoe-color-custom" title="Any colour"><input type="color" data-aoe-color-custom="1" value="${(state.ui.dmAoeColor && /^#/.test(state.ui.dmAoeColor)) ? state.ui.dmAoeColor : '#d4673a'}" /></label>
+            ${AOE_SPELL_COLORS.map(sc => `<button class="aoe-color-chip ${state.ui.dmAoeColor === sc.color ? 'sel' : ''}" data-aoe-color="${sc.color}" title="${sc.label}" aria-label="AoE colour: ${sc.label}" aria-pressed="${state.ui.dmAoeColor === sc.color ? 'true' : 'false'}" style="background:${sc.color};"></button>`).join('')}
+            <label class="aoe-color-custom" title="Any colour"><span class="rs-sr">Custom AoE colour</span><input type="color" aria-label="Custom AoE colour" data-aoe-color-custom="1" value="${(state.ui.dmAoeColor && /^#/.test(state.ui.dmAoeColor)) ? state.ui.dmAoeColor : '#d4673a'}" /></label>
             <button class="dm-map-tool ${state.ui.dmRulerTool ? 'on' : ''}" data-ruler-tool="1" title="Tap-drag on the map to measure distance">📏 Measure</button>
             <button class="dm-map-tool ${state.ui.dmPointerMode ? 'on' : ''}" data-pointer-tool="1" title="Point on the projector — drag on the map (or right-click-drag)">${state.ui.dmPointerMode ? '👆 Pointing \u2014 tap to stop' : '👆 Point'}</button>
             <button class="dm-map-tool ${state.ui.dmGroupMode ? 'on' : ''}" data-group-tool="1" title="Group move — lasso to select, tap to deselect, drag any member to move the group">👥 Group</button>
@@ -56695,7 +56742,7 @@ try { linkBoot(); } catch (e) { console.warn('Hearth live game boot failed:', e)
 // control the page reloads once by itself unless you are mid-edit (typing, a
 // popup open, or the character builder), in which case the toast stays up.
 (function () {
-  const APP_VERSION = 'v1.2.0';
+  const APP_VERSION = 'v1.3.0';
   window.HEARTH_VERSION = APP_VERSION;
 
   function hearthHasUnsavedEdits() {
