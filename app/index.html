@@ -46573,10 +46573,13 @@ function renderHomebrewFeatureChoices(ch, featName) {
       <select class="ai-input" data-hb-choice="${escape(key)}" style="width:100%;max-width:260px;"><option value="">Choose…</option>${(e.options || []).map(k => `<option value="${escape(k)}"${cur === k ? ' selected' : ''}>${escape((SKILLS[k] && SKILLS[k].name) || k)}</option>`).join('')}</select></div>`;
   }).join('');
 }
-const HB_SPEED_WORDS = { climbing: 'climb', swimming: 'swim', flying: 'fly', burrowing: 'burrow' };
+const HB_SPEED_WORDS = { climbing: 'climb', swimming: 'swim', flying: 'fly', burrowing: 'burrow', climb: 'climb', swim: 'swim', fly: 'fly', burrow: 'burrow' };
 function hbSpeedsFromText(txt) {
   const out = [];
-  const re = /(?:^|[.!]\s+)([^.]*?)\byou (?:have|gain) a (climbing|swimming|flying|burrowing) speed (?:of (\d+) (?:feet|ft)|equal to your walking speed)([^.]*)/ig; let m;
+  // "Climbing speed 20 ft." / "Swim Speed of 30 feet" opening a sentence (built-in trait shorthand).
+  const re0 = /(?:^|[.!]\s+)(climbing|swimming|flying|burrowing|climb|swim|fly|burrow) speed (?:of )?(\d+) (?:feet|ft)/ig; let m0;
+  while ((m0 = re0.exec(String(txt || '')))) out.push({ type: HB_SPEED_WORDS[m0[1].toLowerCase()], amount: Number(m0[2]) });
+  const re = /(?:^|[.!]\s+)([^.]*?)\byou (?:have|gain) an? (climbing|swimming|flying|burrowing|climb|swim|fly|burrow) speed (?:of (\d+) (?:feet|ft)|equal to your walking speed)([^.]*)/ig; let m;
   while ((m = re.exec(String(txt || '')))) {
     const ctx = (m[1] + ' ' + String(m[4]).split(/,\s*and\b|;/)[0]).toLowerCase();
     if (/\b(until|while|during|for (?:1|one|an?) |whenever|when you use|as long as|when you reach)\b/.test(ctx)) continue;
