@@ -91,26 +91,30 @@
     const id = mx.getImageData(0, 0, w, h), d = id.data, N = P.noiseData, amp = o.noise == null ? 0.55 : o.noise, e = o.edge || 0.07;
     const ink = o.ink ? cv(w, h) : null, inkD = ink ? ink.getContext('2d').createImageData(w, h) : null, iw = o.inkW || 0.05;
     const ir = parseInt(INK.slice(1, 3), 16), ig = parseInt(INK.slice(3, 5), 16), ib = parseInt(INK.slice(5, 7), 16);
+    let bx0 = w, by0 = h, bx1 = -1, by1 = -1;   // v6: track the mask's bounding box so layer() only touches those pixels
     for (let i = 0; i < d.length; i += 4) {
       const v = d[i + 3] / 255 + (N[i] / 255 - 0.5) * amp;
       let a = (v - 0.5 + e) / (2 * e); a = a < 0 ? 0 : a > 1 ? 1 : a * a * (3 - 2 * a);
       d[i] = d[i + 1] = d[i + 2] = 255; d[i + 3] = a * 255;
+      if (d[i + 3] > 0) { const px = (i >> 2) % w, py = ((i >> 2) / w) | 0; if (px < bx0) bx0 = px; if (px > bx1) bx1 = px; if (py < by0) by0 = py; if (py > by1) by1 = py; }
       if (inkD) { const t = 1 - Math.abs(v - 0.5) / iw; if (t > 0) { inkD.data[i] = ir; inkD.data[i + 1] = ig; inkD.data[i + 2] = ib; inkD.data[i + 3] = Math.min(1, t * 1.6) * 255 * (o.inkA || 0.75); } }
     }
     mx.putImageData(id, 0, 0); if (ink) ink.getContext('2d').putImageData(inkD, 0, 0);
-    return { m, ink };
+    const bb = bx1 < 0 ? null : (() => { const x0 = Math.max(0, bx0 * 2 - 6), y0 = Math.max(0, by0 * 2 - 6); return [x0, y0, Math.min(P.W, bx1 * 2 + 8) - x0, Math.min(P.H, by1 * 2 + 8) - y0]; })();
+    return { m, ink, bb, empty: bx1 < 0 };
   };
   // Paint a texture (or any fillStyle maker) through a mask onto the main canvas.
   PP.layer = function (fill, mk, o) {
     o = o || {}; const P = this, t = P.tx;
+    if (mk && mk.empty) { if (mk.ink) P.x.drawImage(mk.ink, 0, 0, P.W, P.H); return; } const bb = mk && mk.bb; if (bb) { t.save(); t.beginPath(); t.rect(bb[0], bb[1], bb[2], bb[3]); t.clip(); }
     t.globalCompositeOperation = 'source-over'; t.globalAlpha = 1; t.clearRect(0, 0, P.W, P.H);
     t.fillStyle = typeof fill === 'string' && _imgs[fill] ? P.pat(t, fill, o) : fill; t.fillRect(0, 0, P.W, P.H);
     if (o.tint) { t.globalCompositeOperation = 'multiply'; t.fillStyle = o.tint; t.fillRect(0, 0, P.W, P.H); }
     if (o.lift) { t.globalCompositeOperation = 'screen'; t.fillStyle = o.lift; t.fillRect(0, 0, P.W, P.H); }
     if (o.tone !== 0) { t.globalCompositeOperation = 'soft-light'; t.globalAlpha = o.tone || 0.6; t.drawImage(P.noise, 0, 0, P.W, P.H); t.globalAlpha = 1; }
     if (mk) { t.globalCompositeOperation = 'destination-in'; t.drawImage(mk.m, 0, 0, P.W, P.H); }
-    t.globalCompositeOperation = 'source-over';
-    P.x.globalAlpha = o.alpha == null ? 1 : o.alpha; P.x.drawImage(P.tmp, 0, 0); P.x.globalAlpha = 1;
+    t.globalCompositeOperation = 'source-over'; if (bb) t.restore();
+    P.x.globalAlpha = o.alpha == null ? 1 : o.alpha; if (o.op) P.x.globalCompositeOperation = o.op; if (bb) P.x.drawImage(P.tmp, bb[0], bb[1], bb[2], bb[3], bb[0], bb[1], bb[2], bb[3]); else P.x.drawImage(P.tmp, 0, 0); P.x.globalAlpha = 1; P.x.globalCompositeOperation = 'source-over';
     if (mk && mk.ink) P.x.drawImage(mk.ink, 0, 0, P.W, P.H);
   };
   // geometry helpers (px)
@@ -140,6 +144,7 @@
       if (p.ao !== false) { ax.save(); p.sil(ax); ax.restore(); }
       if (p.ao2) { a2 = a2 || cv(P.W, P.H); const k = a2.getContext('2d'); k.fillStyle = '#000'; k.save(); p.sil(k); k.restore(); }
     }
+    if (P.capture) { const k = (P.capture.props = P.capture.props || cv(P.W, P.H)).getContext('2d'); k.fillStyle = k.strokeStyle = '#000'; for (const p of P.props) if ((p.z || 0) >= 15) { k.save(); p.sil(k); k.restore(); } }   // v6 animate(): what covers the water
     const x = P.x;
     x.globalAlpha = 0.55; x.drawImage(P.blur(ao, S * 0.45), 0, 0, P.W, P.H);
     if (a2) { x.globalAlpha = 0.8; x.drawImage(P.blur(a2, S * 0.2), 0, 0, P.W, P.H); }   // tight, dark contact AO along wall bases
@@ -148,7 +153,7 @@
     P.props = [];
   };
   // light: multiply by an ambient+lights map, coloured bloom, then a strong vignette
-  PP.finish = function (ambient, vign) {
+  PP.finish = function (ambient, vign, mid) {
     const P = this, L = cv(P.W, P.H), lx = L.getContext('2d'), x = P.x;
     lx.fillStyle = ambient; lx.fillRect(0, 0, P.W, P.H); lx.globalCompositeOperation = 'lighter';
     for (const l of P.lights) { const g = lx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r); g.addColorStop(0, hexA(l.col, l.i)); g.addColorStop(0.45, hexA(l.col, l.i * 0.45)); g.addColorStop(1, hexA(l.col, 0)); lx.fillStyle = g; lx.fillRect(l.x - l.r, l.y - l.r, l.r * 2, l.r * 2); }
@@ -156,6 +161,7 @@
     x.globalCompositeOperation = 'screen';
     for (const l of P.lights) { if (!l.bloom) continue; const r = l.r * 0.55, g = x.createRadialGradient(l.x, l.y, 0, l.x, l.y, r); g.addColorStop(0, hexA(l.col, l.bloom)); g.addColorStop(1, hexA(l.col, 0)); x.fillStyle = g; x.fillRect(l.x - r, l.y - r, r * 2, r * 2); }
     x.globalCompositeOperation = 'source-over';
+    if (mid) { const t = P.tx; t.globalCompositeOperation = 'source-over'; t.globalAlpha = 1; t.clearRect(0, 0, P.W, P.H); t.drawImage(P.c, 0, 0); x.globalAlpha = mid; x.globalCompositeOperation = 'screen'; x.drawImage(P.tmp, 0, 0); x.globalAlpha = 1; x.globalCompositeOperation = 'source-over'; }   // v6: midtone lift (screen with itself)
     const R = Math.hypot(P.W, P.H) / 2, g = x.createRadialGradient(P.W / 2, P.H / 2, R * 0.45, P.W / 2, P.H / 2, R);
     g.addColorStop(0, 'rgba(10,6,3,0)'); g.addColorStop(1, `rgba(10,6,3,${vign == null ? 0.72 : vign})`); x.fillStyle = g; x.fillRect(0, 0, P.W, P.H);
   };
@@ -277,7 +283,7 @@
   PP.water = function (draw, o) { o = o || {}; const P = this;
     if (o.shore !== false) P.layer('rgba(30,24,14,1)', P.mask(draw, { soft: 0.9, noise: 0.5, edge: 0.2 }), { alpha: 0.45, tone: 0 });
     const mk = P.mask(draw, { soft: o.soft || 0.35, noise: 0.5, ink: true, inkA: 0.65 });
-    P.layer(o.tex || 'water', mk, { tone: 0.2, tint: o.tint || '#c4dad2', tile: o.tile });
+    P.layer(o.tex || 'water', mk, { tone: 0.2, tint: o.tint || '#c4dad2', tile: o.tile }); if (P.capture) P.capture.water.push(mk.m);
     if (o.deep) P.layer(o.deepCol || 'rgba(6,26,32,1)', P.mask(o.deep, { soft: 1.0, noise: 0.4 }), { alpha: o.deepA || 0.5, tone: 0 });
     if (o.inside) { const rp = []; for (let i = 0; i < P.cols * P.rows * 0.6; i++) { const x = P.r(0, P.cols), y = P.r(0, P.rows); if (!o.inside(x, y)) continue; const l = P.r(0.15, 0.45); rp.push([x, y, x + l, y + P.r(-0.03, 0.03)]); } P.strokes(rp, o.glint || 'rgba(225,240,240,.28)', 0.022, 6); }
     return mk; };
@@ -359,6 +365,38 @@
   PP.tufts = function (n, ok, col) { const P = this, gb = []; for (let i = 0, c = 0; i < n * 20 && c < n; i++) { const x = P.r(0, P.cols), y = P.r(0, P.rows); if (!ok(x, y)) continue; c++; for (let j = 0; j < 6; j++) { const a = -1.57 + P.r(-0.9, 0.9), l = P.r(0.08, 0.2), ox = x + P.r(-0.12, 0.12); gb.push([ox, y, ox + Math.cos(a) * l, y + Math.sin(a) * l]); } } P.strokes(gb, col || 'rgba(96,128,52,.85)', 0.022, 24); };
   PP.flowers = function (n, ok, cols) { const P = this, f = []; for (let i = 0; i < n * 10 && f.length < n; i++) { const x = P.r(0, P.cols), y = P.r(0, P.rows); if (ok(x, y)) f.push([x, y]); } (cols || ['#e9e4d0', '#d9b84a', '#a98ac0']).forEach((c, k, a) => P.dots(f.filter((_, i) => i % a.length === k), c, 0.035)); };
   PP.sun = function (x, y, r, col, i) { this.light(this.q(x), this.q(y), this.q(r), col || '#fff0c8', i == null ? 0.8 : i, 0.1); };
+  // ---------------------------------------------------------------- v6 helpers
+  // dappled light: soft, noisy pools of warm light (screen) at n spots where ok(x,y)
+  PP.dotsFast = function (pts, col, r) { const P = this; P.prop({ z: 60, h: 0, ao: false, sil: () => {}, draw: c => { c.beginPath(); for (const p of pts) { c.moveTo(p[0] * P.S + r * P.S, p[1] * P.S); c.arc(p[0] * P.S, p[1] * P.S, r * P.S, 0, 6.3); } c.fillStyle = col; c.fill(); } }); };
+  PP.dapple = function (n, ok, col, alpha, size) { const P = this, q = v => v * P.S, sp = []; size = size || [0.35, 1.0];
+    for (let i = 0; i < n * 12 && sp.length < n; i++) { const x = P.r(0, P.cols), y = P.r(0, P.rows); if (ok(x, y)) sp.push([x, y, P.r(size[0], size[1])]); }
+    if (!sp.length) return;   // each spot is a small cluster of flecks, blurred into a soft irregular pool of light
+    P.layer(col || 'rgba(255,236,180,1)', P.mask(c => { for (const [x, y, r] of sp) for (let k = 0; k < 4; k++) { c.beginPath(); c.ellipse(q(x + P.r(-r, r) * 0.7), q(y + P.r(-r, r) * 0.7), q(r * P.r(0.25, 0.55)), q(r * P.r(0.2, 0.4)), P.r(0, 3), 0, 6.3); c.fill(); } }, { soft: 0.55, noise: 0.8, edge: 0.42 }), { alpha: alpha == null ? 0.3 : alpha, tone: 0, op: 'screen' }); };
+  // stone pillar seen from above: square abacus slab with bevels, round echinus with NW highlight, contact shadow; casts a tall shadow
+  PP.pillar = function (x, y, w, o) { o = o || {}; const P = this, S = P.S, cx = x * S, cy = y * S, a = w * S * 0.5, r = w * S * 0.37, rot = P.r(-0.04, 0.04), tr = c => { c.translate(cx, cy); c.rotate(rot); };
+    const rr = (c, h, k) => { c.beginPath(); c.moveTo(-h + k, -h); c.lineTo(h - k, -h); c.quadraticCurveTo(h, -h, h, -h + k); c.lineTo(h, h - k); c.quadraticCurveTo(h, h, h - k, h); c.lineTo(-h + k, h); c.quadraticCurveTo(-h, h, -h, h - k); c.lineTo(-h, -h + k); c.quadraticCurveTo(-h, -h, -h + k, -h); c.closePath(); };
+    const hh = (o.h == null ? 2.4 : o.h) * S, dx = hh * 0.5, dy = hh * 0.42;   // long cast shadow swept from the base (a column is attached to its shadow)
+    P.prop({ z: 11, h: 0, ao: false, sil: () => {}, draw: c => { c.translate(cx, cy); const g = c.createLinearGradient(0, 0, dx, dy); g.addColorStop(0, 'rgba(6,4,2,.5)'); g.addColorStop(0.7, 'rgba(6,4,2,.28)'); g.addColorStop(1, 'rgba(6,4,2,0)');
+      c.beginPath(); c.moveTo(-a * 0.9, -a * 0.9); c.lineTo(a * 0.9, -a * 0.9); c.lineTo(a * 0.9 + dx, -a * 0.9 + dy); c.lineTo(a * 0.9 + dx, a * 0.9 + dy); c.lineTo(-a * 0.9 + dx, a * 0.9 + dy); c.lineTo(-a * 0.9, a * 0.9); c.closePath(); c.fillStyle = g; c.fill(); } });
+    P.prop({ z: o.z || 52, h: 0.25, sil: c => { tr(c); rr(c, a, a * 0.12); c.fill(); }, draw: c => { tr(c);
+      rr(c, a, a * 0.12); c.fillStyle = P.pat(c, 'flagstone', { tile: 1.7, x: cx * 2.3, y: cy * 1.3 }); c.fill(); c.fillStyle = o.tint || 'rgba(104,96,82,.3)'; c.fill(); c.fillStyle = 'rgba(232,220,196,.16)'; c.fill(); c.fillStyle = P.formShade(c, -a, -a, a, a, 1.1); c.fill();
+      const b = a * 0.8, bev = (pts, col) => { poly(c, pts); c.fillStyle = col; c.fill(); };
+      bev([[-a, -a], [a, -a], [b, -b], [-b, -b]], 'rgba(255,240,212,.5)'); bev([[-a, -a], [-b, -b], [-b, b], [-a, a]], 'rgba(255,240,212,.32)');
+      bev([[a, -a], [a, a], [b, b], [b, -b]], 'rgba(10,6,2,.3)'); bev([[-a, a], [-b, b], [b, b], [a, a]], 'rgba(10,6,2,.42)');
+      c.beginPath(); c.rect(-b, -b, 2 * b, 2 * b); c.strokeStyle = 'rgba(20,14,8,.45)'; c.lineWidth = P.ink * 0.6; c.stroke(); rr(c, a, a * 0.12); P.inkStroke(c, 1.1);
+      let g = c.createRadialGradient(r * 0.16, r * 0.16, r * 0.7, r * 0.16, r * 0.16, r * 1.32); g.addColorStop(0, 'rgba(8,5,2,.55)'); g.addColorStop(1, 'rgba(8,5,2,0)'); c.fillStyle = g; c.beginPath(); c.arc(r * 0.16, r * 0.16, r * 1.32, 0, 6.3); c.fill();   // contact shadow on the slab
+      c.save(); c.beginPath(); c.arc(0, 0, r, 0, 6.3); c.clip(); c.drawImage(_imgs.spr_td_pillar, -r * 1.12, -r * 1.12, r * 2.24, r * 2.24); c.fillStyle = 'rgba(110,100,86,.25)'; c.fillRect(-r, -r, 2 * r, 2 * r);
+      g = c.createRadialGradient(-r * 0.38, -r * 0.42, 0, -r * 0.2, -r * 0.2, r * 1.15); g.addColorStop(0, 'rgba(255,242,215,.7)'); g.addColorStop(0.45, 'rgba(255,242,215,.12)'); g.addColorStop(0.75, 'rgba(0,0,0,.1)'); g.addColorStop(1, 'rgba(0,0,0,.55)'); c.fillStyle = g; c.fillRect(-r, -r, 2 * r, 2 * r); c.restore();
+      c.beginPath(); c.arc(0, 0, r, 0, 6.3); P.inkStroke(c, 1);
+      const r2 = r * 0.56; c.beginPath(); c.arc(0, 0, r2, 0, 6.3); c.fillStyle = P.pat(c, 'flagstone', { tile: 1.2, x: cx, y: cy }); c.fill(); c.fillStyle = 'rgba(120,110,96,.3)'; c.fill(); c.fillStyle = P.formShade(c, -r2, -r2, r2, r2, 0.8); c.fill();   // top drum
+      c.lineWidth = r * 0.09; c.beginPath(); c.arc(0, 0, r2, 2.36, 5.5); c.strokeStyle = 'rgba(255,240,212,.55)'; c.stroke(); c.beginPath(); c.arc(0, 0, r2, -0.78, 2.36); c.strokeStyle = 'rgba(10,6,2,.5)'; c.stroke();
+      c.beginPath(); c.arc(0, 0, r2, 0, 6.3); P.inkStroke(c, 0.7); } }); };
+  // dead tree: darker bark recolour + a dark dilated silhouette underneath so limbs read thicker
+  PP.deadTree = function (x, y, w, o) { o = o || {}; const P = this, S = P.S, key = 'td4_deadtree', im = _imgs['spr_' + key], sil = _sil['spr_' + key], W = w * S, H = W * im.height / im.width, rot = P.rnd() * 6.28, fl = P.rnd() < 0.5;
+    const tr = c => { c.translate(x * S, y * S); c.rotate(rot); if (fl) c.scale(-1, 1); }, d = Math.max(1, S * (o.thick || 0.035)), dk = P.tinted(key, o.dark || 'rgba(34,24,16,1)'), bark = P.tinted(key, o.tint || 'hue:#6a4a32:0.18');
+    P.prop({ z: 80 + w / 2, h: o.h || 2.4, sil: c => { tr(c); c.drawImage(sil, -W / 2, -H / 2, W, H); }, draw: c => { tr(c);
+      for (const [dx, dy] of [[-d, -d * 0.4], [d, d * 0.4], [-d * 0.4, d], [d * 0.4, -d]]) c.drawImage(dk, -W / 2 + dx, -H / 2 + dy, W, H);
+      c.drawImage(bark, -W / 2, -H / 2, W, H); } }); };
 
   // ================================================================== MAPS
   const MAPS = {};
@@ -411,7 +449,7 @@
     for (let i = 0; i < 4; i++) P.stool(bx + 1.6 + i * 1.05 + P.r(-0.1, 0.1), by + 1.45 + P.r(-0.08, 0.08));
     for (let i = 0; i < sideLen - 1; i++) P.stool(bx - 0.45 + P.r(-0.08, 0.08), by + 1.5 + i + P.r(-0.1, 0.1));
     const mugs = [[bx + 1.3, by + 0.5], [bx + 2.4, by + 0.45], [bx + 4.2, by + 0.55], [bx + 0.5, by + 2.2]];
-    P.light(q(bx + 0.5), q(by + 1.5), q(2.6), '#ffcf80', 0.75, 0.25);
+    P.light(q(bx + 0.5), q(by + 1.5), q(2.6), '#ffcf80', 0.75, 0.25); P.overlay({ kind: 'lamp', x: bx + 0.5, y: by + 1.5 });
     // stairs to the cellar (SW, 2x2)
     if (R >= 10) { res.push([0.5, R - 3.5, 3, 3]);
       P.prop({ z: 12, h: 0, ao: false, sil: () => {}, draw: c => { c.fillStyle = '#0d0805'; c.fillRect(q(1.05), q(R - 3.05), q(1.9), q(2.1)); c.beginPath(); c.rect(q(1.05), q(R - 3.05), q(1.9), q(2.1)); P.inkStroke(c, 1.2); } });   // stairwell
@@ -424,7 +462,7 @@
       P.sprite('td_longtable', lx + 0.8, ly + lh / 2, lh, { rot: Math.PI / 2, h: 0.75, z: 36 });
       if (0) P.prop({ z: 36, h: 0.75, sil: s => s.fillRect(q(lx), q(ly), q(1.6), q(lh)), draw: c => { c.beginPath(); c.rect(q(lx), q(ly), q(1.6), q(lh)); c.fillStyle = P.pat(c, 'planks', { rot: 90 }); c.fill(); c.fillStyle = 'rgba(80,40,10,.2)'; c.fill(); c.fillStyle = P.formShade(c, q(lx), q(ly), q(lx + 1.6), q(ly + lh)); c.fill(); P.inkStroke(c, 1.2); } });
       if (0) for (let y = ly + 0.45; y < ly + lh - 0.2; y += 0.8) mugs.push([lx + 0.4 + P.r(-0.05, 0.05), y], [lx + 1.2, y + 0.35]);
-      P.light(q(lx + 0.8), q(ly + lh / 2), q(2.8), '#ffcf80', 0.8, 0.25); }
+      P.light(q(lx + 0.8), q(ly + lh / 2), q(2.8), '#ffcf80', 0.8, 0.25); P.overlay({ kind: 'lamp', x: lx + 0.8, y: ly + lh / 2 }); }
     // round tables on grid intersections, dart-thrown for a natural layout
     const plates = [], tables = [], want = Math.max(2, Math.round((C - 2) * (R - 2) / 48));
     for (let t = 0; t < 400 && tables.length < want; t++) {
@@ -441,7 +479,7 @@
         if (rnd() < 0.4) { const a = rnd() * 6.28; plates.push([x + Math.cos(a) * 0.25, y + Math.sin(a) * 0.25]); } }
       if (0) P.prop({ z: 36, h: 0.75, sil: s => { s.beginPath(); s.arc(q(x), q(y), q(r), 0, 6.3); s.fill(); }, draw: c => { c.beginPath(); c.arc(q(x), q(y), q(r), 0, 6.3); c.fillStyle = P.pat(c, 'planks', { rot: rnd() * 180, x: q(x), y: q(y) }); c.fill(); c.fillStyle = P.formShade(c, q(x - r), q(y - r), q(x + r), q(y + r), 1.2); c.fill(); P.inkStroke(c, 1.3); c.beginPath(); c.arc(q(x), q(y), q(r * 0.86), 0, 6.3); P.inkStroke(c, 0.4); } });
       const k = (kind === 'round' && rnd() < 0.4) ? 1 : 0, a0 = rnd() * 6.28; for (let i = 0; i < k; i++) { const a = a0 + i / k * 6.28 + P.r(-0.3, 0.3); if (rnd() < 0.85) P.chair(x + Math.cos(a) * (r + 0.32), y + Math.sin(a) * (r + 0.32), a); else P.chair(x + Math.cos(a) * (r + 0.7), y + Math.sin(a) * (r + 0.7), a + 1.2); }
-        P.light(q(x), q(y), q(2.3), '#ffcf80', 0.7, 0.2);
+        P.light(q(x), q(y), q(2.3), '#ffcf80', 0.7, 0.2); P.overlay({ kind: 'lamp', x, y });
       }
     P.dots(mugs, '#7a5a36', 0.085, true); P.dots(mugs, '#efe4c6', 0.05); P.dots(plates, '#cfc6b0', 0.16, true); P.dots(plates, 'rgba(120,70,40,.8)', 0.08);
     // barrels + crates + sacks in corners
@@ -649,14 +687,31 @@
   // ---------------------------------------------------------------- WILDERNESS (v5)
   const HDR = P => ({ C: P.cols, R: P.rows, S: P.S, q: v => v * P.S, rnd: P.rnd });
   MAPS.grassland = function (P) { const { C, R, q, rnd } = HDR(P);
+    // v6: lush/dry grass variation, a mossy stone outcrop, a small copse + lone tree, clustered wildflower patches
     P.layer('grass', null, { tone: 0.7 });
     P.layer('rgba(170,170,80,1)', P.mask(c => { for (let i = 0; i < C * R / 14; i++) { c.beginPath(); c.arc(q(P.r(0, C)), q(P.r(0, R)), q(P.r(0.8, 2.2)), 0, 6.3); c.fill(); } }, { soft: 1.2, noise: 0.8 }), { alpha: 0.22, tone: 0 });
     const samp = P.road(P.wobble(P.fr([[-0.05, 0.64], [0.2, 0.6], [0.42, 0.68], [0.62, 0.62], [0.8, 0.46], [1.05, 0.4]]), 0.35), 1.25);
-    const O = [Math.round(C * 0.3), Math.round(R * 0.3)], keep = [[O[0], O[1], 1.8]], free = (x, y, p) => nearest(samp, x, y) > 0.9 + p && keep.every(k => Math.hypot(k[0] - x, k[1] - y) > k[2] + p);
-    P.sprite('boulder', O[0], O[1], 2.2, { h: 1.1, z: 31 }); P.sprite('boulder', O[0] + 1.3, O[1] + 0.7, 1.0, { h: 0.6, z: 32, flip: true }); P.rubble(O[0] - 0.3, O[1] + 1.1, 7, 0.8, 'cave_rock');
-    P.trees(P.forestFill(1 / 28, 0.9, 1.5, (x, y, r) => free(x, y, r * 0.6) && (x < 2 || x > C - 2 || y < 1.5 || y > R - 1.5 || P.rnd() < 0.08)));
+    const O = [Math.round(C * 0.3), Math.round(R * 0.3)], keep = [[O[0], O[1], 2.3]], free = (x, y, p) => nearest(samp, x, y) > 0.9 + p && keep.every(k => Math.hypot(k[0] - x, k[1] - y) > k[2] + p);
+    // stone outcrop: a low shelf of bedrock breaking the turf, with boulders heaped on it
+    const shelf = P.blob(O[0] + 0.2, O[1] + 0.2, 2.1, 1.5, 11, 0.45);
+    P.raised('cave_rock', c => { smooth(c, shelf.map(p => [q(p[0]), q(p[1])]), true); c.fill(); }, { tint: '#d4ccbc', h: 0.45 });
+    P.layer('rgba(80,110,50,1)', P.mask(c => { for (let k = 0; k < 6; k++) { const p = shelf[Math.floor(rnd() * shelf.length)]; c.beginPath(); c.arc(q(p[0]), q(p[1]), q(P.r(0.3, 0.6)), 0, 6.3); c.fill(); } }, { soft: 0.4, noise: 1.0 }), { alpha: 0.45, tone: 0.5 });   // moss creeping onto the rock
+    P.sprite('boulder', O[0], O[1], 2.0, { h: 1.1, z: 31 }); P.sprite('boulder', O[0] + 1.3, O[1] + 0.7, 1.0, { h: 0.6, z: 32, flip: true }); P.sprite('boulder', O[0] - 1.0, O[1] - 0.6, 0.8, { h: 0.5, z: 32, rot: 1.2 }); P.rubble(O[0] - 0.3, O[1] + 1.4, 7, 0.8, 'cave_rock');
+    // copse + lone tree in the open (kept off the road and the outcrop)
+    const cop = [], cand = [[C * 0.72, R * 0.22], [C * 0.62, R * 0.86], [C * 0.18, R * 0.82], [C * 0.85, R * 0.75]];
+    const cc = cand.find(([x, y]) => free(x, y, 1.6)) || cand[0];
+    for (const [dx, dy, r] of [[0, 0, 1.35], [1.5, 0.5, 1.05], [-0.7, 1.2, 0.95]]) { const x = cc[0] + dx * Math.min(1, C / 20), y = cc[1] + dy * Math.min(1, R / 15); if (free(x, y, 0.4)) cop.push({ x, y, r }); }
+    const lone = cand.filter(c => c !== cc).find(([x, y]) => free(x, y, 1.4)); if (lone && C >= 12) cop.push({ x: lone[0], y: lone[1], r: 1.25, hue: '#4f7a2a' });
+    for (const t of cop) keep.push([t.x, t.y, t.r + 0.3]);
+    P.trees(P.forestFill(1 / 28, 0.9, 1.5, (x, y, r) => free(x, y, r * 0.6) && (x < 2 || x > C - 2 || y < 1.5 || y > R - 1.5 || P.rnd() < 0.08)).concat(cop));
+    // wildflower patches: each patch has its own palette, with a lusher, taller-grass base
+    const fp = P.dart(Math.max(3, Math.round(C * R / 55)), 400, () => [P.r(1, C - 1), P.r(1, R - 1), P.r(0.9, 1.7)], (c, l) => free(c[0], c[1], c[2] * 0.6) && l.every(o => Math.hypot(o[0] - c[0], o[1] - c[1]) > 3));
+    P.layer('rgba(56,92,34,1)', P.mask(c => { for (const [x, y, r] of fp) { c.beginPath(); c.ellipse(q(x), q(y), q(r * 1.1), q(r * 0.8), rnd() * 3, 0, 6.3); c.fill(); } for (let i = 0; i < C * R / 22; i++) { c.beginPath(); c.ellipse(q(P.r(0, C)), q(P.r(0, R)), q(P.r(1, 2.6)), q(P.r(0.7, 1.6)), rnd() * 3, 0, 6.3); c.fill(); } }, { soft: 1.0, noise: 1.0, edge: 0.3 }), { alpha: 0.24, tone: 0 });   // lush swales + flower-patch bases
+    const PAL = [['#c8342a', '#e04a3a', '#f2e6d0'], ['#e8c838', '#f2dc6a', '#ffffff'], ['#6a7ad0', '#8a9ae0', '#f2e6d0'], ['#c070b0', '#e8d0e8', '#f2dc6a'], ['#f4f0e4', '#e8c838']];
+    fp.forEach(([x, y, r], k) => { const pal = PAL[Math.floor(rnd() * PAL.length)], pts = []; for (let i = 0; i < r * r * 60; i++) { const a = rnd() * 6.28, d = Math.pow(rnd(), 0.7) * r; const px = x + Math.cos(a) * d, py = y + Math.sin(a) * d * 0.75; if (nearest(samp, px, py) > 0.8) pts.push([px, py]); }
+      P.tufts(pts.length / 10, (tx, ty) => Math.hypot(tx - x, ty - y) < r, 'rgba(70,110,40,.85)'); pal.forEach((c, i) => { const ps = pts.filter((_, j) => j % pal.length === i); if (i === 0) P.dotsFast(ps.map(p => [p[0] + 0.012, p[1] + 0.012]), 'rgba(21,16,11,.55)', 0.06); P.dotsFast(ps, c, i === 0 ? 0.052 : 0.042); }); });
     P.clutter(C * R / 4.5, (x, y) => free(x, y, 0.2), { bush: 5, rock: 3, boulder: 0.6, twig: 0.6, stump: 0.3, fern: 1 });
-    P.tufts(C * R * 0.5, (x, y) => free(x, y, 0)); P.flowers(C * R / 2, (x, y) => free(x, y, 0));
+    P.tufts(C * R * 0.5, (x, y) => free(x, y, 0)); P.flowers(C * R / 3, (x, y) => free(x, y, 0));
     const peb = samp.filter(() => rnd() < 0.4).map(p => [p[0] + P.r(-0.5, 0.5), p[1] + P.r(-0.5, 0.5)]); P.dots(peb, '#8a857a', 0.05, true);
     P.flushProps(); P.sun(C * 0.45, R * 0.4, Math.max(C, R) * 0.7, '#fff0c8', 0.8); P.finish('#7d8873', 0.6); };
 
@@ -678,7 +733,8 @@
     P.clutter(C * R / 3.5, (x, y) => W.free(x, y, 0.1), { fern: 6, rock: 2, twig: 2, bush: 3, stump: 0.5, log: 0.3, boulder: 0.3 });
     P.clutter(C * R / 2, (x, y) => W.free(x, y, 0), { leaf: 1 });
     P.tufts(C * R * 0.4, (x, y) => W.ins(x, y) < 1.05 || Math.hypot(x - g2[0], y - g2[1]) < 1.6);
-    P.flushProps(); P.sun(W.CX, W.CY, 4.5, '#fff0c8', 0.75); P.sun(g2[0], g2[1], 3, '#fff0c8', 0.6); P.finish('#56634f', 0.82); };
+    P.flushProps(); P.dapple(C * R / 4, (x, y) => true, 'rgba(255,240,170,1)', 0.26, [0.25, 0.8]);
+    P.sun(W.CX, W.CY, 4.5, '#fff0c8', 0.75); P.sun(g2[0], g2[1], 3, '#fff0c8', 0.6); P.finish('#6c7a62', 0.68, 0.22); };
 
   MAPS.autumnforest = function (P) { const { C, R, q, rnd } = HDR(P);
     const W = woodland(P, { rx: 0.34, ry: 0.32, clearTex: 'grass', clearTint: '#e8c890', floorTint: '#e0b080', path: [[0.5, -0.05], [0.47, 0.2], [0.52, 0.42], [0.45, 0.65], [0.5, 0.85], [0.55, 1.05]], pathW: 1.1 });
@@ -700,14 +756,15 @@
     const samp = P.road(P.wobble(P.fr([[-0.05, 0.55], [0.25, 0.48], [0.5, 0.56], [0.75, 0.45], [1.05, 0.5]]), 0.4), 1.1, { tint: '#b0a898' });
     const free = (x, y, p) => nearest(samp, x, y) > 0.8 + p;
     P.water(c => { smooth(c, P.blob(q(C * 0.3), q(R * 0.25), q(1.6), q(1.0), 12, 0.35), true); c.fill(); }, { tint: '#8a9a88', deep: c => { c.beginPath(); c.arc(q(C * 0.3), q(R * 0.25), q(0.6), 0, 6.3); c.fill(); } });
-    const trees = P.forestFill(1 / 9, 0.9, 1.5, (x, y, r) => free(x, y, r * 0.4) && Math.hypot(x - C * 0.3, y - R * 0.25) > 2.2, () => ({ kind: 'td4_deadtree', k: 1.4, h: 2.4, tint: 'rgba(50,38,26,.45)' }), 0.75);
-    P.trees(trees, { under: 0.3 });
+    const trees = P.forestFill(1 / 9, 0.9, 1.5, (x, y, r) => free(x, y, r * 0.4) && Math.hypot(x - C * 0.3, y - R * 0.25) > 2.2, null, 0.75);
+    for (const t of trees) P.deadTree(t.x, t.y, t.r * 3.1, { h: 2.4, thick: 0.04 });   // v6: dark bark, thicker limbs
     for (const t of trees) if (rnd() < 0.08) P.put('stump', t.x + P.r(-1.5, 1.5), t.y + P.r(-1.5, 1.5));
     P.clutter(C * R / 6, (x, y) => free(x, y, 0.2), { rock: 3, twig: 4, deadbush: 2, td4_bones: 0.5, stump: 0.6, boulder: 0.4 });
     P.put('td4_skulls', C * 0.68, R * 0.3); P.tufts(C * R * 0.25, (x, y) => free(x, y, 0), 'rgba(120,118,90,.75)');
     P.flushProps();
-    P.layer('rgba(200,206,200,1)', P.mask(c => { for (let i = 0; i < C * R / 9; i++) { c.beginPath(); c.ellipse(q(P.r(-1, C + 1)), q(P.r(-1, R + 1)), q(P.r(1.5, 3.5)), q(P.r(0.6, 1.2)), P.r(-0.2, 0.2), 0, 6.3); c.fill(); } }, { soft: 1.8, noise: 0.5 }), { alpha: 0.12, tone: 0 });   // ground fog
-    P.sun(C * 0.5, R * 0.5, Math.max(C, R) * 0.6, '#d8e0e8', 0.5); P.finish('#76787a', 0.8); };
+    P.layer('rgba(200,206,200,1)', P.mask(c => { for (let i = 0; i < C * R / 9; i++) { c.beginPath(); c.ellipse(q(P.r(-1, C + 1)), q(P.r(-1, R + 1)), q(P.r(1.5, 3.5)), q(P.r(0.6, 1.2)), P.r(-0.2, 0.2), 0, 6.3); c.fill(); } }, { soft: 1.8, noise: 0.5 }), { alpha: 0.08, tone: 0 });   // ground fog
+    P.dapple(C * R / 6, () => true, 'rgba(255,238,200,1)', 0.18);
+    P.sun(C * 0.5, R * 0.5, Math.max(C, R) * 0.6, '#f0ead8', 0.55); P.finish('#8c8a84', 0.64, 0.16); };
 
   MAPS.jungle = function (P) { const { C, R, q, rnd } = HDR(P);
     P.layer('forest_floor', null, { tone: 0.5, tint: '#9ab080', lift: 'rgba(60,80,40,.25)' });
@@ -794,19 +851,25 @@
     P.flushProps(); P.sun(C * 0.4, R * 0.35, Math.max(C, R) * 0.7, '#ffffff', 0.5); P.finish('#a4adbb', 0.6); };
 
   MAPS.swamp = function (P) { const { C, R, q, rnd } = HDR(P);
-    P.layer('dirt', null, { tone: 0.7, tint: '#8a8a6a' });
-    P.layer('grass', P.mask(c => { for (let i = 0; i < C * R / 9; i++) { c.beginPath(); c.arc(q(P.r(0, C)), q(P.r(0, R)), q(P.r(0.6, 1.6)), 0, 6.3); c.fill(); } }, { soft: 0.6, noise: 1.0, ink: true, inkA: 0.25 }), { tone: 0.7, tint: '#a8a880' });
+    P.layer('dirt', null, { tone: 0.7, tint: '#a8a07c' });
+    P.layer('grass', P.mask(c => { for (let i = 0; i < C * R / 9; i++) { c.beginPath(); c.arc(q(P.r(0, C)), q(P.r(0, R)), q(P.r(0.6, 1.6)), 0, 6.3); c.fill(); } }, { soft: 0.6, noise: 1.0, ink: true, inkA: 0.25 }), { tone: 0.7, tint: '#c0c090' });
     const pools = []; for (let i = 0; i < 4 + C * R / 80; i++) { const x = P.r(1, C - 1), y = P.r(1, R - 1), rx = P.r(1.2, 2.6); if (pools.some(p => Math.hypot(p.x - x, p.y - y) < p.rx + rx + 0.8)) continue; pools.push({ x, y, rx, pts: P.blob(x, y, rx, rx * P.r(0.55, 0.8), 13, 0.4) }); }
-    P.water(c => { for (const p of pools) { smooth(c, p.pts.map(v => [q(v[0]), q(v[1])]), true); c.fill(); } }, { tint: '#a8b488', deep: c => { for (const p of pools) { c.beginPath(); c.arc(q(p.x), q(p.y), q(p.rx * 0.4), 0, 6.3); c.fill(); } }, deepCol: 'rgba(12,22,10,1)', inside: (x, y) => pools.some(p => inPoly(p.pts, x, y)), glint: 'rgba(200,220,180,.2)' });
+    P.water(c => { for (const p of pools) { smooth(c, p.pts.map(v => [q(v[0]), q(v[1])]), true); c.fill(); } }, { tint: '#a4c4bc', deep: c => { for (const p of pools) { c.beginPath(); c.arc(q(p.x), q(p.y), q(p.rx * 0.45), 0, 6.3); c.fill(); } }, deepCol: 'rgba(10,32,36,1)', deepA: 0.42, inside: (x, y) => pools.some(p => inPoly(p.pts, x, y)), glint: 'rgba(235,248,248,.42)' });
+    const poolD = c => { for (const p of pools) { smooth(c, p.pts.map(v => [q(v[0]), q(v[1])]), true); c.fill(); } };   // v6: sky reflection on the NW of each pool + duckweed fringe + lily pads, so the pools read as water
+    P.prop({ z: 4, h: 0, ao: false, sil: () => {}, draw: c => { for (const p of pools) { c.save(); smooth(c, p.pts.map(v => [q(v[0]), q(v[1])]), true); c.clip();
+      const gx = q(p.x - p.rx * 0.35), gy = q(p.y - p.rx * 0.25), g = c.createRadialGradient(gx, gy, 0, gx, gy, q(p.rx * 0.7)); g.addColorStop(0, 'rgba(215,232,236,.3)'); g.addColorStop(1, 'rgba(215,232,236,0)'); c.fillStyle = g; c.fillRect(gx - q(p.rx), gy - q(p.rx), q(p.rx * 2), q(p.rx * 2));   // sky reflection
+      smooth(c, p.pts.map(v => [q(v[0]), q(v[1])]), true); c.lineWidth = q(0.55); c.strokeStyle = 'rgba(92,124,46,.35)'; c.stroke(); c.lineWidth = q(0.28); c.strokeStyle = 'rgba(104,136,52,.45)'; c.stroke(); c.restore(); } } });   // duckweed fringe
+    const pads = []; for (const p of pools) for (let i = 0; i < p.rx * 3; i++) { const a = rnd() * 6.28, d = P.r(0.35, 0.8); const x = p.x + Math.cos(a) * p.rx * d, y = p.y + Math.sin(a) * p.rx * 0.6 * d; if (inPoly(p.pts, x, y)) pads.push([x, y]); } P.dotsFast(pads.map(p => [p[0] + 0.015, p[1] + 0.015]), 'rgba(21,16,11,.6)', 0.12); P.dotsFast(pads, '#5f8a3a', 0.11); P.dotsFast(pads.filter(() => rnd() < 0.2), '#e8dce8', 0.035);
     for (const p of pools) P.overlay({ kind: 'water', x: p.x, y: p.y, w: p.rx * 2, h: p.rx * 1.4 });
     const wet = (x, y, pad) => pools.some(p => Math.hypot((x - p.x) / (p.rx + pad), (y - p.y) / (p.rx * 0.75 + pad)) < 1);
     for (const p of pools) for (let i = 0; i < 2 + p.rx; i++) { const a = rnd() * 6.28; P.put('td4_reeds', p.x + Math.cos(a) * p.rx * 0.85, p.y + Math.sin(a) * p.rx * 0.6); }
-    const T = P.forestFill(1 / 18, 0.9, 1.4, (x, y, r) => !wet(x, y, r * 0.6) && (x < 2.5 || x > C - 2.5 || y < 2 || y > R - 2 || rnd() < 0.3), () => (rnd() < 0.6 ? { kind: 'td4_deadtree', k: 1.1, h: 2.3, tint: 'rgba(40,50,30,.3)' } : { hue: '#4a5a2a' }), 0.6); P.trees(T, { under: 0.45 });
+    const T = P.forestFill(1 / 18, 0.9, 1.4, (x, y, r) => !wet(x, y, r * 0.6) && (x < 2.5 || x > C - 2.5 || y < 2 || y > R - 2 || rnd() < 0.3), () => (rnd() < 0.6 ? { dead: 1 } : { hue: '#55682e' }), 0.6); P.trees(T.filter(t => !t.dead), { under: 0.45 }); for (const t of T) if (t.dead) P.deadTree(t.x, t.y, t.r * 2.3, { h: 2.3, tint: 'hue:#5a4a30:0.15' });
     P.clutter(C * R / 5, (x, y) => !wet(x, y, 0.2), { fern: 3, bush: 2, rock: 1, twig: 2, stump: 0.6, td4_mushrooms: 0.5, log: 0.3 });
     P.tufts(C * R * 0.6, (x, y) => !wet(x, y, -0.3), 'rgba(110,120,60,.8)');
     P.flushProps();
-    P.layer('rgba(190,205,180,1)', P.mask(c => { for (let i = 0; i < C * R / 8; i++) { c.beginPath(); c.ellipse(q(P.r(-1, C + 1)), q(P.r(-1, R + 1)), q(P.r(1.5, 3.5)), q(P.r(0.6, 1.2)), 0, 0, 6.3); c.fill(); } }, { soft: 1.6, noise: 0.6 }), { alpha: 0.12, tone: 0 });
-    P.finish('#7a8272', 0.72); };
+    P.layer('rgba(190,205,180,1)', P.mask(c => { for (let i = 0; i < C * R / 8; i++) { c.beginPath(); c.ellipse(q(P.r(-1, C + 1)), q(P.r(-1, R + 1)), q(P.r(1.5, 3.5)), q(P.r(0.6, 1.2)), 0, 0, 6.3); c.fill(); } }, { soft: 1.6, noise: 0.6 }), { alpha: 0.1, tone: 0 });
+    P.dapple(C * R / 7, (x, y) => !wet(x, y, 0), 'rgba(255,236,180,1)', 0.22);
+    P.finish('#8e9684', 0.6, 0.2); };
 
   MAPS.canyon = function (P) { const { C, R, q, rnd } = HDR(P);
     P.layer('dirt', null, { tone: 0.6, tint: '#e8c8a0' });
@@ -835,7 +898,7 @@
     const dX = Math.floor(C / 2) - 1, wY = Math.floor(R / 2) - 1, H = hall(P, { gaps: { n: [[dX, dX + 2]], e: [[wY - 1, wY + 1]] } });
     P.prop({ z: 55, h: 0.9, sil: s => s.fillRect(q(dX), q(0.4), q(2), q(0.25)), draw: c => { c.beginPath(); c.rect(q(dX), q(0.4), q(2), q(0.25)); c.fillStyle = P.pat(c, 'planks', { rot: 90 }); c.fill(); c.fillStyle = 'rgba(30,15,5,.3)'; c.fill(); P.inkStroke(c, 1.1); for (const x of [dX + 0.3, dX + 1.7]) { c.beginPath(); c.arc(q(x), q(0.52), q(0.05), 0, 6.3); c.fillStyle = '#222'; c.fill(); } } });
     const pil = []; for (const fx of [0.3, 0.7]) for (const fy of [0.33, 0.67]) pil.push([Math.round(C * fx) + 0.5, Math.round(R * fy) + 0.5]);
-    for (const [x, y] of pil) P.sprite('td_pillar', x, y, 1.0, { h: 2.4, z: 52, rot: rnd() * 6.28 });
+    for (const [x, y] of pil) P.pillar(x, y, 1.0, { h: 2.4 });
     for (const [x, y, r] of [[C * 0.25, 1.15, Math.PI], [C * 0.75, 1.15, Math.PI], [1.15, R * 0.3, Math.PI / 2], [1.15, R * 0.7, Math.PI / 2], [C - 1.15, R * 0.75, -Math.PI / 2], [C * 0.3, R - 1.15, 0], [C * 0.7, R - 1.15, 0]]) P.torch(x, y, r);
     const G = [Math.round(C / 2), Math.round(R / 2)]; P.sprite('td4_grate', G[0], G[1], 1.0, { h: 0, ao: false, z: 9 });
     P.sprite('td3_chest', C - 2.2, 2.0, 0.85, { h: 0.5, z: 40, rot: -0.2 }); P.put('td4_skulls', 2.2, R - 2.2); P.put('barrel', C - 1.7, R - 1.7); P.put('barrel', C - 2.5, R - 1.6); P.put('crate', C - 1.8, R - 2.7);
@@ -845,11 +908,15 @@
     P.flushProps(); P.finish('#625c56', 0.76); };
 
   MAPS.cavern = function (P) { const { C, R, q, rnd } = HDR(P);
-    P.layer('cave_rock', null, { tone: 0.6, lift: 'rgba(120,112,100,.5)' });
-    const fl = P.blob(C / 2, R / 2, C * 0.44, R * 0.42, 22, 0.25), fin = (x, y) => inPoly(fl, x, y);
-    P.layer('rgba(6,6,8,1)', P.mask(c => { c.fillRect(0, 0, P.W, P.H); c.globalCompositeOperation = 'destination-out'; smooth(c, fl.map(p => [q(p[0]), q(p[1])]), true); c.fill(); }, { soft: 0.6, noise: 1.2 }), { alpha: 0.3, tone: 0 });
-    P.raised('cave_rock', c => { c.fillRect(0, 0, P.W, P.H); c.globalCompositeOperation = 'destination-out'; smooth(c, fl.map(p => [q(p[0]), q(p[1])]), true); c.fill(); }, { tint: '#6e6a64', h: 1.2 });
-    P.layer('dirt', P.shapeMask([P.blob(C * 0.45, R * 0.55, C * 0.3, R * 0.28, 14, 0.4)], { soft: 0.8, noise: 1.0 }), { tone: 0.6, tint: '#b0a490', alpha: 0.7 });
+    // v6: lit floor vs dark rock mass, AO + edge shadow along the wall bases, cool rim light on the wall lip
+    P.layer('cave_rock', null, { tone: 0.6, lift: 'rgba(150,140,124,.55)' });
+    const fl = P.blob(C / 2, R / 2, C * 0.44, R * 0.42, 22, 0.25), fin = (x, y) => inPoly(fl, x, y), flD = c => { smooth(c, fl.map(p => [q(p[0]), q(p[1])]), true); c.fill(); };
+    const wallD = c => { c.fillRect(-q(3), -q(3), P.W + q(6), P.H + q(6)); c.globalCompositeOperation = 'destination-out'; flD(c); c.globalCompositeOperation = 'source-over'; };
+    P.raised('cave_rock', wallD, { tint: '#4c4844', h: 1.4 });
+    P.layer('rgba(8,8,10,1)', P.mask(c => { wallD(c); c.globalCompositeOperation = 'destination-out'; c.lineWidth = q(2.2); smooth(c, fl.map(p => [q(p[0]), q(p[1])]), true); c.stroke(); }, { soft: 1.6, noise: 0.5, edge: 0.4 }), { alpha: 0.55, tone: 0 });   // deeper rock falls away into darkness
+    P.layer('rgba(190,205,225,1)', P.mask(c => { c.lineWidth = q(0.3); smooth(c, fl.map(p => [q(p[0]), q(p[1])]), true); c.stroke(); c.globalCompositeOperation = 'destination-out'; flD(c); }, { soft: 0.18, noise: 0.6, edge: 0.3 }), { alpha: 0.32, tone: 0, op: 'screen' });   // rim light on the wall lip
+    P.layer('rgba(6,5,4,1)', P.mask(c => { c.lineWidth = q(1.7); smooth(c, fl.map(p => [q(p[0]), q(p[1])]), true); c.stroke(); c.globalCompositeOperation = 'destination-in'; flD(c); }, { soft: 0.7, noise: 0.4, edge: 0.5 }), { alpha: 0.85, tone: 0 });   // AO + contact shadow along the wall bases (graded: darkest at the base)
+    P.layer('dirt', P.shapeMask([P.blob(C * 0.45, R * 0.55, C * 0.3, R * 0.28, 14, 0.4)], { soft: 0.8, noise: 1.0 }), { tone: 0.6, tint: '#c0b4a0', alpha: 0.7 });
     const PO = [C * 0.68, R * 0.38], pond = P.blob(PO[0], PO[1], 2.0, 1.4, 13, 0.35);
     P.water(c => { smooth(c, pond.map(p => [q(p[0]), q(p[1])]), true); c.fill(); }, { tint: '#a8c8d0', deep: c => { c.beginPath(); c.arc(q(PO[0]), q(PO[1]), q(0.8), 0, 6.3); c.fill(); }, inside: (x, y) => inPoly(pond, x, y) });
     P.overlay({ kind: 'water', x: PO[0], y: PO[1], w: 4, h: 2.8 });
@@ -858,8 +925,8 @@
     P.clutter(C * R / 22, edge, { td4_stalagmites: 3, boulder: 2 });
     P.clutter(5 + C * R / 60, (x, y) => free(x, y, 0.2), { td4_mushrooms: 1 });
     P.clutter(C * R / 6, (x, y) => free(x, y, 0.1), { rock: 4, rubble: 3, td4_bones: 0.3 });
-    P.light(q(C * 0.4), q(R * 0.55), q(3.5), '#ffb060', 0.7, 0.25); P.overlay({ kind: 'fire', x: C * 0.4, y: R * 0.55, w: 0.6, h: 0.6 }); P.sprite('campfire', C * 0.4, R * 0.55, 1.1, { h: 0.2, z: 29 });
-    P.flushProps(); P.finish('#666a72', 0.78); };
+    P.light(q(C * 0.4), q(R * 0.55), q(4.2), '#ffb060', 0.8, 0.25); P.overlay({ kind: 'fire', x: C * 0.4, y: R * 0.55, w: 0.6, h: 0.6 }); P.sprite('campfire', C * 0.4, R * 0.55, 1.1, { h: 0.2, z: 29 });
+    P.flushProps(); P.finish('#767a82', 0.72); };
 
   MAPS.crypt = function (P) { const { C, R, q, rnd } = HDR(P);
     const dX = Math.floor(C / 2) - 1, H = hall(P, { gaps: { s: [[dX, dX + 2]] }, tile: 3.2, tint: '#c8c4bc' });
@@ -867,7 +934,7 @@
     P.sprite('td2_altar', C / 2, 1.9, 2.0, { h: 0.8, z: 42 }); P.light(q(C / 2 - 0.7), q(1.6), q(1.4), '#ffc870', 0.6, 0.3); P.light(q(C / 2 + 0.7), q(1.6), q(1.4), '#ffc870', 0.6, 0.3);
     const rows = Math.max(1, Math.floor((R - 6) / 2.6));
     for (let i = 0; i < rows; i++) for (const s of [-1, 1]) { const y = 4.2 + i * 2.6, x = C / 2 + s * Math.min(C * 0.25, 4.5); P.sarc(x, y, P.r(-0.04, 0.04) + (rnd() < 0.15 ? 0.25 : 0), 2.2, 1.0); P.light(q(x + s * 1.4), q(y), q(1.0), '#ffcf80', 0.45, 0.25); }
-    for (const fx of [0.12, 0.88]) for (let y = 3; y < R - 2; y += 3.5) P.sprite('td_pillar', Math.round(C * fx) + 0.5, y, 0.9, { h: 2.4, z: 52, rot: rnd() * 6.28 });
+    for (const fx of [0.12, 0.88]) for (let y = 3; y < R - 2; y += 3.5) P.pillar(Math.round(C * fx) + 0.5, y, 0.9, { h: 2.4 });
     P.torch(C / 2 - 2.6, 1.15, Math.PI); P.torch(C / 2 + 2.6, 1.15, Math.PI);
     P.put('td4_skulls', 2.2, R - 2.3); P.put('td4_skulls', C - 2.3, 2.3); P.put('td3_chest', C - 2.4, R - 2.2);
     P.clutter(C * R / 5, (x, y) => x > 1.3 && x < C - 1.3 && y > 3.2 && y < R - 1.3 && Math.abs(x - C / 2) > 1.0, { td4_bones: 1.5, rubble: 4, plank: 0.6 });
@@ -888,8 +955,10 @@
     for (const [x, y] of [[cx0 - 1.3, R * 0.15], [cx0 + cw + 1.3, R * 0.62], [cx0 - 1.3, R * 0.85]]) P.sprite('td4_grate', x, y, 1.0, { h: 0, ao: false, z: 9 });
     for (const [x, y, s] of [[1.05, R * 0.25, 1], [C - 1.05, R * 0.5, -1], [1.05, R * 0.75, 1]]) P.prop({ z: 57, h: 0, ao: false, sil: () => {}, draw: c => { c.beginPath(); c.arc(q(x), q(y), q(0.38), 0, 6.3); c.fillStyle = '#100c08'; c.fill(); c.lineWidth = q(0.1); c.strokeStyle = '#5a554c'; c.stroke(); P.inkStroke(c, 0.8); c.beginPath(); c.moveTo(q(x + s * 0.3), q(y)); c.lineTo(q(cx0 + (s > 0 ? 0 : cw)), q(y + 0.2)); c.strokeStyle = 'rgba(110,120,70,.5)'; c.lineWidth = q(0.25); c.stroke(); } });
     P.torch(1.15, R * 0.5, Math.PI / 2); P.torch(C - 1.15, R * 0.2, -Math.PI / 2); P.torch(C - 1.15, R * 0.85, -Math.PI / 2);
+    const pils = []; for (const [px, avoid] of [[1.35, [R * 0.25, R * 0.5, R * 0.75]], [C - 1.35, [R * 0.2, R * 0.5, R * 0.85]]]) for (let y = 2; y < R - 1.2; y += 3.6) { const yy = avoid.reduce((v, a) => Math.abs(v - a) < 1.3 ? (v < a ? a - 1.3 : a + 1.3) : v, y); if (yy > 1 && yy < R - 1 && avoid.every(a => Math.abs(yy - a) >= 1.25) && Math.abs(yy - BY - 0.8) > 1.3 && pils.every(k => k[0] !== px || Math.abs(k[1] - yy) > 2.4)) pils.push([px, yy]); }
+    for (const [x, y] of pils) P.pillar(x, y, 0.95, { h: 1.8, tint: 'rgba(90,96,80,.32)' });   // v6: brick piers along the walkways
     const walk = (x, y) => (x > 1.4 && x < cx0 - 0.4) || (x > cx0 + cw + 0.4 && x < C - 1.4);
-    P.clutter(C * R / 7, (x, y) => walk(x, y) && Math.abs(y - BY - 0.8) > 1.2, { rubble: 4, barrel: 1, crate: 1, sack: 1, td4_bones: 0.6, plank: 1.5 });
+    P.clutter(C * R / 7, (x, y) => walk(x, y) && Math.abs(y - BY - 0.8) > 1.2 && pils.every(k => Math.hypot(k[0] - x, k[1] - y) > 1.1), { rubble: 4, barrel: 1, crate: 1, sack: 1, td4_bones: 0.6, plank: 1.5 });
     const rats = []; for (let i = 0; i < 8; i++) { const x = P.r(1.5, C - 1.5), y = P.r(1, R - 1); if (walk(x, y)) rats.push([x, y]); } P.dots(rats, '#3a2e26', 0.08, true);
     P.layer('rgba(110,130,60,1)', P.mask(c => { for (let i = 0; i < C * R / 12; i++) { c.beginPath(); c.arc(q(rnd() < 0.5 ? cx0 - P.r(0, 0.6) : cx0 + cw + P.r(0, 0.6)), q(P.r(0, R)), q(P.r(0.2, 0.5)), 0, 6.3); c.fill(); } }, { soft: 0.4, noise: 0.8 }), { alpha: 0.35, tone: 0 });   // slime at the kerbs
     P.flushProps(); P.finish('#60645a', 0.78); };
@@ -900,7 +969,7 @@
     P.runner(C / 2 - 0.9, 3.6, C / 2 + 0.9, R - 1, '#5a1e3a');
     P.sprite('td2_altar', C / 2, 2.1, 2.3, { h: 0.8, z: 42 });
     for (const s of [-1, 1]) { P.sprite('td3_statue', C / 2 + s * 2.5, 1.9, 0.95, { h: 1.6, z: 53, flip: s > 0 }); P.brazier(C / 2 + s * 1.6, 3.6, 0.38); }
-    for (const fx of [0.25, 0.75]) for (let y = 4.5; y < R - 1.5; y += 3) P.sprite('td_pillar', Math.round(C * fx) + 0.5, y, 1.05, { h: 2.6, z: 52, rot: rnd() * 6.28 });
+    for (const fx of [0.25, 0.75]) for (let y = 4.5; y < R - 1.5; y += 3) P.pillar(Math.round(C * fx) + 0.5, y, 1.05, { h: 2.6 });
     for (const s of [-1, 1]) for (let y = 5; y < R - 2; y += 4) P.brazier(C / 2 + s * 2.2, y, 0.32);
     P.clutter(C * R / 12, (x, y) => x > 1.3 && x < C - 1.3 && y > 4 && y < R - 1.3 && Math.abs(x - C / 2) > 1.2, { rubble: 2, plank: 0.3 });
     P.light(q(C / 2), q(2), q(4), '#ffe2a0', 0.7, 0.3);
@@ -1002,7 +1071,7 @@
     P.runner(C / 2 - 0.85, 3.2, C / 2 + 0.85, R - 1, '#7a1a16');
     P.sprite('td4_throne', C / 2, 1.85, 1.15, { h: 1.2, z: 48 });
     for (const s of [-1, 1]) { P.brazier(C / 2 + s * 2.1, 2.4, 0.4); P.sprite('td3_statue', C / 2 + s * 3.6, 2.0, 0.9, { h: 1.6, z: 53, flip: s > 0 }); }
-    for (const fx of [0.28, 0.72]) for (let y = 5; y < R - 1.5; y += 3) P.sprite('td_pillar', Math.round(C * fx) + 0.5, y, 1.1, { h: 2.6, z: 52, rot: rnd() * 6.28 });
+    for (const fx of [0.28, 0.72]) for (let y = 5; y < R - 1.5; y += 3) P.pillar(Math.round(C * fx) + 0.5, y, 1.1, { h: 2.6 });
     for (let y = 4.5; y < R - 2; y += 3) for (const [x, r] of [[1.15, Math.PI / 2], [C - 1.15, -Math.PI / 2]]) P.torch(x, y, r);
     for (let x = 3; x < C - 3; x += 3.2) if (Math.abs(x - C / 2) > 4) P.prop({ z: 56, h: 0.1, sil: () => {}, draw: c => { const bx = q(x), by = q(1); c.beginPath(); c.moveTo(bx - q(0.45), by); c.lineTo(bx + q(0.45), by); c.lineTo(bx + q(0.45), by + q(1.3)); c.lineTo(bx, by + q(1.05)); c.lineTo(bx - q(0.45), by + q(1.3)); c.closePath(); c.fillStyle = '#7a1a16'; c.fill(); c.fillStyle = P.formShade(c, bx - q(0.45), by, bx + q(0.45), by + q(1.3)); c.fill(); P.inkStroke(c, 1); c.beginPath(); c.arc(bx, by + q(0.5), q(0.16), 0, 6.3); c.fillStyle = '#c8a24a'; c.fill(); P.inkStroke(c, 0.5); } });   // banners on the north wall
     P.clutter(C * R / 18, (x, y) => x > 1.3 && x < C - 1.3 && y > 4.2 && y < R - 1.3 && Math.abs(x - C / 2) > 1.3, { rubble: 1, plank: 0.3 });
@@ -1047,22 +1116,27 @@
   MAPS.ship = function (P) { const { C, R, q, rnd } = HDR(P);
     P.layer('water', null, { tone: 0.2, tint: '#a8c4c8', tile: 5 }); P.layer('rgba(6,26,40,1)', null, { alpha: 0.35, tone: 0 });
     const rp = []; for (let i = 0; i < C * R * 0.6; i++) { const x = P.r(0, C), y = P.r(0, R), l = P.r(0.15, 0.45); rp.push([x, y, x + l, y + P.r(-0.03, 0.03)]); } P.strokes(rp, 'rgba(225,240,240,.25)', 0.022, 6);
-    P.overlay({ kind: 'water', x: C / 2, y: R / 2, w: C, h: R });
-    const L = Math.min(C - 3, 17), Wd = Math.min(R - 4, 6.4), x0 = (C - L) / 2 - 0.5, cy = R / 2, hull = [[x0, cy - Wd / 2], [x0 + L * 0.72, cy - Wd / 2], [x0 + L, cy], [x0 + L * 0.72, cy + Wd / 2], [x0, cy + Wd / 2]];
+    P.overlay({ kind: 'water', x: C / 2, y: R / 2, w: C, h: R }); if (P.capture) { const m = cv(P.nw, P.nh); m.getContext('2d').fillRect(0, 0, P.nw, P.nh); P.capture.water.push(m); }
+    // v6: the hull lies along the LONGER grid axis. It is laid out in a local frame (u along the keel, v across), then mapped to the grid.
+    const port = R > C, LC = port ? R : C, LR = port ? C : R, M = (u, v) => port ? [LR - v, u] : [u, v], fr = c => { if (port) { c.translate(q(LR), 0); c.rotate(Math.PI / 2); } }, rotA = port ? Math.PI / 2 : 0;
+    const L = Math.min(LC - 3, Math.max(17, LC * 0.55)), Wd = Math.min(LR - 4, Math.max(6.4, L * 0.36)), x0 = (LC - L) / 2 - 0.5, cy = LR / 2, hull = [[x0, cy - Wd / 2], [x0 + L * 0.72, cy - Wd / 2], [x0 + L, cy], [x0 + L * 0.72, cy + Wd / 2], [x0, cy + Wd / 2]];
     const hp = c => { c.beginPath(); c.moveTo(q(hull[0][0]), q(hull[0][1])); c.lineTo(q(hull[1][0]), q(hull[1][1])); c.quadraticCurveTo(q(x0 + L * 0.95), q(cy - Wd * 0.4), q(hull[2][0]), q(hull[2][1])); c.quadraticCurveTo(q(x0 + L * 0.95), q(cy + Wd * 0.4), q(hull[3][0]), q(hull[3][1])); c.lineTo(q(hull[4][0]), q(hull[4][1])); c.quadraticCurveTo(q(x0 - 0.5), q(cy), q(hull[0][0]), q(hull[0][1])); c.closePath(); };
-    P.layer('rgba(230,245,245,1)', P.mask(c => { hp(c); c.lineWidth = q(0.5); c.stroke(); }, { soft: 0.4, noise: 1.0 }), { alpha: 0.35, tone: 0 });   // foam
-    P.prop({ z: 20, h: 1.2, sil: s => { hp(s); s.fill(); }, draw: c => { hp(c); c.fillStyle = '#3a2410'; c.fill(); c.save(); c.clip(); c.fillStyle = P.pat(c, 'planks', { tile: 4 }); c.fillRect(q(x0 - 1) + q(0.32), 0, q(L + 2), P.H); c.fillStyle = 'rgba(90,52,20,.38)'; c.fillRect(0, 0, P.W, P.H); c.restore();
+    P.layer('rgba(230,245,245,1)', P.mask(c => { fr(c); hp(c); c.lineWidth = q(0.5); c.stroke(); }, { soft: 0.4, noise: 1.0 }), { alpha: 0.35, tone: 0 });   // foam
+    P.layer('rgba(230,245,245,1)', P.mask(c => { fr(c); c.beginPath(); c.moveTo(q(x0 - 0.2), q(cy - Wd * 0.35)); c.quadraticCurveTo(q(x0 - 2.2), q(cy - Wd * 0.2), q(x0 - 4), q(cy - Wd * 0.5)); c.moveTo(q(x0 - 0.2), q(cy + Wd * 0.35)); c.quadraticCurveTo(q(x0 - 2.2), q(cy + Wd * 0.2), q(x0 - 4), q(cy + Wd * 0.5)); c.lineWidth = q(0.3); c.stroke(); }, { soft: 0.6, noise: 1.2 }), { alpha: 0.22, tone: 0 });   // wake
+    P.prop({ z: 20, h: 1.2, sil: s => { fr(s); hp(s); s.fill(); }, draw: c => { fr(c); hp(c); c.fillStyle = '#3a2410'; c.fill(); c.save(); c.clip(); c.fillStyle = P.pat(c, 'planks', { tile: 4 }); c.fillRect(q(x0 - 1) + q(0.32), 0, q(L + 2), q(LR)); c.fillStyle = 'rgba(90,52,20,.38)'; c.fillRect(0, 0, q(LC), q(LR)); c.restore();
       c.save(); hp(c); c.lineWidth = q(0.5); c.strokeStyle = '#4a2c12'; c.stroke(); c.restore(); hp(c); P.inkStroke(c, 1.6);
       c.save(); c.translate(q(x0 + L / 2), q(cy)); c.scale(0.94, 0.86); c.translate(-q(x0 + L / 2), -q(cy)); hp(c); P.inkStroke(c, 0.7); c.restore();
       const hx = x0 + L * 0.42; c.beginPath(); c.rect(q(hx - 0.9), q(cy - 0.9), q(1.8), q(1.8)); c.fillStyle = '#2a1a0c'; c.fill(); P.inkStroke(c, 1); for (let k = 1; k < 4; k++) { c.beginPath(); c.moveTo(q(hx - 0.9 + k * 0.45), q(cy - 0.9)); c.lineTo(q(hx - 0.9 + k * 0.45), q(cy + 0.9)); c.moveTo(q(hx - 0.9), q(cy - 0.9 + k * 0.45)); c.lineTo(q(hx + 0.9), q(cy - 0.9 + k * 0.45)); } c.strokeStyle = '#6a4a28'; c.lineWidth = q(0.08); c.stroke();
       c.beginPath(); c.rect(q(x0 + 0.4), q(cy - Wd / 2 + 0.5), q(L * 0.18), q(Wd - 1)); c.fillStyle = P.pat(c, 'planks', { tile: 3, rot: 90 }); c.fill(); c.fillStyle = 'rgba(255,230,190,.1)'; c.fill(); P.inkStroke(c, 1.2);   // raised quarterdeck
       } });
-    for (const mx of [x0 + L * 0.28, x0 + L * 0.62]) { P.prop({ z: 60, h: 3, sil: s => { s.beginPath(); s.arc(q(mx), q(cy), q(0.35), 0, 6.3); s.fill(); }, draw: c => { c.beginPath(); c.arc(q(mx), q(cy), q(0.35), 0, 6.3); c.fillStyle = P.pat(c, 'planks', { tile: 1.5 }); c.fill(); c.fillStyle = P.formShade(c, q(mx - 0.35), q(cy - 0.35), q(mx + 0.35), q(cy + 0.35), 1.4); c.fill(); P.inkStroke(c, 1.2); c.beginPath(); c.moveTo(q(mx), q(cy - Wd / 2 + 0.2)); c.lineTo(q(mx), q(cy + Wd / 2 - 0.2)); c.strokeStyle = 'rgba(200,170,120,.6)'; c.lineWidth = q(0.04); c.stroke(); } }); }
-    for (let x = x0 + 1.2; x < x0 + L * 0.7; x += 1.8) for (const s of [-1, 1]) P.prop({ z: 35, h: 0.5, sil: k => k.fillRect(q(x - 0.25), q(cy + s * (Wd / 2 - 0.65)) - q(0.2), q(0.5), q(0.4)), draw: c => { c.beginPath(); c.rect(q(x - 0.3), q(cy + s * (Wd / 2 - 0.7)) - q(0.22), q(0.6), q(0.44)); c.fillStyle = '#4a3420'; c.fill(); P.inkStroke(c, 0.8); c.beginPath(); c.rect(q(x - 0.1), q(cy + s * (Wd / 2 - 0.4)) - q(0.08), q(0.2), q(0.16) + q(s > 0 ? 0.25 : 0) - q(s < 0 ? 0.25 : 0)); c.fillStyle = '#2a2a2c'; c.fill(); P.inkStroke(c, 0.6); } });   // cannons
-    P.put('barrel', x0 + L * 0.82, cy - 0.8); P.put('barrel', x0 + L * 0.85, cy + 0.1); P.put('crate', x0 + L * 0.5, cy + Wd / 2 - 1.6); P.put('sack', x0 + L * 0.55, cy - Wd / 2 + 1.5);
-    const coil = [[x0 + L * 0.35, cy + 1.6], [x0 + L * 0.7, cy - 1.7]]; P.dots(coil, '#a8885a', 0.25, true); P.dots(coil, '#7a5a3a', 0.12);
-    P.sprite('td3_boat', x0 + L * 0.4, cy + Wd / 2 + 1.2, 1.4, { h: 0.5, z: 25, rot: 1.57 });
-    P.light(q(x0 + L * 0.1), q(cy), q(2.5), '#ffcf80', 0.6, 0.3); P.overlay({ kind: 'lamp', x: x0 + L * 0.1, y: cy });
+    const masts = L > 20 ? [0.24, 0.5, 0.74] : [0.28, 0.62];
+    for (const f of masts) { const mx = x0 + L * f; P.prop({ z: 60, h: 3, sil: s => { fr(s); s.beginPath(); s.arc(q(mx), q(cy), q(0.35), 0, 6.3); s.fill(); }, draw: c => { fr(c); c.beginPath(); c.arc(q(mx), q(cy), q(0.35), 0, 6.3); c.fillStyle = P.pat(c, 'planks', { tile: 1.5 }); c.fill(); c.restore(); c.save(); const [wx, wy] = M(mx, cy); c.beginPath(); c.arc(q(wx), q(wy), q(0.35), 0, 6.3); c.fillStyle = P.formShade(c, q(wx - 0.35), q(wy - 0.35), q(wx + 0.35), q(wy + 0.35), 1.4); c.fill(); P.inkStroke(c, 1.2); fr(c); c.beginPath(); c.moveTo(q(mx), q(cy - Wd / 2 + 0.2)); c.lineTo(q(mx), q(cy + Wd / 2 - 0.2)); c.strokeStyle = 'rgba(200,170,120,.6)'; c.lineWidth = q(0.04); c.stroke(); } }); }
+    for (let x = x0 + 1.2; x < x0 + L * 0.7; x += 1.8) for (const s of [-1, 1]) P.prop({ z: 35, h: 0.5, sil: k => { fr(k); k.fillRect(q(x - 0.25), q(cy + s * (Wd / 2 - 0.65)) - q(0.2), q(0.5), q(0.4)); }, draw: c => { fr(c); c.beginPath(); c.rect(q(x - 0.3), q(cy + s * (Wd / 2 - 0.7)) - q(0.22), q(0.6), q(0.44)); c.fillStyle = '#4a3420'; c.fill(); P.inkStroke(c, 0.8); c.beginPath(); c.rect(q(x - 0.1), q(cy + s * (Wd / 2 - 0.4)) - q(0.08), q(0.2), q(0.16) + q(s > 0 ? 0.25 : 0) - q(s < 0 ? 0.25 : 0)); c.fillStyle = '#2a2a2c'; c.fill(); P.inkStroke(c, 0.6); } });   // cannons
+    const at = (k, u, v) => { const [x, y] = M(u, v); P.put(k, x, y); };
+    at('barrel', x0 + L * 0.82, cy - 0.8); at('barrel', x0 + L * 0.85, cy + 0.1); at('crate', x0 + L * 0.5, cy + Wd / 2 - 1.6); at('sack', x0 + L * 0.55, cy - Wd / 2 + 1.5);
+    const coil = [M(x0 + L * 0.35, cy + 1.6), M(x0 + L * 0.7, cy - 1.7)]; P.dots(coil, '#a8885a', 0.25, true); P.dots(coil, '#7a5a3a', 0.12);
+    const bt = M(x0 + L * 0.4, cy + Wd / 2 + 1.2); P.sprite('td3_boat', bt[0], bt[1], 1.4, { h: 0.5, z: 25, rot: 1.57 + rotA });
+    const lp = M(x0 + L * 0.1, cy); P.light(q(lp[0]), q(lp[1]), q(2.5), '#ffcf80', 0.6, 0.3); P.overlay({ kind: 'lamp', x: lp[0], y: lp[1] });
     P.flushProps(); P.sun(C * 0.5, R * 0.5, Math.max(C, R) * 0.7, '#fff4dc', 0.7); P.finish('#6e7a82', 0.62); };
 
   MAPS.coast = function (P) { const { C, R, q, rnd } = HDR(P);
@@ -1104,21 +1178,208 @@
 
   // ---------------------------------------------------------------- HAZARD (v5)
   MAPS.volcanic = function (P) { const { C, R, q, rnd } = HDR(P);
-    P.layer('cave_rock', null, { tone: 0.7, tint: '#7a6a62' });
-    P.layer('rgba(40,36,34,1)', P.mask(c => { for (let i = 0; i < C * R / 9; i++) { c.beginPath(); c.arc(q(P.r(0, C)), q(P.r(0, R)), q(P.r(0.6, 1.8)), 0, 6.3); c.fill(); } }, { soft: 0.8, noise: 1.0 }), { alpha: 0.45, tone: 0 });   // ash
+    // v6: lighter basalt ground, molten lava with cooled crust plates, desaturated hot core, glow falloff onto the rock
+    P.layer('cave_rock', null, { tone: 0.7, tint: '#b8a69c' });
+    P.layer('rgba(40,36,34,1)', P.mask(c => { for (let i = 0; i < C * R / 9; i++) { c.beginPath(); c.arc(q(P.r(0, C)), q(P.r(0, R)), q(P.r(0.6, 1.8)), 0, 6.3); c.fill(); } }, { soft: 0.8, noise: 1.0 }), { alpha: 0.32, tone: 0 });   // ash
     const PO = [C * 0.6, R * 0.58], pool = P.blob(PO[0], PO[1], Math.min(3, C * 0.15), Math.min(2.3, R * 0.15), 15, 0.35);
     const riv = [P.wobble(P.fr([[-0.05, 0.2], [0.2, 0.3], [0.38, 0.42], [0.6, 0.58]]), 0.3), P.wobble(P.fr([[0.6, 0.58], [0.72, 0.8], [0.8, 1.05]]), 0.3)], rs = sampleLine(riv[0].concat(riv[1]), 0.25);
-    const lavaD = w => c => { smooth(c, pool.map(p => [q(p[0]), q(p[1])]), true); c.fill(); for (const r of riv) { smooth(c, r.map(p => [q(p[0]), q(p[1])]), false); c.lineWidth = q(w); c.lineCap = 'round'; c.stroke(); } };
-    P.layer('rgba(20,8,4,1)', P.mask(lavaD(2.4), { soft: 0.8, noise: 0.8 }), { alpha: 0.7, tone: 0 });   // scorched crust
-    P.layer('lava', P.mask(lavaD(1.3), { soft: 0.25, noise: 0.8, ink: true, inkA: 0.9 }), { tone: 0, tile: 3.5, lift: 'rgba(120,40,0,.4)' });
-    P.layer('rgba(255,220,120,1)', P.mask(c => { c.beginPath(); c.arc(q(PO[0]), q(PO[1]), q(1.0), 0, 6.3); c.fill(); for (const r of riv) { smooth(c, r.map(p => [q(p[0]), q(p[1])]), false); c.lineWidth = q(0.35); c.stroke(); } }, { soft: 0.9, noise: 0.6 }), { alpha: 0.45, tone: 0 });   // white-hot core
+    const lavaD = (w, pk) => c => { c.save(); c.translate(q(PO[0]), q(PO[1])); c.scale(pk || 1, pk || 1); c.translate(-q(PO[0]), -q(PO[1])); smooth(c, pool.map(p => [q(p[0]), q(p[1])]), true); c.fill(); c.restore(); for (const r of riv) { smooth(c, r.map(p => [q(p[0]), q(p[1])]), false); c.lineWidth = q(w); c.lineCap = 'round'; c.stroke(); } };
+    { const c = P.x; c.save(); c.globalCompositeOperation = 'screen'; for (let i = 0; i < rs.length; i += 4) { const x = q(rs[i][0]), y = q(rs[i][1]), R2 = q(2.6), g = c.createRadialGradient(x, y, 0, x, y, R2); g.addColorStop(0, 'rgba(255,96,24,.16)'); g.addColorStop(1, 'rgba(255,96,24,0)'); c.fillStyle = g; c.fillRect(x - R2, y - R2, R2 * 2, R2 * 2); } const R3 = q(5.2), g = c.createRadialGradient(q(PO[0]), q(PO[1]), 0, q(PO[0]), q(PO[1]), R3); g.addColorStop(0, 'rgba(255,96,24,.4)'); g.addColorStop(1, 'rgba(255,96,24,0)'); c.fillStyle = g; c.fillRect(q(PO[0]) - R3, q(PO[1]) - R3, R3 * 2, R3 * 2); c.restore(); }   // glow falloff onto the rock: painted straight onto the ground now, before the lava layers (cheap gradients, no mask pass)
+    P.layer('rgba(18,8,4,1)', P.mask(lavaD(1.8, 1.06), { soft: 0.4, noise: 0.7, edge: 0.2 }), { alpha: 0.5, tone: 0 });   // scorched bank
+    const lk = P.mask(lavaD(1.3), { soft: 0.25, noise: 0.8, ink: true, inkA: 0.9 });
+    P.layer('lava', lk, { tone: 0.55, tile: 3.5, tint: '#a8584a' }); if (P.capture) P.capture.lava.push(lk.m);   // deeper, less saturated crust
+    const molt = [], hot = [];   // mottled molten patches: dense along the flow centre, sparse toward the crusted banks
+    for (let i = 0; i < rs.length; i++) { const p = rs[i]; if (rnd() < 0.75) molt.push([p[0] + P.r(-0.3, 0.3), p[1] + P.r(-0.3, 0.3), P.r(0.18, 0.42)]); if (rnd() < 0.3) hot.push([p[0] + P.r(-0.12, 0.12), p[1] + P.r(-0.12, 0.12), P.r(0.08, 0.2)]); }
+    for (let i = 0; i < 90; i++) { const a = rnd() * 6.28, d = Math.sqrt(rnd()) * 0.85, x = PO[0] + Math.cos(a) * d * 2.2, y = PO[1] + Math.sin(a) * d * 1.6; if (!inPoly(pool, x, y) || rnd() < d * 0.8) continue; molt.push([x, y, P.r(0.3, 0.7) * (1.1 - d)]); if (d < 0.45 && rnd() < 0.5) hot.push([x, y, P.r(0.15, 0.4)]); }
+    const blobs = l => c => { for (const [x, y, r] of l) { c.beginPath(); c.ellipse(q(x), q(y), q(r), q(r * 0.75), rnd() * 3, 0, 6.3); c.fill(); } };
+    P.layer('lava', P.mask(blobs(molt), { soft: 0.45, noise: 1.0, edge: 0.3 }), { tile: 2.6, tone: 0.4, lift: 'rgba(255,120,30,.38)', alpha: 0.9 });   // molten flow: brighter, finer-cracked lava welling up through the crust
+    P.prop({ z: 5, h: 0, ao: false, sil: () => {}, draw: c => { c.globalCompositeOperation = 'screen'; for (const [x, y, r] of hot) { const R2 = q(r * 1.6), g = c.createRadialGradient(q(x), q(y), 0, q(x), q(y), R2); g.addColorStop(0, 'rgba(255,226,186,.42)'); g.addColorStop(1, 'rgba(255,226,186,0)'); c.fillStyle = g; c.fillRect(q(x) - R2, q(y) - R2, R2 * 2, R2 * 2); } } });   // hot core: pale, desaturated (soft gradients, no mask pass)
     P.overlay({ kind: 'lava', x: PO[0], y: PO[1], w: 5, h: 4 }); for (const r of riv) P.overlay({ kind: 'lava', pts: r, w: 1.3 });
-    for (let i = 0; i < rs.length; i += 10) P.light(q(rs[i][0]), q(rs[i][1]), q(3), '#ff6a1a', 0.8, 0.35); P.light(q(PO[0]), q(PO[1]), q(5.5), '#ff7a2a', 1.1, 0.6);
+    for (let i = 0; i < rs.length; i += 10) P.light(q(rs[i][0]), q(rs[i][1]), q(3.4), '#ff6a1a', 0.75, 0.2); P.light(q(PO[0]), q(PO[1]), q(5.5), '#ff7a2a', 0.95, 0.35);
     const free = (x, y, p) => nearest(rs, x, y) > 1.3 + p && !inPoly(P.blob(PO[0], PO[1], C * 0.15 + 0.8, R * 0.15 + 0.8, 8, 0), x, y);
     P.clutter(C * R / 5, (x, y) => free(x, y, 0.1), { rock: 4, boulder: 1.2, rubble: 3, td4_bones: 0.4, td4_skulls: 0.15 });
     P.clutter(C * R / 20, (x, y) => free(x, y, 0.2), { td4_stalagmites: 1 });
     const emb = []; for (let i = 0; i < C * R / 4; i++) { const p = rs[Math.floor(rnd() * rs.length)]; emb.push([p[0] + P.r(-1.4, 1.4), p[1] + P.r(-1.4, 1.4)]); } P.dots(emb, '#ff9a3a', 0.03);
-    P.flushProps(); P.finish('#54463e', 0.8); };
+    P.flushProps(); P.finish('#8e8076', 0.64); };
+
+  // ------------------------------------------------------------------ v6 animation layer (rev 2: natural motion)
+  // A light overlay canvas drawn ON TOP of the cached static bitmap (which never changes, so the IndexedDB cache stays valid)
+  // and UNDER tokens/fog (it is just a positioned canvas; give it the app's .pm-ov class and it sits where the v0.93 SVG sat).
+  // Masks come from a tiny 16px re-run of the same deterministic map in "capture" mode: exact water / lava shapes, minus
+  // everything standing on them (hulls, piers, bridges, boats, reeds). Design rules (v0.93 looked fake, see INTEGRATION.v6.md):
+  //  * no sine pulsing, no global breathing: every scalar comes from layered, pre-baked periodic noise;
+  //  * every instance has its own seed, phase and speed; amplitudes are small and mostly below the static paint;
+  //  * water/lava are tiny per-pixel "shaders" on a low-res buffer (8-10 px per square) driven by a flow field, upscaled soft;
+  //  * everything is periodic over LOOP_S, so a recorded loop is seamless and nothing drifts over a long session.
+  const LOOP_S = 8, TAU = Math.PI * 2;
+  function capture(mapId, cols, rows) {
+    cols = Math.max(8, Math.min(40, cols | 0)); rows = Math.max(8, Math.min(40, rows | 0));
+    const P = new Painter(cols, rows, 16, seedOf(mapId) + cols * 131 + rows * 7); P.capture = { water: [], lava: [] };
+    const meta = MAPS[mapId](P) || {}; return { cols, rows, cap: P.capture, overlays: (meta.overlays || []).concat(P.ov || []) };
+  }
+  // periodic smooth 1D value noise (n knots per loop) and a 3-octave sum; argument u = fraction of the loop
+  function pnoise1(seed, n) { const r = rng(seed), v = new Float32Array(n); for (let i = 0; i < n; i++) v[i] = r();
+    return u => { const f = (u - Math.floor(u)) * n, i = f | 0, a = f - i, s = a * a * (3 - 2 * a); return v[i % n] + (v[(i + 1) % n] - v[i % n]) * s; }; }
+  function pfbm1(seed, n) { const a = pnoise1(seed, n), b = pnoise1(seed + 7, n * 2 + 1), c = pnoise1(seed + 13, n * 3 + 2); return u => (a(u) * 0.5 + b(u) * 0.32 + c(u) * 0.18 - 0.5) * 2.4; }   // ~[-1,1], mean 0
+  // seamless 64x64 fbm value-noise tile (Float32, 0..1)
+  const TN = 64;
+  function noiseTile(seed, cells, oct, gain) { const out = new Float32Array(TN * TN), r = rng(seed); let amp = 1;
+    for (let o = 0; o < oct; o++, cells *= 2, amp *= gain) { const g = new Float32Array(cells * cells); for (let i = 0; i < g.length; i++) g[i] = r();
+      for (let y = 0; y < TN; y++) { const fy = y * cells / TN, iy = fy | 0, ay = fy - iy, sy = ay * ay * (3 - 2 * ay), y0 = (iy % cells) * cells, y1 = ((iy + 1) % cells) * cells;
+        for (let x = 0; x < TN; x++) { const fx = x * cells / TN, ix = fx | 0, ax = fx - ix, sx = ax * ax * (3 - 2 * ax), x1 = (ix + 1) % cells;
+          const a = g[y0 + ix] + (g[y0 + x1] - g[y0 + ix]) * sx, b = g[y1 + ix] + (g[y1 + x1] - g[y1 + ix]) * sx; out[y * TN + x] += amp * (a + (b - a) * sy); } } }
+    let mn = 1e9, mx = -1e9; for (let i = 0; i < out.length; i++) { if (out[i] < mn) mn = out[i]; if (out[i] > mx) mx = out[i]; } for (let i = 0; i < out.length; i++) out[i] = (out[i] - mn) / (mx - mn); return out; }
+  function recentre(T) { let m = 0; for (let i = 0; i < T.length; i++) m += T[i]; m /= T.length; for (let i = 0; i < T.length; i++) T[i] = Math.max(0, Math.min(1, T[i] - m + 0.5)); return T; }   // mean 0.5, so thresholds mean the same everywhere
+  function samp(T, u, v) { const fu = Math.floor(u), fv = Math.floor(v), au = u - fu, av = v - fv, x0 = fu & 63, x1 = (x0 + 1) & 63, y0 = (fv & 63) << 6, y1 = ((fv + 1) & 63) << 6;
+    const a = T[y0 + x0] + (T[y0 + x1] - T[y0 + x0]) * au, b = T[y1 + x0] + (T[y1 + x1] - T[y1 + x0]) * au; return a + (b - a) * av; }
+  const sstep = (a, b, v) => { const t = Math.max(0, Math.min(1, (v - a) / (b - a))); return t * t * (3 - 2 * t); };
+  function glowSprite(col, mid) { const N = 64, c = cv(N, N), x = c.getContext('2d'), g = x.createRadialGradient(N / 2, N / 2, 0, N / 2, N / 2, N / 2);
+    g.addColorStop(0, hexA(col, 1)); g.addColorStop(mid || 0.3, hexA(col, 0.45)); g.addColorStop(0.7, hexA(col, 0.12)); g.addColorStop(1, hexA(col, 0)); x.fillStyle = g; x.fillRect(0, 0, N, N); return c; }
+  // Flow field over a mask at Q px per square: per water pixel its along-flow / across-flow coordinates (squares),
+  // distance to the bank (squares) and a 0..1 "mid-stream" weight. flows: polylines [{pts, w}] or null (then dir).
+  function flowField(srcs, props, rc, rr, Q, flows, dir) {
+    const BW = Math.round(rc * Q), BH = Math.round(rr * Q), m = cv(BW, BH), k = m.getContext('2d'); k.imageSmoothingQuality = 'high';
+    for (const l of srcs) k.drawImage(l, 0, 0, BW, BH); if (props) { k.globalCompositeOperation = 'destination-out'; k.drawImage(props, 0, 0, BW, BH); }
+    const al = k.getImageData(0, 0, BW, BH).data, N = BW * BH, dist = new Float32Array(N);
+    for (let i = 0; i < N; i++) dist[i] = al[i * 4 + 3] > 110 ? 1e6 : 0;
+    const D2 = Math.SQRT2;   // two-pass chamfer distance to the nearest non-water pixel (the canvas edge is NOT a bank: seas run off-map)
+    for (let y = 0; y < BH; y++) for (let x = 0; x < BW; x++) { const i = y * BW + x; let d = dist[i]; if (!d) continue;
+      if (x > 0) d = Math.min(d, dist[i - 1] + 1); if (y > 0) { d = Math.min(d, dist[i - BW] + 1); if (x > 0) d = Math.min(d, dist[i - BW - 1] + D2); if (x < BW - 1) d = Math.min(d, dist[i - BW + 1] + D2); } dist[i] = d; }
+    for (let y = BH - 1; y >= 0; y--) for (let x = BW - 1; x >= 0; x--) { const i = y * BW + x; let d = dist[i]; if (!d) continue;
+      if (x < BW - 1) d = Math.min(d, dist[i + 1] + 1); if (y < BH - 1) { d = Math.min(d, dist[i + BW] + 1); if (x < BW - 1) d = Math.min(d, dist[i + BW + 1] + D2); if (x > 0) d = Math.min(d, dist[i + BW - 1] + D2); } dist[i] = d; }
+    const idx = [], S = [], Dd = [], A = [], B = [], Wc = []; let x0 = BW, y0 = BH, x1 = -1, y1 = -1;
+    const segs = []; if (flows) for (const f of flows) { let cum = 0; for (let i = 0; i + 1 < f.pts.length; i++) { const a = f.pts[i], b = f.pts[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1e-6; segs.push({ a, dx: dx / L, dy: dy / L, L, cum, hw: (f.w || 2) / 2 }); cum += L; } }
+    for (let y = 0; y < BH; y++) for (let x = 0; x < BW; x++) { const i = y * BW + x, a = al[i * 4 + 3]; if (a < 8) continue;
+      const X = (x + 0.5) / Q, Y = (y + 0.5) / Q; let s, d, w;
+      if (segs.length) { let best = 1e9, bs = 0, bd = 0, bhw = 1; for (const g of segs) { let t = (X - g.a[0]) * g.dx + (Y - g.a[1]) * g.dy; t = Math.max(0, Math.min(g.L, t)); const px = g.a[0] + g.dx * t, py = g.a[1] + g.dy * t, dd = (X - px) * (X - px) + (Y - py) * (Y - py);
+          if (dd < best) { best = dd; bs = g.cum + t; bd = (X - g.a[0]) * -g.dy + (Y - g.a[1]) * g.dx; bhw = g.hw; } } s = bs; d = bd; w = Math.max(0, 1 - (d / bhw) * (d / bhw)); }
+      else { s = X * dir[0] + Y * dir[1]; d = -X * dir[1] + Y * dir[0]; w = Math.min(1, dist[i] / Q / 1.6); }
+      idx.push(i); S.push(s); Dd.push(d); A.push(a / 255); B.push(dist[i] / Q); Wc.push(w); if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (!idx.length) return null;
+    const img = new ImageData(BW, BH), buf = cv(BW, BH);
+    return { BW, BH, Q, n: idx.length, idx: Int32Array.from(idx), S: Float32Array.from(S), D: Float32Array.from(Dd), A: Float32Array.from(A), B: Float32Array.from(B), Wc: Float32Array.from(Wc), bb: [x0, y0, x1 - x0 + 1, y1 - y0 + 1], img, u32: new Uint32Array(img.data.buffer), buf, bx: buf.getContext('2d') }; }
+  // water looks: speeds are whole tiles per loop (seamless); tiles in squares; k* are max alphas (kept low on purpose)
+  const WATER = {
+    river: { tA: 2.4, nA: 2, tB: 3.4, nB: 1, kL: 0.16, kD: 0.11, foam: 0.3, fr: 0.28, glint: 0.2, Lc: [228, 242, 244], Dc: [6, 26, 34] },
+    sewer: { tA: 2.0, nA: 2, tB: 3.0, nB: 1, kL: 0.11, kD: 0.10, foam: 0.2, fr: 0.25, glint: 0.28, Lc: [214, 226, 196], Dc: [10, 20, 12] },
+    sea: { tA: 3.2, nA: 1, tB: 4.6, nB: 1, kL: 0.14, kD: 0.12, foam: 0.4, fr: 0.36, glint: 0.22, Lc: [226, 240, 244], Dc: [4, 24, 40] },
+    harbour: { tA: 2.6, nA: 1, tB: 4.0, nB: 1, kL: 0.12, kD: 0.10, foam: 0.24, fr: 0.26, glint: 0.32, Lc: [224, 236, 236], Dc: [6, 22, 30] },
+    still: { tA: 1.4, nA: 1, tB: 2.2, nB: -1, kL: 0.10, kD: 0.08, foam: 0.12, fr: 0.18, glint: 0.3, Lc: [226, 240, 244], Dc: [6, 24, 30] },
+    murky: { tA: 1.2, nA: 1, tB: 2.0, nB: -1, kL: 0.06, kD: 0.09, foam: 0, fr: 0.1, glint: 0.2, Lc: [214, 228, 210], Dc: [8, 20, 14] } };
+  function animate(target, mapId, cols, rows, px, opts) {
+    opts = opts || {}; let raf = 0, stopped = false, last = -1e9, t0 = null, frames = 0, cost = 0, goneAt = 0;
+    const ctl = { stop, canvas: null, el: null, reduced: false, stats: () => ({ frames, msPerFrame: frames ? cost / frames : 0, fps: opts.fps || 30 }) };
+    const mq = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+    const isCanvas = !!(target && target.getContext), cvs = isCanvas ? target : document.createElement('canvas'); ctl.canvas = ctl.el = cvs;
+    if (!isCanvas) { cvs.className = opts.className == null ? 'pm-ov' : opts.className; cvs.setAttribute('aria-hidden', 'true');
+      Object.assign(cvs.style, { position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', pointerEvents: 'none', display: 'block' });
+      if (target) { if (getComputedStyle(target).position === 'static') target.style.position = 'relative'; target.appendChild(cvs); } }
+    if (mq && mq.matches && !opts.ignoreReducedMotion) { ctl.reduced = true; if (!isCanvas) cvs.width = cvs.height = 1; ctl.ready = Promise.resolve(ctl); return ctl; }   // static fallback: an empty overlay
+    function onVis() { if (document.hidden) { cancelAnimationFrame(raf); raf = 0; } else if (!stopped && !raf && ctl.draw) raf = requestAnimationFrame(tick); }
+    function stop() { stopped = true; cancelAnimationFrame(raf); raf = 0; clearTimeout(goneAt); document.removeEventListener('visibilitychange', onVis); if (!isCanvas && cvs.parentNode) cvs.parentNode.removeChild(cvs); }
+    function tick(now) { raf = 0; if (stopped || document.hidden) return;
+      if (!isCanvas && !cvs.isConnected && !opts.manual) { if (!goneAt) goneAt = now; if (now - goneAt > 60000) return stop(); setTimeout(() => { if (!stopped && !raf) raf = requestAnimationFrame(tick); }, 500); return; }   // detached (app re-render): idle, resume on re-attach
+      goneAt = 0; raf = requestAnimationFrame(tick); if (now - last < 1000 / (opts.fps || 30) - 2) return; last = now; if (t0 === null) t0 = now - (opts.t0 || 0) * 1000;
+      const a = performance.now(); ctl.draw(((now - t0) / 1000) % LOOP_S); cost += performance.now() - a; frames++; if (frames === 30 && !opts.fps && cost / frames > 10) opts.fps = 15; }   // slow device: halve the rate
+    ctl.ready = ensurePack(mapId).then(() => { if (stopped) return ctl; const C = capture(mapId, cols, rows), rc = C.cols, rr = C.rows;
+      const oc = Math.max(1, Math.min(rc, cols | 0)), or = Math.max(1, Math.min(rr, rows | 0)), ox = Math.floor((rc - oc) / 2), oy = Math.floor((rr - or) / 2);   // grids under 8 squares: same centre crop as the app
+      const pxs = Math.max(16, Math.min(160, px || 64)), Sq = opts.scale ? pxs * opts.scale : Math.min(pxs, 24);   // ~24px per square backing store (CSS scales it up): light on phones
+      const W = Math.round(oc * Sq), H = Math.round(or * Sq); cvs.width = W; cvs.height = H; const x = cvs.getContext('2d');
+      const ov = C.overlays, sd = seedOf(mapId) + rc * 131 + rr * 7, wo = ov.filter(o => o.kind === 'water');
+      // ---- water
+      const rivers = wo.filter(o => o.pts && !o.surf && o.w), surf = wo.find(o => o.surf), sewer = wo.some(o => o.flow === 'S');
+      const look = WATER[mapId === 'river' ? 'river' : sewer ? 'sewer' : (mapId === 'coast' || mapId === 'ship') ? 'sea' : mapId === 'dock' ? 'harbour' : mapId === 'swamp' ? 'murky' : rivers.length ? 'river' : 'still'];
+      let wdir = [0.8, 0.6]; if (sewer) wdir = [0, 1]; if (surf) wdir = [-0.99, 0.12]; if (mapId === 'ship') wdir = rc >= rr ? [-1, 0] : [0, 1]; if (mapId === 'dock') wdir = [0.94, 0.34];
+      const WF = C.cap.water.length ? flowField(C.cap.water, C.cap.props, rc, rr, opts.waterQ || 10, rivers.length ? rivers : null, wdir) : null;
+      if (WF) { const r = rng(sd + 5), n = WF.n; WF.TA = noiseTile(sd + 11, 4, 3, 0.55); WF.TB = noiseTile(sd + 12, 4, 3, 0.5); const TS = noiseTile(sd + 13, 2, 2, 0.5);
+        WF.sA = TN / look.tA; WF.sB = TN / look.tB; WF.ph = new Float32Array(n); WF.wx = new Float32Array(n);
+        for (let k = 0; k < n; k++) { const i = WF.idx[k], X = (i % WF.BW) / WF.Q, Y = ((i / WF.BW) | 0) / WF.Q; WF.ph[k] = samp(TS, X * 9 + 7, Y * 9 + 3); WF.wx[k] = (samp(TS, X * 6 + 31, Y * 6 + 17) - 0.5) * 0.5; }   // static warp + per-pixel wash phase
+        WF.look = look; WF.surf = !!surf; WF.r = r; }
+      // ---- lava
+      const lr = ov.filter(o => o.kind === 'lava' && o.pts), LF = C.cap.lava.length ? flowField(C.cap.lava, null, rc, rr, opts.lavaQ || 10, lr.length ? lr.map(o => ({ pts: o.pts, w: o.w * 1.6 })) : null, [0.7, 0.5]) : null;
+      let bub = []; if (LF) { const n = LF.n, T1 = noiseTile(sd + 21, 2, 4, 0.55), T2 = noiseTile(sd + 22, 2, 4, 0.55), T3 = noiseTile(sd + 23, 2, 2, 0.5);
+        LF.TA = recentre(noiseTile(sd + 24, 2, 3, 0.5)); LF.TB = recentre(noiseTile(sd + 26, 2, 3, 0.5)); LF.fp = new Float32Array(n); LF.X = new Float32Array(n); LF.Y = new Float32Array(n);   // crust noise: two low-frequency layers (no sub-pixel detail = no shimmer)
+        LF.nA = new Float32Array(n); LF.nB = new Float32Array(n); LF.ph2 = new Float32Array(n); LF.wx = new Float32Array(n); LF.ws = new Float32Array(n); LF.c1 = new Float32Array(n); LF.c2 = new Float32Array(n);
+        for (let k = 0; k < n; k++) { const i = LF.idx[k], X = (i % LF.BW) / LF.Q, Y = ((i / LF.BW) | 0) / LF.Q; LF.nA[k] = samp(T1, X * 10, Y * 10); LF.nB[k] = samp(T2, X * 10, Y * 10); LF.ph2[k] = samp(T3, X * 5 + 29, Y * 5 + 11) * 1.7;
+          LF.wx[k] = (samp(T3, X * 8 + 3, Y * 8 + 41) - 0.5) * 0.6; LF.ws[k] = (samp(T3, X * 8 + 37, Y * 8 + 9) - 0.5) * 0.6;          // static domain warp
+          LF.c1[k] = samp(T3, X * 4 + 11, Y * 4 + 50) * 2.5; LF.c2[k] = samp(T3, X * 4 + 45, Y * 4 + 21) * 2.5; LF.fp[k] = samp(T3, X * 3 + 17, Y * 3 + 33) * 1.6; LF.X[k] = X + LF.ws[k]; LF.Y[k] = Y + LF.wx[k]; }
+        LF.k1 = LF.c1.map(v => Math.cos(TAU * v)); LF.q1 = LF.c1.map(v => Math.sin(TAU * v)); LF.k2 = LF.c2.map(v => Math.cos(TAU * v)); LF.q2 = LF.c2.map(v => Math.sin(TAU * v)); LF.SIN = new Float32Array(1024).map((_, i) => Math.sin(TAU * i / 1024));                  // churn phases (smooth in space)
+        const r = rng(sd + 77), want = Math.max(4, Math.round(rc * rr / 40)), SPR = [];
+        for (let j = 0; j < 4; j++) { const N = 48, c = cv(N, N), g = c.getContext('2d');   // soft, irregular dark dome: a few overlapping soft blobs + a faint warm sheen (no rim, no ring)
+          for (let i = 0; i < 4; i++) { const ox = N / 2 + (r() - 0.5) * N * 0.22, oy = N / 2 + (r() - 0.5) * N * 0.22, rr2 = N * (0.2 + r() * 0.12), gr = g.createRadialGradient(ox, oy, 0, ox, oy, rr2);
+            gr.addColorStop(0, 'rgba(36,12,6,0.85)'); gr.addColorStop(0.55, 'rgba(56,18,8,0.55)'); gr.addColorStop(1, 'rgba(70,24,8,0)'); g.fillStyle = gr; g.fillRect(0, 0, N, N); }
+          const hx = N * 0.4, hy = N * 0.38, hg = g.createRadialGradient(hx, hy, 0, hx, hy, N * 0.14); hg.addColorStop(0, 'rgba(255,190,110,0.35)'); hg.addColorStop(1, 'rgba(255,160,80,0)'); g.fillStyle = hg; g.fillRect(0, 0, N, N); SPR.push(c); }
+        LF.spr = SPR; LF.pop = glowSprite('#ffb85a', 0.2);
+        for (let i = 0; i < 8000 && bub.length < want; i++) { const k = (r() * n) | 0; if (LF.B[k] < 0.3 || LF.A[k] < 0.9 || LF.nA[k] + LF.nB[k] < 1.0) continue; /* on hotter lava, where a dark dome reads */ const idx = LF.idx[k], bx = ((idx % LF.BW) + 0.5) / LF.Q, by = (((idx / LF.BW) | 0) + 0.5) / LF.Q;
+          if (bub.some(b2 => Math.hypot(b2.x - bx, b2.y - by) < 1.5)) continue;
+          bub.push({ x: bx, y: by, p: r(), s: Math.min(LF.B[k] * 0.9, 0.24 + r() * 0.1), sp: (r() * 4) | 0, rot: r() * TAU }); } }
+      // ---- fire / torch / lamp / crystal
+      const gFire = glowSprite('#ff9c40'), gDark = glowSprite('#1a0c04', 0.4), gCore = glowSprite('#ffc070', 0.25), gEmb = glowSprite('#ffb050', 0.2), gLamp = glowSprite('#ffd890'), gCry = glowSprite('#8dffc0'), gStar = glowSprite('#e8fff2', 0.15);
+      const fires = ov.filter(o => ['fire', 'torch', 'lamp'].includes(o.kind)).map((o, i) => { const r = rng(sd + 1000 + i * 97), kind = o.kind, size = kind === 'fire' ? Math.max(o.w || 0.6, o.h || 0.6) : kind === 'torch' ? 0.35 : 0.3;
+        const base = 12 + ((r() * 9) | 0);   // own flicker speed: 12..20 knots / loop (fastest octave < 8 Hz: flicker, not strobe)
+        const em = []; const ne = kind === 'fire' ? 4 + Math.round(size * 2) : kind === 'torch' ? 1 : 0; for (let j = 0; j < ne; j++) em.push({ m: 2 + ((r() * 2) | 0), p: r(), life: 0.45 + r() * 0.3, ox: (r() - 0.5) * size * 0.5, oy: (r() - 0.5) * size * 0.3, rise: 0.7 + r() * 0.8, drift: (r() - 0.5) * 0.5, wob: pnoise1(sd + 3000 + i * 31 + j, 5 + j), s: 0.6 + r() * 0.6 });
+        return { o, kind, size, R: (kind === 'fire' ? 2.3 + size * 1.2 : kind === 'torch' ? 1.6 : 1.25), I: pfbm1(sd + 2000 + i * 13, base), F: pfbm1(sd + 2100 + i * 13, base * 2 + 7), J: [pnoise1(sd + 2200 + i, 9 + (i % 4)), pnoise1(sd + 2300 + i, 11 + (i % 3))], em,
+          amp: kind === 'fire' ? 1 : kind === 'torch' ? 0.8 : 0.3 }; });
+      const crys = ov.filter(o => o.kind === 'crystal-pulse').map((c, i) => { const r = rng(sd + 4000 + i), sp = []; for (let j = 0; j < 6; j++) { const a = r() * TAU, d = (c.r || 1) * (0.15 + r() * 0.45); sp.push({ x: c.x + Math.cos(a) * d, y: c.y - 0.15 + Math.sin(a) * d * 0.8, m: 1 + ((r() * 2) | 0), p: r(), w: 0.07 + r() * 0.05, s: 0.18 + r() * 0.12 }); }
+        return { c, G: pfbm1(sd + 4100 + i, 6), sp }; });
+      ctl.draw = t => { const u = ((t / LOOP_S) % 1 + 1) % 1; x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1; x.clearRect(0, 0, W, H); x.setTransform(1, 0, 0, 1, -ox * Sq, -oy * Sq);
+        const ga = opts.intensity == null ? 1 : opts.intensity;
+        if (WF) { const F = WF, L = F.look, u32 = F.u32, TA = F.TA, TB = F.TB, oA = L.nA * TN * u, oB = L.nB * TN * u, sA = F.sA, sB = F.sB, kL = L.kL * ga, kD = L.kD * ga, gl = L.glint * ga, fo = L.foam * ga, fr = L.fr;
+          const [lr0, lg0, lb0] = L.Lc, [dr0, dg0, db0] = L.Dc, wash = F.surf;
+          for (let k = 0; k < F.n; k++) { const s = F.S[k], d = F.D[k] + F.wx[k], wc = F.Wc[k];
+            const a1 = samp(TA, s * sA - oA, d * sA), a2 = samp(TB, s * sB - oB + 17, d * sB * 0.8 + 29);   // two textures advected along the flow at different speeds
+            const r1 = 1 - Math.abs(2 * a1 - 1), r2 = 1 - Math.abs(2 * a2 - 1), ca = r1 * r2;                // ridge x ridge = soft caustic network
+            const v = a1 * (0.35 + 0.4 * wc) + a2 * (0.65 - 0.4 * wc);
+            let aL = Math.max(0, ca - 0.42) * 1.7 * kL, aD = Math.max(0, 0.48 - v) * 2 * kD;
+            if (ca > 0.84) aL += (ca - 0.84) * 6 * gl * (0.4 + 0.6 * wc);                                       // specular glints ride the caustic peaks
+            let aF = 0; const b = F.B[k]; if (fo && b < fr * 2.2) { let reach = fr; if (wash) reach = fr * (0.55 + 1.1 * (0.5 + 0.5 * Math.sin(TAU * (2 * u + F.ph[k] * 1.6)))); aF = sstep(reach, 0, b) * sstep(0.42, 0.68, a1 * 0.7 + a2 * 0.3 + (1 - b / (reach + 0.01)) * 0.12) * fo; }
+            // composite dark, then light, then foam (premultiplied), times the mask
+            let pa = aD, pr = dr0 * aD, pg = dg0 * aD, pb = db0 * aD; aL = Math.min(0.6, aL); pr = lr0 * aL + pr * (1 - aL); pg = lg0 * aL + pg * (1 - aL); pb = lb0 * aL + pb * (1 - aL); pa = aL + pa * (1 - aL);
+            if (aF > 0) { aF = Math.min(0.7, aF); pr = 244 * aF + pr * (1 - aF); pg = 248 * aF + pg * (1 - aF); pb = 244 * aF + pb * (1 - aF); pa = aF + pa * (1 - aF); }
+            const m = sstep(0.5, 0.95, F.A[k]), A8 = (pa * m * 255) | 0; u32[F.idx[k]] = A8 < 1 ? 0 : (A8 << 24) | (((pb / pa) | 0) << 16) | (((pg / pa) | 0) << 8) | ((pr / pa) | 0); }
+          F.bx.putImageData(F.img, 0, 0, F.bb[0], F.bb[1], F.bb[2], F.bb[3]); x.drawImage(F.buf, 0, 0, F.BW, F.BH, 0, 0, rc * Sq, rr * Sq); }
+        if (LF) { const F = LF, u32 = F.u32, TA = F.TA, TB = F.TB, sa = TN / 3.0, sb = TN / 2.2, ka = TN / 1.5, kb = TN / 1.1, DA = 1.05 * ka, DB = 0.75 * kb, ca = Math.cos(TAU * u), sn = Math.sin(TAU * u), CH = 0.12;
+          // channels: two-phase flow-map advection along the flow (layer A 1.05 sq / 8 s = 0.13 sq/s, layer B 0.75 sq / 8 s = 0.09 sq/s); the crossfade phase
+          // varies smoothly per pixel so no region pulses with another. Pool: the same noise churned by slow per-region circular warps (radius 0.18 sq).
+          // Blended by the mid-channel weight Wc. Everything is periodic over the loop.
+          for (let k = 0; k < F.n; k++) { const wc = F.Wc[k], s0 = F.S[k] + F.ws[k], d0 = F.D[k] + F.wx[k];
+            const cx = CH * (ca * F.k1[k] - sn * F.q1[k]), cy = CH * (sn * F.k2[k] + ca * F.q2[k]);
+            let cp = 0; if (wc < 0.5) { const ux = F.X[k] + cx, vy = F.Y[k] + cy;   /* pool: map space (flow coords form arcs around channel ends) */ cp = samp(TA, ux * sa, vy * sa) * 0.6 + samp(TB, ux * sb + 21, vy * sb + 7) * 0.4; }
+            let c = cp; if (wc > 0.1) { const fa = (u + F.fp[k]) % 1, fb = (fa + 0.5) % 1, w = 1 - Math.abs(2 * fa - 1), sA = s0 * ka, dA = (d0 + cy * 0.4 + 0.31 * s0) * ka, sB = s0 * kb, dB = (d0 + cy * 0.4 - 0.27 * s0) * kb;   /* sheared so a narrow channel samples every row of the tile */   // finer crust in the narrow channels
+              let cm = (samp(TA, sA - fa * DA, dA) * 0.6 + samp(TB, sB - fa * DB + 21, dB + 7) * 0.4) * w + (samp(TA, sA - fb * DA + 37, dA + 13) * 0.6 + samp(TB, sB - fb * DB + 5, dB + 51) * 0.4) * (1 - w);
+              cm = 0.5 + (cm - 0.5) * 1.25 / Math.sqrt(w * w + (1 - w) * (1 - w)); const t2 = sstep(0.1, 0.5, wc); c = t2 >= 1 ? cm : cm * t2 + cp * (1 - t2); }
+            c = 0.5 + (c - 0.5) * 2.0;
+            const w2 = 0.5 + 0.5 * F.SIN[((u + F.ph2[k]) * 1024 | 0) & 1023]; let b = F.nA[k] * w2 + F.nB[k] * (1 - w2); b = Math.max(0, Math.min(1, 0.5 + (b - 0.5) * 1.5 / Math.sqrt(w2 * w2 + (1 - w2) * (1 - w2))));   // soft heat variation
+            const edge = sstep(0.02, 0.22, F.B[k]), plate = sstep(0.42 + 0.08 * wc, 0.62 + 0.08 * wc, c) * edge * (0.6 + 0.4 * (1 - b)) * (1 + 0.25 * wc), crack = (1 - sstep(0.02, 0.085, Math.abs(c - 0.44 - 0.06 * wc))) * edge * 0.8;
+            const aD = Math.min(0.7, plate * (0.4 + 0.22 * sstep(0.65, 0.95, c)) + Math.max(0, 0.42 - b) * 0.3) * ga;
+            const aL = Math.min(0.4, crack * (0.15 + 0.25 * b) + Math.max(0, b - 0.62) * 0.22) * ga;
+            let pa = aD, pr = 52 * aD, pg = 20 * aD, pb = 10 * aD; pr = 255 * aL + pr * (1 - aL); pg = (110 + 60 * b) * aL + pg * (1 - aL); pb = (36 + 30 * b) * aL + pb * (1 - aL); pa = aL + pa * (1 - aL);
+            const m = sstep(0.4, 0.9, F.A[k]), A8 = (pa * m * 255) | 0; u32[F.idx[k]] = A8 < 1 ? 0 : (A8 << 24) | (((pb / pa) | 0) << 16) | (((pg / pa) | 0) << 8) | ((pr / pa) | 0); }
+          F.bx.putImageData(F.img, 0, 0, F.bb[0], F.bb[1], F.bb[2], F.bb[3]); x.drawImage(F.buf, 0, 0, F.BW, F.BH, 0, 0, rc * Sq, rr * Sq);
+          for (const q of bub) { const e = (u + q.p) % 1; if (e > 0.25) continue; const X = q.x * Sq, Y = q.y * Sq, R0 = q.s * Sq;   // once per loop, in place: ~1.5 s swell, ~0.5 s soft glow
+            if (e < 0.19) { const g = e / 0.19, R = R0 * (0.35 + 0.65 * sstep(0, 1, g)); x.globalAlpha = Math.min(1, g * 3) * ga; x.save(); x.translate(X, Y); x.rotate(q.rot); x.drawImage(F.spr[q.sp], -R * 1.4, -R * 1.4, R * 2.8, R * 2.8); x.restore(); }
+            else { const g = (e - 0.19) / 0.06, R = R0 * (1.6 + 0.6 * g); x.globalCompositeOperation = 'lighter'; x.globalAlpha = 0.6 * (1 - g) * (1 - g) * ga; x.drawImage(F.pop, X - R, Y - R, R * 2, R * 2); x.globalCompositeOperation = 'source-over'; } }
+          x.globalAlpha = 1; }
+        for (const f of fires) { const X0 = f.o.x * Sq, Y0 = f.o.y * Sq, k = Math.max(-1, Math.min(1, f.I(u))), kf = f.F(u), A = f.amp * ga;
+          const X = X0 + (f.J[0](u) - 0.5) * 0.12 * Sq * f.amp, Y = Y0 + (f.J[1](u) - 0.5) * 0.12 * Sq * f.amp, R = f.R * Sq * (1 + 0.05 * kf * f.amp);   // light wobbles a little on the ground
+          if (k > 0) { x.globalCompositeOperation = 'lighter'; x.globalAlpha = k * 0.2 * A; x.drawImage(f.kind === 'lamp' ? gLamp : gFire, X - R, Y - R, R * 2, R * 2); }
+          else { x.globalCompositeOperation = 'source-over'; x.globalAlpha = -k * 0.13 * A; x.drawImage(gDark, X - R * 0.9, Y - R * 0.9, R * 1.8, R * 1.8); }
+          if (f.kind !== 'lamp') { const rc2 = f.size * Sq * 0.75; x.globalCompositeOperation = 'lighter'; x.globalAlpha = Math.max(0, 0.1 + 0.12 * kf + 0.06 * k) * A; x.drawImage(gCore, X0 - rc2, Y0 - rc2 * 1.1, rc2 * 2, rc2 * 2); }
+          x.globalCompositeOperation = 'lighter';
+          for (const e of f.em) { const a = (u * e.m + e.p) % 1; if (a > e.life) continue; const g = a / e.life, ey = Y0 + (e.oy - e.rise * g) * Sq, ex = X0 + (e.ox + e.drift * g + (e.wob(u) - 0.5) * 0.35 * g) * Sq;
+            const al = Math.min(1, g * 8) * Math.pow(1 - g, 1.6) * 0.85 * ga, sz = Sq * 0.1 * e.s * (1 - 0.5 * g); x.globalAlpha = al; x.drawImage(gEmb, ex - sz, ey - sz, sz * 2, sz * 2); } }
+        for (const cr of crys) { const c = cr.c, g = cr.G(u), R = (c.r || 1) * Sq * 2.1; x.globalCompositeOperation = 'lighter'; x.globalAlpha = Math.max(0, 0.07 + 0.045 * g) * ga; x.drawImage(gCry, c.x * Sq - R, (c.y - 0.15) * Sq - R, R * 2, R * 2);
+          for (const p of cr.sp) { const e = (u * p.m + p.p) % 1; if (e > p.w) continue; const b = Math.sin(Math.PI * e / p.w), s = p.s * Sq * (0.6 + 0.4 * b), X = p.x * Sq, Y = p.y * Sq;   // facets catch the light now and then
+            x.globalAlpha = 0.55 * b * b * ga; x.drawImage(gStar, X - s * 0.35, Y - s * 0.35, s * 0.7, s * 0.7); x.globalAlpha = 0.35 * b * b * ga; x.fillStyle = '#eafff4'; x.fillRect(X - s, Y - 0.6, s * 2, 1.2); x.fillRect(X - 0.6, Y - s, 1.2, s * 2); } }
+        x.globalAlpha = 1; x.globalCompositeOperation = 'source-over'; };
+      ctl.hasWater = !!WF; ctl.hasLava = !!LF; ctl.bubbles = bub.map(q => ({ x: q.x, y: q.y, r: q.s, t: ((1 - q.p) % 1) * LOOP_S })); ctl.lights = fires.length + crys.length; ctl.loopSeconds = LOOP_S; ctl.pixels = (WF ? WF.n : 0) + (LF ? LF.n : 0);
+      if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVis);
+      if (!opts.manual) raf = requestAnimationFrame(tick); return ctl; });
+    return ctl;
+  }
+  // Drop-in for the app's paintedOverlaySVG(meta.overlays, cols, rows): takes the cached record's meta ({id, cols, rows, px})
+  // and returns the controller; insert ctl.el (a <canvas class="pm-ov">) exactly where the SVG went.
+  function createOverlay(meta, opts) { meta = meta || {}; return animate(null, meta.id || meta.mapId, meta.cols || 20, meta.rows || 15, meta.px || meta.pxPerSquare || 64, opts); }
 
   // ------------------------------------------------------------------ public API
   // Same ids/names/categories as the app's BATTLE_MAPS (1:1), plus the new chapel.
@@ -1145,7 +1406,7 @@
   async function render(mapId, cols, rows, pxPerSquare, opts) { await ensurePack(mapId); return renderSync(mapId, cols, rows, pxPerSquare, opts); }
   function toWebP(canvas, quality) { if (typeof canvas.convertToBlob === 'function') return canvas.convertToBlob({ type: 'image/webp', quality: quality == null ? 0.75 : quality }); return new Promise((res, rej) => canvas.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/webp', quality == null ? 0.75 : quality)); }
   if (root.__hearthPaintedPacks) for (const k of Object.keys(root.__hearthPaintedPacks)) registerPack(k, root.__hearthPaintedPacks[k]);
-  root.HearthPaintedMaps = { version: '0.5.0', maps: CATALOG.map(m => m[0]),
+  root.HearthPaintedMaps = { version: '0.6.0', animate, createOverlay, animLoopSeconds: LOOP_S, maps: CATALOG.map(m => m[0]),
     list: () => CATALOG.map(([id, name, cat]) => ({ id, name, cat })),
     ready, ensurePack, render, renderSync, toWebP, registerPack,
     packsFor: id => ['core'].concat(MAP_PACKS[id] || []), packFiles: () => Object.assign({}, PACK_FILES),

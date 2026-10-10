@@ -13,7 +13,7 @@
 // Bump CACHE_VERSION whenever you ship a new build (keep it in step with
 // CACHE_VERSION in /sw.js).
 
-const CACHE_VERSION = 'hearth-v1.1.2';
+const CACHE_VERSION = 'hearth-v1.2.0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -34,6 +34,7 @@ const APP_SHELL = [
   './painted/packs/hazard.js',
   './painted/thumbs.webp',
 ];
+const OCR_CACHE = 'hearth-ocr-5.1.1'; // kept across app updates (only the version changes it)
 const SHELL_URL = new URL('./', self.registration ? self.registration.scope : self.location.href).href;
 const NAV_TIMEOUT_MS = 6000;
 
@@ -51,7 +52,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((names) => Promise.all(names
       // Keep this build's cache and the landing-page worker's cache ('hearth-site-*', it cleans up its own).
-      .filter((n) => n !== CACHE_VERSION && !n.startsWith('hearth-site-'))
+      .filter((n) => n !== CACHE_VERSION && !n.startsWith('hearth-site-') && n !== OCR_CACHE)
       .map((n) => caches.delete(n))
     )).then(() => self.clients.claim())
   );
@@ -103,6 +104,15 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  // v1.2.0 — the photo reader (Tesseract.js, pinned version on jsDelivr) is
+  // downloaded on first use; keep a copy so photo import also works offline.
+  if (url.hostname === 'cdn.jsdelivr.net' && /^\/npm\/(tesseract\.js|tesseract\.js-core|@tesseract\.js-data)[@/]/.test(url.pathname)) {
+    event.respondWith(caches.open(OCR_CACHE).then((c) => c.match(req).then((hit) => hit || fetch(req).then((res) => {
+      if (res && res.ok && (res.type === 'cors' || res.type === 'basic')) c.put(req, res.clone()).catch(() => {});
+      return res;
+    }))));
+    return;
+  }
   if (url.origin !== location.origin) return;
   if (url.pathname.startsWith('/download/')) return;
 
