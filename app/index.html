@@ -1437,6 +1437,25 @@
   .cl-contribute-title { font-weight:700; color:var(--gold); margin-bottom:4px; }
   .cl-contribute-desc { font-size:11.5px; color:var(--ink-faded); margin-bottom:10px; line-height:1.35; }
   .cl-repo-soon { font-size:12px; color:var(--ink-faded); font-style:italic; }
+  /* v0.92.1 — library search / filter / sort */
+  .cl-pv-features { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.cl-pv-feature { border: 1px solid rgba(201,168,106,0.25); border-radius: 8px; padding: 6px 10px; background: rgba(0,0,0,0.12); }
+.cl-pv-feature summary { cursor: pointer; font-weight: 600; font-size: 13px; }
+.cl-pv-flvl { display: inline-block; min-width: 30px; font-size: 11px; opacity: 0.7; }
+.cl-pv-ftext { margin-top: 6px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+.cl-toolbar { display:flex; flex-direction:column; gap:8px; margin:4px 0 10px; }
+  .cl-search-row { display:flex; gap:8px; }
+  .cl-search { flex:1; min-width:0; font:inherit; font-size:14px; padding:8px 10px; border:1px solid var(--card-border); border-radius:8px; background:var(--card-surface); color:var(--ink); }
+  .cl-sort { flex:none; font:inherit; font-size:13px; padding:6px 8px; border:1px solid var(--card-border); border-radius:8px; background:var(--card-surface); color:var(--ink); }
+  .cl-chips { display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
+  .cl-chip { flex:none; font:inherit; font-size:12px; padding:4px 10px; border:1px solid var(--card-border); border-radius:999px; background:var(--card-surface); color:var(--ink-soft, var(--ink)); cursor:pointer; white-space:nowrap; }
+  .cl-chip.sel { background:var(--gold); border-color:var(--gold); color:var(--page); font-weight:700; }
+  .cl-chip-n { font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace; font-size:10.5px; opacity:0.75; margin-left:2px; }
+  .cl-results { font-size:12px; color:var(--ink-faded); margin:0 0 2px; }
+  .cl-card-tags { display:flex; flex-wrap:wrap; gap:4px; margin-top:3px; }
+  .cl-chip-tag { font-size:10px; color:var(--ink-faded); }
+  .cl-debug { font-size:11px; color:var(--crimson); }
+  .cl-noresults .btn-link { background:none; border:none; padding:0; font:inherit; color:var(--gold); text-decoration:underline; cursor:pointer; }
   .dm-map-addmap { background: var(--gold); color: var(--page); border-color: var(--gold); }
   .map-token { position: absolute; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: grab; touch-action: none; user-select: none; border: 2px solid; box-sizing: border-box; overflow: visible; }
   .map-token.dragging { cursor: grabbing; z-index: 10; opacity: 0.9; }
@@ -7785,7 +7804,7 @@
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '0.92.0';
+const HEARTH_VERSION = '0.92.1';
 // ============================================================
 // SRD 5.1 DATA v2 - structured for in-app casting
 // All content here is from the SRD 5.1 (CC-BY-4.0)
@@ -13137,12 +13156,27 @@ function characterDamageResistances(ch) {
   // is active (equipped + attuned). 'choice' items grant a DM-chosen element,
   // surfaced as such until the player records the chosen type in notes.
   const invItems = (ch.inventory && ch.inventory.items) || [];
+  // v0.92.1 — also honour mech.resistType (forged and community items such as
+  // Green Scale Shield / Mirror Shield), and count an item worn in the armour
+  // or shield slot as equipped. Attunement is still required when the item
+  // asks for it.
+  const invObj = ch.inventory || {};
+  const slotIds = [(invObj.armor && invObj.armor.magicItemId) || null, invObj.shieldMagicItemId || null].filter(Boolean);
+  const seenResist = new Set();
   invItems.forEach(it => {
-    if (typeof itemBonusActive === 'function' && !itemBonusActive(it)) return;
     const d = (typeof itemMagicData === 'function') ? itemMagicData(it) : null;
-    if (!d || !d.resist) return;
-    if (d.resist === 'choice') add('chosen element', d.name);
-    else add(d.resist, d.name);
+    if (!d) return;
+    const r = d.resist || (d.mech && d.mech.resistType) || null;
+    if (!r) return;
+    const inSlot = it.magicItemId && slotIds.includes(it.magicItemId);
+    const active = (typeof itemBonusActive === 'function' && itemBonusActive(it))
+      || (inSlot && !(itemRequiresAttune(it) && !it.attuned));
+    if (!active) return;
+    const key = r + '|' + d.name;
+    if (seenResist.has(key)) return;
+    seenResist.add(key);
+    if (r === 'choice') add('chosen element', d.name);
+    else add(r, d.name);
   });
 
   // v0.21.163 — resistances granted by a forged homebrew subclass.
@@ -16223,6 +16257,20 @@ function levelForXp(xp) {
 // the form "1d10 fire", "8d6 fire (Dex save, half on save)",
 // "1d8 + spell mod healing", etc., which is rendered under the desc
 // in the Browse Spells dialog and any other spell list.
+// v0.92.1 — only say "half on save" when the spell really does half damage on
+// a successful save. Cantrips never do (Poison Spray, Sacred Flame, Toll the
+// Dead…); a spell can set halfOnSave: false; community spells must say "half"
+// in their text; a few built-ins deal no damage on a success.
+const NO_HALF_SAVE_SPELLS = new Set(['Disintegrate', 'Phantasmal Killer', "Evard's Black Tentacles", 'Ensnaring Strike', 'Weird', 'Heat Metal', 'Feeblemind']);
+function spellHalvesOnSave(spell) {
+  if (!spell || spell.kind !== 'save') return false;
+  if (spell.halfOnSave === false) return false;
+  if (spell.halfOnSave === true) return true;
+  if ((spell.level || 0) === 0) return false;
+  if (NO_HALF_SAVE_SPELLS.has(spell.name)) return false;
+  if (spell._community) return /\bhalf\b/i.test(String(spell.desc || ''));
+  return true;
+}
 function spellDamageText(spell) {
   if (!spell) return '';
 
@@ -16255,7 +16303,7 @@ function spellDamageText(spell) {
   }
   if (spell.kind === 'save') {
     const saveAb = spell.save ? `${ABILITY_SHORT[spell.save] || spell.save.toUpperCase()} save` : 'save';
-    return `${d.count}d${d.sides}${dmgType} (${saveAb}, half on save)`;
+    return `${d.count}d${d.sides}${dmgType} (${saveAb}${spellHalvesOnSave(spell) ? ', half on save' : ''})`;
   }
   if (spell.kind === 'auto') {
     // Magic Missile-style: each dart hits automatically.
@@ -19975,7 +20023,7 @@ const MAGIC_ITEMS = {
   pearl_of_power:       { name: 'Pearl of Lost Light', type: 'wondrous', rarity: 'uncommon', attune: true, desc: 'While this pearl is on your person, you can use an action to recover one expended spell slot of 3rd level or lower. Once used, the pearl cannot be used again until the next dawn.' },
   ring_jumping:         { name: 'Ring of Leaping',   type: 'ring',     rarity: 'uncommon', attune: true,  desc: 'While wearing this ring, you can cast Jump on yourself as a bonus action at will, without spending a spell slot.' },
   ring_swimming:        { name: 'Ring of the Tide',  type: 'ring',     rarity: 'uncommon', attune: false, desc: 'While wearing this ring, you have a swimming speed of 40 feet.' },
-  rod_pact_one:         { name: 'Pact Rod, Lesser',  type: 'rod',      rarity: 'uncommon', attune: true,  desc: 'While holding this rod, your warlock spell attack rolls and the save DCs of your warlock spells increase by 1. You can use it as a spellcasting focus for warlock spells.', mech: { spellAttackBonus: 1 } },
+  rod_pact_one:         { name: 'Pact Rod, Lesser',  type: 'rod',      rarity: 'uncommon', attune: true,  desc: 'While holding this rod, your warlock spell attack rolls and the save DCs of your warlock spells increase by 1. You can use it as a spellcasting focus for warlock spells.', mech: { spellAttackBonus: 1, spellDcBonus: 1, spellClass: 'warlock' } },
   wand_magic_missile:   { name: 'Wand of Bolts',     type: 'wand',     rarity: 'uncommon', attune: false, desc: 'This wand has 7 charges. While holding it, you can use an action to expend 1 or more charges to cast Magic Missile from it. For 1 charge, you cast the 1st-level version. You can increase the spell slot level by 1 for each additional charge expended. The wand regains 1d6 + 1 expended charges daily at dawn.', charges: { max: 7, recover: 'dawn', regain: '1d6+1' },},
   bag_tricks_grey:      { name: 'Pouch of Beasts',   type: 'wondrous', rarity: 'uncommon', attune: false, desc: 'A small fur pouch. From which you can draw a fuzzy ball, then throw it up to 20 feet — when it lands, it transforms into a small or medium beast (DM\'s choice). The beast is friendly to you and obeys simple commands. Once you have used it three times, the pouch is empty until the next dawn.' },
   driftwood_staff:      { name: 'Tide-Washed Staff', type: 'staff',    rarity: 'uncommon', attune: true,  desc: 'A weather-beaten quarterstaff that doubles as a spellcasting focus. While holding it, you have resistance to cold damage and can breathe underwater. It functions as a +1 quarterstaff in melee.', resist: 'cold', note: 'Functions as a +1 quarterstaff in melee, and lets you breathe underwater while held.' },
@@ -19996,7 +20044,7 @@ const MAGIC_ITEMS = {
   amulet_health_legacy: { name: 'Amulet of Iron Constitution', type: 'wondrous', rarity: 'rare', attune: true, desc: 'Your Constitution score becomes 19 while you wear this amulet. It has no effect if your Constitution is already 19 or higher.', setScore: { ability: 'con', value: 19 } },
   flame_tongue:         { name: 'Flametongue Blade', type: 'weapon',   rarity: 'rare', attune: true,  desc: 'You can use a bonus action to speak the blade\'s command word, causing it to ignite. While the blade is alight, it deals an extra 2d6 fire damage on a hit and sheds bright light in a 40-foot radius and dim light for another 40. The flames last until you use a bonus action to extinguish them.', onHit: { dice: { count: 2, sides: 6 }, type: 'fire' }, baseWeapon: 'longsword', note: 'Speak the command word to ignite the blade (bonus action). The +2d6 fire applies while it\'s aflame.',},
   frost_brand:           { name: 'Frostbrand',       type: 'weapon',   rarity: 'rare', attune: true,  desc: 'When you hit with this weapon, the target takes an extra 1d6 cold damage. While holding it, you have resistance to fire damage. In addition, while you hold the weapon, any nonmagical fire within 10 feet of you is extinguished.', onHit: { dice: { count: 1, sides: 6 }, type: 'cold' }, baseWeapon: 'longsword', note: 'When you hit, the weapon sheds light; you have resistance to fire while holding it. (Already grants +1d6 cold.)',},
-  wand_lightning:       { name: 'Wand of Storm Bolts', type: 'wand',   rarity: 'rare', attune: true,  desc: 'This wand has 7 charges. As an action, expend 1 charge to cast Lightning Bolt (5d6 lightning, DC 14 Dex save for half). For each additional charge expended, the damage increases by 1d6 (max 5 charges). The wand regains 1d6 + 1 charges daily at dawn. If you spend its last charge, roll a d20 — on a 1 the wand crumbles to dust.', charges: { max: 7, recover: 'dawn', regain: '1d6+1' },},
+  wand_lightning:       { name: 'Wand of Storm Bolts', type: 'wand',   rarity: 'rare', attune: true,  desc: 'This wand has 7 charges. As an action, expend 1 charge to cast Lightning Bolt (5d6 lightning, DC 15 Dex save for half). For each additional charge expended, the damage increases by 1d6 (max 5 charges). The wand regains 1d6 + 1 charges daily at dawn. If you spend its last charge, roll a d20 — on a 1 the wand crumbles to dust.', charges: { max: 7, recover: 'dawn', regain: '1d6+1' },},
   staff_swarm:          { name: 'Staff of Swarming', type: 'staff',    rarity: 'rare', attune: true,  desc: 'A gnarled wooden staff. It can be used as a quarterstaff. While holding it, you can use an action to summon a swarm of insects in an unoccupied 10-ft cube within 60 ft. Creatures starting their turn in the cube take 4d6 piercing damage and are blinded until the start of their next turn. The swarm lasts 1 minute. Once used, the staff cannot be used again until the next dawn.' },
   scroll_revivify:      { name: 'Scroll of Revivify',type: 'scroll',   rarity: 'rare', attune: false, desc: 'A spell scroll containing Revivify (3rd level). A cleric, paladin, or other appropriate caster can read and cast it. Destroyed when used.' },
   potion_supreme_health: { name: 'Potion of Greater Healing', type: 'potion', rarity: 'rare', attune: false, desc: 'As an action, drink to regain 8d4 + 8 HP.' },
@@ -20007,14 +20055,14 @@ const MAGIC_ITEMS = {
   armor_plus_three:     { name: '+3 Armor',          type: 'armor',    rarity: 'very_rare', attune: false, desc: 'While wearing this armor, you gain a +3 bonus to AC.', mech: { acBonus: 3 } },
   shield_plus_three:    { name: '+3 Shield',         type: 'shield',   rarity: 'very_rare', attune: false, desc: 'While holding this shield, you gain an additional +3 bonus to AC (so +5 in total).', mech: { acBonus: 3 } },
   cloak_protection_3:   { name: 'Cloak of Greater Warding', type: 'wondrous', rarity: 'very_rare', attune: true, desc: 'You gain a +3 bonus to AC and saving throws while wearing this cloak.', mech: { acBonus: 3, saveBonus: 3 } },
-  amulet_proof:         { name: 'Amulet of Proof Against Detection', type: 'wondrous', rarity: 'very_rare', attune: true, desc: 'While wearing this amulet, you are hidden from divination magic. You cannot be targeted by such magic or perceived through magical scrying sensors.' },
+  amulet_proof:         { name: 'Amulet of Proof against Detection and Location', type: 'wondrous', rarity: 'uncommon', attune: true, desc: 'While wearing this amulet, you are hidden from divination magic. You cannot be targeted by such magic or perceived through magical scrying sensors.' },
   belt_storm_giant:     { name: 'Belt of Storm Giant Strength', type: 'wondrous', rarity: 'very_rare', attune: true, desc: 'While wearing this belt, your Strength score becomes 27. The belt has no effect if your Strength is already 27 or higher.', setScore: { ability: 'str', value: 27 },},
-  staff_power:          { name: 'Staff of Greater Magic', type: 'staff', rarity: 'very_rare', attune: true, desc: 'A staff bound with arcane runes. You gain +2 to attack and damage with melee attacks made with it, and a +2 bonus to spell attack rolls and spell save DCs while you hold it. It has 20 charges, and regains 2d8 + 4 expended charges daily at dawn. You can spend charges to cast spells (DM picks the spell list — typically Cone of Cold, Fireball, Lightning Bolt, Wall of Force, etc.) using your spell save DC.', charges: { max: 20, recover: 'dawn', regain: '2d8+4' },},
+  staff_power:          { name: 'Staff of Greater Magic', type: 'staff', rarity: 'very_rare', attune: true, mech: { attackBonus: 2, damageBonus: 2, acBonus: 2, saveBonus: 2, spellAttackBonus: 2 }, desc: 'A staff bound with arcane runes. You gain +2 to attack and damage rolls made with it, and while holding it you gain a +2 bonus to Armor Class, saving throws, and spell attack rolls. It has 20 charges, and regains 2d8 + 4 expended charges daily at dawn. You can spend charges to cast spells (DM picks the spell list — typically Cone of Cold, Fireball, Lightning Bolt, Wall of Force, etc.) using your spell save DC.', charges: { max: 20, recover: 'dawn', regain: '2d8+4' },},
   ring_spell_storing:   { name: 'Ring of Spell Storing', type: 'ring', rarity: 'rare', attune: true, desc: 'This ring stores spells cast into it, holding them until used. The ring can store up to 5 levels worth of spells at a time. Any creature can cast a spell of 1st through 5th level into the ring (that uses a spell slot of equal level), and it remains until cast from the ring as if cast normally. When found, it holds 1d6 \u2212 1 levels of stored spells.' },
   rod_absorption:       { name: 'Rod of Absorption',  type: 'rod',     rarity: 'very_rare', attune: true,  desc: 'While holding this rod, you can use your reaction to absorb a spell that targets only you and not an area. The absorbed spell\'s level is added to the rod\'s pool of stored levels. You can use stored levels to cast spells you know, treating each level as a slot of equal level. The rod can store up to 50 spell levels in total. If exceeded, it crumbles.' },
 
   // ============ LEGENDARY ============
-  cloak_archmage:       { name: 'Cloak of the Archmage', type: 'wondrous', rarity: 'legendary', attune: true, mech: { spellAttackBonus: 2 }, desc: 'While wearing this cloak, your spell attack rolls and save DCs gain a +2 bonus, and you have advantage on saving throws against spells. You also gain resistance to force damage.', resist: 'force', charges: { max: 3, recover: 'dawn', regain: null },},
+  cloak_archmage:       { name: 'Cloak of the Archmage', type: 'wondrous', rarity: 'legendary', attune: true, mech: { spellAttackBonus: 2, spellDcBonus: 2 }, desc: 'While wearing this cloak, your spell attack rolls and save DCs gain a +2 bonus, and you have advantage on saving throws against spells. You also gain resistance to force damage.', resist: 'force', charges: { max: 3, recover: 'dawn', regain: null },},
   vorpal_blade:         { name: 'Edge of Severance', type: 'weapon',   rarity: 'legendary', attune: true,  desc: 'You have a +3 bonus to attack and damage rolls with this magic weapon. When you roll a 20 on the attack roll against a creature with at least one head and is not immune to slashing damage, you sever one of the target\'s heads. If the creature has only one head and the loss of a head is fatal, you kill it. Otherwise, it takes 6d8 extra slashing damage.', mech: { attackBonus: 3, damageBonus: 3 }, baseWeapon: 'greatsword', weaponMagicBonus: 3, note: 'Ignores slashing resistance. On a hit you can sever a limb/appendage at the DM\'s discretion.', critNote: 'On a 20 vs a creature with a head: if it has any HP left and isn\'t immune to slashing/being decapitated, it\'s beheaded and dies. Otherwise +6d8 slashing.',},
   scarab_protection:    { name: 'Scarab of Warding', type: 'wondrous', rarity: 'legendary', attune: true,  desc: 'While holding this scarab, you have advantage on saving throws against spells. The scarab has 12 charges. If you fail a saving throw against a spell of 6th level or lower, you can use your reaction to expend 1 charge to succeed instead. The scarab crumbles if it loses all charges.' },
   manual_quickness:     { name: 'Tome of Swift Action', type: 'wondrous', rarity: 'very_rare', attune: false, desc: 'Studying this tome over 48 hours within 6 days permanently increases your Dexterity score by 2 (max 24). The book vanishes from your possession the moment you finish, reappearing in some random place a century later.' },
@@ -20069,9 +20117,9 @@ const MAGIC_ITEMS = {
   wand_enemy_detection: { name: 'Wand of Enemy Detection',   type: 'wand', rarity: 'rare',      attune: true,  desc: 'Holds 7 charges. Expend 1 to sense the direction of hostile creatures within 60 ft for 1 minute (concentration). Regains 1d6+1 charges at dawn.' },
   wand_magic_detection: { name: 'Wand of Magic Detection',   type: 'wand', rarity: 'uncommon',  attune: false, desc: 'Holds 3 charges. Expend 1 to cast detect magic. Regains 1d3 charges at dawn.' },
   wand_binding:         { name: 'Wand of Binding',           type: 'wand', rarity: 'rare',      attune: true,  desc: 'Holds 7 charges. Expend charges to escape restraint, or to cast hold monster or hold person (save DC 17). Regains 1d6+1 charges at dawn.' },
-  wand_war_mage_1:      { name: 'Wand of the War Mage +1',   type: 'wand', rarity: 'uncommon',  attune: true,  desc: 'While holding it you gain a +1 bonus to spell attack rolls and ignore half cover when making a spell attack.' },
-  wand_war_mage_2:      { name: 'Wand of the War Mage +2',   type: 'wand', rarity: 'rare',      attune: true,  desc: 'While holding it you gain a +2 bonus to spell attack rolls and ignore half cover when making a spell attack.' },
-  wand_war_mage_3:      { name: 'Wand of the War Mage +3',   type: 'wand', rarity: 'very_rare', attune: true,  desc: 'While holding it you gain a +3 bonus to spell attack rolls and ignore half cover when making a spell attack.' },
+  wand_war_mage_1:      { name: 'Wand of the War Mage +1',   type: 'wand', mech: { spellAttackBonus: 1 }, rarity: 'uncommon',  attune: true,  desc: 'While holding it you gain a +1 bonus to spell attack rolls and ignore half cover when making a spell attack.' },
+  wand_war_mage_2:      { name: 'Wand of the War Mage +2',   type: 'wand', mech: { spellAttackBonus: 2 }, rarity: 'rare',      attune: true,  desc: 'While holding it you gain a +2 bonus to spell attack rolls and ignore half cover when making a spell attack.' },
+  wand_war_mage_3:      { name: 'Wand of the War Mage +3',   type: 'wand', mech: { spellAttackBonus: 3 }, rarity: 'very_rare', attune: true,  desc: 'While holding it you gain a +3 bonus to spell attack rolls and ignore half cover when making a spell attack.' },
   scroll_1st:           { name: 'Spell Scroll (1st Level)',  type: 'scroll', rarity: 'common',    attune: false, desc: 'Cast the 1st-level spell scribed on this scroll (save DC 13, attack +5). The scroll then crumbles to dust.' },
   scroll_2nd:           { name: 'Spell Scroll (2nd Level)',  type: 'scroll', rarity: 'uncommon',  attune: false, desc: 'Cast the 2nd-level spell scribed on this scroll (save DC 13, attack +5). The scroll then crumbles to dust.' },
   scroll_3rd:           { name: 'Spell Scroll (3rd Level)',  type: 'scroll', rarity: 'uncommon',  attune: false, desc: 'Cast the 3rd-level spell scribed on this scroll (save DC 15, attack +7). The scroll then crumbles to dust.' },
@@ -20113,7 +20161,7 @@ const MAGIC_ITEMS = {
   ring_protection_1:    { name: 'Ring of Protection',     type: 'ring',     rarity: 'rare', attune: true, desc: 'You gain a +1 bonus to AC and saving throws while wearing this ring.', mech: { acBonus: 1, saveBonus: 1 } },
   ring_resistance:      { name: 'Ring of Resistance',     type: 'ring',     rarity: 'rare', attune: true, desc: 'You have resistance to one damage type (chosen when the ring is found — fire, cold, acid, etc.) while wearing this ring.', resist: 'choice',},
   cloak_protection_2:   { name: 'Cloak of Protection',    type: 'wondrous', rarity: 'uncommon', attune: true, desc: 'You gain a +1 bonus to AC and saving throws while wearing this cloak.', mech: { acBonus: 1, saveBonus: 1 } },
-  amulet_devout_2:      { name: 'Amulet of the Devout +2', type: 'wondrous', rarity: 'very_rare', attune: true, mech: { spellAttackBonus: 2 }, desc: 'While wearing this holy amulet, you gain a +2 bonus to spell attack rolls and save DCs, and you can use it as a spellcasting focus. It also grants extra uses of Channel Divinity.' },
+  amulet_devout_2:      { name: 'Amulet of the Devout +2', type: 'wondrous', rarity: 'very_rare', attune: true, mech: { spellAttackBonus: 2, spellDcBonus: 2 }, desc: 'While wearing this holy amulet, you gain a +2 bonus to spell attack rolls and save DCs, and you can use it as a spellcasting focus. It also grants extra uses of Channel Divinity.' },
   rod_rulership:        { name: 'Rod of Rulership',       type: 'rod',      rarity: 'rare', attune: true, desc: 'As an action, present the rod and command obedience: each creature of your choice within 120 ft that can see and hear you must succeed on a DC 15 Wisdom save or be charmed by you for 8 hours (or until you or your allies harm it). Once per day.', perDay: 1,},
   staff_healing:        { name: 'Staff of Healing',       type: 'staff',    rarity: 'rare', attune: true, desc: '10 charges. While holding it, expend charges to cast Cure Wounds (1 charge/level), Lesser Restoration (2), or Mass Cure Wounds (5). Regains 1d6+4 charges at dawn.', charges: { max: 10, recover: 'dawn', regain: '1d6+4' },},
   gem_seeing:           { name: 'Gem of Seeing',          type: 'wondrous', rarity: 'rare', attune: true, desc: '3 charges. As an action, expend 1 charge to gain truesight out to 120 ft for 10 minutes. Regains 1d3 charges at dawn.', charges: { max: 3, recover: 'dawn', regain: null },},
@@ -20132,7 +20180,7 @@ const MAGIC_ITEMS = {
   tome_clear_thought:   { name: 'Tome of Clear Thought',  type: 'wondrous', rarity: 'very_rare', attune: false, desc: 'Studying this book over 48 hours within 6 days permanently raises your Intelligence by 2 (max 24). The book then loses its magic for a century.' },
   tome_leadership:      { name: 'Tome of Leadership and Influence', type: 'wondrous', rarity: 'very_rare', attune: false, desc: 'Studying this book over 48 hours within 6 days permanently raises your Charisma by 2 (max 24). The book then loses its magic for a century.' },
   tome_understanding:   { name: 'Tome of Understanding',  type: 'wondrous', rarity: 'very_rare', attune: false, desc: 'Studying this book over 48 hours within 6 days permanently raises your Wisdom by 2 (max 24). The book then loses its magic for a century.' },
-  staff_woodlands:      { name: 'Staff of the Woodlands', type: 'staff',    rarity: 'rare', attune: true, desc: '+2 to attack and damage as a quarterstaff and to your spell save DC. 10 charges for druid spells (Animal Friendship, Pass Without Trace, Wall of Thorns, etc.); can also Tree Stride and turn into a tree.', mech: { attackBonus: 2, damageBonus: 2 } },
+  staff_woodlands:      { name: 'Staff of the Woodlands', type: 'staff',    rarity: 'rare', attune: true, desc: '+2 to attack and damage rolls as a quarterstaff, and +2 to your spell attack rolls while you hold it. 10 charges for druid spells (Animal Friendship, Pass Without Trace, Wall of Thorns, etc.); can also Tree Stride and turn into a tree.', mech: { attackBonus: 2, damageBonus: 2, spellAttackBonus: 2 } },
   staff_fire:           { name: 'Staff of Fire',          type: 'staff',    rarity: 'very_rare', attune: true, desc: 'You have resistance to fire damage. 10 charges to cast Burning Hands, Fireball, and Wall of Fire. Regains 1d6+4 charges at dawn.', resist: 'fire', charges: { max: 10, recover: 'dawn', regain: '1d6+4' },},
   staff_frost:          { name: 'Staff of Frost',         type: 'staff',    rarity: 'very_rare', attune: true, desc: 'You have resistance to cold damage. 10 charges to cast Cone of Cold, Fog Cloud, Ice Storm, and Wall of Ice. Regains 1d6+4 charges at dawn.', resist: 'cold', charges: { max: 10, recover: 'dawn', regain: '1d6+4' },},
   staff_thunder:        { name: 'Staff of Thunder and Lightning', type: 'staff', rarity: 'very_rare', attune: true, desc: 'Functions as a +2 quarterstaff. Several daily powers: a lightning strike on a hit (2d10), a thunderclap, or both at once. Each property has its own daily recharge.', mech: { attackBonus: 2, damageBonus: 2 } },
@@ -21196,6 +21244,18 @@ function loadCharacters() {
   catch { return []; }
 }
 function saveCharacters(list) {
+  // v0.92.1 — a deleted character must not live on as an "Unfinished character" draft.
+  try {
+    const keep = new Set((list || []).map(c => c && c.id));
+    const gone = loadCharacters().map(c => c && c.id).filter(id => id && !keep.has(id));
+    if (gone.length) {
+      gone.forEach(id => { if (typeof tombstoneDraft === 'function') tombstoneDraft(id); });
+      if (state && state.draft && gone.includes(state.draft.id)) { state.draft = null; state.wizardStep = 0; }
+      const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+      const saved = raw ? JSON.parse(raw) : null;
+      if (saved && saved.draft && gone.includes(saved.draft.id)) localStorage.removeItem(DRAFT_STORAGE_KEY);
+    }
+  } catch (e) { /* never block a save */ }
   try { localStorage.setItem(charactersKey(), JSON.stringify(list)); }
   catch (e) { console.warn('Save failed:', e); }
 }
@@ -21723,36 +21783,49 @@ function dmRandomEncounter(opts) {
   pool.forEach(m => { const w = weightFor(m.cr); for (let i = 0; i < w; i++) weighted.push(m); });
   if (weighted.length === 0) { return enc; }
 
-  // Choose 1–2 distinct monster types.
-  const typesWanted = 1 + Math.floor(Math.random() * 2);
-  const chosenTypes = [];
-  for (let i = 0; i < typesWanted; i++) {
-    const pick = weighted[Math.floor(Math.random() * weighted.length)];
-    if (!chosenTypes.find(x => x.id === pick.id)) chosenTypes.push(pick);
-  }
-  if (chosenTypes.length === 0) chosenTypes.push(weighted[0]);
-
-  // Add monsters (round-robin across the chosen types) until the
-  // adjusted XP reaches the target, capping count to avoid runaway.
-  const toAdd = [];
+  // v0.92.1 — try many compositions and keep the one that lands inside the
+  // requested band, preferring fewer, stronger monsters. The old single pass
+  // filled with the first 1–2 random types up to 12 and often stopped short
+  // of Hard/Deadly with weak picks.
   const maxMonsters = 12;
-  let guard = 0;
-  while (guard++ < 200) {
-    const count = toAdd.length;
-    const rawXP = toAdd.reduce((s, m) => s + monsterXP(m), 0);
-    const adj = rawXP * encounterMultiplier(count, playerCount); // v0.91.3 — party size
-    if (count >= 1 && adj >= targetAdjXP) break;
-    if (count >= maxMonsters) break;
-    toAdd.push(chosenTypes[count % chosenTypes.length]);
+  const adjOf = (list) => list.reduce((s, m) => s + monsterXP(m), 0) * encounterMultiplier(list.length, playerCount);
+  const inBand = (adj) => adj >= bandFloor && (targetBand === 'deadly' || adj < bandCeil);
+  const fill = (types) => {
+    const out = [];
+    let guard = 0;
+    while (guard++ < 200) {
+      if (out.length >= 1 && adjOf(out) >= targetAdjXP) break;
+      if (out.length >= maxMonsters) break;
+      out.push(types[out.length % types.length]);
+    }
+    if (out.length > 1) {
+      const withLast = adjOf(out), without = adjOf(out.slice(0, -1));
+      if (Math.abs(without - targetAdjXP) < Math.abs(withLast - targetAdjXP) && (inBand(without) || !inBand(withLast))) out.pop();
+    }
+    return out;
+  };
+  const score = (list) => {
+    const adj = adjOf(list);
+    if (inBand(adj)) return Math.abs(adj - targetAdjXP) / targetAdjXP + 0.06 * list.length + Math.random() * 0.15;
+    const edge = adj < bandFloor ? bandFloor : bandCeil;
+    return 10 + Math.abs(adj - edge) / targetAdjXP + 0.01 * list.length;
+  };
+  const pickWeighted = () => weighted[Math.floor(Math.random() * weighted.length)];
+  const strong = pool.slice().sort((x, y) => y.cr - x.cr).slice(0, Math.max(6, Math.ceil(pool.length / 5)));
+  let toAdd = null, best = Infinity;
+  for (let t = 0; t < 120; t++) {
+    const types = [];
+    const typesWanted = 1 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < typesWanted; i++) {
+      const pick = (t % 3 === 2) ? strong[Math.floor(Math.random() * strong.length)] : pickWeighted();
+      if (pick && !types.find(x => x.id === pick.id)) types.push(pick);
+    }
+    if (!types.length) continue;
+    const list = fill(types);
+    const sc = score(list);
+    if (sc < best) { best = sc; toAdd = list; }
   }
-  // If we overshot massively with the last add (small parties + big
-  // monster), and we have more than one, drop the last one back if it
-  // still leaves at least one and keeps us closer to target.
-  if (toAdd.length > 1) {
-    const withLast = toAdd.reduce((s, m) => s + monsterXP(m), 0) * encounterMultiplier(toAdd.length, playerCount);
-    const without = toAdd.slice(0, -1).reduce((s, m) => s + monsterXP(m), 0) * encounterMultiplier(toAdd.length - 1, playerCount);
-    if (Math.abs(without - targetAdjXP) < Math.abs(withLast - targetAdjXP)) toAdd.pop();
-  }
+  if (!toAdd || !toAdd.length) toAdd = [weighted[0]];
 
   toAdd.forEach(m => {
     const existing = enc.combatants.filter(c => c.monsterId === m.id).length;
@@ -22314,8 +22387,34 @@ function addHouseRule(ruleKey, title, note) {
   saveDmSettings(settings);
 }
 
+// v0.92.1 — drafts that were discarded, finished or whose character was deleted
+// are remembered by id so a stale in-memory copy can never write them back.
+const DRAFT_TOMBSTONE_KEY = 'hearth.draftTombstones.v1';
+function draftTombstones() {
+  try { const a = JSON.parse(localStorage.getItem(DRAFT_TOMBSTONE_KEY) || '[]'); return Array.isArray(a) ? a : []; }
+  catch { return []; }
+}
+function isDraftTombstoned(id) { return !!id && draftTombstones().includes(id); }
+function tombstoneDraft(id) {
+  if (!id) return;
+  try { const a = draftTombstones().filter(x => x !== id); a.push(id); localStorage.setItem(DRAFT_TOMBSTONE_KEY, JSON.stringify(a.slice(-100))); } catch {}
+}
+function untombstoneDraft(id) {
+  if (!id) return;
+  try { localStorage.setItem(DRAFT_TOMBSTONE_KEY, JSON.stringify(draftTombstones().filter(x => x !== id))); } catch {}
+}
+// Discard for good: forget the stored draft, the in-memory one, and its id.
+function discardDraftPermanently() {
+  const saved = loadDraftProgress();
+  if (saved && saved.draft && saved.draft.id) tombstoneDraft(saved.draft.id);
+  if (state.draft && state.draft.id) tombstoneDraft(state.draft.id);
+  clearDraftProgress();
+  state.draft = null;
+  state.wizardStep = 0;
+}
 function saveDraftProgress() {
   if (!state.draft) return;
+  if (isDraftTombstoned(state.draft.id)) return;
   try {
     localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({
       draft: state.draft,
@@ -22330,6 +22429,8 @@ function loadDraftProgress() {
     if (!raw) return null;
     const saved = JSON.parse(raw);
     if (!saved || !saved.draft) return null;
+    // v0.92.1 — a discarded/finished/deleted draft that slipped back in is dropped.
+    if (isDraftTombstoned(saved.draft.id)) { localStorage.removeItem(DRAFT_STORAGE_KEY); return null; }
     return saved;
   } catch { return null; }
 }
@@ -22698,6 +22799,28 @@ function finalScoresNoEffects(d) {
       out[a] = (out[a] || 0) + (Number(v) || 0);
     });
   }
+  // v0.92.1 — fixed ability increases from feats (data.abilityIncrease, e.g.
+  // Stalwart { con: 1 }) and, for 2014-rules characters, from the background
+  // (e.g. Artisan { int: 1 }). Each increase stops at 20.
+  const addInc = (inc) => {
+    if (!inc || typeof inc !== 'object') return;
+    Object.entries(inc).forEach(([a, v]) => {
+      const n = Math.max(0, Math.min(4, Number(v) || 0));
+      if (!ABILITIES.includes(a) || !n) return;
+      out[a] = Math.max(out[a] || 0, Math.min(20, (out[a] || 0) + n));
+    });
+  };
+  if (Array.isArray(d.feats) && d.feats.length) {
+    d.feats.forEach(f => {
+      const id = typeof f === 'string' ? f : (f && f.id);
+      const def = FEATS.find(x => x.id === id) || (typeof f === 'object' ? f : null);
+      if (def && def.abilityIncrease) addInc(def.abilityIncrease);
+    });
+  }
+  if (characterEdition(d) !== '5.5e' && d.background) {
+    const bgDef = (typeof characterBackground === 'function') ? characterBackground(d) : null;
+    if (bgDef && bgDef.abilityIncrease) addInc(bgDef.abilityIncrease);
+  }
   // v0.91.2 — Primal Champion (Barbarian 20): STR and CON +4, maximum 24.
   if (d.klass && characterEdition(d) !== '5.5e' && typeof hasPrimalChampion === 'function' && hasPrimalChampion(d)) {
     out.str = Math.max(out.str, Math.min(24, out.str + 4));
@@ -22812,7 +22935,11 @@ function featureLiveNote(ch, f) {
 const monkFeatureLiveNote = featureLiveNote;
 
 function activeSpeedBonus(ch) {
-  const featSpeed = hasFeat(ch, 'mobile') ? 10 : 0;
+  // v0.92.1 — community/homebrew feats can carry a fixed speed bonus (data.speed).
+  const featSpeed = (hasFeat(ch, 'mobile') ? 10 : 0) + characterFeats(ch).reduce((t, f) => {
+    const def = FEATS.find(x => x.id === f.id) || f;
+    return t + (def && def.id !== 'mobile' ? (Number(def.speed) || 0) : 0);
+  }, 0);
   // v0.20.82 — Feline Agility (Tabaxi). When the player taps "Use",
   // ch.felineAgilityActive flips true and stays so until they tap
   // Refresh after ending a turn without moving. While active, the
@@ -23015,7 +23142,11 @@ function attunedCount(ch) {
 }
 // Sum of all active magic-item flat bonuses on the character.
 function itemBonuses(ch) {
-  const out = { ac: 0, save: 0, hp: 0, attack: 0, damage: 0, spell: 0 };
+  // v0.92.1 — spell = spell ATTACK bonus only (mech.spellAttackBonus); spellDc =
+  // spell save DC bonus (mech.spellDcBonus). Items tied to one class's spells
+  // (mech.spellClass, e.g. a warlock pact rod) are left out here; use
+  // itemSpellBonus(ch, kind, klass) for those.
+  const out = { ac: 0, save: 0, hp: 0, attack: 0, damage: 0, spell: 0, spellDc: 0 };
   const inv = (ch && ch.inventory) || {};
   const items = inv.items || [];
   // v0.23.3 — a magic item equipped into the armour/shield slot already has its AC
@@ -23033,9 +23164,27 @@ function itemBonuses(ch) {
     out.hp += d.mech.hpBonus || 0;
     out.attack += d.mech.attackBonus || 0;
     out.damage += d.mech.damageBonus || 0;
-    out.spell += d.mech.spellAttackBonus || 0;
+    if (!d.mech.spellClass) {
+      out.spell += d.mech.spellAttackBonus || 0;
+      out.spellDc += d.mech.spellDcBonus || 0;
+    }
   });
   return out;
+}
+// v0.92.1 — magic-item bonus to spell attack rolls (kind 'attack') or spell save
+// DCs (kind 'dc') for spells of class klassId. Class-restricted items
+// (mech.spellClass) only count for that class's spells.
+function itemSpellBonus(ch, kind, klassId) {
+  let total = 0;
+  const items = ((ch && ch.inventory) || {}).items || [];
+  items.forEach(it => {
+    if (!itemBonusActive(it)) return;
+    const d = itemMagicData(it);
+    if (!d || !d.mech) return;
+    if (d.mech.spellClass && d.mech.spellClass !== klassId) return;
+    total += (kind === 'dc' ? d.mech.spellDcBonus : d.mech.spellAttackBonus) || 0;
+  });
+  return total;
 }
 
 function draconicUnarmoredAc(ch, dexMod) {
@@ -23266,17 +23415,20 @@ function spellModForClass(ch, klassId) {
   if (!c || !c.spellcaster || !c.spellAbility) return null;
   return mod(finalScores(ch)[c.spellAbility]);
 }
-function spellAttackModForClass(ch, klassId) {
+// v0.92.1 — spellClass (optional): the class the spell is actually cast as, so a
+// class-restricted item (e.g. a warlock pact rod) only boosts that class's spells
+// even when the multiclass house rule borrows another class's ability score.
+function spellAttackModForClass(ch, klassId, spellClass) {
   const m = spellModForClass(ch, klassId);
   if (m == null) return null;
-  return m + profBonus(ch.level) + itemBonuses(ch).spell;
+  return m + profBonus(ch.level) + itemSpellBonus(ch, 'attack', spellClass || klassId);
 }
-function spellSaveDcForClass(ch, klassId) {
+function spellSaveDcForClass(ch, klassId, spellClass) {
   const m = spellModForClass(ch, klassId);
   if (m == null) return null;
-  return 8 + m + profBonus(ch.level) + itemBonuses(ch).spell;
+  return 8 + m + profBonus(ch.level) + itemSpellBonus(ch, 'dc', spellClass || klassId);
 }
-function spellcastingStatsForCharacter(ch) {
+function spellcastingStatsForCharacter(ch, spellClass) {
   const list = isBattleCaster(ch)
     ? [{ klass: 'barbarian', name: 'Battle Caster', spellAbility: 'con' }]
     : casterClassesOf(ch).map(cc => ({ klass: cc.klass, name: cc.c.name, spellAbility: cc.c.spellAbility }));
@@ -23288,12 +23440,12 @@ function spellcastingStatsForCharacter(ch) {
   }).map(x => ({
     ...x,
     mod: spellModForClass(ch, x.klass),
-    attack: spellAttackModForClass(ch, x.klass),
-    dc: spellSaveDcForClass(ch, x.klass),
+    attack: spellAttackModForClass(ch, x.klass, spellClass),
+    dc: spellSaveDcForClass(ch, x.klass, spellClass),
   }));
 }
-function highestSpellcastingStats(ch) {
-  const stats = spellcastingStatsForCharacter(ch);
+function highestSpellcastingStats(ch, spellClass) {
+  const stats = spellcastingStatsForCharacter(ch, spellClass);
   if (!stats.length) return null;
   return stats.slice().sort((a, b) => {
     if ((b.dc || 0) !== (a.dc || 0)) return (b.dc || 0) - (a.dc || 0);
@@ -23551,7 +23703,39 @@ function learnedSpellCap(ch) {
   return total;
 }
 function learnedSpellCount(ch) {
-  return (ch?.spells || []).filter(Boolean).length;
+  // v0.92.1 — spells a wizard copied from scrolls/books beyond the free
+  // level-up allowance (ch.foundSpells) don't use up that allowance.
+  const found = Array.isArray(ch?.foundSpells) ? ch.foundSpells : [];
+  return (ch?.spells || []).filter(n => n && !found.includes(n)).length;
+}
+// v0.92.1 — Wizard "Scribe". Under the level-up allowance the spell is one of
+// the free spells; at the cap a wizard can still copy a found spell into the
+// book (RAW: 2 hours and 50 gp per spell level), tracked in ch.foundSpells.
+// Returns true when the spell was added; otherwise explains why in a toast.
+function wizardScribeSpell(ch, name) {
+  if (!ch || !name) return false;
+  if (!Array.isArray(ch.spells)) ch.spells = [];
+  if (ch.spells.includes(name)) return false;
+  const cap = learnedSpellCap(ch);
+  const sp = SPELLS.find(s => s.name === name);
+  if (!cap || learnedSpellCount(ch) < cap) {
+    ch.spells.push(name);
+    if (Array.isArray(ch.foundSpells)) ch.foundSpells = ch.foundSpells.filter(n => n !== name);
+    return true;
+  }
+  if (classLevelFor(ch, 'wizard') < 1) {
+    showToast('Your spell list is full. Forget a spell first to learn ' + name + '.');
+    return false;
+  }
+  if (sp && sp.level > 0 && !(sp.classes || []).includes('wizard')) {
+    showToast(name + ' is not a wizard spell, so it cannot be copied into a spellbook.');
+    return false;
+  }
+  ch.spells.push(name);
+  ch.foundSpells = (Array.isArray(ch.foundSpells) ? ch.foundSpells : []).filter(n => n !== name).concat([name]);
+  const lvl = sp && sp.level ? sp.level : 1;
+  showToast('Copied ' + name + ' as a found spell (' + (2 * lvl) + ' h, ' + (50 * lvl) + ' gp). Your free level-up spells are already used.');
+  return true;
 }
 
 // ============================================================
@@ -23886,7 +24070,20 @@ function characterResources(ch) {
   // 2024 characters: resources come from b55Resources (Rage, Focus Points,
   // Second Wind, Superiority/Psionic dice, subclass pools, etc.).
   if (typeof characterEdition === 'function' && characterEdition(ch) === '5.5e' && typeof b55Resources === 'function') {
-    return b55Resources(ch);
+    const r55 = b55Resources(ch);
+    // v0.92.1 — trackers for imported/Forge subclass features on 2024 sheets.
+    if (typeof homebrewSubclassEffects === 'function') {
+      const prof = profBonus(ch.level || 1);
+      homebrewSubclassEffects(ch).forEach(e => {
+        if (e.kind !== 'active') return;
+        const id = `hb_active_${e._level}_${forgeSlug(e._feature || 'feat')}`;
+        if (r55.some(x => x.id === id)) return;
+        r55.push({ id, name: e._feature || 'Feature', max: e.uses === 'pb' ? prof : homebrewEffectUses(ch, e),
+          recovers: e.reset === 'short' ? 'short' : 'long',
+          desc: (typeof forgeFeatureDesc === 'function') ? forgeFeatureDesc('active', e) : '', _homebrew: true });
+      });
+    }
+    return r55;
   }
   // Build a per-class level map. Single-class characters from before the
   // multiclass rework only have ch.klass + ch.level set.
@@ -23954,7 +24151,7 @@ function characterResources(ch) {
       out.push({
         id, name: e._feature || 'Feature', minLevel: e._level || 1,
         recovers: e.reset === 'short' ? 'short' : 'long',
-        maxFn: (lvl, mods, c) => usesPb ? profBonus((c && c.level) || lvl || 1) : (Number(e.uses) || 1),
+        maxFn: (lvl, mods, c) => usesPb ? profBonus((c && c.level) || lvl || 1) : homebrewEffectUses(c || ch, e),
         desc: (typeof forgeFeatureDesc === 'function') ? forgeFeatureDesc('active', e) : '',
         _homebrew: true,
       });
@@ -23969,8 +24166,11 @@ function characterResources(ch) {
 // pre-v0.7 saves.
 function subclassIdFor(ch, klass) {
   if (!ch) return null;
-  if (ch.subclasses && ch.subclasses[klass]) return ch.subclasses[klass];
+  // v0.92.1 — for the primary class, ch.subclass is the source of truth (the
+  // picker writes it); a stale ch.subclasses entry used to win and apply the
+  // wrong subclass's features.
   if (klass === ch.klass && ch.subclass) return ch.subclass;
+  if (ch.subclasses && ch.subclasses[klass]) return ch.subclasses[klass];
   return null;
 }
 
@@ -24225,7 +24425,7 @@ function renderFeatureResourceButton(ch, feature, klassId = null) {
   if (r.kind === 'portent') label = 'Long Rest';
   return `
     <div class="feature-resource-row ${remaining <= 0 && !active ? 'resource-spent' : ''}">
-      <span class="feature-resource-meta">${remaining}/${max} · resets on ${recLabel}</span>
+      <span class="feature-resource-meta">${max >= 99 ? 'Unlimited' : `${remaining}/${max} · resets on ${recLabel}`}</span>
       <button class="resource-use-btn ${active ? 'danger' : ''}" data-resource-action="${escape(action)}" ${disabled ? 'disabled' : ''}>${label}</button>
     </div>
   `;
@@ -24664,15 +24864,15 @@ function handleHpHeal(ch, amount) {
   if (ch.currentHp > 0) { state.ui.deathSaves = null; state.ui.deathOutcome = null; }
 }
 
-function spellAttackMod(d, klassId = null) {
-  if (klassId) return spellAttackModForClass(d, klassId);
-  const best = highestSpellcastingStats(d);
-  return best ? best.attack : spellAttackModForClass(d, d.klass);
+function spellAttackMod(d, klassId = null, spellClass = null) {
+  if (klassId) return spellAttackModForClass(d, klassId, spellClass);
+  const best = highestSpellcastingStats(d, spellClass);
+  return best ? best.attack : spellAttackModForClass(d, d.klass, spellClass);
 }
-function spellSaveDc(d, klassId = null) {
-  if (klassId) return spellSaveDcForClass(d, klassId);
-  const best = highestSpellcastingStats(d);
-  return best ? best.dc : spellSaveDcForClass(d, d.klass);
+function spellSaveDc(d, klassId = null, spellClass = null) {
+  if (klassId) return spellSaveDcForClass(d, klassId, spellClass);
+  const best = highestSpellcastingStats(d, spellClass);
+  return best ? best.dc : spellSaveDcForClass(d, d.klass, spellClass);
 }
 
 // True if this character has classes from more than one spellcasting bucket
@@ -25683,11 +25883,12 @@ function openCastRollDialog(ch, spell, slotLevel, freeCast = false, freeCastInfo
   // v0.91.2 — the High Elf racial cantrip always uses Intelligence (SRD), not the class ability.
   const highElfInt = !!(ch.highElfCantrip && spell.level === 0 && spell.name === ch.highElfCantrip);
   const raceIntMod = highElfInt ? mod(finalScores(ch).int) + profBonus(ch.level) + itemBonuses(ch).spell : 0;
+  const raceIntDcMod = highElfInt ? mod(finalScores(ch).int) + profBonus(ch.level) + itemBonuses(ch).spellDc : 0;
   const agonizingBonus = isEldritchBlast && hasInvocation(ch, 'agonizing_blast') ? Math.max(0, spellModForClass(ch, 'warlock') || spellMod(ch) || 0) : 0;
 
   if (spell.kind === 'attack') {
     const beams = (spell.beams || 1) + extraBeams;
-    const atkMod = highElfInt ? raceIntMod : spellAttackMod(ch);
+    const atkMod = highElfInt ? raceIntMod : spellAttackMod(ch, null, spellClass);
     const baseDice = (spell.dice ? spell.dice.count : 0) + extraDice;
     const rageBonus = arcaneRageBonus(ch);
     const evoBonus = empoweredEvocationBonus(ch, spell);
@@ -25725,7 +25926,7 @@ function openCastRollDialog(ch, spell, slotLevel, freeCast = false, freeCastInfo
       }
     }
   } else if (spell.kind === 'save') {
-    const dc = highElfInt ? 8 + raceIntMod : spellSaveDc(ch);
+    const dc = highElfInt ? 8 + raceIntDcMod : spellSaveDc(ch, null, spellClass);
     const baseDice = (spell.dice ? spell.dice.count : 0) + extraDice;
     const rageBonus = arcaneRageBonus(ch);
     const evoBonus = empoweredEvocationBonus(ch, spell);
@@ -26205,6 +26406,14 @@ function render() {
     });
   }
 
+  // v0.92.1 — leaving the builder parks the draft in storage (Resume brings it
+  // back) and drops the in-memory copy, so nothing outside the builder can
+  // re-save a draft after it has been discarded.
+  if (state.tab !== 'build' && state.draft) {
+    saveDraftProgress();
+    state.draft = null;
+    state.wizardStep = 0;
+  }
   setRulesetShell();
   if (typeof document !== 'undefined' && document.body && document.body.classList) {
     // v0.20.79 — Disable the Beyond-styled play theme so the play
@@ -28084,16 +28293,41 @@ function startNewCharacterFromMenu() {
     render();
     return;
   }
-  const begin = () => {
-    clearDraftProgress();
-    state.draft = newDraft();
-    state.wizardStep = 0;
-    saveDraftProgress();
-    setActiveTab('build');
-    render();
-  };
-  if (loadDraftProgress()) confirmDialog('Start a new character and discard the unfinished one?', begin);
-  else begin();
+  // v0.92.1 — "+ Create Character" always starts straight away. A pending
+  // unfinished character no longer gates it behind a confirm; it is set aside
+  // and an Undo toast can bring it back.
+  const prev = loadDraftProgress();
+  discardDraftPermanently();
+  state.draft = newDraft();
+  state.wizardStep = 0;
+  saveDraftProgress();
+  setActiveTab('build');
+  render();
+  if (prev && prev.draft) showDraftUndoToast(prev);
+}
+function showDraftUndoToast(prev) {
+  try {
+    document.querySelectorAll('.hearth-toast').forEach(el => el.remove());
+    const el = document.createElement('div');
+    el.className = 'hearth-toast show draft-undo-toast';
+    const nm = (prev.draft && prev.draft.name) ? '\u201c' + prev.draft.name + '\u201d' : 'your unfinished character';
+    el.innerHTML = `<span class="toast-icon">\u2694</span>New character started. ${escape(nm)} was set aside. <button type="button" class="toast-undo-btn" style="margin-left:8px;background:none;border:1px solid currentColor;color:inherit;border-radius:6px;padding:2px 8px;font:inherit;cursor:pointer;">Undo</button>`;
+    document.body.appendChild(el);
+    const kill = () => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); };
+    const t = setTimeout(kill, 8000);
+    el.querySelector('.toast-undo-btn').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      clearTimeout(t);
+      if (state.draft && state.draft.id) tombstoneDraft(state.draft.id);
+      untombstoneDraft(prev.draft.id);
+      try { localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(prev)); } catch (e) {}
+      state.draft = prev.draft;
+      state.wizardStep = prev.wizardStep || 0;
+      setActiveTab('build');
+      render();
+      kill();
+    });
+  } catch (e) {}
 }
 
 function deleteActiveCharacterFromMenu() {
@@ -28231,28 +28465,29 @@ function renderCharacter() {
   const resumeBtn = document.getElementById('resumeDraftBtn');
   if (resumeBtn) resumeBtn.addEventListener('click', () => {
     restoreDraftProgress();
+    if (state.draft) untombstoneDraft(state.draft.id);
     setActiveTab('build');
     render();
   });
   const discardDraftBtn = document.getElementById('discardDraftBtn');
   if (discardDraftBtn) discardDraftBtn.addEventListener('click', () => {
     confirmDialog('Discard the unfinished character?', () => {
-      clearDraftProgress();
-      if (state.draft) { state.draft = null; state.wizardStep = 0; }
+      discardDraftPermanently();
       render();
     });
   });
   const newCharBtn = document.getElementById('newCharBtn');
   if (newCharBtn) newCharBtn.addEventListener('click', () => {
     if (loadDraftProgress()) {
-      confirmDialog('Start a new character and discard the unfinished one?', () => {
-        clearDraftProgress();
-        state.draft = newDraft();
-        state.wizardStep = 0;
-        saveDraftProgress();
-        setActiveTab('build');
-        render();
-      });
+      // v0.92.1 — same as "+ Create Character": start now, Undo restores.
+      const prev = loadDraftProgress();
+      discardDraftPermanently();
+      state.draft = newDraft();
+      state.wizardStep = 0;
+      saveDraftProgress();
+      setActiveTab('build');
+      render();
+      showDraftUndoToast(prev);
       return;
     }
     state.draft = newDraft();
@@ -28277,6 +28512,7 @@ function renderCharacter() {
       if (!ch) return;
       state.draft = { ...ch };
       state.wizardStep = WIZARD_STEPS.length - 1;
+      untombstoneDraft(ch.id); // editing again is an explicit new draft
       saveDraftProgress();
       setActiveTab('build');
       render();
@@ -29573,12 +29809,26 @@ function parseAttack(desc) {
   let toHit = null;
   const hm = desc.match(/([+\-]\d+)\s+to hit/i);
   if (hm) toHit = parseInt(hm[1], 10);
+  // v0.92.1 — Only the damage of the hit itself counts. When the text has a
+  // "Hit:" clause, read just that sentence (later sentences such as a
+  // spark's Inhabit or a rider save describe other effects), and stop at a
+  // ", or N (XdY) ..." alternative (versatile two-handed damage).
+  let text = desc;
+  const hitAt = desc.search(/\bHit:/i);
+  if (hitAt >= 0) {
+    text = desc.slice(hitAt + 4);
+    const end = text.search(/\.(\s|$)/);
+    if (end >= 0) text = text.slice(0, end);
+    const alt = text.search(/,\s*or\s+\d/i);
+    if (alt >= 0) text = text.slice(0, alt);
+  }
   const damages = [];
-  const re = new RegExp('(\\d+)d(\\d+)(?:\\s*([+\\-])\\s*(\\d+))?\\s+(' + HEARTH_DMG_TYPES + ')', 'gi');
+  // Accepts "2d8+4 slashing" and the published "8 (1d8 + 4) slashing".
+  const re = new RegExp('(\\d+)d(\\d+)(?:\\s*([+\\-\u2212])\\s*(\\d+))?\\s*\\)?\\s+(' + HEARTH_DMG_TYPES + ')', 'gi');
   let mm;
-  while ((mm = re.exec(desc)) !== null) {
+  while ((mm = re.exec(text)) !== null) {
     let bonus = mm[4] ? parseInt(mm[4], 10) : 0;
-    if (mm[3] === '-') bonus = -bonus;
+    if (mm[3] === '-' || mm[3] === '\u2212') bonus = -bonus;
     damages.push({ count: parseInt(mm[1], 10), sides: parseInt(mm[2], 10), bonus, type: mm[5].toLowerCase() });
   }
   if (toHit == null && !damages.length) return null;
@@ -30697,18 +30947,104 @@ function homePanelOneShot() {
       '</div>' +
     '</section>';
 }
+// v0.92.1 — Content Library browsing for a growing library (~90+ items):
+// search (name, tags, author, summary), a type filter, Name/Newest sorting, and
+// items flagged example:true in index.json hidden unless the debug toggle is on
+// (tap the "Content Library" title 5 times, or open the app with ?clExamples=1).
+const CL_CATS = [
+  { key: 'races',       type: 'race',       label: 'Races',       icon: '\u{1F9EC}', blurb: 'Custom playable species' },
+  { key: 'subclasses',  type: 'subclass',   label: 'Subclasses',  icon: '\u2694\uFE0F', blurb: 'New archetypes for existing classes' },
+  { key: 'spells',      type: 'spell',      label: 'Spells',      icon: '\u2728', blurb: 'Homebrew spells' },
+  { key: 'feats',       type: 'feat',       label: 'Feats',       icon: '\u{1F3AF}', blurb: 'Custom feats' },
+  { key: 'backgrounds', type: 'background', label: 'Backgrounds', icon: '\u{1F4DC}', blurb: 'Character backgrounds' },
+  { key: 'weapons',     type: 'weapon',     label: 'Weapons',     icon: '\u{1F5E1}\uFE0F', blurb: 'Homebrew and magic weapons for your weapon library' },
+  { key: 'magicItems',  type: 'magic-item', label: 'Magic Items', icon: '\u{1F48E}', blurb: 'Rings, wondrous items and more for the catalogue' },
+  { key: 'monsters',    type: 'monster',    label: 'Monsters',    icon: '\u{1F409}', blurb: 'Creatures & bosses for the bestiary' },
+  { key: 'maps',        type: 'map',        label: 'Maps',        icon: '\u{1F5FA}\uFE0F', blurb: 'Battle maps for the DM screen' },
+];
+const CL_SHOW_EXAMPLES_KEY = 'hearth.cl.showExamples';
+function clShowExamples() {
+  try {
+    if (/[?&]clExamples=1\b/.test((typeof location !== 'undefined' && location.search) || '')) return true;
+    return localStorage.getItem(CL_SHOW_EXAMPLES_KEY) === '1';
+  } catch (e) { return false; }
+}
+function clNorm(x) { return String(x == null ? '' : x).toLowerCase(); }
+function clItemMatches(it, q) {
+  if (!q) return true;
+  const hay = [it.name, it.author, it.summary, (it.tags || []).join(' '), (it.tags || []).map(t => t.replace(/-/g, ' ')).join(' '), CL_TYPE_LABEL[it.type] || ''].map(clNorm).join(' \u0001 ');
+  return clNorm(q).split(/\s+/).filter(Boolean).every(w => hay.includes(w));
+}
+function clSortItems(items, sort) {
+  const arr = items.slice();
+  if (sort === 'newest') {
+    arr.sort((a, b) => {
+      const da = a.added ? Date.parse(a.added) : 0, db = b.added ? Date.parse(b.added) : 0;
+      if (db !== da) return db - da;
+      if ((b.order || 0) !== (a.order || 0)) return (b.order || 0) - (a.order || 0);
+      return a.name.localeCompare(b.name);
+    });
+  } else {
+    arr.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+  }
+  return arr;
+}
+// Items the browser may show (examples hidden unless the debug toggle is on).
+function clVisibleItems(shelfKey) {
+  const lib = (typeof CONTENT_LIBRARY !== 'undefined') ? CONTENT_LIBRARY : {};
+  const items = Array.isArray(lib[shelfKey]) ? lib[shelfKey] : [];
+  return clShowExamples() ? items : items.filter(it => !it.example);
+}
+function clCardHTML(it, ui, inst, showType) {
+  const rec = inst[it.id];
+  const outdated = rec && rec.version !== it.version;
+  const btn = (rec && !outdated)
+    ? `<button class="btn cl-add-btn" data-cl-open="${escape(it.id)}">\u2713 Added</button>`
+    : `<button class="btn cl-add-btn" data-cl-add="${escape(it.id)}"${ui.busy ? ' disabled' : ''}>${ui.busy === it.id ? 'Adding\u2026' : (outdated ? 'Update' : 'Add')}</button>`;
+  const tags = (it.tags || []).slice(0, 4);
+  return `
+          <div class="cl-card" data-cl-item="${escape(it.id)}">
+            <button class="cl-card-info" data-cl-open="${escape(it.id)}">
+              <div class="cl-card-name">${escape(it.name || 'Untitled')}${it.example ? ' <span class="cl-tag">example</span>' : ''}${showType ? ` <span class="cl-tag">${escape(CL_TYPE_LABEL[it.type] || it.type)}</span>` : ''}</div>
+              <div class="cl-card-meta">${escape(it.author ? 'by ' + it.author : '')}${it.summary ? ' \u00B7 ' + escape(it.summary) : ''}</div>
+              ${tags.length ? `<div class="cl-card-tags">${tags.map(t => `<span class="cl-chip-tag">#${escape(t)}</span>`).join('')}</div>` : ''}
+            </button>
+            ${btn}
+          </div>`;
+}
+// The shelves / results part of the library (re-rendered on its own while you type).
+function clListHTML() {
+  const ui = clUi();
+  const inst = loadCommunityInstalled();
+  const q = (ui.q || '').trim();
+  const type = ui.type || 'all';
+  const sort = ui.sort || 'name';
+  const filtering = !!q || type !== 'all';
+  let total = 0;
+  const sections = CL_CATS.filter(c => type === 'all' || type === c.key).map(c => {
+    const all = clVisibleItems(c.key);
+    const items = clSortItems(all.filter(it => clItemMatches(it, q)), sort);
+    total += items.length;
+    if (filtering && !items.length) return '';
+    const body = items.length
+      ? items.map(it => clCardHTML(it, ui, inst, false)).join('')
+      : `<div class="cl-empty">${ui.status === 'loading' ? 'Loading\u2026' : `No community ${escape(c.label.toLowerCase())} yet \u2014 this shelf is ready and waiting.`}</div>`;
+    return `
+      <div class="cl-cat" data-cl-shelf="${c.key}">
+        <div class="cl-cat-head"><span class="cl-cat-icon">${c.icon}</span><span class="cl-cat-label">${c.label}</span><span class="cl-cat-count">${items.length}</span></div>
+        <div class="cl-cat-blurb">${c.blurb}</div>
+        ${body}
+      </div>`;
+  }).join('');
+  const summary = filtering
+    ? `<div class="cl-results" id="clResults">${total} result${total === 1 ? '' : 's'}${q ? ' for \u201c' + escape(q) + '\u201d' : ''}${type !== 'all' ? ' in ' + escape((CL_CATS.find(c => c.key === type) || {}).label || type) : ''}</div>`
+    : '';
+  const none = (filtering && !total)
+    ? `<div class="cl-empty cl-noresults">Nothing matches. Try a different word, or <button class="btn-link" data-cl-clear="1">clear the search</button>.</div>`
+    : '';
+  return summary + none + sections;
+}
 function homePanelContentLibrary() {
-  const cats = [
-    { key: 'races',       label: 'Races',       icon: '\u{1F9EC}', blurb: 'Custom playable species' },
-    { key: 'subclasses',  label: 'Subclasses',  icon: '\u2694\uFE0F', blurb: 'New archetypes for existing classes' },
-    { key: 'spells',      label: 'Spells',      icon: '\u2728', blurb: 'Homebrew spells' },
-    { key: 'feats',       label: 'Feats',       icon: '\u{1F3AF}', blurb: 'Custom feats' },
-    { key: 'backgrounds', label: 'Backgrounds', icon: '\u{1F4DC}', blurb: 'Character backgrounds' },
-    { key: 'weapons',     label: 'Weapons',     icon: '\u{1F5E1}\uFE0F', blurb: 'Homebrew and magic weapons for your weapon library' },
-    { key: 'magicItems',  label: 'Magic Items', icon: '\u{1F48E}', blurb: 'Rings, wondrous items and more for the catalogue' },
-    { key: 'monsters',    label: 'Monsters',    icon: '\u{1F409}', blurb: 'Creatures & bosses for the bestiary' },
-    { key: 'maps',        label: 'Maps',        icon: '\u{1F5FA}\uFE0F', blurb: 'Battle maps for the DM screen' },
-  ];
   const ui = clUi();
   clLoadCachedIndex();
   if (ui.preview) {
@@ -30716,47 +31052,41 @@ function homePanelContentLibrary() {
     if (entry) return clPreviewHTML(entry);
     ui.preview = null;
   }
-  const lib = (typeof CONTENT_LIBRARY !== 'undefined') ? CONTENT_LIBRARY : {};
-  const inst = loadCommunityInstalled();
-  const sections = cats.map(c => {
-    const items = Array.isArray(lib[c.key]) ? lib[c.key] : [];
-    const body = items.length
-      ? items.map(it => {
-          const rec = inst[it.id];
-          const outdated = rec && rec.version !== it.version;
-          const btn = (rec && !outdated)
-            ? `<button class="btn cl-add-btn" data-cl-open="${escape(it.id)}">\u2713 Added</button>`
-            : `<button class="btn cl-add-btn" data-cl-add="${escape(it.id)}"${ui.busy ? ' disabled' : ''}>${ui.busy === it.id ? 'Adding\u2026' : (outdated ? 'Update' : 'Add')}</button>`;
-          return `
-          <div class="cl-card">
-            <button class="cl-card-info" data-cl-open="${escape(it.id)}">
-              <div class="cl-card-name">${escape(it.name || 'Untitled')}${it.example ? ' <span class="cl-tag">example</span>' : ''}</div>
-              <div class="cl-card-meta">${escape(it.author ? 'by ' + it.author : '')}${it.summary ? ' \u00B7 ' + escape(it.summary) : ''}</div>
-            </button>
-            ${btn}
-          </div>`;
-        }).join('')
-      : `<div class="cl-empty">${ui.status === 'loading' ? 'Loading\u2026' : `No community ${escape(c.label.toLowerCase())} yet \u2014 this shelf is ready and waiting.`}</div>`;
-    return `
-      <div class="cl-cat">
-        <div class="cl-cat-head"><span class="cl-cat-icon">${c.icon}</span><span class="cl-cat-label">${c.label}</span><span class="cl-cat-count">${items.length}</span></div>
-        <div class="cl-cat-blurb">${c.blurb}</div>
-        ${body}
+  const type = ui.type || 'all';
+  const sort = ui.sort || 'name';
+  const counts = {};
+  let allCount = 0;
+  CL_CATS.forEach(c => { counts[c.key] = clVisibleItems(c.key).length; allCount += counts[c.key]; });
+  const chips = [`<button class="cl-chip ${type === 'all' ? 'sel' : ''}" data-cl-type="all">All <span class="cl-chip-n">${allCount}</span></button>`]
+    .concat(CL_CATS.map(c => `<button class="cl-chip ${type === c.key ? 'sel' : ''}" data-cl-type="${c.key}">${c.label} <span class="cl-chip-n">${counts[c.key]}</span></button>`)).join('');
+  const toolbar = `
+      <div class="cl-toolbar">
+        <div class="cl-search-row">
+          <input class="cl-search" id="clSearch" type="search" placeholder="Search name, tag or author\u2026" autocomplete="off" value="${escape(ui.q || '')}" aria-label="Search the Content Library" />
+          <select class="cl-sort" id="clSort" aria-label="Sort">
+            <option value="name"${sort === 'name' ? ' selected' : ''}>Name A\u2013Z</option>
+            <option value="newest"${sort === 'newest' ? ' selected' : ''}>Newest</option>
+          </select>
+        </div>
+        <div class="cl-chips" role="tablist" aria-label="Filter by type">${chips}</div>
+        ${clShowExamples() ? '<div class="cl-debug">Debug: example items are shown (tap the title 5 times to hide them).</div>' : ''}
       </div>`;
-  }).join('');
   const when = ui.fetchedAt ? new Date(ui.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
   const statusText = ui.status === 'loading' ? 'Checking GitHub for new content\u2026'
+    : (typeof navigator !== 'undefined' && navigator.onLine === false) ? (when ? 'Offline, showing cached list from ' + escape(when) + '.' : 'Offline, showing cached list.')
     : ui.status === 'error' ? `Couldn't reach GitHub (${escape(ui.error)}).${when ? ' Showing the list from ' + escape(when) + '.' : ''}`
+    : (ui.status !== 'ok' && when) ? 'Showing the list from ' + escape(when) + '. Tap \u21bb Refresh to check for new content.'
     : when ? 'Up to date as of ' + escape(when) + '.' : '';
   const contribute = CONTENT_REPO_URL
     ? `<a class="btn primary cl-repo-link" href="${CONTENT_REPO_URL}" target="_blank" rel="noopener noreferrer">Open the community GitHub</a>`
     : `<div class="cl-repo-soon">GitHub repo link coming soon.</div>`;
   return `
     <section class="section rules-home">
-      <div class="rules-home-title">Content Library</div>
+      <div class="rules-home-title" id="clTitle">Content Library</div>
       <div class="rules-home-helper">Browse and add homebrew and maps made by the community. Everything here is curated on GitHub and shared under CC BY 4.0. Tap an item to preview it, or Add to put it straight into your Hearth.</div>
       <div class="cl-status${ui.status === 'error' ? ' err' : ''}"><span>${statusText}</span><button class="btn cl-refresh" data-cl-refresh="1"${ui.status === 'loading' ? ' disabled' : ''}>\u21BB Refresh</button></div>
-      <div class="cl-wrap">${sections}</div>
+      ${toolbar}
+      <div class="cl-wrap" id="clList">${clListHTML()}</div>
       <div class="cl-contribute">
         <div class="cl-contribute-title">Want to contribute?</div>
         <div class="cl-contribute-desc">Homebrew and maps are shared through the community GitHub. Once a submission is approved it shows up here automatically, usually within about 5 minutes (tap Refresh to check).</div>
@@ -31011,7 +31341,7 @@ function canAdvance() {
   if (step === 'name') return d.name.trim().length > 0;
   if (step === 'race') {
     if (!d.race) return false;
-    if (d.race === 'half-elf') return Object.keys(d.raceAbilityBonuses || {}).length === 2;
+    if (raceChooseInfo(d.race)) return Object.keys(d.raceAbilityBonuses || {}).length === raceChooseInfo(d.race).count;
     if (d.subrace && RACES[d.race].subraces?.[d.subrace]?.flexibleAsi && !astralAsiValid(d.raceAbilityBonuses)) return false;
     // If race has subraces defined, require a pick
     const r = RACES[d.race];
@@ -31030,12 +31360,15 @@ function canAdvance() {
   }
   if (step === 'background') return !!d.background;
   if (step === 'abilities') {
+    // v0.92.1 — a levelled character's scores include ASIs, so point-buy totals
+    // don't apply when editing; don't trap the player on this step.
+    if (isEditingExistingCharacter(d)) return ABILITIES.every(a => Number.isFinite(Number(d.base[a])) && d.base[a] >= 1 && d.base[a] <= 30);
     if (d.statMode === 'manual') return ABILITIES.every(a => Number.isFinite(Number(d.base[a])) && d.base[a] >= 3 && d.base[a] <= 18);
     return pointsSpent(d.base) === TOTAL_POINTS;
   }
-  if (step === 'skills') return d.skills.length === CLASSES[d.klass].skillCount;
+  if (step === 'skills') return d.skills.length === CLASSES[d.klass].skillCount || (isEditingExistingCharacter(d) && d.skills.length >= CLASSES[d.klass].skillCount);
   if (step === 'spells') return true;
-  if (step === 'equipment') return !!d.pack;
+  if (step === 'equipment') return !!d.pack || isEditingExistingCharacter(d);
   if (step === 'identity') return !!d.alignment;
   return true;
 }
@@ -31054,13 +31387,45 @@ function materializeStartingInventory(d) {
   // v0.29.0 - resolve the per-line picker into the draft fields below.
   if (d.startEquip) syncStartEquip5E(d);
 
-  // Weapons from picks — assignment (not append), so they never duplicate.
-  d.inventory.weapons = (d.startingWeapons || []).map(wid => {
+  // v0.92.1 — re-editing a character through the wizard used to rebuild the
+  // weapon list from the starting picks only, wiping every weapon added later
+  // (14 equipped → 4) and replacing changed/magic armour. Now:
+  //  - picks unchanged since the saved character → weapons, armour and shield
+  //    are left exactly as they are (ids, equipped/attuned state, magic gear);
+  //  - picks changed → only the starter weapons are swapped; anything added by
+  //    hand stays. Legacy starter weapons saved without a source tag are matched
+  //    one-for-one against the old picks so they aren't duplicated.
+  const sameList = (a, b) => JSON.stringify((a || []).slice().sort()) === JSON.stringify((b || []).slice().sort());
+  const saved = (d.id && typeof getCharacter === 'function') ? getCharacter(d.id) : null;
+  const curWeapons = Array.isArray(d.inventory.weapons) ? d.inventory.weapons : [];
+  const mkStarter = (wid) => {
     const w = WEAPONS[wid];
+    if (!w) return null;
     return { id: rid(wid), weaponId: wid, name: w.name, damage: w.damage, type: w.type, props: w.props, kind: w.kind, cat: w.cat, equipped: true, source: 'starter' };
-  });
-  d.inventory.armor = (d.startingArmor && ARMOR[d.startingArmor]) ? { id: d.startingArmor, ...ARMOR[d.startingArmor] } : null;
-  d.inventory.shield = !!d.startingShield;
+  };
+  const hadInventory = !!(saved && saved.inventory);
+  if (hadInventory && sameList(saved.startingWeapons, d.startingWeapons)) {
+    d.inventory.weapons = curWeapons;
+  } else if (hadInventory) {
+    const legacyLeft = (saved.startingWeapons || []).slice();
+    const kept = curWeapons.filter(w => {
+      if (!w) return false;
+      if (w.source === 'starter') return false;
+      const plain = !w.source && !w.magicItemId && !w.magic && !w.custom && !w.magicBonus;
+      const li = plain ? legacyLeft.indexOf(w.weaponId) : -1;
+      if (li >= 0) { legacyLeft.splice(li, 1); return false; }
+      return true;
+    });
+    d.inventory.weapons = kept.concat((d.startingWeapons || []).map(mkStarter).filter(Boolean));
+  } else {
+    // New character: weapons from picks (assignment, so they never duplicate),
+    // keeping anything that isn't a starter weapon.
+    d.inventory.weapons = curWeapons.filter(w => w && w.source && w.source !== 'starter').concat((d.startingWeapons || []).map(mkStarter).filter(Boolean));
+  }
+  if (!(hadInventory && saved.startingArmor === d.startingArmor && !!saved.startingShield === !!d.startingShield)) {
+    d.inventory.armor = (d.startingArmor && ARMOR[d.startingArmor]) ? { id: d.startingArmor, ...ARMOR[d.startingArmor] } : null;
+    d.inventory.shield = !!d.startingShield;
+  }
 
   // Clear previously auto-granted pack/background items, keep anything hand-added.
   d.inventory.items = (d.inventory.items || []).filter(it => it.source !== 'pack' && it.source !== 'background' && it.source !== 'class');
@@ -31096,6 +31461,66 @@ function materializeStartingInventory(d) {
   }
 }
 
+// v0.92.1 — Edit-wizard equipment reconciliation (see the Save path).
+function isEditingExistingCharacter(d) {
+  return !!(d && d.id && typeof getCharacter === 'function' && getCharacter(d.id));
+}
+function startingEquipSignature(x) {
+  const c = JSON.parse(JSON.stringify(x || {}));
+  try { if (c.startEquip) syncStartEquip5E(c); } catch (e) {}
+  return JSON.stringify({
+    klass: c.klass || null, background: c.background || null,
+    w: (c.startingWeapons || []).slice().sort(), a: c.startingArmor || null, s: !!c.startingShield,
+    pack: c.pack || null, items: (c.startEquipItems || []).map(i => (i && i.name) + 'x' + ((i && i.qty) || 1)).sort(),
+  });
+}
+function reconcileEditedStartingEquipment(d, done) {
+  const saved = getCharacter(d.id);
+  if (!saved || startingEquipSignature(saved) === startingEquipSignature(d)) { done(); return; }
+  const cur = JSON.parse(JSON.stringify(d.inventory || {}));
+  const curWeapons = cur.weapons || [], curItems = cur.items || [];
+  const replaced = JSON.parse(JSON.stringify(d));
+  materializeStartingInventory(replaced);
+  const rInv = replaced.inventory;
+  // Re-use existing objects for auto items that are still granted (keeps ids/qty).
+  const curByName = {};
+  curItems.forEach(it => { const k = String(it.name || '').toLowerCase(); (curByName[k] = curByName[k] || []).push(it); });
+  rInv.items = rInv.items.map(it => {
+    if (!it.source) return it;
+    const pool = curByName[String(it.name || '').toLowerCase()] || [];
+    const i = pool.findIndex(x => x.source === it.source);
+    return i >= 0 ? pool.splice(i, 1)[0] : it;
+  });
+  const rWeaponIds = new Set(rInv.weapons.map(w => w.id));
+  const rItemIds = new Set(rInv.items.map(i => i.id));
+  const removed = [];
+  curWeapons.forEach(w => { if (!rWeaponIds.has(w.id)) removed.push(w.name || w.weaponId); });
+  curItems.forEach(i => { if (!rItemIds.has(i.id)) removed.push(i.name); });
+  if (cur.armor && !(rInv.armor && rInv.armor.id === cur.armor.id)) removed.push(cur.armor.name || cur.armor.id);
+  if (cur.shield && !rInv.shield) removed.push('Shield');
+  // Merge: everything you have now, plus newly granted gear you don't have yet.
+  const merged = JSON.parse(JSON.stringify(cur));
+  merged.weapons = curWeapons.slice();
+  const haveW = {};
+  curWeapons.forEach(w => { haveW[w.weaponId] = (haveW[w.weaponId] || 0) + 1; });
+  rInv.weapons.forEach(w => { if (rWeaponIds.has(w.id) && !curWeapons.some(c => c.id === w.id)) { if (haveW[w.weaponId] > 0) haveW[w.weaponId]--; else merged.weapons.push(w); } });
+  const haveI = new Set(curItems.map(i => String(i.name || '').toLowerCase()));
+  merged.items = curItems.slice().concat(rInv.items.filter(i => !curItems.some(c => c.id === i.id) && !haveI.has(String(i.name || '').toLowerCase())));
+  merged.armor = cur.armor || rInv.armor || null;
+  merged.shield = !!(cur.shield || rInv.shield);
+  merged.currency = rInv.currency;
+  const apply = (inv) => {
+    d.inventory = inv;
+    d._bgGoldGranted = replaced._bgGoldGranted;
+    d.backgroundFeature = replaced.backgroundFeature;
+    d.backgroundEquipment = replaced.backgroundEquipment;
+    ['startingWeapons', 'startingArmor', 'startingShield', 'pack', 'startEquipItems'].forEach(k => { if (k in replaced) d[k] = replaced[k]; });
+    done();
+  };
+  if (!removed.length) { apply(merged); return; }
+  confirmDialog('Your new starting-equipment choices no longer include: ' + removed.join(', ') + '. Remove them from the inventory? Choose Keep to keep everything and only add the new gear.',
+    () => apply(rInv), { title: 'Update starting gear?', yes: 'Remove', no: 'Keep everything', onNo: () => apply(merged) });
+}
 function wireWizardNav() {
   const back = document.getElementById('backBtn');
   const next = document.getElementById('nextBtn');
@@ -31114,9 +31539,14 @@ function wireWizardNav() {
         // earned progression, and only refresh the auto-granted gear (idempotently).
         const isEdit = (typeof getCharacter === 'function') && !!getCharacter(d.id);
         if (isEdit) {
-          materializeStartingInventory(d);
+          // v0.92.1 — editing never rebuilds the live inventory. Unless the
+          // starting-equipment choices (class, background, picks, pack) changed,
+          // gear is left exactly as it is; if they did, new gear is merged in and
+          // anything that would be removed is confirmed first.
+          reconcileEditedStartingEquipment(d, () => {
           if (d.currentHp != null && d.currentHp > maxHp(d)) d.currentHp = maxHp(d);
           saveCharacter(d);
+          tombstoneDraft(d.id); // finished: never resurrect this draft
           clearDraftProgress();
           state.activeCharId = d.id;
           state.draft = null;
@@ -31124,6 +31554,7 @@ function wireWizardNav() {
           state.ui.rollLog = [];
           setActiveTab('play');
           render();
+          });
           return;
         }
         const requestedTargetLevel = Math.max(1, Math.min(20, parseInt(d.targetLevel || d.level || 1, 10)));
@@ -31149,6 +31580,7 @@ function wireWizardNav() {
         // editing a character rebuilds auto-granted gear instead of duplicating it.
         materializeStartingInventory(d);
         saveCharacter(d);
+        tombstoneDraft(d.id); // finished: never resurrect this draft
         clearDraftProgress();
         state.activeCharId = d.id;
         state.draft = null;
@@ -31199,9 +31631,7 @@ function wireWizardNav() {
   if (cancel) {
     cancel.addEventListener('click', () => {
       confirmDialog('Discard this character?', () => {
-        clearDraftProgress();
-        state.draft = null;
-        state.wizardStep = 0;
+        discardDraftPermanently();
         setActiveTab('character');
         render();
       });
@@ -31251,7 +31681,7 @@ function renderStepRace() {
           ${RACES[d.race].traits.map(t => `
             <div class="trait"><strong>${t.name}.</strong> <span class="trait-desc">${t.desc}</span></div>
           `).join('')}
-          ${d.race === 'half-elf' ? renderHalfElfAbilityChoices(d) : ''}
+          ${raceChooseInfo(d.race) ? renderHalfElfAbilityChoices(d) : ''}
           ${RACES[d.race].subraces ? renderSubraceChoices(d) : ''}
           ${(d.subrace && RACES[d.race].subraces?.[d.subrace]?.flexibleAsi) ? renderAstralAbilityChoices(d) : ''}
         </div>
@@ -31323,27 +31753,41 @@ function renderAstralAbilityChoices(d) {
     <div class="small-note" id="astralAsiNote" style="margin-top:8px;">${astralAsiValid(picks) ? 'Valid choice.' : 'Pick +2/+1 or +1/+1/+1 to continue.'}</div>
   `;
 }
+// v0.92.1 — any race whose bonuses include { choose: { count, value } } (Half-Elf,
+// community races such as Gearforged) gets the pick-N ability choice.
+function raceChooseInfo(raceId) {
+  const r = raceId && RACES[raceId];
+  const c = r && r.bonuses && r.bonuses.choose;
+  if (!c) return null;
+  const count = Math.max(1, Math.min(6, Number(c.count) || 2));
+  const value = Math.max(1, Math.min(2, Number(c.value) || 1));
+  const fixed = Object.keys(r.bonuses).filter(k => ABILITIES.includes(k) && Number(r.bonuses[k]) > 0);
+  return { count, value, fixed, name: r.name || 'Race' };
+}
 function renderHalfElfAbilityChoices(d) {
+  const info = raceChooseInfo(d.race) || { count: 2, value: 1, fixed: ['cha'], name: 'Half-Elf' };
   const picks = d.raceAbilityBonuses || {};
   const picked = Object.keys(picks);
+  const fixedTxt = info.fixed.length ? ' ' + info.fixed.map(a => ABILITY_NAMES[a]).join(' and ') + ' already get' + (info.fixed.length === 1 ? 's' : '') + ' a fixed bonus.' : '';
   return `
     <div class="trait" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--parchment-darker);">
-      <strong>Half-Elf Ability Choices.</strong>
-      <span class="trait-desc">Choose two different abilities for +1 each. Charisma already gets +2.</span>
+      <strong>${escape(info.name)} Ability Choices.</strong>
+      <span class="trait-desc">Choose ${info.count} different abilities for +${info.value} each.${fixedTxt}</span>
     </div>
     <div class="card-grid" style="margin-top:8px;grid-template-columns:repeat(3, 1fr);">
       ${ABILITIES.map(a => {
         const selected = !!picks[a];
-        const disabled = a === 'cha' || (!selected && picked.length >= 2);
+        const isFixed = info.fixed.includes(a);
+        const disabled = isFixed || (!selected && picked.length >= info.count);
         return `
           <button class="card ${selected ? 'selected' : ''}" data-half-elf-ability="${a}" ${disabled ? 'disabled style="opacity:0.35;cursor:not-allowed;"' : ''}>
             <div class="card-name" style="font-size:16px;">${ABILITY_SHORT[a]}</div>
-            <div class="card-meta">${a === 'cha' ? '+2 fixed' : selected ? '+1 chosen' : '+1'}</div>
+            <div class="card-meta">${isFixed ? '+' + RACES[d.race].bonuses[a] + ' fixed' : selected ? '+' + info.value + ' chosen' : '+' + info.value}</div>
           </button>
         `;
       }).join('')}
     </div>
-    <div class="small-note" style="margin-top:8px;">Chosen: ${picked.length}/2${picked.length ? ' · ' + picked.map(a => ABILITY_NAMES[a]).join(', ') : ''}</div>
+    <div class="small-note" style="margin-top:8px;">Chosen: ${picked.length}/${info.count}${picked.length ? ' \u00b7 ' + picked.map(a => ABILITY_NAMES[a]).join(', ') : ''}</div>
   `;
 }
 
@@ -31583,6 +32027,16 @@ function renderStepSpells() {
   const leveledAvailable = caps.spells ? availableSpells.filter(s => s.level > 0 && s.level <= Math.min(3, Math.ceil(d.level / 2))) : [];
   const cantripsKnown = caps.cantrips;
   const spellsKnownAtL1 = caps.spells;
+  // v0.92.1 — editing an existing character: never trim its spells to the
+  // creation caps (walking Back through this step used to cut a level-10
+  // warlock's 10 spells to 2). Spells are managed on the sheet.
+  if (isEditingExistingCharacter(d)) {
+    return `
+    <section class="section">
+      <div class="section-label">Step ${wizardStepNumber('spells')} \u2014 Spells</div>
+      <div class="section-helper">Your cantrips (${(d.cantrips || []).length}) and spells (${(d.spells || []).length}) are kept exactly as they are. Learn, prepare or forget spells from the Spells tab on your sheet.</div>
+    </section>`;
+  }
   // Ability scores can change after picking (Back → point buy), so trim any
   // over-cap picks rather than letting them be silently dropped on save.
   if (d.cantrips.length > cantripsKnown) d.cantrips = d.cantrips.slice(0, cantripsKnown);
@@ -31650,6 +32104,15 @@ function renderStepEquipment() {
     <section class="section">
       <div class="section-label">Step ${wizardStepNumber('equipment')} — Starting Equipment</div>
       <div class="section-helper">No starting-equipment list for this class yet.</div>
+    </section>`;
+  }
+  // v0.92.1 — an existing character made without the per-line picker keeps
+  // its gear; the picker would otherwise invent new starting choices.
+  if (isEditingExistingCharacter(d) && !d.startEquip) {
+    return `
+    <section class="section">
+      <div class="section-label">Step ${wizardStepNumber('equipment')} \u2014 Starting Equipment</div>
+      <div class="section-helper">This character's starting equipment was already given. Your weapons, armour and items are kept; manage them from the Gear panel on your sheet.</div>
     </section>`;
   }
   initStartEquip5E(d);
@@ -31723,7 +32186,7 @@ function renderStepIdentity() {
           </button>
         `).join('')}
       </div>
-      ${d.alignment ? `
+      ${d.alignment && ALIGNMENTS[d.alignment] ? `
         <div class="selection-detail">
           <h4>${ALIGNMENTS[d.alignment].name}</h4>
           <div class="trait"><span class="trait-desc">${ALIGNMENTS[d.alignment].desc}</span></div>
@@ -31751,8 +32214,15 @@ function renderStepReview() {
   // review AC (armour/shield) matches the character sheet after creation.
   let preview = d;
   try { preview = JSON.parse(JSON.stringify(d)); materializeStartingInventory(preview); } catch (e) { preview = d; }
-  const weapons = (preview.startingWeapons || []).map(id => WEAPONS[id]?.name).filter(Boolean);
-  const armorName = preview.startingArmor ? ARMOR[preview.startingArmor]?.name : null;
+  // v0.92.1 — when editing an existing character, show the gear it actually
+  // has (weapons added later, magic armour) rather than the creation picks.
+  const editingExisting = isEditingExistingCharacter(d);
+  const weapons = editingExisting
+    ? ((preview.inventory && preview.inventory.weapons) || []).map(w => w && (w.name || (WEAPONS[w.weaponId] || {}).name)).filter(Boolean)
+    : (preview.startingWeapons || []).map(id => WEAPONS[id]?.name).filter(Boolean);
+  const armorName = editingExisting
+    ? (preview.inventory && preview.inventory.armor ? (preview.inventory.armor.name || (ARMOR[preview.inventory.armor.id] || {}).name) + (preview.inventory.armor.magicBonus ? ' +' + preview.inventory.armor.magicBonus : '') : null)
+    : (preview.startingArmor ? ARMOR[preview.startingArmor]?.name : null);
   const packName = d.pack ? EQUIPMENT_PACKS[d.pack]?.name : null;
   return `
     <section class="section">
@@ -31782,7 +32252,7 @@ function renderStepReview() {
     <section class="section">
       <div class="section-label">Carrying</div>
       <div class="trait"><strong>Weapons.</strong> <span class="trait-desc">${weapons.length ? weapons.join(', ') : 'None — unarmed strikes only.'}</span></div>
-      <div class="trait"><strong>Armor.</strong> <span class="trait-desc">${armorName || 'None'}${preview.startingShield ? ' · Shield' : ''}</span></div>
+      <div class="trait"><strong>Armor.</strong> <span class="trait-desc">${armorName || 'None'}${(editingExisting ? (preview.inventory && preview.inventory.shield) : preview.startingShield) ? ' · Shield' : ''}</span></div>
       <div class="trait"><strong>Pack.</strong> <span class="trait-desc">${packName || '—'}</span></div>
       ${bg ? `<div class="trait"><strong>Background.</strong> <span class="trait-desc">${bg.name} · ${bg.gold} gp · ${bg.equipment.join(', ')}</span></div>` : ''}
     </section>
@@ -33201,7 +33671,7 @@ function renderBrowseSpellsDialog(ch) {
         return { type: 'prep', label: used >= cap ? 'Full' : 'Prep', disabled: used >= cap };
       }
       const atCap = learnedCap > 0 && learnedCount >= learnedCap;
-      return { type: 'scribe', label: atCap ? 'Full' : 'Scribe', disabled: atCap };
+      return { type: 'scribe', label: atCap ? 'Copy' : 'Scribe', disabled: false };
     }
     if (m.type === 'prepared') {
       if (status === 'ready') return { type: 'noop', label: 'Ready', disabled: true };
@@ -33890,7 +34360,7 @@ function renderRageDialog(ch) {
     <div class="dialog-backdrop" id="dialogBackdrop">
       <div class="dialog">
         <div class="dialog-title">Rage</div>
-        <div class="dialog-helper">${active ? (ch.frenzyActive ? 'Frenzy is active. Remember exhaustion when rage ends.' : 'Rage is active.') : `${remaining} rage use${remaining === 1 ? '' : 's'} remaining.`}</div>
+        <div class="dialog-helper">${active ? (ch.frenzyActive ? 'Frenzy is active. Remember exhaustion when rage ends.' : 'Rage is active.') : ((rage && resourceMax(ch, rage) >= 99) ? 'Unlimited rage uses.' : `${remaining} rage use${remaining === 1 ? '' : 's'} remaining.`)}</div>
         <div class="dialog-body">
           <div class="cond-dialog-desc">
             Bonus action: gain advantage on Strength checks/saves, bonus melee damage using Strength, and resistance to bludgeoning, piercing, and slashing damage.
@@ -33936,7 +34406,7 @@ function renderWildShapePicker(ch) {
     <div class="dialog-backdrop" id="dialogBackdrop">
       <div class="dialog browse-dialog">
         <div class="dialog-title">Wild Shape — pick a form</div>
-        <div class="dialog-helper">${remaining}/${wsRes ? resourceMax(ch, wsRes) : 0} uses · druid L${druidLevel}${sub ? ` · ${SUBCLASSES.druid?.[sub]?.name || sub}` : ''} · ${wildShapeAllowanceText(ch)}</div>
+        <div class="dialog-helper">${(wsRes && resourceMax(ch, wsRes) >= 99) ? 'Unlimited uses' : `${remaining}/${wsRes ? resourceMax(ch, wsRes) : 0} uses`} · druid L${druidLevel}${sub ? ` · ${SUBCLASSES.druid?.[sub]?.name || sub}` : ''} · ${wildShapeAllowanceText(ch)}</div>
         <div class="small-note" style="margin:8px 0 10px; padding:10px; border:1px solid var(--border); border-radius:12px;">
           <strong>Wild Shape table:</strong><br>
           L2: CR 1/4, no swim/fly · L4: CR 1/2 + swim · L8: CR 1 + fly · L20: unlimited uses.<br>
@@ -35714,7 +36184,8 @@ function playerGearHTML(ch) {
           if (md.mech.hpBonus) mp.push(`HP ${fmtMod(md.mech.hpBonus)}`);
           if (md.mech.attackBonus) mp.push(`atk ${fmtMod(md.mech.attackBonus)}`);
           if (md.mech.damageBonus) mp.push(`dmg ${fmtMod(md.mech.damageBonus)}`);
-          if (md.mech.spellAttackBonus) mp.push(`spell ${fmtMod(md.mech.spellAttackBonus)}`);
+          if (md.mech.spellAttackBonus) mp.push(`spell atk ${fmtMod(md.mech.spellAttackBonus)}${md.mech.spellClass ? ' (' + md.mech.spellClass + ')' : ''}`);
+          if (md.mech.spellDcBonus) mp.push(`spell DC ${fmtMod(md.mech.spellDcBonus)}${md.mech.spellClass ? ' (' + md.mech.spellClass + ')' : ''}`);
           mechLabel = mp.join(' · ');
         }
         // Stat-set and resistance riders (shown alongside any flat mech).
@@ -35731,7 +36202,7 @@ function playerGearHTML(ch) {
         let chargeRow = '';
         if (chargeData) {
           const rem = itemChargesRemaining(ch, item);
-          const recLabel = chargeData.recover === 'short' ? 'short rest' : 'dawn';
+          const recLabel = (chargeData.recover === 'short' ? 'short rest' : chargeData.recover === 'long' ? 'long rest' : 'dawn') + (chargeData.regain ? ' (' + chargeData.regain + ')' : '');
           chargeRow = `<div class="item-charge-row">
             <span class="item-charge-label">Charges</span>
             <button class="weapon-magic-btn" data-item-charge="${item.id}|use" ${rem <= 0 ? 'disabled' : ''}>Use</button>
@@ -35748,6 +36219,7 @@ function playerGearHTML(ch) {
             ${chargeRow}
             ${item.notes ? `<div class="gear-card-meta">${escape(item.notes)}</div>` : ''}
             ${resolvedDesc && isExpanded ? `<div class="gear-card-desc">${escape(resolvedDesc)}</div>` : ''}
+            ${isExpanded && md && md._credits ? `<div class="gear-card-desc content-credit"><span class="wd-lbl">Credit</span> ${escape(md._credits)}${md._license ? ' (' + escape(clLicenceLabel(md._license)) + ')' : ''}</div>` : ''}
           </div>
           <div class="item-controls">
             ${equippable ? `
@@ -35883,7 +36355,8 @@ function renderActiveItemsPanel(ch) {
       if (md.mech.hpBonus) bits.push(`HP ${fmtMod(md.mech.hpBonus)}`);
       if (md.mech.attackBonus) bits.push(`atk ${fmtMod(md.mech.attackBonus)}`);
       if (md.mech.damageBonus) bits.push(`dmg ${fmtMod(md.mech.damageBonus)}`);
-      if (md.mech.spellAttackBonus) bits.push(`spell ${fmtMod(md.mech.spellAttackBonus)}`);
+      if (md.mech.spellAttackBonus) bits.push(`spell atk ${fmtMod(md.mech.spellAttackBonus)}${md.mech.spellClass ? ' (' + md.mech.spellClass + ')' : ''}`);
+      if (md.mech.spellDcBonus) bits.push(`spell DC ${fmtMod(md.mech.spellDcBonus)}${md.mech.spellClass ? ' (' + md.mech.spellClass + ')' : ''}`);
     }
     if (md && md.setScore) bits.push(`${(md.setScore.ability || '').toUpperCase()} ${md.setScore.value}`);
     if (md && md.resist) bits.push(`resist ${md.resist === 'choice' ? 'chosen' : md.resist}`);
@@ -37374,6 +37847,12 @@ function renderActionsTab(ch) {
   if (subclassIdFor(ch, 'rogue') === 'soulknife' && classLevelFor(ch, 'rogue') >= 3) {
     weapons.push(psychicBladeWeapon(ch, 'psychic_blade'));
   }
+  // v0.92.1 — Monks: the regular (Attack action) Unarmed Strike, using the Martial
+  // Arts die and the better of DEX/STR, alongside the bonus-action one.
+  if (classLevelFor(ch, 'monk') >= 1 && !weapons.some(w => (w.weaponId || w.id) === 'unarmed')) {
+    const ua = characterWeapons({ ...ch, inventory: { ...(ch.inventory || {}), weapons: [{ id: 'unarmed', weaponId: 'unarmed', ...WEAPONS.unarmed, equipped: true }] } })[0];
+    if (ua) weapons.push({ ...ua, id: 'unarmed', name: 'Unarmed Strike' });
+  }
   const knownSpells = SPELLS.filter(s => isReady(ch, s));
   const actionSpells = knownSpells.filter(s => s.time === 'action');
   const inv = ch.inventory || {};
@@ -38182,6 +38661,7 @@ function renderSpellDetailDialog(ch) {
             <div class="feature-name">Description</div>
             <div class="feature-desc">${escape(fullSpellDescription(spell))}</div>
           </div>
+          ${spell._credits ? `<div class="feature subclass-feature content-credit"><div class="feature-name">Credit</div><div class="feature-desc">${escape(spell._credits)}${spell._license ? ' <span class="small-note">(' + escape(clLicenceLabel(spell._license)) + ')</span>' : ''}</div></div>` : ''}
         </div>
         ${canRitualCast(ch, spell, (ch.preparedSpells || []).includes(spell.name) || (ch.spells || []).includes(spell.name) || (featureSpellGrantInfo(ch, spell.name) || {}).reset === 'known')
           ? `<button class="btn primary" data-ritual-cast="${escape(spell.name)}" style="width:100%;margin-top:10px;">Cast as ritual (+10 min, no slot)</button>` : ''}
@@ -38345,8 +38825,18 @@ function renderAllSpellsTab(ch) {
     : noPrep
       ? ((hasCasterMulticlass(ch) && multiclassSpellSelectionUsesHighestSlot()) ? pool.map(s => s.name) : (classLevelFor(ch, 'wizard') >= 1 ? (ch.spells || []) : pool.map(s => s.name)))
       : (ch.preparedSpells || []);
+  // v0.92.1 — always-prepared subclass spells (domain, oath, circle, …) get their
+  // own "Always prepared" group: never listed under Prepared, never counted.
+  const _alwaysSeen = new Set();
+  const alwaysPreparedSpells = (m.type === 'prepared')
+    ? featureSpellGrantsForCharacter(ch)
+        .filter(g => g.reset === 'known' && (g.level || 0) > 0)
+        .map(g => SPELLS.find(sp => sp.name === g.spellName))
+        .filter(sp => sp && !_alwaysSeen.has(sp.name) && _alwaysSeen.add(sp.name))
+    : [];
+  const _alwaysNames = new Set(alwaysPreparedSpells.map(sp => sp.name));
   // v0.91.3 — Signature Spells / Spell Mastery grants count as ready.
-  const readySpells = pool.filter(s => readyNames.includes(s.name) || (classLevelFor(ch, 'wizard') >= 18 && featureSpellGrantInfo(ch, s.name)));
+  const readySpells = pool.filter(s => !_alwaysNames.has(s.name) && (readyNames.includes(s.name) || (classLevelFor(ch, 'wizard') >= 18 && featureSpellGrantInfo(ch, s.name))));
 
   // Cantrips: union across all caster classes (multiclass-aware)
   const _casterClasses = casterClassesOf(ch);
@@ -38359,6 +38849,13 @@ function renderAllSpellsTab(ch) {
   const knownCantrips = allCantripsForClass.filter(s => ch.cantrips.includes(s.name));
   const unknownCantrips = allCantripsForClass.filter(s => !ch.cantrips.includes(s.name));
   const cantripsAtCap = knownCantrips.length >= cantripCap;
+  // v0.92.1 — cantrips granted by a feature (e.g. a subclass's Mage Hand) are
+  // listed with your cantrips but don't count against the cantrip cap.
+  const _knownCantripNames = new Set(knownCantrips.map(s => s.name));
+  const grantedCantrips = featureSpellGrantsForCharacter(ch)
+    .filter(g => g.reset === 'known')
+    .map(g => SPELLS.find(sp => sp.name === g.spellName))
+    .filter(sp => sp && sp.level === 0 && !_knownCantripNames.has(sp.name) && _knownCantripNames.add(sp.name));
 
   // Header: prep cap status
   const cap = m.type === 'prepared' ? prepCap(ch) : knownCap(ch);
@@ -38412,16 +38909,19 @@ function renderAllSpellsTab(ch) {
 
   // Cantrips — known
   html += `<div class="spell-level-divider">Cantrips <span class="spell-section-slots">level 0</span></div>`;
-  if (knownCantrips.length === 0) {
+  if (knownCantrips.length === 0 && grantedCantrips.length === 0) {
     html += `<div class="action-empty" style="padding:12px;">No cantrips known.</div>`;
   } else {
     html += knownCantrips.map(s => renderSpellCard(ch, s)).join('');
+  }
+  if (grantedCantrips.length > 0) {
+    html += grantedCantrips.map(s => renderSpellCard(ch, s, { alwaysPrepared: true })).join('');
   }
 
   // Cantrips — available to learn
   if (unknownCantrips.length > 0) {
     html += `<div class="section-mini" style="margin-top:14px;">Cantrips Available${cantripsAtCap ? ' (at cap — forget one to learn)' : ''}</div>`;
-    html += unknownCantrips.map(s => renderSpellCard(ch, s, { unprepared: true, atCap: cantripsAtCap })).join('');
+    html += unknownCantrips.filter(s => !_knownCantripNames.has(s.name)).map(s => renderSpellCard(ch, s, { unprepared: true, atCap: cantripsAtCap })).join('');
   }
 
   // ===== READY / PREPARED LEVELED SPELLS =====
@@ -38441,10 +38941,24 @@ function renderAllSpellsTab(ch) {
     }
   }
 
+  // ===== ALWAYS PREPARED (v0.92.1) =====
+  if (alwaysPreparedSpells.length > 0) {
+    const srcs = [...new Set(featureSpellGrantsForCharacter(ch).filter(g => g.reset === 'known' && _alwaysNames.has(g.spellName)).map(g => g.source).filter(Boolean))];
+    html += `<div class="section-mini always-prepared-head" style="margin-top:14px;">Always prepared</div>`;
+    html += `<div class="prep-status-hint" style="margin-bottom:6px;">${escape(srcs.join(' · ') || 'Subclass spells')} — always prepared, not counted against your limit.</div>`;
+    for (let lvl = 1; lvl <= 9; lvl++) {
+      const lvlSpells = alwaysPreparedSpells.filter(s => s.level === lvl).sort((a, b) => a.name.localeCompare(b.name));
+      if (lvlSpells.length === 0) continue;
+      const hasUsableSlot = spellLevelHasUsableSlot(ch, lvl);
+      html += `<div class="spell-level-divider ${hasUsableSlot ? '' : 'no-slots'}">Level ${lvl}</div>`;
+      html += lvlSpells.map(s => renderSpellCard(ch, s, { noSlotDim: !hasUsableSlot, alwaysPrepared: true })).join('');
+    }
+  }
+
   html += magicalSecretsPanelHTML(ch);
 
   // ===== AVAILABLE TO PREPARE / LEARN =====
-  const remainingPool = noPrep && !isWizard ? [] : pool.filter(s => !readyNames.includes(s.name) && !readySpells.includes(s));
+  const remainingPool = noPrep && !isWizard ? [] : pool.filter(s => !_alwaysNames.has(s.name) && !readyNames.includes(s.name) && !readySpells.includes(s));
   if (remainingPool.length > 0) {
     const fullLabel = m.type === 'prepared'
       ? (isWizard ? 'Spellbook (not prepared)' : `${klass.name} Spell List`)
@@ -38593,7 +39107,9 @@ function renderSpellCard(ch, s, opts = {}) {
     if (isCantrip && ch.cantrips.includes(s.name)) {
       unprepHtml = `<button class="spell-unprep-btn" data-forget-cantrip="${escape(s.name)}">Forget cantrip</button>`;
     } else if (s.level > 0 && m) {
-      if (m.type === 'prepared' && (ch.preparedSpells || []).includes(s.name)) {
+      if (opts.alwaysPrepared) {
+        unprepHtml = '';
+      } else if (m.type === 'prepared' && (ch.preparedSpells || []).includes(s.name)) {
         unprepHtml = `<button class="spell-unprep-btn" data-unprep="${escape(s.name)}">Remove preparation</button>`;
       } else if (m.type === 'known' && ch.spells.includes(s.name)) {
         unprepHtml = `<button class="spell-unprep-btn" data-unprep="${escape(s.name)}">Forget spell</button>`;
@@ -39157,7 +39673,7 @@ function prettyProfName(v) {
     club: 'Clubs', javelin: 'Javelins', mace: 'Maces', scimitar: 'Scimitars', sickle: 'Sickles', spear: 'Spears',
     'shields (non-metal)': 'Shields (non-metal)'
   };
-  return map[v] || String(v).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return map[v] || String(v).replace(/_/g, ' ').replace(/(^|[\s(\-])([a-z])/g, (m0, a, c) => a + c.toUpperCase());
 }
 
 const MULTICLASS_ENTRY_GRANTS = {
@@ -39220,6 +39736,16 @@ function collectCharacterProficiencies(ch) {
     }
   });
 
+  // v0.92.1 — structured proficiency grants from imported/Forge subclasses:
+  // effects: [{ kind: 'proficiency', armor: [...], weapons: [...], tools: [...] }].
+  if (typeof homebrewSubclassEffects === 'function') {
+    homebrewSubclassEffects(ch).forEach(e => {
+      if (e.kind !== 'proficiency') return;
+      addList(armour, e.armor || e.armour);
+      addList(weapons, e.weapons);
+      addList(tools, e.tools);
+    });
+  }
   Object.keys(SKILLS).forEach(k => { if (skillProfMultiplier(ch, k) > 0) skills.add(k); });
 
   // Background tool proficiencies where the app has them.
@@ -42451,7 +42977,7 @@ function wirePlay(ch) {
         ch.cantrips = ch.cantrips.filter(n => n !== name);
         cleanInvalidInvocations(ch);
       } else if (action === 'scribe') {
-        if (!ch.spells.includes(name) && (!learnedSpellCap(ch) || learnedSpellCount(ch) < learnedSpellCap(ch))) ch.spells.push(name);
+        wizardScribeSpell(ch, name);
       } else if (action === 'prep') {
         if (!ch.preparedSpells) ch.preparedSpells = [];
         if (!ch.preparedSpells.includes(name)) ch.preparedSpells.push(name);
@@ -42461,6 +42987,7 @@ function wirePlay(ch) {
         if (!ch.spells.includes(name) && (!learnedSpellCap(ch) || learnedSpellCount(ch) < learnedSpellCap(ch) - bardSecretsReserved(ch))) ch.spells.push(name);
       } else if (action === 'forget') {
         ch.spells = ch.spells.filter(n => n !== name);
+        if (Array.isArray(ch.foundSpells)) ch.foundSpells = ch.foundSpells.filter(n => n !== name);
         ch.preparedSpells = (ch.preparedSpells || []).filter(n => n !== name);
       }
       saveCharacter(ch);
@@ -42526,7 +43053,7 @@ function wirePlay(ch) {
     b.addEventListener('click', e => {
       e.stopPropagation();
       const name = b.dataset.scribe;
-      if (!ch.spells.includes(name) && (!learnedSpellCap(ch) || learnedSpellCount(ch) < learnedSpellCap(ch))) ch.spells.push(name);
+      wizardScribeSpell(ch, name);
       saveCharacter(ch);
       render();
     });
@@ -42622,6 +43149,7 @@ function wirePlay(ch) {
       e.stopPropagation();
       const name = b.dataset.eraseSpellbook;
       ch.spells = ch.spells.filter(n => n !== name);
+      if (Array.isArray(ch.foundSpells)) ch.foundSpells = ch.foundSpells.filter(n => n !== name);
       ch.preparedSpells = (ch.preparedSpells || []).filter(n => n !== name);
       saveCharacter(ch);
       render();
@@ -45236,7 +45764,18 @@ function homebrewSubclassEffects(ch) {
   // Forged subclasses currently live in the 5e SUBCLASSES registry only; never apply them to
   // a 2024 character (2024 homebrew is a separate, later track). This keeps every shared
   // consumer — resistances, attacks, AC, speed, resources — edition-clean in one place.
-  if (typeof characterEdition === 'function' && characterEdition(ch) === '5.5e') return out;
+  if (typeof characterEdition === 'function' && characterEdition(ch) === '5.5e') {
+    // v0.92.1 — imported/Forge subclasses are now offered to 2024 characters
+    // (SUBCLASSES_55), so their structured effects apply there too. Built-in
+    // 2024 subclasses are untouched.
+    const sc55 = (typeof SUBCLASSES_55 !== 'undefined' && ch.subclass && SUBCLASSES_55[ch.klass]) ? SUBCLASSES_55[ch.klass][ch.subclass] : null;
+    if (!sc55 || !sc55._homebrew) return out;
+    const lf = sc55.levelFeatures || sc55.features || {};
+    Object.keys(lf).forEach(L => {
+      if (Number(L) <= (ch.level || 1)) (lf[L] || []).forEach(feat => (feat.effects || []).forEach(eff => out.push({ ...eff, _feature: feat.name, _level: Number(L) })));
+    });
+    return out;
+  }
   const klasses = ch.classLevels ? Object.keys(ch.classLevels) : [ch.klass];
   klasses.forEach(klass => {
     const subId = (typeof subclassIdFor === 'function') ? subclassIdFor(ch, klass) : (klass === ch.klass ? ch.subclass : null);
@@ -45281,6 +45820,16 @@ function homebrewSkillGrant(ch, key) {
 // given action cost. Reuses the feature-resource use-counter: tracking + rest reset come for
 // free from characterResources, and the live save DC is computed here so the card shows the
 // real number rather than a formula.
+// v0.92.1 — `uses` for a structured active effect: a number, 'pb', or an
+// ability key ('wis', 'cha', …) meaning that modifier (minimum 1).
+function homebrewEffectUses(ch, e) {
+  if (!e) return 1;
+  if (e.uses === 'pb') return profBonus((ch && ch.level) || 1);
+  if (typeof e.uses === 'string' && ABILITIES.includes(e.uses)) {
+    try { return Math.max(1, mod(finalScores(ch)[e.uses])); } catch (x) { return 1; }
+  }
+  return Math.max(1, Number(e.uses) || 1);
+}
 function homebrewActiveDescriptors(ch, cost) {
   if (typeof homebrewSubclassEffects !== 'function') return [];
   const res = (typeof characterResources === 'function') ? characterResources(ch) : [];
@@ -45290,7 +45839,7 @@ function homebrewActiveDescriptors(ch, cost) {
       const id = `hb_active_${e._level}_${forgeSlug(e._feature || 'feat')}`;
       const r = res.find(x => x.id === id);
       const remaining = r ? resourceRemaining(ch, r) : 0;
-      const max = r ? resourceMax(ch, r) : (e.uses === 'pb' ? profBonus((ch && ch.level) || 1) : (Number(e.uses) || 1));
+      const max = r ? resourceMax(ch, r) : homebrewEffectUses(ch, e);
       const restLabel = e.reset === 'short' ? 'short rest' : 'long rest';
       const dcTxt = e.saveAbility ? ` · save DC ${forgeSaveDC(ch, e.saveAbility)} (${ABILITY_SHORT[e.saveAbility] || e.saveAbility})` : '';
       return {
@@ -45379,6 +45928,12 @@ function injectHomebrewSubclassesIntoRegistry() {
       }
     });
   });
+  // v0.92.1 — also list imported/Forge subclasses for 2024-rules characters.
+  if (typeof SUBCLASSES_55 !== 'undefined') {
+    Object.keys(SUBCLASSES_55).forEach(klass => {
+      Object.keys(SUBCLASSES_55[klass] || {}).forEach(id => { if (SUBCLASSES_55[klass][id] && SUBCLASSES_55[klass][id]._homebrew) delete SUBCLASSES_55[klass][id]; });
+    });
+  }
   const hb = loadAiHomebrew();
   hb.filter(h => h && h.type === 'subclass' && h.data && h.data.klass && h.data.id).forEach(h => {
     const k = h.data.klass;
@@ -45388,7 +45943,17 @@ function injectHomebrewSubclassesIntoRegistry() {
       desc: h.data.desc || '',
       levelFeatures: h.data.levelFeatures || {},
       _homebrew: true,
+      ...(h.community ? { _community: h.community.id, _credits: h.community.credits || '' } : {}),
     };
+    if (typeof SUBCLASSES_55 !== 'undefined' && SUBCLASSES_55[k] && !(SUBCLASSES_55[k][h.data.id] && !SUBCLASSES_55[k][h.data.id]._homebrew)) {
+      SUBCLASSES_55[k][h.data.id] = {
+        name: h.data.name || h.title || 'Untitled Subclass',
+        desc: h.data.desc || '',
+        features: h.data.levelFeatures || {},
+        levelFeatures: h.data.levelFeatures || {},
+        _homebrew: true,
+      };
+    }
   });
   // v0.21.163 — bake any `grant_spells` effects into the shared spell-grant table so
   // forged subclasses auto-grant their always-prepared spells through the exact same
@@ -45592,6 +46157,11 @@ function injectHomebrewMagicItemsIntoRegistry() {
       attune: !!h.data.attune,
       desc: h.data.desc || '',
       mech: h.data.mech || null,
+      ...(h.data.charges && h.data.charges.max ? { charges: h.data.charges } : {}),
+      ...(h.data.perDay ? { perDay: h.data.perDay } : {}),
+      ...(h.data.resist ? { resist: h.data.resist } : {}),
+      ...((h.data.credits || (h.community && h.community.credits)) ? { _credits: h.data.credits || h.community.credits } : {}),
+      ...(h.data.license ? { _license: h.data.license } : {}),
       _homebrew: true,
     };
   });
@@ -45807,14 +46377,59 @@ const CL_PATH_RE = /^(races|subclasses|spells|feats|backgrounds|monsters|maps|we
 const CL_ID_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
 const CL_DMG_TYPES = ['slashing', 'piercing', 'bludgeoning', 'fire', 'cold', 'lightning', 'thunder', 'acid', 'poison', 'necrotic', 'radiant', 'psychic', 'force'];
 const CL_WEAPON_PROPS = ['finesse', 'light', 'heavy', 'two-handed', 'versatile', 'thrown', 'reach', 'ammunition', 'loading'];
-const CL_MECH_INT_KEYS = ['attackBonus', 'damageBonus', 'acBonus', 'saveBonus', 'spellAttackBonus', 'hpBonus'];
+const CL_MECH_INT_KEYS = ['attackBonus', 'damageBonus', 'acBonus', 'saveBonus', 'spellAttackBonus', 'spellDcBonus', 'hpBonus'];
+// v0.92.1 — community item charges. Accepts { max, recharge } (or recover/
+// regain) where recharge is e.g. 'dawn', 'long', 'short', 'short or long',
+// '1d6+1', '1d6+1 at dawn'. Maps onto the built-in charges shape so the
+// sheet's charge tracker and rest recovery work unchanged.
+// v0.92.1 — { str|dex|con|int|wis|cha: 1..2 } fixed ability increase (feats, 2014 backgrounds).
+function clAbilityIncrease(v) {
+  if (!v || typeof v !== 'object') return null;
+  const out = {};
+  ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(a => { const n = clClampInt(v[a], 0, 2, 0); if (n) out[a] = n; });
+  return Object.keys(out).length ? out : null;
+}
+function clLicenceLabel(l) {
+  const v = String(l || '');
+  if (v === 'CC-BY-4.0') return 'CC BY 4.0';
+  if (/^OGL-?1\.0a?$/i.test(v)) return 'OGL 1.0a';
+  return v;
+}
+function clNormaliseCharges(c) {
+  if (c == null) return null;
+  if (typeof c === 'number') c = { max: c };
+  if (typeof c !== 'object') return null;
+  const max = clClampInt(c.max, 0, 100, 0);
+  if (!max) return null;
+  const txt = String(c.recharge || c.recover || '').toLowerCase().slice(0, 80);
+  let recover = 'dawn';
+  if (/short/.test(txt)) recover = 'short';
+  else if (/long/.test(txt)) recover = 'long';
+  let regain = null;
+  const src = String(c.regain || '') || txt;
+  const dm = src.replace(/\s+/g, '').match(/^(\d*d\d+(?:[+\-]\d+)?|\d+)/i);
+  if (dm && !/^(all)$/i.test(src)) regain = dm[1];
+  if (regain && /^\d+$/.test(regain) && parseInt(regain, 10) >= max) regain = null;
+  return { max, recover, regain };
+}
 const clFileCache = {}; // id@version -> parsed item file (this session only)
 
+// v0.92.1 — keep the library status line honest when the connection changes.
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => { try { clRerender(); } catch (e) {} });
+  window.addEventListener('offline', () => { try { clRerender(); } catch (e) {} });
+}
 function clUi() {
   if (!state.ui.cl) state.ui.cl = { status: 'idle', error: '', bustToken: 0, preview: null, previewStatus: '', previewError: '', busy: null, cachedLoaded: false };
   return state.ui.cl;
 }
-function clRerender() { if (state.ui.homePanel === 'library') render(); }
+function clRerender() {
+  if (state.ui.homePanel !== 'library') return;
+  // v0.92.1 — don't steal focus from the search box while someone is typing.
+  const a = document.activeElement;
+  if (a && a.id === 'clSearch' && !clUi().preview && document.getElementById('clList')) { clRefreshList(); return; }
+  render();
+}
 
 // ---------- index ----------
 function clSanitiseIndexItem(it) {
@@ -45831,15 +46446,18 @@ function clSanitiseIndexItem(it) {
     version: String(it.version || '1.0.0').slice(0, 20),
     tags: Array.isArray(it.tags) ? it.tags.filter(t => typeof t === 'string').slice(0, 12).map(t => t.slice(0, 30)) : [],
     example: it.example === true,
+    // v0.92.1 — optional date the item was added (for "Newest" sorting).
+    added: (typeof (it.added || it.created || it.date) === 'string' && !isNaN(Date.parse(it.added || it.created || it.date))) ? String(it.added || it.created || it.date).slice(0, 30) : '',
     thumbnail: (typeof it.thumbnail === 'string' && /^maps\/[a-z0-9-]+\.(png|jpg|jpeg|webp)$/.test(it.thumbnail)) ? it.thumbnail : null,
   };
 }
 function clApplyIndex(idx) {
   Object.keys(CONTENT_LIBRARY).forEach(k => { CONTENT_LIBRARY[k] = []; });
   const items = (idx && Array.isArray(idx.items)) ? idx.items : [];
-  items.forEach(raw => {
+  items.forEach((raw, order) => {
     const it = clSanitiseIndexItem(raw);
     if (!it) return;
+    it.order = order;
     const shelf = CL_TYPE_SHELF[it.type];
     if (!CONTENT_LIBRARY[shelf]) CONTENT_LIBRARY[shelf] = [];
     CONTENT_LIBRARY[shelf].push(it);
@@ -45971,6 +46589,10 @@ function clNormaliseMagicItem(d, file) {
     desc: clStr(d.desc, 3000),
     mech,
     templateId: typeof d.templateId === 'string' ? d.templateId : null,
+    ...(clNormaliseCharges(d.charges) ? { charges: clNormaliseCharges(d.charges) } : (clClampInt(d.perDay, 0, 20, 0) ? { charges: { max: clClampInt(d.perDay, 0, 20, 0), recover: 'dawn', regain: null } } : {})),
+    ...((d.resist === 'choice' || CL_DMG_TYPES.includes(d.resist)) ? { resist: d.resist } : {}),
+    ...(file && file.credits ? { credits: clStr(file.credits, 1000) } : {}),
+    ...(file && file.license ? { license: clStr(file.license, 20) } : {}),
   };
 }
 function clRegistryKey(registryHas, file, dataId) {
@@ -45990,7 +46612,7 @@ function injectCommunityContentIntoRegistries() {
   const inst = loadCommunityInstalled();
   Object.values(inst).forEach(rec => {
     if (!rec || !rec.data || !rec.key) return;
-    const meta = { _community: rec.id, _communityAuthor: rec.author || '' };
+    const meta = { _community: rec.id, _communityAuthor: rec.author || '', ...(rec.credits ? { _credits: rec.credits } : {}), ...(rec.license ? { _license: rec.license } : {}) };
     try {
       if (rec.type === 'race' && !(RACES[rec.key] && !RACES[rec.key]._community)) RACES[rec.key] = { ...rec.data, ...meta };
       else if (rec.type === 'background' && !(BACKGROUNDS[rec.key] && !BACKGROUNDS[rec.key]._community)) BACKGROUNDS[rec.key] = { ...rec.data, ...meta };
@@ -46043,7 +46665,11 @@ async function clInstall(entry) {
     case 'feat': {
       if (!d.name) throw new Error('This feat has no name.');
       rec.key = (prev && prev.key) || clRegistryKey(k => FEATS.some(f => f.id === k && !f._community), file, d.id);
-      rec.data = { name: clStr(d.name, 80), desc: clStr(d.desc, 3000), ...(d.hpPerLevel ? { hpPerLevel: clClampInt(d.hpPerLevel, 0, 5, 0) } : {}) };
+      // v0.92.1 — keep the feat's prerequisite (shown at the start of the text).
+      const prereq = clStr(d.prerequisite || d.prereq, 160);
+      const featInc = clAbilityIncrease(d.abilityIncrease);
+      const featSpeed = clClampInt(d.speed, 0, 30, 0);
+      rec.data = { name: clStr(d.name, 80), desc: (prereq ? 'Prerequisite: ' + prereq.replace(/^requires\s+/i, '') + '. ' : '') + clStr(d.desc, 3000), ...(prereq ? { prerequisite: prereq } : {}), ...(d.hpPerLevel ? { hpPerLevel: clClampInt(d.hpPerLevel, 0, 5, 0) } : {}), ...(featInc ? { abilityIncrease: featInc } : {}), ...(featSpeed ? { speed: featSpeed } : {}) };
       break;
     }
     case 'monster': {
@@ -46183,10 +46809,11 @@ function clDetailLines(type, d) {
       add('Type', MAGIC_ITEM_TYPES[m.type].name);
       add('Rarity', MAGIC_ITEM_RARITIES[m.rarity].name + (m.attune ? ' \u00b7 requires attunement' : ''));
       if (m.mech) add('Bonuses', Object.entries(m.mech).map(([k, v]) => k === 'resistType' ? 'resist ' + v : k.replace(/Bonus$/, '').replace(/([A-Z])/g, ' $1').toLowerCase() + ' +' + v).join(', '));
+      if (m.charges) add('Charges', m.charges.max + ' \u00b7 regain ' + (m.charges.regain || 'all') + ' ' + (m.charges.recover === 'short' ? 'on a short rest' : m.charges.recover === 'long' ? 'on a long rest' : 'at dawn'));
       add('Effect', m.desc);
     } else if (type === 'race') {
       add('Size / speed', (d.size || '') + ' \u00b7 ' + (d.speed || 30) + ' ft');
-      if (d.bonuses) add('Ability scores', Object.entries(d.bonuses).map(([k, v]) => k.toUpperCase() + ' +' + v).join(', '));
+      if (d.bonuses && typeof d.bonuses === 'object') add('Ability scores', formatBonuses(d.bonuses).replace(/x(\d+) choice/, '\u00d7$1 of your choice'));
       add('Traits', (d.traits || []).map(t => t && t.name).filter(Boolean).join(', '));
       if (d.subraces) add('Subraces', Object.values(d.subraces).map(s => s && s.name).filter(Boolean).join(', '));
     } else if (type === 'subclass') {
@@ -46212,6 +46839,17 @@ function clDetailLines(type, d) {
   } catch (e) {}
   return L;
 }
+// v0.92.1 — subclass previews show every feature's rules text, by level.
+function clSubclassFeaturesHTML(d) {
+  const lf = (d && d.levelFeatures && typeof d.levelFeatures === 'object') ? d.levelFeatures : {};
+  const levels = Object.keys(lf).map(Number).filter(n => n > 0).sort((a, b) => a - b);
+  if (!levels.length) return '';
+  return `<div class="cl-pv-features">${levels.map(l => (lf[l] || []).filter(f => f && f.name).map(f => `
+    <details class="cl-pv-feature">
+      <summary><span class="cl-pv-flvl">L${l}</span> ${escape(String(f.name).slice(0, 120))}</summary>
+      <div class="cl-pv-ftext">${escape(String(f.desc || '').slice(0, 4000))}</div>
+    </details>`).join('')).join('')}</div>`;
+}
 function clPreviewHTML(entry) {
   const ui = clUi();
   const key = entry.id + '@' + entry.version + '@' + (ui.bustToken || 0);
@@ -46230,6 +46868,7 @@ function clPreviewHTML(entry) {
     body = `
       ${file.description ? `<div class="cl-pv-desc">${escape(file.description)}</div>` : ''}
       ${lines.length ? `<div class="cl-pv-stats">${lines.map(([k, v]) => `<div><span class="wd-lbl">${escape(k)}</span> ${escape(v)}</div>`).join('')}</div>` : ''}
+      ${entry.type === 'subclass' ? clSubclassFeaturesHTML(file.data) : ''}
       ${entry.type === 'map' && entry.thumbnail ? `<img class="cl-pv-thumb" alt="" src="${escape(CONTENT_RAW_BASE + entry.thumbnail)}" />` : ''}
       ${file.credits ? `<div class="cl-pv-credits"><span class="wd-lbl">Credit</span> ${escape(file.credits)}</div>` : ''}`;
   }
@@ -46243,7 +46882,7 @@ function clPreviewHTML(entry) {
       <button class="btn cl-back" data-cl-back="1">\u2190 Back to the library</button>
       <div class="rules-home-title" style="margin-top:10px;">${escape(file ? file.name : entry.name)}</div>
       <div class="cl-pv-meta">${escape(CL_TYPE_LABEL[entry.type] || entry.type)} \u00b7 by ${escape(entry.author || 'unknown')} \u00b7 v${escape(entry.version)}${entry.example ? ' \u00b7 example' : ''}</div>
-      <div class="cl-pv-meta">Licence: ${escape((file && file.license) || 'CC-BY-4.0').replace('CC-BY-4.0', 'CC BY 4.0')}${entry.tags.length ? ' \u00b7 ' + entry.tags.map(escape).join(', ') : ''}</div>
+      <div class="cl-pv-meta">Licence: ${escape(clLicenceLabel((file && file.license) || 'CC-BY-4.0'))}${entry.tags.length ? ' \u00b7 ' + entry.tags.map(escape).join(', ') : ''}</div>
       ${body}
       <div class="cl-pv-where">${escape(clWhereItGoes(entry.type))}${outdated ? ' You have v' + escape(rec.version) + '.' : ''}</div>
       <div class="cl-pv-actions">${actions.join('')}</div>
@@ -46283,9 +46922,10 @@ function wireContentLibrary() {
   clLoadCachedIndex();
   if (ui.status === 'idle') { setTimeout(() => clFetchIndex(false), 0); }
   document.querySelectorAll('[data-cl-refresh]').forEach(b => b.addEventListener('click', () => clFetchIndex(true)));
-  document.querySelectorAll('[data-cl-open]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); clOpenPreview(b.dataset.clOpen); }));
   document.querySelectorAll('[data-cl-back]').forEach(b => b.addEventListener('click', () => { ui.preview = null; render(); }));
-  document.querySelectorAll('[data-cl-add]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); clDoAdd(b.dataset.clAdd, false); }));
+  // Card buttons are wired by clWireList; this covers the rest (e.g. the preview's "Try again").
+  document.querySelectorAll('[data-cl-open]').forEach(b => { if (!b.closest('.cl-card')) b.addEventListener('click', (e) => { e.stopPropagation(); clOpenPreview(b.dataset.clOpen); }); });
+  clWireList(document);
   document.querySelectorAll('[data-cl-add-char]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); clDoAdd(b.dataset.clAddChar, true); }));
   document.querySelectorAll('[data-cl-remove]').forEach(b => b.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -46293,8 +46933,53 @@ function wireContentLibrary() {
     const warn = rec && ['race', 'subclass', 'background'].includes(rec.type) ? ' Characters already using it may lose those details.' : (rec && rec.type === 'weapon' ? ' Copies already on characters are kept.' : '');
     confirmDialog('Remove "' + (rec ? rec.name : id) + '" from this device?' + warn, () => { clRemove(id); showToast('Removed.'); render(); });
   }));
+  // v0.92.1 — search / type / sort controls.
+  const search = document.getElementById('clSearch');
+  if (search) {
+    search.addEventListener('input', () => {
+      ui.q = search.value;
+      const list = document.getElementById('clList');
+      if (list) { list.innerHTML = clListHTML(); clWireList(list); }
+    });
+    search.addEventListener('keydown', (e) => { if (e.key === 'Escape' && search.value) { search.value = ''; ui.q = ''; const list = document.getElementById('clList'); if (list) { list.innerHTML = clListHTML(); clWireList(list); } } });
+  }
+  const sortSel = document.getElementById('clSort');
+  if (sortSel) sortSel.addEventListener('change', () => { ui.sort = sortSel.value === 'newest' ? 'newest' : 'name'; clRefreshList(); });
+  document.querySelectorAll('[data-cl-type]').forEach(b => b.addEventListener('click', () => {
+    ui.type = b.dataset.clType || 'all';
+    document.querySelectorAll('[data-cl-type]').forEach(x => x.classList.toggle('sel', x === b));
+    clRefreshList();
+  }));
+  // Hidden debug toggle: tap the title 5 times within 3 s to show/hide example items.
+  const title = document.getElementById('clTitle');
+  if (title) title.addEventListener('click', () => {
+    const now = Date.now();
+    ui._titleTaps = (ui._titleTaps || []).filter(t => now - t < 3000).concat(now);
+    if (ui._titleTaps.length >= 5) {
+      ui._titleTaps = [];
+      const on = !clShowExamples();
+      try { if (on) localStorage.setItem(CL_SHOW_EXAMPLES_KEY, '1'); else localStorage.removeItem(CL_SHOW_EXAMPLES_KEY); } catch (e) {}
+      showToast(on ? 'Example items shown (debug).' : 'Example items hidden.');
+      render();
+    }
+  });
 }
-
+// Re-render only the list (keeps the search box focused while typing).
+function clRefreshList() {
+  const list = document.getElementById('clList');
+  if (!list) { render(); return; }
+  list.innerHTML = clListHTML();
+  clWireList(list);
+}
+function clWireList(root) {
+  const ui = clUi();
+  root.querySelectorAll('.cl-card [data-cl-open]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); clOpenPreview(b.dataset.clOpen); }));
+  root.querySelectorAll('[data-cl-add]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); clDoAdd(b.dataset.clAdd, false); }));
+  root.querySelectorAll('[data-cl-clear]').forEach(b => b.addEventListener('click', () => {
+    ui.q = ''; ui.type = 'all';
+    render();
+  }));
+}
 function aiEndpoint() { return localStorage.getItem(AI_ENDPOINT_KEY) || ''; }
 function saveAiEndpoint(url) { localStorage.setItem(AI_ENDPOINT_KEY, url || ''); }
 
@@ -48353,6 +49038,20 @@ async function applyLibraryMap(id) {
   const e = loadEncounter();
   clearMapVideo(e);
   e.mapImage = full;
+  // v0.92.1 — a library map that knows its grid (community maps carry
+  // gridCols/gridRows) sets the encounter grid to match, within the same
+  // 5..40 range the manual +/- controls allow. Tokens are kept on the board.
+  const meta = loadMapLibrary().find(m => m.id === id);
+  const gc = meta && parseInt(meta.gridCols, 10), gr = meta && parseInt(meta.gridRows, 10);
+  if (gc > 0 && gr > 0) {
+    e.mapCols = Math.max(5, Math.min(40, gc));
+    e.mapRows = Math.max(5, Math.min(40, gr));
+    (e.combatants || []).forEach(c => {
+      if (c.mapX != null && c.mapX >= e.mapCols) c.mapX = e.mapCols - 1;
+      if (c.mapY != null && c.mapY >= e.mapRows) c.mapY = e.mapRows - 1;
+    });
+    if (state && state.ui) state.ui.dmMapZoomInit = false;
+  }
   saveEncounter(e);
   broadcastMap(e);
 }
@@ -50868,12 +51567,15 @@ document.addEventListener('input', e => {
 });
 
 document.addEventListener('click', e => {
-  if (!state.draft) return;
+  // v0.92.1 — only the builder edits the draft. Before, a tap on any [data-class],
+  // [data-race], [data-style]… elsewhere in the app (level-up, Reference, Library)
+  // rewrote a draft you had left, bringing back "Unfinished character found".
+  if (!state.draft || state.tab !== 'build') return;
   const raceBtn = e.target.closest('[data-race]');
   if (raceBtn) {
     state.draft.race = raceBtn.dataset.race;
     state.draft.subrace = null; // reset on race change
-    state.draft.raceAbilityBonuses = state.draft.race === 'half-elf' ? (state.draft.raceAbilityBonuses || {}) : {};
+    state.draft.raceAbilityBonuses = {};
     saveDraftProgress();
     render();
     return;
@@ -50896,19 +51598,20 @@ document.addEventListener('click', e => {
   }
   const subraceBtn = e.target.closest('[data-subrace]');
   if (subraceBtn) {
-    if (state.draft.subrace !== subraceBtn.dataset.subrace && state.draft.race !== 'half-elf') state.draft.raceAbilityBonuses = {};
+    if (state.draft.subrace !== subraceBtn.dataset.subrace && !raceChooseInfo(state.draft.race)) state.draft.raceAbilityBonuses = {};
     state.draft.subrace = subraceBtn.dataset.subrace;
     saveDraftProgress();
     render();
     return;
   }
   const halfElfBtn = e.target.closest('[data-half-elf-ability]');
-  if (halfElfBtn && state.draft && state.draft.race === 'half-elf') {
+  if (halfElfBtn && state.draft && raceChooseInfo(state.draft.race)) {
+    const info = raceChooseInfo(state.draft.race);
     const a = halfElfBtn.dataset.halfElfAbility;
-    if (a === 'cha') return;
+    if (info.fixed.includes(a)) return;
     const picks = { ...(state.draft.raceAbilityBonuses || {}) };
     if (picks[a]) delete picks[a];
-    else if (Object.keys(picks).length < 2) picks[a] = 1;
+    else if (Object.keys(picks).length < info.count) picks[a] = info.value;
     state.draft.raceAbilityBonuses = picks;
     saveDraftProgress();
     render();
@@ -51602,27 +52305,56 @@ render();
 (() => { try { const m = sessionStorage.getItem('hearth.postRestoreMsg'); if (m) { sessionStorage.removeItem('hearth.postRestoreMsg'); setTimeout(() => showToast(m, 8000), 400); } } catch (e) {} })();
 
 // v0.14.1 PWA update handling. Forces fresh checks, shows a one-tap refresh prompt, and reloads after the new worker takes control.
+// v0.92.1 — reliable updates: the worker is registered at an absolute /app/ URL
+// (the landing page registers the same URL), a waiting or newly installed worker
+// shows a small "New version, tap to reload" toast, and when an update takes
+// control the page reloads once by itself unless you are mid-edit (typing, a
+// popup open, or the character builder), in which case the toast stays up.
 (function () {
-  const APP_VERSION = 'v0.92.0';
+  const APP_VERSION = 'v0.92.1';
   window.HEARTH_VERSION = APP_VERSION;
 
+  function hearthHasUnsavedEdits() {
+    try {
+      const a = document.activeElement;
+      if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT' || a.isContentEditable)) return true;
+      if (document.querySelector('.dialog-backdrop')) return true;
+      if (typeof hearthHasOpenModal === 'function' && hearthHasOpenModal()) return true;
+      if (window.state && state.tab === 'build') return true;
+    } catch (e) {}
+    return false;
+  }
+
+  function reloadOnce() {
+    try {
+      const last = Number(sessionStorage.getItem('hearth.swReloadAt') || 0);
+      if (Date.now() - last < 10000) return false; // never loop
+      sessionStorage.setItem('hearth.swReloadAt', String(Date.now()));
+    } catch (e) {}
+    window.location.reload();
+    return true;
+  }
+
   function showUpdatePrompt(registration) {
-    if (document.getElementById('hearth-update-banner')) return;
-    const banner = document.createElement('div');
-    banner.id = 'hearth-update-banner';
-    banner.style.cssText = [
-      'position:fixed', 'left:12px', 'right:12px', 'bottom:12px', 'z-index:99999',
+    if (document.getElementById('hearth-update-toast')) return;
+    const t = document.createElement('button');
+    t.type = 'button';
+    t.id = 'hearth-update-toast';
+    t.setAttribute('role', 'status');
+    t.style.cssText = [
+      'position:fixed', 'left:50%', 'transform:translateX(-50%)', 'bottom:calc(76px + env(safe-area-inset-bottom, 0px))', 'z-index:99999',
       'background:#1a1814', 'color:#f5efe2', 'border:1px solid #c2a878',
-      'border-radius:16px', 'box-shadow:0 10px 30px rgba(0,0,0,.28)',
-      'padding:12px', 'display:flex', 'gap:10px', 'align-items:center',
-      'justify-content:space-between', 'font:14px system-ui, -apple-system, Segoe UI, sans-serif'
+      'border-radius:999px', 'box-shadow:0 6px 18px rgba(0,0,0,.3)',
+      'padding:8px 14px', 'max-width:calc(100vw - 24px)', 'white-space:nowrap', 'cursor:pointer',
+      'font:600 13px system-ui, -apple-system, Segoe UI, sans-serif'
     ].join(';');
-    banner.innerHTML = '<div><strong>Update available</strong><br><span style="opacity:.84">Tap refresh to load the newest Hearth build.</span></div><button type="button" id="hearth-update-now" style="background:#c2a878;color:#1a1814;border:0;border-radius:12px;padding:10px 12px;font-weight:800;">Refresh</button>';
-    document.body.appendChild(banner);
-    document.getElementById('hearth-update-now').addEventListener('click', () => {
+    t.textContent = 'New version, tap to reload';
+    document.body.appendChild(t);
+    t.addEventListener('click', () => {
+      t.textContent = 'Updating\u2026';
       const waiting = registration && registration.waiting;
       if (waiting) waiting.postMessage({ type: 'SKIP_WAITING' });
-      setTimeout(() => window.location.reload(), 350);
+      setTimeout(() => window.location.reload(), waiting ? 600 : 50);
     });
   }
 
@@ -51636,17 +52368,28 @@ render();
   const _proto = (typeof location !== 'undefined' && location.protocol) || '';
   if (_proto !== 'http:' && _proto !== 'https:') return;
 
+  // A page that already had a worker when it loaded is being *updated* when the
+  // controller changes; the very first install (clients.claim) is not.
+  const hadController = !!navigator.serviceWorker.controller;
+  let swRegistration = null;
+
   window.addEventListener('load', async () => {
     try {
-      const registration = await navigator.serviceWorker.register('./sw.js?v=' + encodeURIComponent(APP_VERSION), { updateViaCache: 'none' });
+      const swUrl = (location.pathname.startsWith('/app/') || location.pathname === '/app')
+        ? '/app/sw.js?v=' + encodeURIComponent(APP_VERSION)
+        : './sw.js?v=' + encodeURIComponent(APP_VERSION);
+      const opts = { updateViaCache: 'none' };
+      if (swUrl.startsWith('/app/')) opts.scope = '/app/';
+      const registration = await navigator.serviceWorker.register(swUrl, opts);
+      if (!registration) return;
+      swRegistration = registration;
 
-      setTimeout(() => registration.update().catch(() => {}), 1000);
-      setInterval(() => registration.update().catch(() => {}), 2 * 60 * 1000);
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) registration.update().catch(() => {});
-      });
+      const check = () => { try { const r = registration.update(); if (r && r.catch) r.catch(() => {}); } catch (e) {} };
+      setTimeout(check, 1000);
+      setInterval(check, 2 * 60 * 1000);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
 
-      if (registration.waiting) showUpdatePrompt(registration);
+      if (registration.waiting && navigator.serviceWorker.controller) showUpdatePrompt(registration);
 
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
@@ -51658,15 +52401,16 @@ render();
         });
       });
     } catch (err) {
-      console.log('Hearth update handling unavailable:', err.message);
+      console.log('Hearth update handling unavailable:', err && err.message);
     }
   });
 
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing) return;
-    refreshing = true;
-    window.location.reload();
+    if (refreshing || !hadController) return;
+    if (hearthHasUnsavedEdits()) { showUpdatePrompt(swRegistration); return; }
+    refreshing = reloadOnce();
+    if (!refreshing) showUpdatePrompt(swRegistration);
   });
 })();
 
