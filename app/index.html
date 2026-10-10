@@ -8676,6 +8676,76 @@ html:root .aoe-color-custom input { width: 28px; height: 28px; border-radius: va
 }
 
 </style>
+<style id="hearthV140">
+/* ==================================================================
+   Hearth 1.4.0: first-run tour, data-safety nudge, backups list,
+   Report a bug. Built on the 1.3.0 tokens (--rs-*). Remove this block
+   (and the v1.4.0 script section) to roll back the visuals.
+   ================================================================== */
+/* ---------- first-run tour (bottom sheet on phones, card on wider screens) ---------- */
+html:root .hearth-tour-backdrop { z-index: 2600; }
+html:root .hearth-tour { max-width: 460px; width: 100%; text-align: left; }
+html:root .hearth-tour-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -6px 0 6px; }
+html:root .hearth-tour-count { font-family: var(--rs-sans); font-size: var(--rs-label-size); font-weight: 700; letter-spacing: var(--rs-label-track); text-transform: uppercase; color: var(--rs-label-ink); }
+html:root .hearth-tour-skip { font-family: var(--rs-sans); font-size: 13px; font-weight: 600; color: var(--ink); background: none; border: 0; padding: 0 12px; min-height: var(--rs-touch); min-width: var(--rs-touch); border-radius: var(--rs-r-pill); cursor: pointer; margin-right: -10px; }
+html:root .hearth-tour-skip:hover { background: var(--rs-gold-soft); }
+html:root .hearth-tour-art { width: 64px; height: 64px; border-radius: var(--rs-r-lg); display: flex; align-items: center; justify-content: center; font-size: 32px; line-height: 1;
+  background: var(--rs-card-sunk); border: 1px solid var(--rs-gold-line); box-shadow: var(--rs-shadow-1), var(--rs-inset); margin: 4px 0 14px; }
+html:root .hearth-tour-title { font-family: var(--rs-serif); font-size: 22px; line-height: 1.2; margin: 0 0 8px; color: var(--leather); outline: none; }
+html:root[data-theme="dark"] .hearth-tour-title { color: var(--gold); }
+html:root .hearth-tour-text { font-family: var(--rs-sans); font-size: 15px; line-height: 1.5; margin: 0 0 6px; color: var(--ink); }
+html:root .hearth-tour-points { margin: 8px 0 4px; padding: 0; list-style: none; display: grid; gap: 6px; }
+html:root .hearth-tour-points li { font-family: var(--rs-sans); font-size: 13.5px; line-height: 1.45; color: var(--ink); padding-left: 18px; position: relative; }
+html:root .hearth-tour-points li::before { content: ''; position: absolute; left: 4px; top: .55em; width: 6px; height: 6px; border-radius: 50%; background: var(--rs-gold-line); }
+html:root .hearth-tour-try { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+html:root .hearth-tour-try .btn { width: 100%; }
+html:root .hearth-tour-try-note { font-family: var(--rs-sans); font-size: 12px; opacity: .8; color: var(--ink); }
+html:root .hearth-tour-dots { display: flex; justify-content: center; gap: 6px; margin: 16px 0 4px; }
+html:root .hearth-tour-dots span { width: 7px; height: 7px; border-radius: var(--rs-r-pill); background: var(--rs-card-border); transition: width var(--rs-dur) var(--rs-ease), background-color var(--rs-dur) var(--rs-ease); }
+html:root .hearth-tour-dots span.on { width: 20px; background: var(--rs-gold-line); }
+html:root .hearth-tour .dialog-actions { display: flex; gap: 10px; margin-top: 12px; }
+html:root .hearth-tour .dialog-actions .btn { flex: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  html:root .hearth-tour-body.enter { animation: hearthTourIn 220ms var(--rs-ease) both; }
+  html:root .hearth-tour-body.enter.back { animation-name: hearthTourInBack; }
+}
+@keyframes hearthTourIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+@keyframes hearthTourInBack { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+
+/* ---------- data-safety nudge (inline card on Home, never a popup) ---------- */
+html:root .hearth-nudge { display: flex; gap: 12px; align-items: flex-start; position: relative; padding: 14px 14px 12px; margin-bottom: 12px;
+  border: 1px solid var(--rs-gold-line); border-radius: var(--rs-r-lg); background: var(--rs-card); box-shadow: var(--rs-shadow-1), var(--rs-inset); }
+html:root .hearth-nudge-icon { flex: none; width: 36px; height: 36px; border-radius: var(--rs-r-md); display: flex; align-items: center; justify-content: center; font-size: 18px; background: var(--rs-card-sunk); border: 1px solid var(--rs-card-border); }
+html:root .hearth-nudge-text { flex: 1; min-width: 0; padding-right: 30px; }
+html:root .hearth-nudge-title { font-family: var(--rs-serif); font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+html:root .hearth-nudge-desc { font-family: var(--rs-sans); font-size: 13px; line-height: 1.45; color: var(--ink); opacity: .9; }
+html:root .hearth-nudge-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+html:root .hearth-nudge-actions .btn { min-height: var(--rs-touch); flex: 1 1 auto; }
+html:root .hearth-nudge-close { position: absolute; top: 4px; right: 4px; width: var(--rs-touch); height: var(--rs-touch); border: 0; background: none; border-radius: var(--rs-r-pill); font-size: 20px; line-height: 1; color: var(--ink); opacity: .7; cursor: pointer; }
+html:root .hearth-nudge-close:hover { opacity: 1; background: var(--rs-gold-soft); }
+
+/* ---------- Settings: backups, samples, help ---------- */
+html:root .hearth-settings-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+html:root .hearth-settings-actions .btn { width: 100%; min-height: var(--rs-touch); }
+html:root .hearth-snap-list { display: grid; gap: 8px; margin-top: 8px; }
+html:root .hearth-snap { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--rs-card-border); border-radius: var(--rs-r-md); background: var(--rs-card); box-shadow: var(--rs-shadow-1); }
+html:root .hearth-snap-text { flex: 1; min-width: 0; }
+html:root .hearth-snap-when { font-family: var(--rs-sans); font-size: 14px; font-weight: 600; color: var(--ink); }
+html:root .hearth-snap-meta { font-family: var(--rs-sans); font-size: 12px; color: var(--ink); opacity: .8; margin-top: 2px; }
+html:root .hearth-snap .btn { flex: none; min-height: var(--rs-touch); }
+html:root .hearth-snap-empty { font-family: var(--rs-sans); font-size: 13px; color: var(--ink); opacity: .8; padding: 6px 0; }
+
+/* ---------- Report a bug dialog ---------- */
+html:root .hearth-bug { max-width: 480px; width: 100%; }
+html:root .hearth-bug-details { margin: 12px 0 6px; padding: 10px 12px; border-radius: var(--rs-r-md); background: var(--rs-card-sunk); border: 1px solid var(--rs-card-border); display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
+html:root .hearth-bug-details dt { font-family: var(--rs-sans); font-size: var(--rs-label-size); font-weight: 700; letter-spacing: var(--rs-label-track); text-transform: uppercase; color: var(--rs-label-ink); padding-top: 2px; }
+html:root .hearth-bug-details dd { margin: 0; font-family: var(--rs-sans); font-size: 13px; color: var(--ink); overflow-wrap: anywhere; }
+html:root .hearth-bug-offline { margin: 10px 0 0; padding: 10px 12px; border-radius: var(--rs-r-md); border: 1px solid var(--rs-gold-line); background: var(--rs-gold-soft); font-family: var(--rs-sans); font-size: 13px; line-height: 1.45; color: var(--ink); }
+html:root .hearth-bug-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+html:root .hearth-bug-actions .btn { width: 100%; min-height: 46px; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+html:root .hearth-bug-email { font-family: var(--rs-sans); font-size: 13px; text-align: center; margin-top: 4px; }
+html:root .hearth-bug-email a { color: inherit; }
+</style>
 </head>
 <body>
 <div class="app">
@@ -8711,7 +8781,26 @@ html:root .aoe-color-custom input { width: 28px; height: 28px; border-radius: va
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '1.3.0';
+const HEARTH_VERSION = '1.4.0';
+// v1.4.0 — automatic local backup before each app update. Captured here, at
+// the very start, before anything can migrate stored data; written to
+// IndexedDB later (hearthProcessPreUpdate) and the last 3 are kept.
+const HEARTH_PRE_UPDATE = (function () {
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    const last = localStorage.getItem('hearth.lastVersion');
+    if (last === HEARTH_VERSION) return null;
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || !/^hearth/.test(k) || /^hearth\.(lastVersion|swReloadAt|fb\.emulator|link\.)/.test(k)) continue;
+      data[k] = localStorage.getItem(k);
+    }
+    const real = ['hearth.characters.v2', 'hearth.characters.55.v1'].some(k => { try { const v = JSON.parse(data[k] || '[]'); return Array.isArray(v) && v.length > 0; } catch (e) { return false; } })
+      || ['hearth.dmGames.v1', 'hearth.dmGames.55.v1'].some(k => { try { const c = JSON.parse(data[k] || 'null'); return !!(c && Array.isArray(c.games) && c.games.some(g => (g.players || []).length || (g.encounters || []).some(e => (e.monsters || []).length))); } catch (e) { return false; } });
+    return { from: last || '', to: HEARTH_VERSION, data: real ? data : null };
+  } catch (e) { return null; }
+})();
 // ============================================================
 // SRD 5.1 DATA v2 - structured for in-app casting
 // All content here is from the SRD 5.1 (CC-BY-4.0)
@@ -22118,6 +22207,10 @@ const SHOW_2024_EDITION = false;
 // COMMUNITY CONTENT LIBRARY — shelves are filled from the community repo's
 // index.json (see the importer next to the Magic Item Forge).
 const CONTENT_REPO_URL = 'https://github.com/voodoo573/hearth-community';
+// v1.4.0 — Report a bug. CONTACT_EMAIL: leave '' to hide the email link; set it
+// (e.g. 'hello@hearthdnd.org') to show "Or email …" under Report a bug.
+const CONTACT_EMAIL = 'hearthdnd@gmail.com';
+const HEARTH_ISSUES_URL = 'https://github.com/voodoo573/hearth/issues/new';
 const CONTENT_RAW_BASE = 'https://raw.githubusercontent.com/voodoo573/hearth-community/main/';
 const CONTENT_LIBRARY = { races: [], subclasses: [], spells: [], feats: [], backgrounds: [], weapons: [], magicItems: [], monsters: [], maps: [] };
 const COMMUNITY_INDEX_CACHE_KEY = 'hearth.community.index.v1';
@@ -22304,6 +22397,7 @@ function saveCharacters(list) {
       if (saved && saved.draft && gone.includes(saved.draft.id)) localStorage.removeItem(DRAFT_STORAGE_KEY);
     }
   } catch (e) { /* never block a save */ }
+  try { if (typeof hearthNudgeOnCharsSaved === 'function') hearthNudgeOnCharsSaved(loadCharacters(), list || []); } catch (e) {}
   try { localStorage.setItem(charactersKey(), JSON.stringify(list)); }
   catch (e) { console.warn('Save failed:', e); }
   // v1.1.0 — optional Google sync (no-op unless signed in).
@@ -27535,7 +27629,7 @@ function hearthHasOpenModal() {
     ui.companionPicker || ui.companionStatblock || ui.dmEnemyPicker || ui.dmTileStatsFor || ui.dmEncListOpen || ui.dmGameListOpen ||
     ui.gearDialog || ui.forge || ui.miForge || ui.multiclassEntryDialog || ui.classDevelopment ||
     ui.dmLinkPanel || ui.dmLinkDmgFor || ui.dmSaveFor ||
-    (typeof document !== 'undefined' && !!document.querySelector('#hearthLinkJoin, #hearthLinkAccept, #hearthAccountDlg')));
+    (typeof document !== 'undefined' && !!document.querySelector('#hearthLinkJoin, #hearthLinkAccept, #hearthAccountDlg, #hearthTour, #hearthBugDlg')));
 }
 
 function hearthApplyScrollLock(locked) {
@@ -27631,11 +27725,9 @@ function render() {
   // v0.21.79 — First-run welcome. Shown once (until dismissed) before the
   // ruleset picker, so a brand-new user gets oriented instead of being dropped
   // cold into "Choose your ruleset". The flag persists in localStorage.
-  if (!state.welcomeDismissed && !hearthHasSeenWelcome() && !state.ruleset) {
-    renderWelcome();
-    render._lastTab = state.tab;
-    return;
-  }
+  // v1.4.0 — replaced by the first-run tour: a skippable bottom sheet over the
+  // real app, shown once to fresh installs only (never to existing users).
+  if (!state.welcomeDismissed && !hearthTourChecked) hearthTourMaybeOpen();
   if (!state.ruleset) {
     if (!SHOW_2024_EDITION) { state.ruleset = '5e'; try { localStorage.setItem('hearth.ruleset', '5e'); } catch (e) {} }
     else { renderRulesHome(); render._lastTab = state.tab; return; }
@@ -27745,6 +27837,487 @@ function renderHelpOverlay() {
     </div>
   `;
 }
+
+// ============================================================
+// v1.4.0 — first-run tour, sample data, Report a bug, data-safety
+// nudge and automatic pre-update snapshots. Everything here is local:
+// nothing is sent anywhere unless the user taps "Open GitHub issue".
+// ============================================================
+const HEARTH_TOUR_STEPS = [
+  { art: '🔥', title: 'Welcome to Hearth',
+    text: 'A companion for your D&D 5e table: character sheets that do the maths, a battle map for the DM, and a live link between phones.',
+    points: ['Works offline, on phones, tablets and laptops.', 'Everything stays on this device. No account needed.'] },
+  { art: '🛡️', title: 'Players: make a character',
+    text: 'Build a hero step by step, or roll a random one. The sheet works out attacks, saves, spell slots and resources, and tracks HP as you play.',
+    points: ['Home → Player → Create Character.'], try: 'character' },
+  { art: '⚔️', title: 'DMs: battle map and projector',
+    text: 'Run initiative, drop monsters on a painted map, reveal fog and draw spell areas. Show the players\u2019 view on a TV or second screen with the projector.',
+    points: ['Home → Dungeon Master → New Game.'], try: 'encounter' },
+  { art: '🔗', title: 'The live game link',
+    text: 'Host a game and players join by scanning a QR code. Turns, HP and conditions stay in step on everyone\u2019s phone at the table.',
+    points: ['DM: open an encounter and tap Live game.', 'Players: Home → Player → Join a game.'] },
+  { art: '💾', title: 'Keep your adventures safe',
+    text: 'Hearth saves on this device only. Every so often, export a backup file, or sign in with Google to sync your characters to your other devices.',
+    points: ['Home → Export / Import → Back up everything.', 'Home → Player → Sync with Google (optional).', 'Hearth also keeps a snapshot before each update (Settings → Backups).'] },
+];
+let hearthTourChecked = false;
+let hearthTourStep = 0;
+let hearthTourPrevFocus = null;
+
+function hearthHasUserData() {
+  try {
+    for (const k of ['hearth.characters.v2', 'hearth.characters.55.v1']) {
+      const v = JSON.parse(localStorage.getItem(k) || '[]');
+      if (Array.isArray(v) && v.length) return true;
+    }
+    for (const k of ['hearth.dmGames.v1', 'hearth.dmGames.55.v1']) {
+      const c = JSON.parse(localStorage.getItem(k) || 'null');
+      if (c && Array.isArray(c.games) && (c.games.length > 1 || c.games.some(g => (g.players || []).length || (g.notes || []).length ||
+        (g.encounters || []).length > 1 || (g.encounters || []).some(e => (e.monsters || []).length)))) return true;
+    }
+    if (localStorage.getItem('hearth.dmEncounters.v1') || localStorage.getItem('hearth.dmEncounter.v1')) return true;
+  } catch (e) {}
+  return false;
+}
+// Fresh installs only: never for anyone who has seen the old welcome or already
+// has characters or encounters (they are marked as having seen it instead).
+function hearthShouldShowTour() {
+  if (hearthHasSeenWelcome()) return false;
+  if (hearthHasUserData()) { hearthMarkWelcomeSeen(); return false; }
+  return true;
+}
+function hearthTourMaybeOpen() {
+  if (hearthTourChecked) return;
+  hearthTourChecked = true;
+  if (hearthShouldShowTour()) setTimeout(() => hearthOpenTour(), 80);
+}
+function hearthOpenTour() {
+  if (typeof document === 'undefined' || document.getElementById('hearthTour')) return;
+  hearthMarkWelcomeSeen(); // shown once: the flag is saved as soon as it opens
+  hearthTourStep = 0;
+  hearthTourPrevFocus = document.activeElement;
+  const wrap = document.createElement('div');
+  wrap.className = 'dialog-backdrop hearth-tour-backdrop';
+  wrap.id = 'hearthTour';
+  wrap.style.display = 'flex';
+  wrap.setAttribute('role', 'dialog');
+  wrap.setAttribute('aria-modal', 'true');
+  wrap.setAttribute('aria-labelledby', 'hearthTourTitle');
+  wrap.innerHTML = '<div class="dialog hearth-tour"></div>';
+  document.body.appendChild(wrap);
+  wrap.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-tour]');
+    if (!b) return;
+    const a = b.dataset.tour;
+    if (a === 'skip' || a === 'done') hearthCloseTour();
+    else if (a === 'next') hearthTourGo(hearthTourStep + 1);
+    else if (a === 'back') hearthTourGo(hearthTourStep - 1);
+    else if (a === 'try-character') { hearthCloseTour(); hearthLoadSampleCharacter(); }
+    else if (a === 'try-encounter') { hearthCloseTour(); hearthLoadSampleEncounter(); }
+  });
+  wrap.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); hearthCloseTour(); }
+    else if (e.key === 'ArrowRight' && !/INPUT|TEXTAREA/.test(e.target.tagName)) hearthTourGo(hearthTourStep + 1);
+    else if (e.key === 'ArrowLeft' && !/INPUT|TEXTAREA/.test(e.target.tagName)) hearthTourGo(hearthTourStep - 1);
+    else if (e.key === 'Tab') { // keep focus inside the sheet
+      const f = [...wrap.querySelectorAll('button, a[href]')].filter(x => !x.disabled && x.offsetParent !== null);
+      if (!f.length) return;
+      if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+    }
+  });
+  hearthTourRender(0);
+  if (typeof hearthSyncShellState === 'function') hearthSyncShellState();
+}
+function hearthTourGo(i) {
+  if (i < 0 || i >= HEARTH_TOUR_STEPS.length) return;
+  const dir = i < hearthTourStep ? -1 : 1;
+  hearthTourStep = i;
+  hearthTourRender(dir);
+}
+function hearthTourRender(dir) {
+  const wrap = document.getElementById('hearthTour');
+  if (!wrap) return;
+  const n = HEARTH_TOUR_STEPS.length, i = hearthTourStep, s = HEARTH_TOUR_STEPS[i];
+  const last = i === n - 1;
+  const tryBtn = s.try === 'character'
+    ? `<div class="hearth-tour-try"><button class="btn" data-tour="try-character">Try a sample character</button><div class="hearth-tour-try-note">Adds \u201cSample: Sir Oswin\u201d, a level 3 paladin. Remove it any time in Settings.</div></div>`
+    : s.try === 'encounter'
+    ? `<div class="hearth-tour-try"><button class="btn" data-tour="try-encounter">Try a sample encounter</button><div class="hearth-tour-try-note">Adds \u201cSample: The Goblin Road\u201d, a ready-to-run fight on a forest map. Remove it any time in Settings.</div></div>`
+    : '';
+  wrap.querySelector('.hearth-tour').innerHTML = `
+    <div class="hearth-tour-top">
+      <span class="hearth-tour-count">Step ${i + 1} of ${n}</span>
+      ${last ? '' : '<button class="hearth-tour-skip" data-tour="skip">Skip tour</button>'}
+    </div>
+    <div class="hearth-tour-body${dir ? ' enter' + (dir < 0 ? ' back' : '') : ''}" data-step="${i}">
+      <div class="hearth-tour-art" aria-hidden="true">${s.art}</div>
+      <h2 class="hearth-tour-title" id="hearthTourTitle" tabindex="-1">${escape(s.title)}</h2>
+      <p class="hearth-tour-text">${escape(s.text)}</p>
+      ${s.points && s.points.length ? `<ul class="hearth-tour-points">${s.points.map(p => `<li>${escape(p)}</li>`).join('')}</ul>` : ''}
+      ${tryBtn}
+    </div>
+    <div class="hearth-tour-dots" aria-hidden="true">${HEARTH_TOUR_STEPS.map((_, k) => `<span class="${k === i ? 'on' : ''}"></span>`).join('')}</div>
+    <div class="dialog-actions">
+      ${i > 0 ? '<button class="btn" data-tour="back">Back</button>' : ''}
+      ${last ? '<button class="btn primary" data-tour="done">Start using Hearth</button>' : '<button class="btn primary" data-tour="next">Next</button>'}
+    </div>`;
+  const t = wrap.querySelector('#hearthTourTitle');
+  try { if (t) t.focus({ preventScroll: true }); } catch (e) {}
+}
+function hearthCloseTour() {
+  const wrap = document.getElementById('hearthTour');
+  if (wrap) wrap.remove();
+  if (typeof hearthSyncShellState === 'function') hearthSyncShellState();
+  try { if (hearthTourPrevFocus && hearthTourPrevFocus.focus && document.contains(hearthTourPrevFocus)) hearthTourPrevFocus.focus({ preventScroll: true }); } catch (e) {}
+  hearthTourPrevFocus = null;
+}
+
+// ---------- Sample data (bundled, clearly labelled "Sample:", easy to delete) ----------
+const HEARTH_SAMPLE_CHARACTER = {"id":"sample_char_oswin","name":"Sample: Sir Oswin","race":"human","subrace":null,"klass":"paladin","level":3,"targetLevel":3,"photo":null,"raceAbilityBonuses":{},"background":"soldier","alignment":null,"backstory":"A sample character bundled with Hearth so you can try the sheet. Delete it any time from Player (⋯ → Delete) or Settings → Remove sample data.","base":{"str":15,"dex":10,"con":14,"int":8,"wis":12,"cha":15},"statMode":"pointbuy","skills":["athletics","persuasion"],"spells":[],"cantrips":[],"pack":"priests","startingWeapons":["longsword","javelin"],"startingArmor":"chain_mail","startingShield":true,"preparedSpells":["Bless","Cure Wounds","Shield of Faith"],"subclass":"devotion","fightingStyle":"defense","resourcesUsed":{},"invocations":[],"pactBoon":null,"pendingAsi":0,"activeRage":false,"frenzyActive":false,"activeEffects":[],"inventory":{"weapons":[{"id":"longsword_1791621393077_uy4","weaponId":"longsword","name":"Longsword","damage":{"count":1,"sides":8},"type":"slashing","props":["versatile"],"kind":"melee","cat":"martial","equipped":true,"source":"starter"},{"id":"javelin_1791621393077_1b6","weaponId":"javelin","name":"Javelin","damage":{"count":1,"sides":6},"type":"piercing","props":["thrown"],"kind":"melee","cat":"simple","equipped":true,"source":"starter"}],"armor":{"id":"chain_mail","name":"Chain Mail","cat":"heavy","baseAc":16,"dexCap":0,"str":13,"stealthDisadv":true},"shield":true,"items":[{"id":"i_1791621393077_atr","name":"Backpack","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_ldi","name":"Blanket","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_680","name":"Candle","qty":10,"notes":"","source":"pack"},{"id":"i_1791621393077_tso","name":"Tinderbox","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_rrg","name":"Alms box","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_hg3","name":"Block of incense","qty":2,"notes":"","source":"pack"},{"id":"i_1791621393077_f83","name":"Censer","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_c1j","name":"Vestments","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_tsy","name":"Rations (1 day)","qty":2,"notes":"","source":"pack"},{"id":"i_1791621393077_n95","name":"Waterskin","qty":1,"notes":"","source":"pack"},{"id":"bg_1791621393077_58j","name":"Musical instrument","qty":1,"notes":"Background equipment","source":"background"},{"id":"bg_1791621393077_q16","name":"Costume","qty":1,"notes":"Background equipment","source":"background"},{"id":"bg_1791621393077_aow","name":"Admirer's favour","qty":1,"notes":"Background equipment","source":"background"}],"currency":{"cp":0,"sp":0,"ep":0,"gp":15,"pp":0}},"weapons":null,"currentHp":28,"tempHp":0,"xp":0,"spentSlots":{},"conditions":[],"inspiration":false,"feats":[],"bondedWeapons":[],"runicInscriptions":[],"maneuversKnown":[],"activeReckless":false,"activeAssassinUnacted":false,"activeAssassinSurprise":false,"hexWarriorWeaponId":null,"hexWarriorChangeAvailable":true,"pactWeaponId":null,"companions":[],"notes":"","createdAt":0,"startingEquipmentPreset":"paladin","backgroundFeature":{"name":"By Popular Demand","desc":"You can usually find a place to perform, earning modest lodging and food."},"backgroundEquipment":["Musical instrument","Costume","Admirer's favour"],"classLevels":{"paladin":3},"sample":true,"updatedAt":"2026-10-10T08:36:33.080Z","freeCastUses":{},"hitDiceSpent":0};
+function hearthIsSample(x) { return !!(x && (x.sample === true || (typeof x.id === 'string' && x.id.indexOf('sample_') === 0))); }
+function hearthBuildSampleGame() {
+  const mon = (id, monsterId, name, hp, init, order, x, y) => ({ id, kind: 'monster', monsterId, name, init, hp, maxHp: hp, statuses: [], order, mapX: x, mapY: y });
+  const enc = {
+    id: 'sample_enc_road', name: 'Ambush on the Goblin Road', sample: true,
+    monsters: [
+      mon('sample_m_bugbear', 'm_bugbear', 'Bugbear', 27, 13, 2, 11, 4),
+      mon('sample_m_gob1', 'm_goblin', 'Goblin 1', 7, 16, 4, 10, 7),
+      mon('sample_m_gob2', 'm_goblin', 'Goblin 2', 7, 9, 6, 12, 8),
+      mon('sample_m_wolf', 'm_wolf', 'Wolf', 11, 15, 5, 9, 5),
+    ],
+    playerState: {
+      sample_pl_aria: { init: 18, statuses: [], order: 1, mapX: 4, mapY: 6, hp: null },
+      sample_pl_bram: { init: 12, statuses: [], order: 3, mapX: 5, mapY: 8, hp: null },
+      sample_pl_mira: { init: 7, statuses: [], order: 7, mapX: 3, mapY: 7, hp: null },
+    },
+    turnIdx: 0, round: 1, tieBreaks: {}, mapCols: 16, mapRows: 12, mapKind: 'painted', mapId: 'forest',
+  };
+  return {
+    id: 'sample_game', name: 'Sample: The Goblin Road', sample: true, level: 3,
+    players: [
+      { id: 'sample_pl_aria', name: 'Aria (rogue)', maxHp: 21, ac: 14 },
+      { id: 'sample_pl_bram', name: 'Bram (fighter)', maxHp: 28, ac: 18 },
+      { id: 'sample_pl_mira', name: 'Mira (wizard)', maxHp: 17, ac: 12 },
+    ],
+    encounters: [enc], activeEncounterId: enc.id, notes: [],
+  };
+}
+function hearthLoadSampleCharacter() {
+  const ch = JSON.parse(JSON.stringify(HEARTH_SAMPLE_CHARACTER));
+  ch.createdAt = Date.now();
+  saveCharacter(ch);
+  state.activeCharId = ch.id;
+  state.ui.homePanel = null; state.ui.homeMenu = null; state.ui.rollLog = [];
+  setActiveTab('play');
+  render();
+  showToast('Sample character added. Remove it any time in Settings.');
+}
+function hearthLoadSampleEncounter() {
+  const coll = loadGames();
+  coll.games = coll.games.filter(g => g.id !== 'sample_game');
+  const g = hearthBuildSampleGame();
+  coll.games.push(g);
+  coll.activeGameId = g.id;
+  saveGames(coll);
+  state.ui.homePanel = null; state.ui.homeMenu = null;
+  state.tab = 'dm'; setActiveTab('dm');
+  state.ui.dmMapMode = true;
+  render();
+  showToast('Sample encounter added. Remove it any time in Settings.');
+}
+function hearthSampleCounts() {
+  let chars = 0, games = 0;
+  try { chars = loadCharacters().filter(hearthIsSample).length; } catch (e) {}
+  try { const c = JSON.parse(localStorage.getItem(gamesKey()) || 'null'); games = (c && Array.isArray(c.games)) ? c.games.filter(hearthIsSample).length : 0; } catch (e) {}
+  return { chars, games };
+}
+function hearthRemoveSampleData() {
+  const list = loadCharacters();
+  const keep = list.filter(c => !hearthIsSample(c));
+  if (keep.length !== list.length) saveCharacters(keep);
+  if (state.activeCharId && hearthIsSample({ id: state.activeCharId })) state.activeCharId = null;
+  let coll = null;
+  try { coll = JSON.parse(localStorage.getItem(gamesKey()) || 'null'); } catch (e) { coll = null; }
+  if (coll && Array.isArray(coll.games) && coll.games.some(hearthIsSample)) {
+    coll.games.filter(hearthIsSample).forEach(g => dmDeleteGame(g.id));
+  }
+  state.ui.dmMapMode = false;
+}
+
+// ---------- Report a bug ----------
+function hearthPlatform() {
+  try {
+    if (window.HEARTH_NATIVE || (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) return 'Android app';
+    const standalone = ['standalone', 'fullscreen', 'minimal-ui', 'window-controls-overlay'].some(m => window.matchMedia && window.matchMedia('(display-mode: ' + m + ')').matches) || navigator.standalone === true;
+    if (standalone) return 'PWA (installed)';
+  } catch (e) {}
+  return 'Web';
+}
+function hearthBugDetails() {
+  const w = Math.round(window.innerWidth || 0), h = Math.round(window.innerHeight || 0);
+  const sw = (window.screen && screen.width) || 0, sh = (window.screen && screen.height) || 0;
+  const dpr = Math.round((window.devicePixelRatio || 1) * 100) / 100;
+  let theme = 'light';
+  try { theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; } catch (e) {}
+  return {
+    version: HEARTH_VERSION, platform: hearthPlatform(), ua: (navigator && navigator.userAgent) || '',
+    screen: `${w}\u00d7${h} (screen ${sw}\u00d7${sh}, ${dpr}x)`, theme,
+    online: !(typeof navigator !== 'undefined' && navigator.onLine === false),
+  };
+}
+function hearthBugReportUrl(d) {
+  const q = new URLSearchParams({ template: 'bug_report.yml', title: '[Bug]: ', version: d.version, platform: d.platform, useragent: d.ua, screen: d.screen, extra: 'Theme: ' + d.theme });
+  return HEARTH_ISSUES_URL + '?' + q.toString();
+}
+function hearthBugText(d) {
+  return [
+    'Hearth bug report', '',
+    'App version: ' + d.version, 'Platform: ' + d.platform, 'User agent: ' + d.ua, 'Screen size: ' + d.screen, 'Theme: ' + d.theme, '',
+    'Steps to reproduce:', '1. ', '', 'What I expected:', '', 'What happened instead:', '',
+    'Report at: ' + HEARTH_ISSUES_URL + '?template=bug_report.yml',
+  ].join('\n');
+}
+function hearthCopyText(text) {
+  const fallback = () => new Promise((res, rej) => {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand && document.execCommand('copy');
+      ta.remove(); ok ? res() : rej(new Error('copy failed'));
+    } catch (e) { rej(e); }
+  });
+  try { if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).catch(fallback); } catch (e) {}
+  return fallback();
+}
+function hearthOpenBugReport() {
+  if (document.getElementById('hearthBugDlg')) return;
+  const d = hearthBugDetails();
+  const url = hearthBugReportUrl(d);
+  const wrap = document.createElement('div');
+  wrap.className = 'dialog-backdrop';
+  wrap.id = 'hearthBugDlg';
+  wrap.style.display = 'flex';
+  wrap.setAttribute('role', 'dialog');
+  wrap.setAttribute('aria-modal', 'true');
+  wrap.setAttribute('aria-labelledby', 'hearthBugTitle');
+  const mailto = CONTACT_EMAIL ? 'mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('Hearth ' + d.version + ' bug report') + '&body=' + encodeURIComponent(hearthBugText(d)) : '';
+  wrap.innerHTML = `
+    <div class="dialog hearth-bug">
+      <div class="dialog-title" id="hearthBugTitle">Report a bug</div>
+      <div class="dialog-helper">This opens a new issue on Hearth\u2019s GitHub page with these details filled in. Add what you tapped, what you expected and what happened. You\u2019ll need a free GitHub account.</div>
+      <dl class="hearth-bug-details">
+        <dt>Version</dt><dd>${escape(d.version)}</dd>
+        <dt>Platform</dt><dd>${escape(d.platform)}</dd>
+        <dt>Screen</dt><dd>${escape(d.screen)}</dd>
+        <dt>Browser</dt><dd>${escape(d.ua)}</dd>
+      </dl>
+      ${d.online ? '' : '<div class="hearth-bug-offline" role="status">You\u2019re offline. GitHub needs an internet connection, so copy the details now and paste them into a report when you\u2019re back online.</div>'}
+      <div class="hearth-bug-actions">
+        <a class="btn primary" id="hearthBugOpen" href="${escape(url)}" target="_blank" rel="noopener noreferrer">Open GitHub issue</a>
+        <button class="btn" id="hearthBugCopy">Copy details</button>
+        <button class="btn" id="hearthBugClose">Close</button>
+      </div>
+      ${mailto ? `<div class="hearth-bug-email">Or email <a href="${escape(mailto)}" id="hearthBugEmail">${escape(CONTACT_EMAIL)}</a></div>` : ''}
+    </div>`;
+  document.body.appendChild(wrap);
+  const close = () => { try { wrap.remove(); } catch (e) {} if (typeof hearthSyncShellState === 'function') hearthSyncShellState(); };
+  const copy = (msg) => hearthCopyText(hearthBugText(d)).then(() => showToast(msg || 'Details copied. Paste them into your report.'), () => showToast('Could not copy. Select the details and copy them by hand.'));
+  wrap.querySelector('#hearthBugClose').addEventListener('click', close);
+  wrap.querySelector('#hearthBugCopy').addEventListener('click', () => copy());
+  wrap.querySelector('#hearthBugOpen').addEventListener('click', (e) => {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      e.preventDefault();
+      copy('Offline: details copied. Open the report when you\u2019re back online.');
+      return;
+    }
+    setTimeout(close, 300);
+  });
+  wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
+  wrap.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  if (typeof hearthSyncShellState === 'function') hearthSyncShellState();
+}
+
+// ---------- Data-safety nudge ----------
+const HEARTH_NUDGE_KEY = 'hearth.nudge.v1';
+const HEARTH_LAST_EXPORT_KEY = 'hearth.lastExportAt';
+const HEARTH_NUDGE_EVERY_MS = 30 * 24 * 60 * 60 * 1000;
+function hearthNudgeLoad() { try { const s = JSON.parse(localStorage.getItem(HEARTH_NUDGE_KEY) || 'null'); return (s && typeof s === 'object') ? s : {}; } catch (e) { return {}; } }
+function hearthNudgeSave(s) { try { localStorage.setItem(HEARTH_NUDGE_KEY, JSON.stringify(s)); } catch (e) {} }
+function hearthRealChars(list) { return (list || []).filter(c => c && !hearthIsSample(c)); }
+function hearthIsSynced() {
+  try { if (typeof HearthGoogle !== 'undefined' && HearthGoogle.user) return true; } catch (e) {}
+  try { const a = JSON.parse(localStorage.getItem('hearth.account.v1') || 'null'); if (a && (a.uid || a.email)) return true; } catch (e) {}
+  return false;
+}
+function hearthLastExportAt() { const v = Number(localStorage.getItem(HEARTH_LAST_EXPORT_KEY) || 0); return isFinite(v) ? v : 0; }
+function hearthMarkExported() {
+  try { localStorage.setItem(HEARTH_LAST_EXPORT_KEY, String(Date.now())); } catch (e) {}
+  const s = hearthNudgeLoad(); s.firstPending = false; hearthNudgeSave(s);
+  try { if (document.querySelector('.hearth-nudge')) render(); } catch (e) {}
+}
+// Called from saveCharacters: the first real (non-sample) character arms the nudge.
+function hearthNudgeOnCharsSaved(prev, next) {
+  if (hearthRealChars(prev).length || !hearthRealChars(next).length || hearthIsSynced()) return;
+  const s = hearthNudgeLoad();
+  if (s.firstDone) return;
+  s.firstPending = true; s.firstDone = true; if (!s.since) s.since = Date.now();
+  hearthNudgeSave(s);
+}
+function hearthNudgeDue() {
+  if (hearthIsSynced()) return null;
+  let list = [];
+  try { list = loadCharacters(); } catch (e) { list = []; }
+  const real = hearthRealChars(list);
+  if (!real.length) return null;
+  const s = hearthNudgeLoad();
+  if (s.firstPending) return { kind: 'first', name: real[0].name };
+  if (!s.since) { s.since = Date.now(); hearthNudgeSave(s); return null; } // existing users: start the 30-day clock
+  const last = Math.max(Number(s.since) || 0, Number(s.dismissedAt) || 0, hearthLastExportAt());
+  return (Date.now() - last >= HEARTH_NUDGE_EVERY_MS) ? { kind: 'periodic', name: real[0].name } : null;
+}
+function hearthNudgeHTML() {
+  const due = hearthNudgeDue();
+  if (!due) return '';
+  const title = due.kind === 'first' ? 'Keep ' + escape(due.name || 'your character') + ' safe' : 'Time for a backup?';
+  const desc = due.kind === 'first'
+    ? 'Hearth saves on this device only. Export a backup file, or sign in with Google to sync your characters to your other devices.'
+    : 'It\u2019s been a while since your last backup. Export a file, or sign in with Google so your characters sync automatically.';
+  return `
+    <section class="section hearth-nudge" role="status" aria-label="Backup reminder" data-nudge-kind="${due.kind}">
+      <div class="hearth-nudge-icon" aria-hidden="true">💾</div>
+      <div class="hearth-nudge-text">
+        <div class="hearth-nudge-title">${title}</div>
+        <div class="hearth-nudge-desc">${desc}</div>
+        <div class="hearth-nudge-actions">
+          <button class="btn primary" data-nudge="export">Export backup</button>
+          <button class="btn" data-nudge="signin">Sign in with Google</button>
+        </div>
+      </div>
+      <button class="hearth-nudge-close" data-nudge="later" aria-label="Dismiss backup reminder">\u00d7</button>
+    </section>`;
+}
+function hearthNudgeDismiss() { const s = hearthNudgeLoad(); s.firstPending = false; s.dismissedAt = Date.now(); hearthNudgeSave(s); }
+
+// ---------- Automatic local snapshots before each app update (IndexedDB, last 3 kept) ----------
+const HEARTH_SNAP_DB = 'hearthSnapshots';
+const HEARTH_SNAP_KEEP = 3;
+function hearthSnapDB() {
+  return new Promise((res, rej) => {
+    let r; try { r = indexedDB.open(HEARTH_SNAP_DB, 1); } catch (e) { return rej(e); }
+    r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('snapshots')) db.createObjectStore('snapshots', { keyPath: 'id' }); };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+function hearthSnapTx(mode, fn) {
+  return hearthSnapDB().then(db => new Promise((res, rej) => {
+    const tx = db.transaction('snapshots', mode); const st = tx.objectStore('snapshots');
+    let out; const req = fn(st); if (req) req.onsuccess = () => { out = req.result; };
+    tx.oncomplete = () => { db.close(); res(out); };
+    tx.onerror = () => { db.close(); rej(tx.error); };
+    tx.onabort = () => { db.close(); rej(tx.error); };
+  }));
+}
+function hearthSnapshotList() {
+  return hearthSnapTx('readonly', st => st.getAll()).then(a => (a || []).sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0)));
+}
+function hearthSnapshotGet(id) { return hearthSnapTx('readonly', st => st.get(id)); }
+function hearthSnapCounts(data) {
+  let characters = 0, games = 0;
+  try { characters = JSON.parse(data['hearth.characters.v2'] || '[]').length + JSON.parse(data['hearth.characters.55.v1'] || '[]').length; } catch (e) {}
+  try { games = ((JSON.parse(data['hearth.dmGames.v1'] || 'null') || {}).games || []).length; } catch (e) {}
+  return { characters, games };
+}
+function hearthSnapshotSave(data, meta) {
+  const snap = { id: 'snap_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), createdAt: Date.now(), from: meta.from || '', to: meta.to || HEARTH_VERSION, reason: meta.reason || 'update', counts: hearthSnapCounts(data), data };
+  return hearthSnapTx('readwrite', st => st.put(snap))
+    .then(() => hearthSnapshotList())
+    .then(list => { const old = list.slice(HEARTH_SNAP_KEEP); if (!old.length) return; return hearthSnapTx('readwrite', st => { old.forEach(s => st.delete(s.id)); return null; }); })
+    .then(() => snap.id);
+}
+function hearthSnapshotWhen(ts) {
+  try { return new Date(ts).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return new Date(ts).toISOString(); }
+}
+function hearthFillSnapshotList() {
+  const el = document.getElementById('hearthSnapList');
+  if (!el) return;
+  hearthSnapshotList().then(list => {
+    const box = document.getElementById('hearthSnapList');
+    if (!box) return;
+    if (!list.length) { box.innerHTML = '<div class="hearth-snap-empty">No snapshots yet. The first one is saved when Hearth next updates.</div>'; return; }
+    box.innerHTML = list.map(s => {
+      const c = s.counts || {};
+      const ver = s.from ? 'Before updating v' + escape(s.from) + ' \u2192 v' + escape(s.to) : 'Before updating to v' + escape(s.to);
+      return `<div class="hearth-snap">
+        <div class="hearth-snap-text">
+          <div class="hearth-snap-when">${escape(hearthSnapshotWhen(s.createdAt))}</div>
+          <div class="hearth-snap-meta">${ver} \u00b7 ${c.characters || 0} character${c.characters === 1 ? '' : 's'}, ${c.games || 0} game${c.games === 1 ? '' : 's'}</div>
+        </div>
+        <button class="btn" data-snapshot-restore="${escape(s.id)}" aria-label="Restore snapshot from ${escape(hearthSnapshotWhen(s.createdAt))}">Restore</button>
+      </div>`;
+    }).join('');
+  }).catch(() => {
+    const box = document.getElementById('hearthSnapList');
+    if (box) box.innerHTML = '<div class="hearth-snap-empty">Snapshots aren\u2019t available in this browser (storage is blocked).</div>';
+  });
+}
+function hearthSettingsV140HTML() {
+  const sc = hearthSampleCounts();
+  const sampleBits = [sc.chars ? sc.chars + ' sample character' + (sc.chars === 1 ? '' : 's') : '', sc.games ? 'the sample game' : ''].filter(Boolean).join(' and ');
+  return `
+      <div class="forge-section-label" style="margin-top: 18px;">Backups</div>
+      <div class="ai-helper">Before each update Hearth saves a snapshot of your characters, games and settings on this device, and keeps the last ${HEARTH_SNAP_KEEP}. Maps and videos aren\u2019t included. Restoring asks whether to merge with what you have or replace it.</div>
+      <div class="hearth-snap-list" id="hearthSnapList"><div class="hearth-snap-empty">Loading snapshots\u2026</div></div>
+      <div class="hearth-settings-actions"><button class="btn" data-transfer-all="1">Export a full backup file</button></div>
+      ${sampleBits ? `
+      <div class="forge-section-label" style="margin-top: 18px;">Sample data</div>
+      <div class="ai-helper">You have ${sampleBits} from the welcome tour.</div>
+      <div class="hearth-settings-actions"><button class="btn" data-sample-remove="1">Remove sample data</button></div>` : ''}
+      <div class="forge-section-label" style="margin-top: 18px;">Help &amp; feedback</div>
+      <div class="ai-helper">Found something broken? Reports go to Hearth\u2019s GitHub with your app version and device filled in.</div>
+      <div class="hearth-settings-actions">
+        <button class="btn" data-bug-report="1">Report a bug</button>
+        <button class="btn" data-tour-replay="1">Replay the welcome tour</button>
+      </div>
+      ${CONTACT_EMAIL ? `<div class="ai-helper hearth-contact" style="margin-top:8px;">Questions, feedback or account deletion: email <a href="mailto:${escape(CONTACT_EMAIL)}" id="hearthContactLink">${escape(CONTACT_EMAIL)}</a>.</div>` : ''}
+  `;
+}
+
+if (typeof document !== 'undefined') document.addEventListener('click', (e) => {
+  const t = e.target && e.target.closest ? e.target : null;
+  if (!t) return;
+  const nudge = t.closest('[data-nudge]');
+  if (nudge) {
+    const a = nudge.dataset.nudge;
+    if (a === 'export') { exportAllBackup(); return; }
+    if (a === 'signin') { if (typeof hearthAccountOpen === 'function') hearthAccountOpen(); return; }
+    if (a === 'later') { hearthNudgeDismiss(); render(); return; }
+  }
+  if (t.closest('[data-bug-report]')) { hearthOpenBugReport(); return; }
+  if (t.closest('[data-tour-replay]')) { state.ui.homePanel = null; render(); hearthOpenTour(); return; }
+  if (t.closest('[data-sample-remove]')) {
+    confirmDialog('Remove the sample character and sample game? Your own characters and games are not touched.', () => { hearthRemoveSampleData(); render(); showToast('Sample data removed.'); }, { title: 'Remove sample data?', yes: 'Remove', danger: true });
+    return;
+  }
+  const rs = t.closest('[data-snapshot-restore]');
+  if (rs) {
+    hearthSnapshotGet(rs.dataset.snapshotRestore).then(s => {
+      if (!s || !s.data) { showToast('That snapshot could not be read.'); return; }
+      showRestoreChoiceDialog(s.data, null);
+    }).catch(() => showToast('That snapshot could not be read.'));
+  }
+});
+
+// Save the pre-update snapshot captured at startup (HEARTH_PRE_UPDATE), then
+// remember this version so it only happens once per update.
+(function hearthProcessPreUpdate() {
+  if (typeof HEARTH_PRE_UPDATE === 'undefined' || !HEARTH_PRE_UPDATE) return;
+  const done = () => { try { localStorage.setItem('hearth.lastVersion', HEARTH_VERSION); } catch (e) {} };
+  if (!HEARTH_PRE_UPDATE.data || typeof indexedDB === 'undefined') { done(); return; }
+  hearthSnapshotSave(HEARTH_PRE_UPDATE.data, { from: HEARTH_PRE_UPDATE.from, to: HEARTH_PRE_UPDATE.to, reason: 'update' }).then(done, done);
+})();
 
 
 function renderRulesHome() {
@@ -29577,6 +30150,7 @@ function renderCharacter() {
       </section>
     ` : ''}
 
+    ${(homeMenu === null || homeMenu === 'player') ? hearthNudgeHTML() : ''}
     <section class="section home-buttons">
       ${homeMenu === 'player' ? `
         <button class="home-tile home-back" data-home-menu="back"><div class="home-tile-name">‹ Back</div></button>
@@ -29639,6 +30213,8 @@ function renderCharacter() {
       <div class="home-footer-credit">First play test &middot; 5th June 2026 &middot; by our fearless adventurer <strong>Mr&nbsp;G.&nbsp;N.&nbsp;Wood</strong></div>
     </footer>
   `;
+
+  if (panel === 'settings') hearthFillSnapshotList(); // v1.4.0
 
   // v0.21.31 — Characters now opens as a full-screen popup overlay; wire
   // its close + random buttons.
@@ -32402,6 +32978,8 @@ function homePanelSettings() {
       <div class="forge-section-label" style="margin-top: 18px;">Advanced</div>
       <button class="btn" data-home-panel="aicore" style="width:100%;">Open AI Core — diagnostics &amp; rules sense-check</button>
 
+      ${hearthSettingsV140HTML()}
+
       <div class="forge-section-label" style="margin-top: 18px;">About</div>
       <div class="ai-helper">
         Hearth · v${HEARTH_VERSION}<br>
@@ -34441,6 +35019,7 @@ async function doExportAllBackup(includeMedia) {
   const stamp = new Date().toISOString().slice(0, 10);
   const mediaCount = payload.media ? Object.keys(payload.media).length : 0;
   downloadTextFile('hearth-full-backup-' + stamp + (includeMedia ? '-with-maps' : '') + '.json', JSON.stringify(payload, null, includeMedia ? 0 : 2));
+  try { hearthMarkExported(); } catch (e) {}
   showToast('Backup saved' + (mediaCount ? ' with ' + mediaCount + ' map file' + (mediaCount === 1 ? '' : 's') : ''));
   try { logRoll('Full backup exported', 'Saved', Object.keys(data).length + ' data sets'); } catch (e) {}
 }
@@ -56742,7 +57321,7 @@ try { linkBoot(); } catch (e) { console.warn('Hearth live game boot failed:', e)
 // control the page reloads once by itself unless you are mid-edit (typing, a
 // popup open, or the character builder), in which case the toast stays up.
 (function () {
-  const APP_VERSION = 'v1.3.0';
+  const APP_VERSION = 'v1.4.0';
   window.HEARTH_VERSION = APP_VERSION;
 
   function hearthHasUnsavedEdits() {
