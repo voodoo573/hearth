@@ -11,13 +11,13 @@
 // Bump CACHE_VERSION whenever you ship a new build (keep it in step with
 // CACHE_VERSION in /app/sw.js).
 
-const CACHE_VERSION = 'hearth-site-v0.93.1';
+const CACHE_VERSION = 'hearth-site-v1.1.0';
 const PRECACHE = [
   '/',
   '/manifest.webmanifest',
-  '/icons/icon-192-v74.png',
-  '/icons/icon-512-v74.png',
-  '/icons/apple-touch-icon-v74.png',
+  '/icons/icon-192-v75.png',
+  '/icons/icon-512-v75.png',
+  '/icons/apple-touch-icon-v75.png',
 ];
 
 self.addEventListener('install', (event) => {
