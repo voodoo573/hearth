@@ -8,6 +8,32 @@
 <!-- PWA: install to home screen, run standalone -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1a1814" />
+<script id="hearthLook">
+/* v1.5.0 — colour themes + visual options, applied before first paint.
+   data-theme stays the base tone (light|dark) so every html[data-theme="dark"] rule keeps working;
+   data-palette picks one of Jenny's palettes (themes/palettes.js -> themes/build.js writes the line below). */
+/* @palettes */window.HEARTH_PALETTES = {"tavern":{"name":"Tavern Night","tone":"dark","color":"#140c07","texture":"leather","group":"places","blurb":"Deep smoky brown, candle-amber highlights and brass trim.","sw":["#1d130c","#2d1d11","#f7e4c0","#f2b65c","#43291a","#ee826c"]},"forest":{"name":"Elven Forest","tone":"light","color":"#24361f","texture":"parchment","group":"places","blurb":"Pale birch-bark pages, deep moss ink, lichen-gold accents and a silvered moss banner.","sw":["#e5e8da","#eef1e4","#18251a","#4d5c16","#3c5534","#8f2a22"]},"forge":{"name":"Dwarven Forge","tone":"dark","color":"#111214","texture":"stone","group":"places","blurb":"Charcoal and cold iron with molten-orange accents and a stone-block background.","sw":["#18191b","#25282c","#edebe7","#ff8c40","#34383d","#fa8472"]},"arcane":{"name":"Arcane Tower","tone":"dark","color":"#0d0e26","texture":"none","group":"places","blurb":"Midnight indigo with violet panels and starlight-gold lettering.","sw":["#131532","#1f2149","#eeedff","#f4d47e","#2e2468","#ff7d8c"]},"frost":{"name":"Frost (Icewind)","tone":"light","color":"#1f2e3e","texture":"none","group":"places","blurb":"Pale ice-blue and snow-white with steel-grey ink and a steel banner.","sw":["#e3ecf2","#f4f8fb","#122238","#6c4f0a","#405870","#a3242c"]},"infernal":{"name":"Infernal","tone":"dark","color":"#100605","texture":"leather","group":"places","blurb":"Blackened red with glowing ember accents and bone-white text.","sw":["#170a09","#28130f","#f1e6d2","#ff8e4e","#461610","#ff6e5e"]},"contrast":{"name":"High Contrast","tone":"dark","color":"#000000","texture":"none","group":"classic","font":"clean","cards":"framed","blurb":"Pure black, white text, bright yellow accents and solid outlines.","sw":["#000000","#0f0f0f","#ffffff","#ffd83d","#000000","#ff7676"]},"oldmap":{"name":"Old Map","tone":"light","color":"#2c2216","texture":"parchment","group":"places","optional":true,"blurb":"Faded sepia chart paper, iron-gall ink and a faint navigator’s grid.","sw":["#ebe0c6","#f3ead6","#241a10","#6a4310","#5a4632","#8c2418"]},"hoard":{"name":"Dragon Hoard","tone":"dark","color":"#07110c","texture":"none","group":"places","optional":true,"blurb":"Deep emerald with heaped-gold lettering, gold-framed cards and a gold button.","sw":["#0c1813","#14281f","#f7eecb","#f5c94c","#21432f","#ff7b6b"]},"dawn":{"name":"Sacred Dawn","tone":"light","color":"#2a2416","texture":"parchment","group":"classes","from":"paladin · cleric","blurb":"Sunlit white marble and temple stone, warm sun-gold accents and a pale gold header.","sw":["#f6f2e8","#fffdf7","#2a2416","#7d5800","#f0dfae","#a3261e"]},"shade":{"name":"Nightshade","tone":"dark","color":"#070707","texture":"leather","group":"classes","from":"rogue","blurb":"Soot-black leather and smoke-grey text with a thin trickle of poison green.","sw":["#0c0c0d","#18181b","#e6e6e4","#9fe36e","#25252a","#ff7d72"]},"wildwood":{"name":"Wildwood","tone":"dark","color":"#0b1206","texture":"leather","group":"classes","from":"ranger · druid","blurb":"Dark bark and olive moss with ash-wood text and a fletching-red accent.","sw":["#111a0b","#1b2812","#ece6cc","#ff8f6a","#34521c","#ff8a8a"]},"moonsilver":{"name":"Moonsilver","tone":"dark","color":"#0e131a","texture":"stars","group":"classes","from":"wizard · elf","blurb":"Deep sea-night blue, moonlit silver text and seafoam accents, with faint drifting motes.","sw":["#141a22","#1f2733","#edf1f6","#8fe8d2","#4a5a70","#ff8a96"]},"pact":{"name":"Eldritch Deep","tone":"dark","color":"#07040c","texture":"stars","group":"classes","from":"warlock · drow / Underdark","blurb":"Lightless violet-black with faelight-lilac accents, sickly green lettering and glowing spores.","sw":["#0c0814","#191026","#ece6f6","#d9a6ff","#2c1645","#ff8090"]},"surge":{"name":"Wild Surge","tone":"dark","color":"#5a0f6e","texture":"none","group":"classes","from":"sorcerer","blurb":"A raw-magic gradient from magenta through violet to ember orange, with hot-pink accents.","sw":["#1c0a26","#2a1036","#fbeef8","#ff8ad8","#c2410c","#ff8a7a"]},"encore":{"name":"Velvet Encore","tone":"dark","color":"#22030e","texture":"weave","group":"classes","from":"bard","blurb":"Plush wine-red velvet, gilt lettering and gold-trimmed cards like a theatre box.","sw":["#2c0514","#420a1e","#fbeedd","#f2c65a","#7a1234","#ff8c8c"]},"warpaint":{"name":"Warpaint","tone":"light","color":"#121110","texture":"parchment","group":"classes","from":"barbarian","blurb":"Bleached bone pages, a charcoal fur header and slashes of ochre-red war paint.","sw":["#e3e1dc","#f3f2ee","#1c1916","#9a310e","#38322c","#7e0f1e"]},"mountain":{"name":"Still Mountain","tone":"light","color":"#2a3038","texture":"weave","group":"classes","from":"monk","blurb":"Pale bamboo paper on a woven-mat texture, a saffron-robe header with slate lettering, saffron accents.","sw":["#ebe9cf","#fbfaee","#232629","#994400","#f4a640","#a01e2a"]},"banner":{"name":"Banner & Blade","tone":"light","color":"#5e0c16","texture":"none","group":"classes","from":"fighter","blurb":"Polished steel-grey pages under a heraldic scarlet banner with gold charges.","sw":["#cfd3d8","#e9ecef","#13161b","#644b00","#a8172a","#a3121f"]},"clockwork":{"name":"Clockwork","tone":"dark","color":"#3a2a10","texture":"stone","group":"classes","from":"artificer · gnome","blurb":"Oxidised verdigris-teal panels, brass plating and copper accents.","sw":["#082226","#0f3238","#e8f4f2","#f2a06a","#7a5a20","#ff8a80"]},"scales":{"name":"Dragonscale","tone":"dark","color":"#2a1e08","texture":"scales","group":"classes","from":"dragonborn","blurb":"Burnished olive-bronze scales, a molten bronze header and dragonfire-red accents.","sw":["#191708","#28250f","#f6eed4","#ff7448","#e0aa50","#ff8a9a"]},"hollow":{"name":"Honeyed Hollow","tone":"light","color":"#1e3a14","texture":"parchment","group":"classes","from":"halfling","blurb":"Golden honey pages, a leafy green door of a header and amber accents.","sw":["#f5d986","#fff3c8","#2a1f0a","#834600","#3f6a26","#a01c1c"]}};/* @palettes-end */
+window.HEARTH_LOOK_DEFAULT_COLOR = '#1a1814';
+window.hearthReducedMotion = function () {
+  try {
+    if (document.documentElement.getAttribute('data-motion') === 'reduced') return true;
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  } catch (e) { return false; }
+};
+window.hearthApplyLook = function (prefs) {
+  prefs = prefs || {};
+  var P = window.HEARTH_PALETTES || {}, pal = P[prefs.palette] || null, h = document.documentElement;
+  var theme = pal ? pal.tone : (prefs.theme === 'dark' ? 'dark' : 'light');
+  h.setAttribute('data-theme', theme);
+  if (pal) h.setAttribute('data-palette', prefs.palette); else h.removeAttribute('data-palette');
+  var look = { texture: prefs.texture || '', font: prefs.font || (pal && pal.font) || '', cards: prefs.cards || (pal && pal.cards) || '', motion: prefs.motion === 'reduced' ? 'reduced' : '' };
+  for (var k in look) { if (look[k]) h.setAttribute('data-' + k, look[k]); else h.removeAttribute('data-' + k); }
+  var color = pal ? pal.color : window.HEARTH_LOOK_DEFAULT_COLOR;
+  var m = document.querySelector('meta[name="theme-color"]'); if (m && m.getAttribute('content') !== color) m.setAttribute('content', color);
+  return theme;
+};
+try { window.hearthApplyLook(JSON.parse(localStorage.getItem('hearth.prefs.v1') || '{}')); } catch (e) {}
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Hearth" />
@@ -680,7 +706,7 @@
     transition: color 0.15s;
   }
   .tab:hover { color: var(--ink-soft); }
-  .tab.active { color: var(--leather); }
+  .tab.active { color: var(--leather-text, var(--leather)); }
   .tab.active::after {
     content: '';
     position: absolute;
@@ -1298,7 +1324,7 @@
   .enemy-row-lib { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 12px; background: var(--parchment-dark); border: 1px solid var(--parchment-darker); border-left: 3px solid var(--gold); border-radius: 8px; margin-bottom: 6px; }
   .enemy-lib-actions { display: flex; gap: 5px; flex-shrink: 0; }
   .enemy-lib-btn { padding: 6px 10px; border: 1px solid var(--ink-faded); border-radius: 6px; background: var(--parchment); color: var(--ink); cursor: pointer; font-size: 13px; }
-  .enemy-lib-btn.add { border-color: var(--gold); color: var(--leather); font-weight: 600; }
+  .enemy-lib-btn.add { border-color: var(--gold); color: var(--leather-text, var(--leather)); font-weight: 600; }
   .enemy-lib-btn.del { border-color: rgba(150,45,45,0.4); color: var(--crimson); }
   .dm-notes-window { position: fixed; z-index: 95; background: var(--parchment); border: 1px solid var(--gold); border-radius: 10px; box-shadow: 0 14px 44px rgba(0,0,0,0.55); display: flex; flex-direction: column; overflow: hidden; min-width: 280px; min-height: 220px; max-width: 96vw; max-height: 94vh; }
   .dm-notes-titlebar { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: var(--leather); color: var(--parchment); cursor: move; flex: none; user-select: none; touch-action: none; }
@@ -4419,7 +4445,7 @@
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 24px; font-weight: 700;
     margin-bottom: 4px;
-    color: var(--leather);
+    color: var(--leather-text, var(--leather));
     letter-spacing: 0.005em;
   }
   .dialog-helper {
@@ -4831,7 +4857,7 @@
     background: var(--parchment); color: var(--ink); white-space: nowrap;
   }
   .flex-cast-btn.create { border-color: var(--moss); color: var(--moss); }
-  .flex-cast-btn.burn { border-color: var(--gold); color: var(--leather); }
+  .flex-cast-btn.burn { border-color: var(--gold); color: var(--leather-text, var(--leather)); }
   .flex-cast-btn:disabled { opacity: 0.35; cursor: default; }
   /* v0.21.12 — Convert (⇄) button on the Sorcery Points resource. */
   .res-convert-btn {
@@ -8613,7 +8639,7 @@ html:root .dialog-backdrop.confirm-backdrop .dialog {
 }
 html:root .dialog-backdrop.confirm-backdrop .dialog::before { display: none; }
 html:root .dialog-title { letter-spacing: .01em; color: var(--gold); }
-html:root:not([data-theme="dark"]) .dialog-title { color: var(--leather); }
+html:root:not([data-theme="dark"]) .dialog-title { color: var(--leather-text, var(--leather)); }
 html:root .dialog :is(.btn) { min-height: 46px; }
 html:root .dialog-close, html:root [data-dialog-close] { min-width: var(--rs-touch); min-height: var(--rs-touch); border-radius: var(--rs-r-pill); }
 
@@ -8701,7 +8727,7 @@ html:root .hearth-tour-skip { font-family: var(--rs-sans); font-size: 13px; font
 html:root .hearth-tour-skip:hover { background: var(--rs-gold-soft); }
 html:root .hearth-tour-art { width: 64px; height: 64px; border-radius: var(--rs-r-lg); display: flex; align-items: center; justify-content: center; font-size: 32px; line-height: 1;
   background: var(--rs-card-sunk); border: 1px solid var(--rs-gold-line); box-shadow: var(--rs-shadow-1), var(--rs-inset); margin: 4px 0 14px; }
-html:root .hearth-tour-title { font-family: var(--rs-serif); font-size: 22px; line-height: 1.2; margin: 0 0 8px; color: var(--leather); outline: none; }
+html:root .hearth-tour-title { font-family: var(--rs-serif); font-size: 22px; line-height: 1.2; margin: 0 0 8px; color: var(--leather-text, var(--leather)); outline: none; }
 html:root[data-theme="dark"] .hearth-tour-title { color: var(--gold); }
 html:root .hearth-tour-text { font-family: var(--rs-sans); font-size: 15px; line-height: 1.5; margin: 0 0 6px; color: var(--ink); }
 html:root .hearth-tour-points { margin: 8px 0 4px; padding: 0; list-style: none; display: grid; gap: 6px; }
@@ -8716,8 +8742,8 @@ html:root .hearth-tour-dots span.on { width: 20px; background: var(--rs-gold-lin
 html:root .hearth-tour .dialog-actions { display: flex; gap: 10px; margin-top: 12px; }
 html:root .hearth-tour .dialog-actions .btn { flex: 1; }
 @media (prefers-reduced-motion: no-preference) {
-  html:root .hearth-tour-body.enter { animation: hearthTourIn 220ms var(--rs-ease) both; }
-  html:root .hearth-tour-body.enter.back { animation-name: hearthTourInBack; }
+  html:root:not([data-motion="reduced"]) .hearth-tour-body.enter { animation: hearthTourIn 220ms var(--rs-ease) both; }
+  html:root:not([data-motion="reduced"]) .hearth-tour-body.enter.back { animation-name: hearthTourInBack; }
 }
 @keyframes hearthTourIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
 @keyframes hearthTourInBack { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
@@ -8835,6 +8861,1853 @@ html:root .dialog-backdrop.confirm-backdrop { padding: calc(16px + var(--hearth-
   html:root .dialog-backdrop:not(.skills-dialog-backdrop) { padding: calc(24px + var(--hearth-safe-top)) calc(24px + var(--hearth-safe-right)) calc(24px + var(--hearth-safe-bottom)) calc(24px + var(--hearth-safe-left)); }
 }
 </style>
+<style id="hearthV150">
+/* ==================================================================
+   Hearth 1.5.0: colour themes + visual options (Jenny's palettes are
+   generated into <style id="hearthThemes"> below by themes/build.js).
+   This block: contrast fixes for the classic Light/Dark (contrast.md),
+   semantic turn/selection tokens, the warm-colour leaks THEMES.md lists,
+   and the Settings picker. Palettes override the tokens set here.
+   ================================================================== */
+/* ---------- classic Light: contrast fixes (were 3.82 / 4.11 / 1.99 / 2.5) ---------- */
+html:not([data-theme="dark"]) {  /* (0,1,1): dark token block and palette blocks still win */
+  --ink-faded: #5e4527;      /* 4.7:1 at the bottom of the page gradient */
+  --rs-label-ink: #5a4024;   /* 5.1:1 */
+  --rs-focus: #7a5218;       /* focus ring 3.7:1 */
+  --gold-text: #5e4010;      /* gold used as text on parchment: 5.0:1 (the gold ornaments keep --gold) */
+  --turn: #8a5408; --turn-soft: rgba(200, 130, 20, .18);
+  --select: #1b5fa8; --select-soft: rgba(27, 95, 168, .20);
+}
+html:root { --turn-map: #f0b450; --select-map: #5aa0e0; }   /* on painted/drawn map boards, any theme */
+/* ---------- classic Dark: contrast fixes (damage / low HP 3.04, temp HP 4.27) ---------- */
+html[data-theme="dark"] {
+  --crimson: #e57866; --crimson-soft: #e57866; --hp-fill-start: #c25a4a;
+  --temp-hp: #7fb2c2;
+  --gold-text: var(--gold);
+  --turn: #f0b450; --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0; --select-soft: rgba(111, 176, 240, .26);
+}
+/* ---------- gold as text on light surfaces (classic Light; palettes map --gold-text to their gold) ---------- */
+html:root :is(.feature-spell-tag) { background: var(--rs-gold-soft); border-color: var(--rs-gold-line); color: var(--gold-text); }
+html:root .spell-source-tag:not(.wizard):not(.bard):not(.cleric):not(.druid):not(.warlock):not(.sorcerer):not(.paladin):not(.ranger) { background: var(--rs-gold-soft); color: var(--gold-text); }
+html[data-palette] .action-roll-btn:not(.prep):not(.free-cast):not(.muted):not(.disabled) { border-color: var(--rs-gold-line); }
+html[data-palette] .stat-cell:hover { background-color: var(--control-fill-hover); }
+/* ---------- audit fixes (390 / 1280, every theme) ---------- */
+html:root :is(.home-footer-credit strong, .dm-map-dim, .dm-enc-round) { color: var(--gold-text); }
+html:root .conc-mark { background: var(--gold-text); color: var(--page); }
+html:root .diff-trivial { color: var(--ink-soft); }
+html:root .settings-size-card:not(.selected) .settings-size-desc { color: var(--ink-soft); }
+html:not([data-theme="dark"]):not([data-palette]) .dm-xp-val.earned { color: #3d4f22; }
+/* tiles, footer and map hints sit on tinted / textured surfaces (turn, selection, desktop page texture): faded ink is not enough there */
+html:root :is(.dm-map-hint, .legal-note) { --ink-faded: var(--ink-soft); --rs-label-ink: var(--ink-soft); }
+html:root .dm-tile { --ink-faded: var(--ink); --rs-label-ink: var(--ink); }
+html:root .dm-tile .dm-hp-val { color: var(--crimson-ink, var(--crimson)); }
+html[data-palette] :is(.dm-xp-val.earned, .dm-xp-diff.diff-trivial) { color: var(--ink); }
+html:root :is(.dm-tile.active-turn, .dm-tile.dm-tile-highlight) .dm-hp-val { color: var(--ink); }   /* tinted turn / selection tiles */
+html:root .feature-spell-tag { color: var(--ink); }
+html[data-palette] .dm-link-beta { color: var(--page); }
+html:root body .hp-btn.damage:not(:hover) { color: var(--crimson-ink, var(--crimson)); }
+html:root[data-cards] .home-modal .rules-home { box-shadow: none; border: 0; background: transparent; }   /* settings wrapper: no card stripe over its text */
+/* Play resource Use buttons (desktop layout): the theme's primary button, not the header colour */
+html:root body:not(.hearth-beyond-play) .resource-use-btn:not(.danger) { background: var(--rs-btn); color: var(--rs-btn-ink); border-color: transparent; }
+html:root body:not(.hearth-beyond-play) .resource-use-btn:not(.danger):hover:not(:disabled) { background: var(--rs-btn-hover); }
+/* hover/active fill for the Play resource + rest buttons follows the theme */
+html:root[data-palette] body.hearth-beyond-play :is(.resource-use-btn, .rest-btn):hover:not(:disabled) { background: var(--gold); border-color: var(--gold); color: var(--page); }
+html:root body.hearth-beyond-play :is(.resource-use-btn, .rest-btn) { transition: none; }
+html:not([data-theme="dark"]) .prep-status-hint { color: var(--ink-soft); }
+html:root .play-photo.placeholder { background: var(--rs-gold-soft); border-color: var(--rs-gold-line); color: var(--ink-soft); }
+/* ---------- whose turn = amber, DM selection = blue, in every theme ---------- */
+html:root .dm-tile.active-turn { background: var(--turn-soft); box-shadow: 0 0 0 2px var(--turn); }
+html:root .dm-tile.dm-tile-highlight, html:root .dm-tile-highlight { background: var(--select-soft); outline: 2px solid var(--select); outline-offset: -1px; box-shadow: 0 0 16px var(--select-soft); }
+html:root .map-token.token-turn { box-shadow: 0 0 0 3px var(--turn-map), 0 0 14px 2px rgba(240, 180, 80, .85); animation-name: hearthTokTurn150; }
+@keyframes hearthTokTurn150 { 0%, 100% { box-shadow: 0 0 0 3px var(--turn-map), 0 0 12px 1px rgba(240, 180, 80, .7); } 50% { box-shadow: 0 0 0 3px var(--turn-map), 0 0 20px 5px rgba(240, 180, 80, .95); } }
+html:root .map-token.token-highlight { outline-color: var(--select-map); }
+/* ---------- 1.4.1 button fixes, palette-aware ---------- */
+/* gold-filled controls: palettes already pass gold-on-page (>= 4.5), so use their gold with page-coloured text */
+html[data-palette] :is(.dm-map-btn, .dm-map-btn:hover, .dm-map-project, .dm-map-tool.dm-map-addmap, .ref-pill.on, .transfer-cat.active, .subclass-nag-btn, .os-chip.sel, .cl-chip.sel) {
+  background: var(--gold) !important; border-color: var(--gold) !important; color: var(--page) !important; text-shadow: none; font-weight: 700;
+}
+html[data-palette] .btn:disabled, html[data-palette] .btn[aria-disabled="true"] {
+  background: repeating-linear-gradient(135deg, var(--control-fill) 0 6px, transparent 6px 12px), var(--page-deep);
+  border: 1px dashed var(--ink-faded); color: var(--ink-faded);
+}
+html[data-palette="contrast"] .btn.danger:not(:disabled) { background: #b00020; border: 2px solid #fff; color: #fff; }
+html[data-palette="contrast"] .btn.success:not(:disabled) { background: #0a6b2a; border: 2px solid #fff; color: #fff; }
+/* the selected Settings card keeps its inverted look under the flat/framed card styles */
+html:root .settings-size-card.settings-size-card.selected { background: var(--ink); border-color: var(--ink); box-shadow: none; }
+html:root .settings-size-card.settings-size-card.selected :is(.settings-size-name, .settings-size-desc, .size-preview-aA) { color: var(--page); }
+/* ---------- Settings: colour theme cards + look options ---------- */
+html:root .settings-palette-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+html:root .settings-theme-picker { max-height: min(62vh, 640px); overflow-y: auto; overscroll-behavior: contain; margin-top: 8px; padding: 0 6px 8px 2px; border-radius: var(--rs-r-md); border: 1px solid var(--rs-card-border); background: var(--rs-card-sunk); }
+html:root .settings-theme-picker:focus-visible { outline: 3px solid var(--rs-focus); outline-offset: 2px; }
+html:root .settings-theme-group { position: sticky; top: 0; z-index: 2; padding: 10px 8px 6px; font-family: var(--rs-sans); font-size: var(--rs-label-size); font-weight: 700; letter-spacing: var(--rs-label-track); text-transform: uppercase; color: var(--rs-label-ink); background: var(--page-deep); border-bottom: 1px solid var(--rs-card-border); }
+html:root .settings-theme-picker .settings-palette-grid { margin: 8px 4px 4px 6px; }
+html:root .settings-palette-from { font-family: var(--rs-sans); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--rs-label-ink); }
+html:root .settings-size-card.selected .settings-palette-from { color: var(--page); }
+html:root .settings-palette-card { display: flex; flex-direction: column; gap: 4px; border-radius: var(--rs-r-md); min-height: 44px; }
+html:root .settings-palette-card .settings-size-name { font-size: 15px; }
+html:root .settings-palette-card .settings-size-desc { font-size: 11.5px; line-height: 1.35; }
+html:root .settings-palette-swatch { height: 34px; border-radius: var(--rs-r-sm); border: 1px solid var(--rs-card-border); display: flex; align-items: center; justify-content: flex-end; gap: 4px; padding: 0 8px; margin-bottom: 4px; }
+html:root .settings-palette-swatch i { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .55), 0 0 0 2.5px rgba(0, 0, 0, .35); }
+html:root .settings-palette-card.selected { outline: 3px solid var(--rs-focus); outline-offset: 2px; }
+html:root .settings-look { display: grid; gap: 14px; margin-top: 8px; }
+html:root .settings-look-label { font-family: var(--rs-sans); font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+html:root .settings-look-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+html:root .settings-look-opt { min-height: var(--rs-touch); padding: 8px 12px; border-radius: var(--rs-r-pill); border: 1px solid var(--rs-card-border); background: var(--rs-btn2); color: var(--ink); font-family: var(--rs-sans); font-size: 13px; cursor: pointer; }
+html:root .settings-look-opt:hover { border-color: var(--rs-gold-line); }
+html:root .settings-look-opt.selected { background: var(--ink); border-color: var(--ink); color: var(--page); font-weight: 700; }
+html:root .settings-look-help { font-family: var(--rs-sans); font-size: 12px; line-height: 1.4; color: var(--ink-faded); margin-top: 6px; }
+</style>
+<style id="hearthThemes">
+/* =====================================================================
+   Hearth — extra colour themes + visual options        (Jenny, art)
+   Generated by build.js from palettes.js; edit those, not this file.
+
+   HOW IT PLUGS IN (details in THEMES.md)
+   - Keep  <html data-theme="light|dark">  exactly as today; it is the
+     palette's BASE TONE, so the ~350 html[data-theme="dark"] component
+     rules keep working without edits.
+   - Add   <html data-palette="tavern|forest|forge|arcane|frost|infernal|
+     contrast|oldmap|hoard">. No attribute = the current look.
+   - Optional visual options, independent of palette:
+       data-texture = parchment | leather | stone | none   (omit = palette default)
+       data-font    = classic | clean                      (omit = classic)
+       data-cards   = raised | flat | framed               (omit = raised)
+       data-motion  = reduced                              (omit = follow OS)
+   - Load this file AFTER the app's own <style> blocks (same specificity,
+     later wins).
+   Every palette sets the same tokens as :root / html[data-theme="dark"]
+   in app/index.html v1.4.1, plus the --rs-* restyle tokens.
+   ===================================================================== */
+
+/* ---- shared texture layers (resolved per palette via its colours) ---- */
+html[data-palette], html[data-texture] {
+  --tex-none: linear-gradient(transparent, transparent);
+  --tex-parchment:
+    radial-gradient(ellipse at 12% 8%, var(--page-stain-dark), transparent 25%),
+    radial-gradient(ellipse at 88% 22%, var(--page-stain), transparent 30%),
+    radial-gradient(ellipse at 25% 65%, var(--page-stain), transparent 35%),
+    radial-gradient(ellipse at 78% 88%, var(--page-stain-dark), transparent 28%),
+    repeating-linear-gradient(0deg, transparent 0 2px, var(--tex-grain) 2px 3px);
+  --tex-leather:
+    radial-gradient(ellipse at 50% 35%, transparent 45%, var(--tex-shade) 120%),
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22220%22%20height%3D%22220%22%3E%20%3Cfilter%20id%3D%22g%22%3E%3CfeTurbulence%20type%3D%22turbulence%22%20baseFrequency%3D%22.42%22%20numOctaves%3D%222%22%20seed%3D%2211%22%20stitchTiles%3D%22stitch%22%2F%3E%3CfeColorMatrix%20values%3D%220%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%20-1.1%20.55%22%2F%3E%3C%2Ffilter%3E%20%3Cfilter%20id%3D%22h%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.9%22%20numOctaves%3D%221%22%20seed%3D%224%22%20stitchTiles%3D%22stitch%22%2F%3E%3CfeColorMatrix%20values%3D%220%200%200%200%201%200%200%200%200%201%200%200%200%200%201%200%200%200%20.07%20-.02%22%2F%3E%3C%2Ffilter%3E%20%3Cfilter%20id%3D%22m%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.012%22%20numOctaves%3D%222%22%20seed%3D%225%22%20stitchTiles%3D%22stitch%22%2F%3E%3CfeColorMatrix%20values%3D%220%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%20.3%20-.08%22%2F%3E%3C%2Ffilter%3E%20%3Crect%20width%3D%22220%22%20height%3D%22220%22%20filter%3D%22url(%23m)%22%2F%3E%3Crect%20width%3D%22220%22%20height%3D%22220%22%20filter%3D%22url(%23g)%22%20opacity%3D%22.28%22%2F%3E%3Crect%20width%3D%22220%22%20height%3D%22220%22%20filter%3D%22url(%23h)%22%2F%3E%3C%2Fsvg%3E") 0 0 / 220px 220px;
+  --tex-stone:
+    radial-gradient(ellipse at 50% 30%, transparent 40%, var(--tex-shade) 130%),
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%22120%22%3E%20%3Cfilter%20id%3D%22n%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.85%22%20numOctaves%3D%222%22%20seed%3D%227%22%2F%3E%3CfeColorMatrix%20values%3D%220%200%200%200%201%200%200%200%200%201%200%200%200%200%201%200%200%200%20.09%20-.02%22%2F%3E%3C%2Ffilter%3E%20%3Cfilter%20id%3D%22d%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.05%22%20numOctaves%3D%223%22%20seed%3D%222%22%2F%3E%3CfeColorMatrix%20values%3D%220%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%200%20.35%20-.08%22%2F%3E%3C%2Ffilter%3E%20%3Crect%20width%3D%22180%22%20height%3D%22120%22%20filter%3D%22url(%23d)%22%2F%3E%20%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22100%22%20height%3D%2260%22%20fill%3D%22rgba(255%2C255%2C255%2C.025)%22%2F%3E%3Crect%20x%3D%2250%22%20y%3D%2260%22%20width%3D%2290%22%20height%3D%2260%22%20fill%3D%22rgba(0%2C0%2C0%2C.07)%22%2F%3E%20%3Crect%20x%3D%22100%22%20y%3D%220%22%20width%3D%2280%22%20height%3D%2260%22%20fill%3D%22rgba(0%2C0%2C0%2C.04)%22%2F%3E%20%3Crect%20width%3D%22180%22%20height%3D%22120%22%20filter%3D%22url(%23n)%22%2F%3E%20%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22square%22%3E%20%3Cpath%20d%3D%22M0%201H180M0%2061H180M100%201V61M0%201V61M50%2061V120M140%2061V120%22%20stroke%3D%22rgba(0%2C0%2C0%2C.5)%22%20stroke-width%3D%222.4%22%2F%3E%20%3Cpath%20d%3D%22M0%203.2H180M0%2063.2H180M102.2%203V61M2.2%203V61M52.2%2063V120M142.2%2063V120%22%20stroke%3D%22rgba(255%2C255%2C255%2C.07)%22%20stroke-width%3D%221%22%2F%3E%20%3C%2Fg%3E%3C%2Fsvg%3E") 0 0 / 180px 120px;
+  --tex-stars:
+    radial-gradient(circle, var(--tex-grain) 0 1px, transparent 1.6px) 13px 29px / 97px 89px,
+    radial-gradient(circle, var(--tex-grain) 0 .8px, transparent 1.3px) 61px 7px / 151px 139px,
+    radial-gradient(circle, var(--tex-grain) 0 1.3px, transparent 2px) 101px 53px / 233px 211px,
+    radial-gradient(ellipse at 80% 10%, var(--page-stain-dark), transparent 45%),
+    radial-gradient(ellipse at 15% 85%, var(--page-stain), transparent 40%);
+  --tex-chart:
+    radial-gradient(ellipse at 12% 8%, var(--page-stain-dark), transparent 28%),
+    radial-gradient(ellipse at 85% 80%, var(--page-stain-dark), transparent 30%),
+    radial-gradient(ellipse at 70% 25%, var(--page-stain), transparent 35%),
+    repeating-linear-gradient(0deg, transparent 0 47px, var(--tex-grain) 47px 48px),
+    repeating-linear-gradient(90deg, transparent 0 47px, var(--tex-grain) 47px 48px);
+}
+
+
+/* Tavern Night — base tone: dark. Deep smoky brown, candle-amber highlights and brass trim; cosier and warmer than the standard dark mode. */
+html[data-palette="tavern"] {
+  --palette-tone: dark;
+  --page: #1d130c;
+  --page-deep: #28190f;
+  --page-edge: #3b2615;
+  --page-stain-dark: rgba(255,170,80,.06);
+  --page-stain: rgba(255,150,60,.035);
+  --ink: #f7e4c0;
+  --ink-soft: #e6c999;
+  --ink-faded: #c9a771;
+  --ink-ghost: #6c4e2e;
+  --leather: #7c4b22;
+  --leather-deep: #4f2f15;
+  --leather-soft: #9c6532;
+  --crimson: #ee826c;
+  --oxblood: #d85a48;
+  --crimson-soft: #ee826c;
+  --gold: #f2b65c;
+  --gold-deep: #cf9c4c;
+  --moss: #a3bf7a;
+  --temp-hp: #78b4c2;
+  --indigo: #94a2d6;
+  --rule: #57391f;
+  --rule-soft: rgba(242,182,92,.22);
+  --page-grad-top: #2c1c10;
+  --page-grad-bottom: #110a05;
+  --card-surface: #2d1d11;
+  --card-border: rgba(232,168,80,.26);
+  --card-shadow: rgba(0,0,0,.45);
+  --hp-fill-start: #ee826c;
+  --hp-fill-end: #f2b65c;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #d2b07a;
+  --rs-card: linear-gradient(180deg, rgba(255,190,110,.075) 0%, rgba(255,190,110,.02) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(232,168,80,.26);
+  --rs-gold-line: rgba(242, 182, 92, 0.55);
+  --rs-gold-soft: rgba(242, 182, 92, 0.15);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(247, 228, 192, 0.07);
+  --rs-btn: linear-gradient(180deg, #8c5527 0%, #663c1a 100%);
+  --rs-btn-hover: linear-gradient(180deg, #8c5527 0%, #8c5527 100%);
+  --rs-btn-ink: #fff2d8;
+  --rs-btn2: linear-gradient(180deg, rgba(255,190,110,.075), rgba(255,190,110,.02)), var(--page-deep);
+  --rs-focus: #ffc66c;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #170d06;
+  --header-b: #43291a;
+  --header-ink: #f6bb62;
+  --header-sub: #d8b47e;
+  --plate-ink: #fbecd0;
+  --tex-grain: rgba(255,200,140,.05);
+  --tex-shade: rgba(0,0,0,.45);
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(239, 145, 121);
+  --leather-text: var(--leather);
+  --control-fill: rgba(247, 228, 192, 0.07);
+  --control-fill-hover: rgba(247, 228, 192, 0.13);
+  --page-texture: var(--tex-leather);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #f0b450;
+  --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0;
+  --select-soft: rgba(111, 176, 240, .26);
+}
+
+/* Elven Forest — base tone: light. Pale birch-bark pages, deep moss ink, lichen-gold accents and a silvered moss banner; a light, airy daytime theme. */
+html[data-palette="forest"] {
+  --palette-tone: light;
+  --page: #e5e8da;
+  --page-deep: #dce2d0;
+  --page-edge: #b8c3a3;
+  --page-stain-dark: rgba(60,90,40,.10);
+  --page-stain: rgba(90,120,60,.07);
+  --ink: #18251a;
+  --ink-soft: #2e4130;
+  --ink-faded: #4a5d45;
+  --ink-ghost: #97a68c;
+  --leather: #2f4a2a;
+  --leather-deep: #1f3320;
+  --leather-soft: #47663e;
+  --crimson: #8f2a22;
+  --oxblood: #8f2a22;
+  --crimson-soft: #a83a30;
+  --gold: #4d5c16;
+  --gold-deep: #3c4812;
+  --moss: #2c6a3a;
+  --temp-hp: #22606f;
+  --indigo: #2b3f6a;
+  --rule: #4e6644;
+  --rule-soft: rgba(70,100,60,.35);
+  --page-grad-top: #eff2e6;
+  --page-grad-bottom: #d0d8c0;
+  --card-surface: #eef1e4;
+  --card-border: rgba(70,95,55,.30);
+  --card-shadow: rgba(40,60,30,.16);
+  --hp-fill-start: #8f2a22;
+  --hp-fill-end: #8aa04a;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #465a41;
+  --rs-card: linear-gradient(180deg, rgba(255,255,250,.55) 0%, rgba(255,255,250,.12) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(24, 37, 26, 0.06), rgba(24, 37, 26, 0.02)), var(--page-deep);
+  --rs-card-border: rgba(70,95,55,.30);
+  --rs-gold-line: rgba(77, 92, 22, 0.55);
+  --rs-gold-soft: rgba(77, 92, 22, 0.15);
+  --rs-shadow-1: 0 1px 1px rgba(40,60,30,.08), 0 2px 6px rgba(40,60,30,.08);
+  --rs-shadow-2: 0 1px 2px rgba(40,60,30,.10), 0 6px 18px rgba(40,60,30,.12);
+  --rs-shadow-3: 0 2px 6px rgba(40,60,30,.18), 0 18px 48px rgba(40,60,30,.30);
+  --rs-inset: inset 0 1px 0 rgba(255, 255, 255, .55);
+  --rs-btn: linear-gradient(180deg, #3e5e33 0%, #2a4223 100%);
+  --rs-btn-hover: linear-gradient(180deg, #3e5e33 0%, #3e5e33 100%);
+  --rs-btn-ink: #f2f6e8;
+  --rs-btn2: linear-gradient(180deg, rgba(255,255,250,.55), rgba(255,255,250,.12)), var(--page-deep);
+  --rs-focus: #4f7a1c;
+  --rs-backdrop: rgba(28, 43, 26, 0.55);
+  /* new hooks (see THEMES.md) */
+  --header-a: #1c2b1a;
+  --header-b: #3c5534;
+  --header-ink: #e9efdb;
+  --header-sub: #bccaa6;
+  --plate-ink: #f1f5e6;
+  --tex-grain: rgba(60,80,40,.035);
+  --tex-shade: rgba(40,60,30,.16);
+  --gold-text: rgb(67, 82, 23);   /* accent as text: a notch deeper for textures */
+  --crimson-ink: rgb(117, 41, 32);
+  --leather-text: var(--leather);
+  --control-fill: rgba(24, 37, 26, 0.07);
+  --control-fill-hover: rgba(24, 37, 26, 0.13);
+  --page-texture: var(--tex-parchment);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #8a5408;
+  --turn-soft: rgba(200, 130, 20, .18);
+  --select: #1b5fa8;
+  --select-soft: rgba(27, 95, 168, .20);
+}
+
+/* Dwarven Forge — base tone: dark. Charcoal and cold iron with molten-orange accents and a stone-block background; hard-edged and industrial. */
+html[data-palette="forge"] {
+  --palette-tone: dark;
+  --page: #18191b;
+  --page-deep: #202225;
+  --page-edge: #303338;
+  --page-stain-dark: rgba(255,120,40,.05);
+  --page-stain: rgba(200,210,220,.025);
+  --ink: #edebe7;
+  --ink-soft: #d2cdc5;
+  --ink-faded: #aca79f;
+  --ink-ghost: #4c4f54;
+  --leather: #4a4e55;
+  --leather-deep: #2c2f33;
+  --leather-soft: #62676f;
+  --crimson: #fa8472;
+  --oxblood: #e0604e;
+  --crimson-soft: #fa8472;
+  --gold: #ff8c40;
+  --gold-deep: #e8702a;
+  --moss: #93c26e;
+  --temp-hp: #6cb2c9;
+  --indigo: #90a2e2;
+  --rule: #3c4046;
+  --rule-soft: rgba(190,198,208,.18);
+  --page-grad-top: #232528;
+  --page-grad-bottom: #0e0f10;
+  --card-surface: #25282c;
+  --card-border: rgba(180,188,198,.20);
+  --card-shadow: rgba(0,0,0,.5);
+  --hp-fill-start: #fa8472;
+  --hp-fill-end: #ff8c40;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #b6b1a8;
+  --rs-card: linear-gradient(180deg, rgba(220,228,238,.06) 0%, rgba(220,228,238,.015) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(180,188,198,.20);
+  --rs-gold-line: rgba(255, 140, 64, 0.55);
+  --rs-gold-soft: rgba(255, 140, 64, 0.15);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(237, 235, 231, 0.07);
+  --rs-btn: linear-gradient(180deg, #ab461b 0%, #7c2f10 100%);
+  --rs-btn-hover: linear-gradient(180deg, #ab461b 0%, #ab461b 100%);
+  --rs-btn-ink: #fff4e8;
+  --rs-btn2: linear-gradient(180deg, rgba(220,228,238,.06), rgba(220,228,238,.015)), var(--page-deep);
+  --rs-focus: #ff9a50;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #0f1012;
+  --header-b: #34383d;
+  --header-ink: #ff9a50;
+  --header-sub: #bdb7ad;
+  --plate-ink: #f1efea;
+  --tex-grain: rgba(255,255,255,.035);
+  --tex-shade: rgba(0,0,0,.55);
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(248, 147, 132);
+  --leather-text: var(--leather);
+  --control-fill: rgba(237, 235, 231, 0.07);
+  --control-fill-hover: rgba(237, 235, 231, 0.13);
+  --page-texture: var(--tex-stone);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #f0b450;
+  --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0;
+  --select-soft: rgba(111, 176, 240, .26);
+}
+
+/* Arcane Tower — base tone: dark. Midnight indigo with violet panels and starlight-gold lettering; calm, mysterious and very easy on the eyes at night. */
+html[data-palette="arcane"] {
+  --palette-tone: dark;
+  --page: #131532;
+  --page-deep: #1a1c3f;
+  --page-edge: #2b2d5c;
+  --page-stain-dark: rgba(150,120,255,.07);
+  --page-stain: rgba(244,212,126,.03);
+  --ink: #eeedff;
+  --ink-soft: #d2cdf6;
+  --ink-faded: #aca6db;
+  --ink-ghost: #4b4982;
+  --leather: #43307e;
+  --leather-deep: #2b1f56;
+  --leather-soft: #5c449e;
+  --crimson: #ff7d8c;
+  --oxblood: #e85a6c;
+  --crimson-soft: #ff7d8c;
+  --gold: #f4d47e;
+  --gold-deep: #d8b65c;
+  --moss: #8fd8a2;
+  --temp-hp: #7ad2e2;
+  --indigo: #a9b6ff;
+  --rule: #363872;
+  --rule-soft: rgba(176,156,255,.22);
+  --page-grad-top: #1c1e47;
+  --page-grad-bottom: #0a0b20;
+  --card-surface: #1f2149;
+  --card-border: rgba(176,156,255,.26);
+  --card-shadow: rgba(0,0,12,.5);
+  --hp-fill-start: #ff7d8c;
+  --hp-fill-end: #f4d47e;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #b6b0e2;
+  --rs-card: linear-gradient(180deg, rgba(190,170,255,.07) 0%, rgba(190,170,255,.015) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(176,156,255,.26);
+  --rs-gold-line: rgba(244, 212, 126, 0.55);
+  --rs-gold-soft: rgba(244, 212, 126, 0.15);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(238, 237, 255, 0.07);
+  --rs-btn: linear-gradient(180deg, #5b40b2 0%, #3f2a86 100%);
+  --rs-btn-hover: linear-gradient(180deg, #5b40b2 0%, #5b40b2 100%);
+  --rs-btn-ink: #ffffff;
+  --rs-btn2: linear-gradient(180deg, rgba(190,170,255,.07), rgba(190,170,255,.015)), var(--page-deep);
+  --rs-focus: #f6da8c;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #0d0e2a;
+  --header-b: #2e2468;
+  --header-ink: #f6da8c;
+  --header-sub: #bdb5ec;
+  --plate-ink: #f2f0ff;
+  --tex-grain: rgba(255,245,210,.5);
+  --tex-shade: rgba(0,0,10,.5);
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(252, 142, 157);
+  --leather-text: var(--leather);
+  --control-fill: rgba(238, 237, 255, 0.07);
+  --control-fill-hover: rgba(238, 237, 255, 0.13);
+  --page-texture: var(--tex-none);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #f0b450;
+  --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0;
+  --select-soft: rgba(111, 176, 240, .26);
+}
+
+/* Frost (Icewind) — base tone: light. Pale ice-blue and snow-white with steel-grey ink and a steel banner; the brightest, cleanest theme, great outdoors in sunlight. */
+html[data-palette="frost"] {
+  --palette-tone: light;
+  --page: #e3ecf2;
+  --page-deep: #d9e4ec;
+  --page-edge: #b2c5d4;
+  --page-stain-dark: rgba(120,160,200,.12);
+  --page-stain: rgba(255,255,255,.35);
+  --ink: #122238;
+  --ink-soft: #2a3f57;
+  --ink-faded: #445d77;
+  --ink-ghost: #91a6ba;
+  --leather: #34506a;
+  --leather-deep: #22384e;
+  --leather-soft: #4c6a86;
+  --crimson: #a3242c;
+  --oxblood: #a3242c;
+  --crimson-soft: #b8404a;
+  --gold: #6c4f0a;
+  --gold-deep: #563e06;
+  --moss: #2d6a3c;
+  --temp-hp: #1d5d73;
+  --indigo: #23407c;
+  --rule: #55708a;
+  --rule-soft: rgba(60,95,130,.32);
+  --page-grad-top: #f2f7fa;
+  --page-grad-bottom: #cddbe6;
+  --card-surface: #f4f8fb;
+  --card-border: rgba(60,90,120,.26);
+  --card-shadow: rgba(30,50,80,.14);
+  --hp-fill-start: #a3242c;
+  --hp-fill-end: #6b8fb0;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #415a73;
+  --rs-card: linear-gradient(180deg, rgba(255,255,255,.65) 0%, rgba(255,255,255,.15) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(18, 34, 56, 0.06), rgba(18, 34, 56, 0.02)), var(--page-deep);
+  --rs-card-border: rgba(60,90,120,.26);
+  --rs-gold-line: rgba(108, 79, 10, 0.55);
+  --rs-gold-soft: rgba(108, 79, 10, 0.15);
+  --rs-shadow-1: 0 1px 1px rgba(30,50,80,.08), 0 2px 6px rgba(30,50,80,.08);
+  --rs-shadow-2: 0 1px 2px rgba(30,50,80,.10), 0 6px 18px rgba(30,50,80,.12);
+  --rs-shadow-3: 0 2px 6px rgba(30,50,80,.18), 0 18px 48px rgba(30,50,80,.30);
+  --rs-inset: inset 0 1px 0 rgba(255, 255, 255, .55);
+  --rs-btn: linear-gradient(180deg, #36536e 0%, #243b52 100%);
+  --rs-btn-hover: linear-gradient(180deg, #36536e 0%, #36536e 100%);
+  --rs-btn-ink: #ffffff;
+  --rs-btn2: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.15)), var(--page-deep);
+  --rs-focus: #1d5d9a;
+  --rs-backdrop: rgba(27, 41, 56, 0.55);
+  /* new hooks (see THEMES.md) */
+  --header-a: #1b2938;
+  --header-b: #405870;
+  --header-ink: #eef5fb;
+  --header-sub: #bcd0e0;
+  --plate-ink: #f4f9fd;
+  --tex-grain: rgba(40,80,120,.03);
+  --tex-shade: rgba(30,50,80,.14);
+  --gold-text: rgb(92, 71, 18);   /* accent as text: a notch deeper for textures */
+  --crimson-ink: rgb(131, 36, 47);
+  --leather-text: var(--leather);
+  --control-fill: rgba(18, 34, 56, 0.07);
+  --control-fill-hover: rgba(18, 34, 56, 0.13);
+  --page-texture: var(--tex-none);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #8a5408;
+  --turn-soft: rgba(200, 130, 20, .18);
+  --select: #1b5fa8;
+  --select-soft: rgba(27, 95, 168, .20);
+}
+
+/* Infernal — base tone: dark. Blackened red with glowing ember accents and bone-white text; dramatic and menacing, for horror nights and fiend-heavy campaigns. */
+html[data-palette="infernal"] {
+  --palette-tone: dark;
+  --page: #170a09;
+  --page-deep: #21100e;
+  --page-edge: #3c1814;
+  --page-stain-dark: rgba(255,60,20,.08);
+  --page-stain: rgba(255,120,40,.04);
+  --ink: #f1e6d2;
+  --ink-soft: #dccbb0;
+  --ink-faded: #bba78c;
+  --ink-ghost: #5c3a30;
+  --leather: #6a1c14;
+  --leather-deep: #44100b;
+  --leather-soft: #8a2a1e;
+  --crimson: #ff6e5e;
+  --oxblood: #e04e3e;
+  --crimson-soft: #ff6e5e;
+  --gold: #ff8e4e;
+  --gold-deep: #e8693a;
+  --moss: #a4c274;
+  --temp-hp: #7cbac6;
+  --indigo: #9ca8da;
+  --rule: #4a1d17;
+  --rule-soft: rgba(255,120,70,.20);
+  --page-grad-top: #28110e;
+  --page-grad-bottom: #0b0404;
+  --card-surface: #28130f;
+  --card-border: rgba(255,112,64,.25);
+  --card-shadow: rgba(0,0,0,.55);
+  --hp-fill-start: #ff6e5e;
+  --hp-fill-end: #ffb070;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #c5af92;
+  --rs-card: linear-gradient(180deg, rgba(255,120,70,.07) 0%, rgba(255,120,70,.015) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(255,112,64,.25);
+  --rs-gold-line: rgba(255, 142, 78, 0.55);
+  --rs-gold-soft: rgba(255, 142, 78, 0.15);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(241, 230, 210, 0.07);
+  --rs-btn: linear-gradient(180deg, #8e2619 0%, #5e160e 100%);
+  --rs-btn-hover: linear-gradient(180deg, #8e2619 0%, #8e2619 100%);
+  --rs-btn-ink: #fff1e2;
+  --rs-btn2: linear-gradient(180deg, rgba(255,120,70,.07), rgba(255,120,70,.015)), var(--page-deep);
+  --rs-focus: #ff9c5c;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #110505;
+  --header-b: #461610;
+  --header-ink: #ff9c5c;
+  --header-sub: #d2bb9e;
+  --plate-ink: #f6ece0;
+  --tex-grain: rgba(255,140,90,.045);
+  --tex-shade: rgba(0,0,0,.55);
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(253, 128, 111);
+  --leather-text: var(--leather);
+  --control-fill: rgba(241, 230, 210, 0.07);
+  --control-fill-hover: rgba(241, 230, 210, 0.13);
+  --page-texture: var(--tex-leather);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #f0b450;
+  --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0;
+  --select-soft: rgba(111, 176, 240, .26);
+}
+
+/* High Contrast — base tone: dark. Pure black, white text, bright yellow accents and solid outlines; built for low vision and glare, all body text at least 7:1 (AAA). */
+html[data-palette="contrast"] {
+  --palette-tone: dark;
+  --page: #000000;
+  --page-deep: #0a0a0a;
+  --page-edge: #5a5a5a;
+  --page-stain-dark: transparent;
+  --page-stain: transparent;
+  --ink: #ffffff;
+  --ink-soft: #f2f2f2;
+  --ink-faded: #d9d9d9;
+  --ink-ghost: #9a9a9a;
+  --leather: #000000;
+  --leather-deep: #000000;
+  --leather-soft: #333333;
+  --crimson: #ff7676;
+  --oxblood: #ff7676;
+  --crimson-soft: #ff7676;
+  --gold: #ffd83d;
+  --gold-deep: #ffc800;
+  --moss: #6cf08a;
+  --temp-hp: #6fd8ff;
+  --indigo: #a6b8ff;
+  --rule: #ffffff;
+  --rule-soft: rgba(255,255,255,.6);
+  --page-grad-top: #000000;
+  --page-grad-bottom: #000000;
+  --card-surface: #0f0f0f;
+  --card-border: rgba(255,255,255,.75);
+  --card-shadow: rgba(0,0,0,0);
+  --hp-fill-start: #ff7676;
+  --hp-fill-end: #ffd83d;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #e4e4e4;
+  --rs-card: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(255, 255, 255, .75);
+  --rs-gold-line: rgba(255, 216, 61, 1);
+  --rs-gold-soft: rgba(255, 216, 61, 0.22);
+  --rs-shadow-1: none; --rs-shadow-2: none; --rs-shadow-3: 0 0 0 2px #fff;
+  --rs-inset: inset 0 0 0 0 transparent;
+  --rs-btn: linear-gradient(180deg, #ffd83d 0%, #ffd83d 100%);
+  --rs-btn-hover: linear-gradient(180deg, #ffd83d 0%, #ffd83d 100%);
+  --rs-btn-ink: #000000;
+  --rs-btn2: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,0)), var(--page-deep);
+  --rs-focus: #ffd83d;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #000000;
+  --header-b: #000000;
+  --header-ink: #ffd83d;
+  --header-sub: #ffffff;
+  --plate-ink: #ffffff;
+  --tex-grain: transparent;
+  --tex-shade: transparent;
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(255, 139, 139);
+  --leather-text: var(--leather);
+  --control-fill: rgba(255, 255, 255, 0.1);
+  --control-fill-hover: rgba(255, 255, 255, 0.2);
+  --page-texture: var(--tex-none);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #ffd83d;
+  --turn-soft: rgba(255, 216, 61, .22);
+  --select: #7fb2ff;
+  --select-soft: rgba(127, 178, 255, .28);
+}
+
+/* Old Map (optional) — base tone: light. Faded sepia chart paper, iron-gall ink and a faint navigator’s grid; paler and more antique than the standard parchment. */
+html[data-palette="oldmap"] {
+  --palette-tone: light;
+  --page: #ebe0c6;
+  --page-deep: #e2d4b4;
+  --page-edge: #c4ad84;
+  --page-stain-dark: rgba(110,70,20,.13);
+  --page-stain: rgba(140,100,40,.08);
+  --ink: #241a10;
+  --ink-soft: #3f3020;
+  --ink-faded: #5c4930;
+  --ink-ghost: #a8957a;
+  --leather: #4a3826;
+  --leather-deep: #2e2216;
+  --leather-soft: #6a523a;
+  --crimson: #8c2418;
+  --oxblood: #8c2418;
+  --crimson-soft: #a43a2a;
+  --gold: #6a4310;
+  --gold-deep: #52320a;
+  --moss: #3b5c28;
+  --temp-hp: #245966;
+  --indigo: #22385e;
+  --rule: #5a4a36;
+  --rule-soft: rgba(70,55,35,.30);
+  --page-grad-top: #f3ead4;
+  --page-grad-bottom: #d9c59c;
+  --card-surface: #f3ead6;
+  --card-border: rgba(90,70,40,.32);
+  --card-shadow: rgba(70,50,20,.14);
+  --hp-fill-start: #8c2418;
+  --hp-fill-end: #b08a4a;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #584630;
+  --rs-card: linear-gradient(180deg, rgba(255,252,240,.5) 0%, rgba(255,252,240,.1) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(36, 26, 16, 0.06), rgba(36, 26, 16, 0.02)), var(--page-deep);
+  --rs-card-border: rgba(90,70,40,.32);
+  --rs-gold-line: rgba(106, 67, 16, 0.55);
+  --rs-gold-soft: rgba(106, 67, 16, 0.15);
+  --rs-shadow-1: 0 1px 1px rgba(70,50,20,.08), 0 2px 6px rgba(70,50,20,.08);
+  --rs-shadow-2: 0 1px 2px rgba(70,50,20,.10), 0 6px 18px rgba(70,50,20,.12);
+  --rs-shadow-3: 0 2px 6px rgba(70,50,20,.18), 0 18px 48px rgba(70,50,20,.30);
+  --rs-inset: inset 0 1px 0 rgba(255, 255, 255, .55);
+  --rs-btn: linear-gradient(180deg, #4e3c28 0%, #33271a 100%);
+  --rs-btn-hover: linear-gradient(180deg, #4e3c28 0%, #4e3c28 100%);
+  --rs-btn-ink: #f6ecd4;
+  --rs-btn2: linear-gradient(180deg, rgba(255,252,240,.5), rgba(255,252,240,.1)), var(--page-deep);
+  --rs-focus: #7a4e16;
+  --rs-backdrop: rgba(42, 32, 22, 0.55);
+  /* new hooks (see THEMES.md) */
+  --header-a: #2a2016;
+  --header-b: #5a4632;
+  --header-ink: #f1ddb0;
+  --header-sub: #cdb68c;
+  --plate-ink: #f8eed6;
+  --tex-grain: rgba(60,45,25,.06);
+  --tex-shade: rgba(70,50,20,.14);
+  --gold-text: rgb(93, 60, 16);   /* accent as text: a notch deeper for textures */
+  --crimson-ink: rgb(117, 34, 22);
+  --leather-text: var(--leather);
+  --control-fill: rgba(36, 26, 16, 0.07);
+  --control-fill-hover: rgba(36, 26, 16, 0.13);
+  --page-texture: var(--tex-parchment);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #8a5408;
+  --turn-soft: rgba(200, 130, 20, .18);
+  --select: #1b5fa8;
+  --select-soft: rgba(27, 95, 168, .20);
+}
+
+/* Dragon Hoard (optional) — base tone: dark. Deep emerald with heaped-gold lettering, gold-framed cards and a gold button; rich and showy, a "treasure room" theme. */
+html[data-palette="hoard"] {
+  --palette-tone: dark;
+  --page: #0c1813;
+  --page-deep: #11211a;
+  --page-edge: #1f3a2d;
+  --page-stain-dark: rgba(245,200,76,.05);
+  --page-stain: rgba(80,200,140,.04);
+  --ink: #f7eecb;
+  --ink-soft: #e4d6a4;
+  --ink-faded: #c2b487;
+  --ink-ghost: #3e5a48;
+  --leather: #1f4433;
+  --leather-deep: #123024;
+  --leather-soft: #2c5c46;
+  --crimson: #ff7b6b;
+  --oxblood: #e85a4a;
+  --crimson-soft: #ff7b6b;
+  --gold: #f5c94c;
+  --gold-deep: #dcab30;
+  --moss: #86e2a4;
+  --temp-hp: #7ad2e0;
+  --indigo: #a2b2ff;
+  --rule: #2a4a3a;
+  --rule-soft: rgba(242,198,84,.24);
+  --page-grad-top: #12261d;
+  --page-grad-bottom: #06100b;
+  --card-surface: #14281f;
+  --card-border: rgba(242,198,84,.34);
+  --card-shadow: rgba(0,0,0,.5);
+  --hp-fill-start: #ff7b6b;
+  --hp-fill-end: #f5c94c;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #ccbd8d;
+  --rs-card: linear-gradient(180deg, rgba(245,201,76,.07) 0%, rgba(245,201,76,.015) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(242,198,84,.34);
+  --rs-gold-line: rgba(245, 201, 76, 0.55);
+  --rs-gold-soft: rgba(245, 201, 76, 0.15);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(247, 238, 203, 0.07);
+  --rs-btn: linear-gradient(180deg, #e0b23a 0%, #b08420 100%);
+  --rs-btn-hover: linear-gradient(180deg, #e0b23a 0%, #e0b23a 100%);
+  --rs-btn-ink: #1a1205;
+  --rs-btn2: linear-gradient(180deg, rgba(245,201,76,.07), rgba(245,201,76,.015)), var(--page-deep);
+  --rs-focus: #f8d05a;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #08130e;
+  --header-b: #21432f;
+  --header-ink: #f8d05a;
+  --header-sub: #d6c690;
+  --plate-ink: #fbf3d6;
+  --tex-grain: rgba(245,201,76,.05);
+  --tex-shade: rgba(0,0,0,.5);
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(254, 140, 121);
+  --leather-text: var(--leather);
+  --control-fill: rgba(247, 238, 203, 0.07);
+  --control-fill-hover: rgba(247, 238, 203, 0.13);
+  --page-texture: var(--tex-none);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #f0b450;
+  --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0;
+  --select-soft: rgba(111, 176, 240, .26);
+}
+
+/* =====================================================================
+   Signature textures for palettes that have one (overridable below)
+   ===================================================================== */
+html[data-palette="arcane"] { --page-texture: var(--tex-stars); }
+html[data-palette="oldmap"] { --page-texture: var(--tex-chart); --tex-grain: rgba(60, 45, 25, .07); }
+
+/* =====================================================================
+   Hooks: the few places the app hard-codes colours instead of tokens
+   ===================================================================== */
+html[data-palette] body {
+  background: var(--page-texture),
+    linear-gradient(180deg, var(--page-grad-top) 0%, var(--page) 40%, var(--page-grad-bottom) 100%);
+  background-color: var(--page);
+}
+html[data-palette] { background: var(--page); color-scheme: var(--palette-tone); }
+/* header plate is a fixed dark-leather gradient in the app */
+html[data-palette] .header-compact {
+  background: linear-gradient(135deg, var(--header-a), var(--header-b));
+  border-color: var(--rs-gold-line);
+}
+html[data-palette] .header-compact h1,
+html[data-palette] .hearth-edition-badge { color: var(--header-ink); }
+html[data-palette] .header .subtitle { color: var(--header-sub); }
+/* sheet controls hard-coded as warm brown veils / gold hairlines */
+html:root[data-palette][data-palette] body :is(.hp-btn, .hp-quickstep-btn, .action-tab, .action-tab-card, .hp-input, .stat-cell) {
+  background-color: var(--control-fill);
+}
+html:root[data-palette][data-palette] body :is(.hp-btn, .hp-quickstep-btn, .action-tab, .action-tab-card):hover { background-color: var(--control-fill-hover); }
+html:root[data-palette][data-palette] body .hp-btn.damage:hover { background-color: var(--crimson); color: var(--page); }
+html:root[data-palette][data-palette] body .hp-btn.heal { border-color: var(--moss); color: var(--moss); }
+html:root[data-palette][data-palette] body .hp-btn.more { color: var(--ink-soft); }
+html:root[data-palette][data-palette] body .action-tab-card.active { background-color: var(--rs-gold-soft); }
+html:root[data-palette][data-palette] body :is(.stat-cell, .action-roll-btn) { border-color: var(--rs-card-border); }
+/* ability-score band: a "leather plate" in the app, now the palette's plate */
+html:root[data-palette] .stats-bar { background: linear-gradient(180deg, var(--header-b) 0%, var(--header-a) 100%); border-color: var(--rs-gold-line); }
+html:root[data-palette] .stats-bar .stat-cell { background-color: rgba(255, 255, 255, .04); }
+html:root[data-palette] .stats-bar :is(.stat-cell-label, .stat-cell-score) { color: var(--header-sub); }
+html:root[data-palette] .stats-bar :is(.stat-cell-mod, .stat-cell-val) { color: var(--plate-ink); }
+html:root[data-palette] .stats-bar .stat-cell-save.proficient { color: var(--header-ink); }
+html:root[data-palette] .stats-bar .skills-under-stats-btn { color: var(--plate-ink); border-color: var(--rs-gold-line); }
+/* primary buttons */
+html[data-palette] :is(.btn.primary, button.btn.primary) { background: var(--rs-btn); color: var(--rs-btn-ink); }
+/* High Contrast: solid outlines everywhere, underline links, thicker focus */
+html[data-palette="contrast"] .header-compact { border: 2px solid var(--gold); }
+html[data-palette="contrast"] .tabs { border: 2px solid #fff; background: #000; }
+html[data-palette="contrast"] .tab.active { background: var(--gold); color: #000; box-shadow: none; }
+html[data-palette="contrast"] .tab.active::after { background: #000; }
+html[data-palette="contrast"] a { text-decoration: underline; }
+html[data-palette="contrast"] :focus-visible { outline-width: 3px !important; }
+
+/* =====================================================================
+   VISUAL OPTION 1 — background texture (overrides the palette default)
+   ===================================================================== */
+html[data-texture="parchment"] { --page-texture: var(--tex-parchment); }
+html[data-texture="leather"]   { --page-texture: var(--tex-leather); }
+html[data-texture="stone"]     { --page-texture: var(--tex-stone); }
+html[data-texture="none"]      { --page-texture: var(--tex-none); }
+/* texture on the classic light/dark themes too (no palette attribute) */
+html[data-texture]:not([data-palette]) body {
+  background: var(--page-texture),
+    linear-gradient(180deg, var(--page-grad-top) 0%, var(--page) 40%, var(--page-grad-bottom) 100%);
+}
+html[data-texture]:not([data-palette]) { --tex-grain: rgba(120, 80, 30, .035); --tex-shade: rgba(60, 35, 10, .22); }
+html[data-texture]:not([data-palette])[data-theme="dark"] { --tex-grain: rgba(255, 210, 150, .04); --tex-shade: rgba(0, 0, 0, .45); }
+
+/* =====================================================================
+   VISUAL OPTION 2 — font style. "classic" = today's Georgia serif.
+   "clean" = the system sans the app already ships (--rs-sans): crisper
+   at small sizes and easier for dyslexic readers. No web fonts needed.
+   ===================================================================== */
+html[data-font="clean"] body,
+html[data-font="clean"] body :is(h1, h2, h3, h4, h5, p, em, i, span, div, button, a, li, td, th, label, input, select, textarea, summary):not([class*="mono"]):not(code):not(kbd) {
+  font-family: var(--rs-sans) !important;
+}
+html[data-font="clean"] .header-compact h1 { letter-spacing: -.01em; font-weight: 700; }
+
+/* =====================================================================
+   VISUAL OPTION 3 — card style
+   raised (default) = soft shadow + top sheen
+   flat   = solid fill, hairline border, no shadow (cleaner, faster)
+   framed = no fill gradient, solid 2px ink-coloured frame (bold, printable)
+   ===================================================================== */
+html:root[data-cards="flat"] :is(.home-tile, .ai-card, .vitals, .gear-summary-card, .gear-section, .defense-item, .prep-status,
+  .spellbook-slots-top, .cond-strip, .coin-strip, .xp-strip, .slots-bar, .rest-status, .vellum-box, .card,
+  .feature, .panel, .stat-card, .ability-card, .settings-size-card, .rules-home, .option-card, .spell-card) {
+  background: var(--card-surface);
+  box-shadow: inset 3px 0 0 var(--rs-gold-line);
+  border: 1px solid var(--rs-card-border);
+}
+html:root[data-cards="framed"] :is(.home-tile, .ai-card, .vitals, .gear-summary-card, .gear-section, .defense-item, .prep-status,
+  .spellbook-slots-top, .cond-strip, .coin-strip, .xp-strip, .slots-bar, .rest-status, .vellum-box, .card,
+  .feature, .panel, .stat-card, .ability-card, .settings-size-card, .rules-home, .option-card, .spell-card) {
+  background: var(--page-deep);
+  box-shadow: inset 4px 0 0 var(--gold);
+  border: 2px solid var(--rule);
+}
+html:root[data-cards="framed"][data-palette="contrast"] :is(.home-tile, .card, .panel, .feature, .vellum-box, .stat-card, .ability-card) {
+  border-color: #fff; background: #000;
+}
+
+/* =====================================================================
+   VISUAL OPTION 4 — reduced motion (manual switch; the app already
+   honours the OS setting via prefers-reduced-motion)
+   ===================================================================== */
+html[data-motion="reduced"] { --rs-dur: 0ms; }
+html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-motion="reduced"] *::after {
+  animation-duration: 0.001ms !important; animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important; scroll-behavior: auto !important;
+}
+/* painted-map overlays (fire/water/lava…): Lumi, gate the canvas loop on
+   document.documentElement.dataset.motion === 'reduced' as well as the media query. */
+
+
+/* =====================================================================
+   Hearth — theme batch 2: class & ancestry themes        (Jenny, art)
+   Generated by build2.js from palettes2.js; edit those, not this file.
+   Load AFTER themes.css (it relies on the shared --tex-* layers and the
+   hooks/options defined there). Same mechanism: data-theme = base tone,
+   data-palette = id. New ids: dawn, shade, wildwood, moonsilver, pact, surge, encore, warpaint, mountain, banner, clockwork, scales, hollow.
+   ===================================================================== */
+
+/* ---- two new CSS-only textures (also selectable via data-texture) ---- */
+html[data-palette], html[data-texture] {
+  /* overlapping dragon scales: two offset rows of arcs + a sheen per scale */
+  --tex-scales:
+    radial-gradient(circle at 50% 0%, var(--tex-grain) 0 5px, transparent 9px) 0 0 / 26px 18px,
+    radial-gradient(circle at 50% 0%, var(--tex-grain) 0 5px, transparent 9px) 13px 9px / 26px 18px,
+    radial-gradient(circle at 50% 0%, transparent 0 11.5px, var(--tex-shade) 12.5px 13.5px, transparent 14.5px) 0 0 / 26px 18px,
+    radial-gradient(circle at 50% 0%, transparent 0 11.5px, var(--tex-shade) 12.5px 13.5px, transparent 14.5px) 13px 9px / 26px 18px,
+    radial-gradient(ellipse at 50% 30%, transparent 45%, var(--tex-shade) 140%);
+  /* woven mat / velvet nap: a soft checker of slats with fine thread lines */
+  --tex-weave:
+    repeating-linear-gradient(0deg, transparent 0 3px, var(--tex-grain) 3px 4px) 0 0 / 18px 18px,
+    conic-gradient(var(--tex-shade) 0 25%, transparent 0 50%, var(--tex-shade) 0 75%, transparent 0) 0 0 / 36px 36px,
+    repeating-linear-gradient(90deg, transparent 0 3px, var(--tex-grain) 3px 4px) 18px 18px / 36px 36px;
+}
+html[data-palette="dawn"], html[data-palette="warpaint"], html[data-palette="mountain"], html[data-palette="banner"], html[data-palette="hollow"] { --palette-batch: 2; }
+
+
+/* Sacred Dawn (paladin · cleric) — base tone: light. Sunlit white marble and temple stone, warm sun-gold accents and a pale gold header; bright, clean and hopeful. */
+html[data-palette="dawn"] {
+  --palette-tone: light;
+  --page: #f6f2e8;
+  --page-deep: #ece8de;
+  --page-edge: #c9c5ba;
+  --page-stain-dark: rgba(232,184,74,0.1);
+  --page-stain: rgba(232,184,74,0.06);
+  --ink: #2a2416;
+  --ink-soft: #534d40;
+  --ink-faded: #635f54;
+  --ink-ghost: #b9b4a9;
+  --leather: #f0dfae;
+  --leather-deep: #ffffff;
+  --leather-soft: #d2c397;
+  --crimson: #a3261e;
+  --oxblood: #a3261e;
+  --crimson-soft: #a3261e;
+  --gold: #7d5800;
+  --gold-deep: #93742a;
+  --moss: #2e6b34;
+  --temp-hp: #1d5c70;
+  --indigo: #2b3f75;
+  --rule: #9a958a;
+  --rule-soft: rgba(176,138,58,0.3);
+  --page-grad-top: #faf7f1;
+  --page-grad-bottom: #e7dfcc;
+  --card-surface: #fffdf7;
+  --card-border: rgba(176,138,58,0.26);
+  --card-shadow: rgba(42,36,22,0.15);
+  --hp-fill-start: #a3261e;
+  --hp-fill-end: #7d5800;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #615c51;
+  --rs-card: linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.12) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(42, 36, 22, 0.06), rgba(42, 36, 22, 0.02)), var(--page-deep);
+  --rs-card-border: rgba(176,138,58,0.26);
+  --rs-gold-line: rgba(125, 88, 0, 0.55);
+  --rs-gold-soft: rgba(125, 88, 0, 0.15);
+  --rs-shadow-1: 0 1px 1px rgba(42,36,22,.08), 0 2px 6px rgba(42,36,22,.08);
+  --rs-shadow-2: 0 1px 2px rgba(42,36,22,.10), 0 6px 18px rgba(42,36,22,.12);
+  --rs-shadow-3: 0 2px 6px rgba(42,36,22,.18), 0 18px 48px rgba(42,36,22,.30);
+  --rs-inset: inset 0 1px 0 rgba(255, 255, 255, .55);
+  --rs-btn: linear-gradient(180deg, #d4a640 0%, #b8892c 100%);
+  --rs-btn-hover: linear-gradient(180deg, #d4a640 0%, #d4a640 100%);
+  --rs-btn-ink: #1c1404;
+  --rs-btn2: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.12)), var(--page-deep);
+  --rs-focus: #93742a;
+  --rs-backdrop: rgba(255, 255, 255, 0.55);
+  /* new hooks (see THEMES.md) */
+  --header-a: #ffffff;
+  --header-b: #f0dfae;
+  --header-ink: #5a3c00;
+  --header-sub: #5e4a1e;
+  --plate-ink: #2a2416;
+  --tex-grain: rgba(42,36,22,0.04);
+  --tex-shade: rgba(42,36,22,0.14);
+  --gold-text: rgb(110, 79, 4);   /* accent as text: a notch deeper for textures */
+  --crimson-ink: rgb(136, 38, 28);
+  --leather-text: var(--ink);   /* light header: leather is too pale for titles */
+  --control-fill: rgba(42, 36, 22, 0.07);
+  --control-fill-hover: rgba(42, 36, 22, 0.13);
+  --page-texture: var(--tex-parchment);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #8a5408;
+  --turn-soft: rgba(200, 130, 20, .18);
+  --select: #1b5fa8;
+  --select-soft: rgba(27, 95, 168, .20);
+}
+
+/* Nightshade (rogue) — base tone: dark. Soot-black leather and smoke-grey text with a thin trickle of poison green; quiet, sly and low-glare. */
+html[data-palette="shade"] {
+  --palette-tone: dark;
+  --page: #0c0c0d;
+  --page-deep: #121214;
+  --page-edge: #353537;
+  --page-stain-dark: rgba(122,208,74,0.07);
+  --page-stain: rgba(122,208,74,0.035);
+  --ink: #e6e6e4;
+  --ink-soft: #babab9;
+  --ink-faded: #989897;
+  --ink-ghost: #4d4d4e;
+  --leather: #25252a;
+  --leather-deep: #070707;
+  --leather-soft: #424246;
+  --crimson: #ff7d72;
+  --oxblood: #ff7d72;
+  --crimson-soft: #ff7d72;
+  --gold: #9fe36e;
+  --gold-deep: #85bc5d;
+  --moss: #66d6c2;
+  --temp-hp: #8ab8e8;
+  --indigo: #a0aee0;
+  --rule: #363533;
+  --rule-soft: rgba(180,174,164,0.22);
+  --page-grad-top: #141417;
+  --page-grad-bottom: #070707;
+  --card-surface: #18181b;
+  --card-border: rgba(180,174,164,0.27);
+  --card-shadow: rgba(0,0,0,.5);
+  --hp-fill-start: #ff7d72;
+  --hp-fill-end: #9fe36e;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #a0a09f;
+  --rs-card: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.015) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(180,174,164,0.27);
+  --rs-gold-line: rgba(159, 227, 110, 0.55);
+  --rs-gold-soft: rgba(159, 227, 110, 0.15);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(230, 230, 228, 0.07);
+  --rs-btn: linear-gradient(180deg, #2f3a22 0%, #1f2716 100%);
+  --rs-btn-hover: linear-gradient(180deg, #2f3a22 0%, #2f3a22 100%);
+  --rs-btn-ink: #d8f5c0;
+  --rs-btn2: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.015)), var(--page-deep);
+  --rs-focus: #9fe36e;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #070707;
+  --header-b: #25252a;
+  --header-ink: #a9ea78;
+  --header-sub: #b8b2a7;
+  --plate-ink: #ece8e0;
+  --tex-grain: rgba(230,230,228,0.05);
+  --tex-shade: rgba(0,0,0,.5);
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(251, 141, 131);
+  --leather-text: var(--leather);
+  --control-fill: rgba(230, 230, 228, 0.07);
+  --control-fill-hover: rgba(230, 230, 228, 0.13);
+  --page-texture: var(--tex-leather);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #f0b450;
+  --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0;
+  --select-soft: rgba(111, 176, 240, .26);
+}
+
+/* Wildwood (ranger · druid) — base tone: dark. Dark bark and olive moss with ash-wood text and a fletching-red accent; earthy, tangled and outdoorsy. */
+html[data-palette="wildwood"] {
+  --palette-tone: dark;
+  --page: #111a0b;
+  --page-deep: #16210f;
+  --page-edge: #38432c;
+  --page-stain-dark: rgba(154,176,64,0.07);
+  --page-stain: rgba(154,176,64,0.035);
+  --ink: #ece6cc;
+  --ink-soft: #c0bda5;
+  --ink-faded: #a2a28d;
+  --ink-ghost: #535745;
+  --leather: #34521c;
+  --leather-deep: #0b1206;
+  --leather-soft: #506836;
+  --crimson: #ff8a8a;
+  --oxblood: #ff8a8a;
+  --crimson-soft: #ff8a8a;
+  --gold: #ff8f6a;
+  --gold-deep: #d47a59;
+  --moss: #a8d860;
+  --temp-hp: #7cc4d0;
+  --indigo: #a6b0e0;
+  --rule: #3f422a;
+  --rule-soft: rgba(200,184,136,0.22);
+  --page-grad-top: #1c2a10;
+  --page-grad-bottom: #090e06;
+  --card-surface: #1b2812;
+  --card-border: rgba(200,184,136,0.27);
+  --card-shadow: rgba(0,0,0,.5);
+  --hp-fill-start: #ff8a8a;
+  --hp-fill-end: #ff8f6a;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #a6a58e;
+  --rs-card: linear-gradient(180deg, rgba(236,230,204,0.07) 0%, rgba(236,230,204,0.015) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(200,184,136,0.27);
+  --rs-gold-line: rgba(255, 143, 106, 0.55);
+  --rs-gold-soft: rgba(255, 143, 106, 0.15);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(236, 230, 204, 0.07);
+  --rs-btn: linear-gradient(180deg, #5c6428 0%, #3f4618 100%);
+  --rs-btn-hover: linear-gradient(180deg, #5c6428 0%, #5c6428 100%);
+  --rs-btn-ink: #f6f2dc;
+  --rs-btn2: linear-gradient(180deg, rgba(236,230,204,0.07), rgba(236,230,204,0.015)), var(--page-deep);
+  --rs-focus: #ff8f6a;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #0b1206;
+  --header-b: #34521c;
+  --header-ink: #f0d8a0;
+  --header-sub: #c8be9e;
+  --plate-ink: #f0e8d0;
+  --tex-grain: rgba(236,230,204,0.05);
+  --tex-shade: rgba(0,0,0,.5);
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(252, 152, 148);
+  --leather-text: var(--leather);
+  --control-fill: rgba(236, 230, 204, 0.07);
+  --control-fill-hover: rgba(236, 230, 204, 0.13);
+  --page-texture: var(--tex-leather);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #f0b450;
+  --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0;
+  --select-soft: rgba(111, 176, 240, .26);
+}
+
+/* Moonsilver (wizard · elf) — base tone: dark. Deep sea-night blue, moonlit silver text and seafoam accents, with faint drifting motes; serene and scholarly. */
+html[data-palette="moonsilver"] {
+  --palette-tone: dark;
+  --page: #141a22;
+  --page-deep: #1a212b;
+  --page-edge: #3c434e;
+  --page-stain-dark: rgba(74,184,160,0.07);
+  --page-stain: rgba(74,184,160,0.035);
+  --ink: #edf1f6;
+  --ink-soft: #c2c6cc;
+  --ink-faded: #9fa4aa;
+  --ink-ghost: #555b62;
+  --leather: #4a5a70;
+  --leather-deep: #0e131a;
+  --leather-soft: #627184;
+  --crimson: #ff8a96;
+  --oxblood: #ff8a96;
+  --crimson-soft: #ff8a96;
+  --gold: #8fe8d2;
+  --gold-deep: #79c3b2;
+  --moss: #b4e07c;
+  --temp-hp: #86c8ff;
+  --indigo: #b4c2ff;
+  --rule: #394552;
+  --rule-soft: rgba(168,196,224,0.22);
+  --page-grad-top: #1c232e;
+  --page-grad-bottom: #0b0e13;
+  --card-surface: #1f2733;
+  --card-border: rgba(168,196,224,0.27);
+  --card-shadow: rgba(0,0,0,.5);
+  --hp-fill-start: #ff8a96;
+  --hp-fill-end: #8fe8d2;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #a8acb2;
+  --rs-card: linear-gradient(180deg, rgba(237,241,246,0.07) 0%, rgba(237,241,246,0.015) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(168,196,224,0.27);
+  --rs-gold-line: rgba(143, 232, 210, 0.55);
+  --rs-gold-soft: rgba(143, 232, 210, 0.15);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(237, 241, 246, 0.07);
+  --rs-btn: linear-gradient(180deg, #3e5470 0%, #2a3c54 100%);
+  --rs-btn-hover: linear-gradient(180deg, #3e5470 0%, #3e5470 100%);
+  --rs-btn-ink: #ffffff;
+  --rs-btn2: linear-gradient(180deg, rgba(237,241,246,0.07), rgba(237,241,246,0.015)), var(--page-deep);
+  --rs-focus: #8fe8d2;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #0e131a;
+  --header-b: #4a5a70;
+  --header-ink: #f2f6fb;
+  --header-sub: #d2dce8;
+  --plate-ink: #eef3fa;
+  --tex-grain: rgba(200,240,230,.55);
+  --tex-shade: rgba(0,0,0,.5);
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(252, 153, 164);
+  --leather-text: var(--leather);
+  --control-fill: rgba(237, 241, 246, 0.07);
+  --control-fill-hover: rgba(237, 241, 246, 0.13);
+  --page-texture: var(--tex-stars);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #f0b450;
+  --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0;
+  --select-soft: rgba(111, 176, 240, .26);
+}
+
+/* Eldritch Deep (warlock · drow / Underdark) — base tone: dark. Lightless violet-black with faelight-lilac accents, sickly green lettering and glowing spores; unsettling but readable. */
+html[data-palette="pact"] {
+  --palette-tone: dark;
+  --page: #0c0814;
+  --page-deep: #130c1d;
+  --page-edge: #372e43;
+  --page-stain-dark: rgba(154,90,224,0.07);
+  --page-stain: rgba(154,208,80,0.035);
+  --ink: #ece6f6;
+  --ink-soft: #bfbac9;
+  --ink-faded: #9b96a5;
+  --ink-ghost: #4f4b58;
+  --leather: #2c1645;
+  --leather-deep: #07040c;
+  --leather-soft: #493560;
+  --crimson: #ff8090;
+  --oxblood: #ff8090;
+  --crimson-soft: #ff8090;
+  --gold: #d9a6ff;
+  --gold-deep: #b48ad5;
+  --moss: #b9ec6a;
+  --temp-hp: #7ee0f0;
+  --indigo: #a8b0ff;
+  --rule: #362d47;
+  --rule-soft: rgba(180,154,224,0.22);
+  --page-grad-top: #150e21;
+  --page-grad-bottom: #07040b;
+  --card-surface: #191026;
+  --card-border: rgba(180,154,224,0.27);
+  --card-shadow: rgba(0,0,0,.5);
+  --hp-fill-start: #ff8090;
+  --hp-fill-end: #d9a6ff;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #a49fae;
+  --rs-card: linear-gradient(180deg, rgba(236,230,246,0.07) 0%, rgba(236,230,246,0.015) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(180,154,224,0.27);
+  --rs-gold-line: rgba(217, 166, 255, 0.55);
+  --rs-gold-soft: rgba(217, 166, 255, 0.15);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(236, 230, 246, 0.07);
+  --rs-btn: linear-gradient(180deg, #5a2d86 0%, #3c1a5e 100%);
+  --rs-btn-hover: linear-gradient(180deg, #5a2d86 0%, #5a2d86 100%);
+  --rs-btn-ink: #ffffff;
+  --rs-btn2: linear-gradient(180deg, rgba(236,230,246,0.07), rgba(236,230,246,0.015)), var(--page-deep);
+  --rs-focus: #d9a6ff;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #07040c;
+  --header-b: #2c1645;
+  --header-ink: #c6f070;
+  --header-sub: #bba8d6;
+  --plate-ink: #efe8fa;
+  --tex-grain: rgba(190,240,120,.5);
+  --tex-shade: rgba(0,0,0,.5);
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(252, 143, 159);
+  --leather-text: var(--leather);
+  --control-fill: rgba(236, 230, 246, 0.07);
+  --control-fill-hover: rgba(236, 230, 246, 0.13);
+  --page-texture: var(--tex-stars);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #f0b450;
+  --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0;
+  --select-soft: rgba(111, 176, 240, .26);
+}
+
+/* Wild Surge (sorcerer) — base tone: dark. A raw-magic gradient from magenta through violet to ember orange, with hot-pink accents; loud, vivid and unpredictable. */
+html[data-palette="surge"] {
+  --palette-tone: dark;
+  --page: #1c0a26;
+  --page-deep: #230d2e;
+  --page-edge: #472f51;
+  --page-stain-dark: rgba(255,90,160,0.07);
+  --page-stain: rgba(255,138,58,0.035);
+  --ink: #fbeef8;
+  --ink-soft: #cec0ce;
+  --ink-faded: #ab9cac;
+  --ink-ghost: #5f4e65;
+  --leather: #c2410c;
+  --leather-deep: #5a0f6e;
+  --leather-soft: #cb5b2f;
+  --crimson: #ff8a7a;
+  --oxblood: #ff8a7a;
+  --crimson-soft: #ff8a7a;
+  --gold: #ff8ad8;
+  --gold-deep: #d673b8;
+  --moss: #9ee6a0;
+  --temp-hp: #80d4ff;
+  --indigo: #b0b4ff;
+  --rule: #552e53;
+  --rule-soft: rgba(255,154,216,0.22);
+  --page-grad-top: #4a0f4a;
+  --page-grad-bottom: #3a1208;
+  --card-surface: #2a1036;
+  --card-border: rgba(255,154,216,0.27);
+  --card-shadow: rgba(0,0,0,.5);
+  --hp-fill-start: #ff8a7a;
+  --hp-fill-end: #ff8ad8;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #b4a5b5;
+  --rs-card: linear-gradient(180deg, rgba(251,238,248,0.07) 0%, rgba(251,238,248,0.015) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(255,154,216,0.27);
+  --rs-gold-line: rgba(255, 138, 216, 0.55);
+  --rs-gold-soft: rgba(255, 138, 216, 0.15);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(251, 238, 248, 0.07);
+  --rs-btn: linear-gradient(180deg, #c0267a 0%, #8a1658 100%);
+  --rs-btn-hover: linear-gradient(180deg, #c0267a 0%, #c0267a 100%);
+  --rs-btn-ink: #ffffff;
+  --rs-btn2: linear-gradient(180deg, rgba(251,238,248,0.07), rgba(251,238,248,0.015)), var(--page-deep);
+  --rs-focus: #ff8ad8;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #5a0f6e;
+  --header-b: #c2410c;
+  --header-ink: #fff0c8;
+  --header-sub: #ffeaf6;
+  --plate-ink: #ffffff;
+  --tex-grain: rgba(251,238,248,0.05);
+  --tex-shade: rgba(0,0,0,.5);
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(254, 153, 141);
+  --leather-text: var(--leather);
+  --control-fill: rgba(251, 238, 248, 0.07);
+  --control-fill-hover: rgba(251, 238, 248, 0.13);
+  --page-texture: var(--tex-none);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #f0b450;
+  --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0;
+  --select-soft: rgba(111, 176, 240, .26);
+}
+
+/* Velvet Encore (bard) — base tone: dark. Plush wine-red velvet, gilt lettering and gold-trimmed cards like a theatre box; rich, warm and showy. */
+html[data-palette="encore"] {
+  --palette-tone: dark;
+  --page: #2c0514;
+  --page-deep: #370819;
+  --page-edge: #5c2a39;
+  --page-stain-dark: rgba(255,74,106,0.07);
+  --page-stain: rgba(255,74,106,0.035);
+  --ink: #fbeedd;
+  --ink-soft: #d2bfb5;
+  --ink-faded: #b09a95;
+  --ink-ghost: #6a4b50;
+  --leather: #7a1234;
+  --leather-deep: #22030e;
+  --leather-soft: #8d334d;
+  --crimson: #ff8c8c;
+  --oxblood: #ff8c8c;
+  --crimson-soft: #ff8c8c;
+  --gold: #f2c65a;
+  --gold-deep: #cea34d;
+  --moss: #a8dc84;
+  --temp-hp: #88cce0;
+  --indigo: #b8bcf0;
+  --rule: #5e3526;
+  --rule-soft: rgba(242,198,90,0.22);
+  --page-grad-top: #3c0819;
+  --page-grad-bottom: #18030b;
+  --card-surface: #420a1e;
+  --card-border: rgba(242,198,90,0.27);
+  --card-shadow: rgba(0,0,0,.5);
+  --hp-fill-start: #ff8c8c;
+  --hp-fill-end: #f2c65a;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #b9a39d;
+  --rs-card: linear-gradient(180deg, rgba(255,200,208,0.07) 0%, rgba(255,200,208,0.015) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(242,198,90,0.27);
+  --rs-gold-line: rgba(242, 198, 90, 0.55);
+  --rs-gold-soft: rgba(242, 198, 90, 0.15);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(251, 238, 221, 0.07);
+  --rs-btn: linear-gradient(180deg, #d4a63a 0%, #a87a1c 100%);
+  --rs-btn-hover: linear-gradient(180deg, #d4a63a 0%, #d4a63a 100%);
+  --rs-btn-ink: #250608;
+  --rs-btn2: linear-gradient(180deg, rgba(255,200,208,0.07), rgba(255,200,208,0.015)), var(--page-deep);
+  --rs-focus: #f2c65a;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #22030e;
+  --header-b: #7a1234;
+  --header-ink: #f6cf6a;
+  --header-sub: #e6c8b0;
+  --plate-ink: #fff4e2;
+  --tex-grain: rgba(251,238,221,0.05);
+  --tex-shade: rgba(0,0,0,.5);
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(254, 155, 152);
+  --leather-text: var(--leather);
+  --control-fill: rgba(251, 238, 221, 0.07);
+  --control-fill-hover: rgba(251, 238, 221, 0.13);
+  --page-texture: var(--tex-weave);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #f0b450;
+  --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0;
+  --select-soft: rgba(111, 176, 240, .26);
+}
+
+/* Warpaint (barbarian) — base tone: light. Bleached bone pages, a charcoal fur header and slashes of ochre-red war paint; raw, bold and primal. */
+html[data-palette="warpaint"] {
+  --palette-tone: light;
+  --page: #e3e1dc;
+  --page-deep: #d9d7d2;
+  --page-edge: #b7b5b0;
+  --page-stain-dark: rgba(138,90,42,0.1);
+  --page-stain: rgba(138,90,42,0.06);
+  --ink: #1c1916;
+  --ink-soft: #44413e;
+  --ink-faded: #565350;
+  --ink-ghost: #a7a5a1;
+  --leather: #38322c;
+  --leather-deep: #121110;
+  --leather-soft: #342e29;
+  --crimson: #7e0f1e;
+  --oxblood: #7e0f1e;
+  --crimson-soft: #7e0f1e;
+  --gold: #9a310e;
+  --gold-deep: #ae5334;
+  --moss: #2f6230;
+  --temp-hp: #1d5868;
+  --indigo: #2a3a6c;
+  --rule: #898783;
+  --rule-soft: rgba(28,25,22,0.3);
+  --page-grad-top: #eeedea;
+  --page-grad-bottom: #d1cfca;
+  --card-surface: #f3f2ee;
+  --card-border: rgba(28,25,22,0.26);
+  --card-shadow: rgba(28,25,22,0.15);
+  --hp-fill-start: #7e0f1e;
+  --hp-fill-end: #a2340f;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #53514d;
+  --rs-card: linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.12) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(28, 25, 22, 0.06), rgba(28, 25, 22, 0.02)), var(--page-deep);
+  --rs-card-border: rgba(28,25,22,0.26);
+  --rs-gold-line: rgba(154, 49, 14, 0.55);
+  --rs-gold-soft: rgba(154, 49, 14, 0.15);
+  --rs-shadow-1: 0 1px 1px rgba(28,25,22,.08), 0 2px 6px rgba(28,25,22,.08);
+  --rs-shadow-2: 0 1px 2px rgba(28,25,22,.10), 0 6px 18px rgba(28,25,22,.12);
+  --rs-shadow-3: 0 2px 6px rgba(28,25,22,.18), 0 18px 48px rgba(28,25,22,.30);
+  --rs-inset: inset 0 1px 0 rgba(255, 255, 255, .55);
+  --rs-btn: linear-gradient(180deg, #9a3412 0%, #6e230a 100%);
+  --rs-btn-hover: linear-gradient(180deg, #9a3412 0%, #9a3412 100%);
+  --rs-btn-ink: #fff4ea;
+  --rs-btn2: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.12)), var(--page-deep);
+  --rs-focus: #ae5334;
+  --rs-backdrop: rgba(18, 17, 16, 0.55);
+  /* new hooks (see THEMES.md) */
+  --header-a: #121110;
+  --header-b: #38322c;
+  --header-ink: #ff8a5a;
+  --header-sub: #d8ccb8;
+  --plate-ink: #f6efe2;
+  --tex-grain: rgba(28,25,22,0.04);
+  --tex-shade: rgba(60,40,20,.2);
+  --gold-text: rgb(131, 45, 15);   /* accent as text: a notch deeper for textures */
+  --crimson-ink: rgb(104, 17, 28);
+  --leather-text: var(--leather);
+  --control-fill: rgba(28, 25, 22, 0.07);
+  --control-fill-hover: rgba(28, 25, 22, 0.13);
+  --page-texture: var(--tex-parchment);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #8a5408;
+  --turn-soft: rgba(200, 130, 20, .18);
+  --select: #1b5fa8;
+  --select-soft: rgba(27, 95, 168, .20);
+}
+
+/* Still Mountain (monk) — base tone: light. Pale bamboo paper on a woven-mat texture, a saffron-robe header with slate lettering, saffron accents; calm, disciplined and airy. */
+html[data-palette="mountain"] {
+  --palette-tone: light;
+  --page: #ebe9cf;
+  --page-deep: #e1dfc7;
+  --page-edge: #bfbeaa;
+  --page-stain-dark: rgba(232,160,64,0.1);
+  --page-stain: rgba(154,168,96,0.06);
+  --ink: #232629;
+  --ink-soft: #4b4d4a;
+  --ink-faded: #575852;
+  --ink-ghost: #afaf9d;
+  --leather: #f4a640;
+  --leather-deep: #e07a10;
+  --leather-soft: #d5933d;
+  --crimson: #a01e2a;
+  --oxblood: #a01e2a;
+  --crimson-soft: #a01e2a;
+  --gold: #994400;
+  --gold-deep: #ae6525;
+  --moss: #3c6a1e;
+  --temp-hp: #1d5a6c;
+  --indigo: #2c3c70;
+  --rule: #919184;
+  --rule-soft: rgba(90,100,112,0.3);
+  --page-grad-top: #f3f2e2;
+  --page-grad-bottom: #d9d7c0;
+  --card-surface: #fbfaee;
+  --card-border: rgba(90,100,112,0.26);
+  --card-shadow: rgba(35,38,41,0.15);
+  --hp-fill-start: #a01e2a;
+  --hp-fill-end: #a14800;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #555651;
+  --rs-card: linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.12) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(35, 38, 41, 0.06), rgba(35, 38, 41, 0.02)), var(--page-deep);
+  --rs-card-border: rgba(90,100,112,0.26);
+  --rs-gold-line: rgba(153, 68, 0, 0.55);
+  --rs-gold-soft: rgba(153, 68, 0, 0.15);
+  --rs-shadow-1: 0 1px 1px rgba(35,38,41,.08), 0 2px 6px rgba(35,38,41,.08);
+  --rs-shadow-2: 0 1px 2px rgba(35,38,41,.10), 0 6px 18px rgba(35,38,41,.12);
+  --rs-shadow-3: 0 2px 6px rgba(35,38,41,.18), 0 18px 48px rgba(35,38,41,.30);
+  --rs-inset: inset 0 1px 0 rgba(255, 255, 255, .55);
+  --rs-btn: linear-gradient(180deg, #3e4752 0%, #2a3038 100%);
+  --rs-btn-hover: linear-gradient(180deg, #3e4752 0%, #3e4752 100%);
+  --rs-btn-ink: #ffffff;
+  --rs-btn2: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.12)), var(--page-deep);
+  --rs-focus: #ae6525;
+  --rs-backdrop: rgba(224, 122, 16, 0.55);
+  /* new hooks (see THEMES.md) */
+  --header-a: #e07a10;
+  --header-b: #f4a640;
+  --header-ink: #1c2024;
+  --header-sub: #1e2226;
+  --plate-ink: #14171a;
+  --tex-grain: rgba(35,38,41,0.04);
+  --tex-shade: rgba(35,38,41,0.14);
+  --gold-text: rgb(132, 63, 7);   /* accent as text: a notch deeper for textures */
+  --crimson-ink: rgb(133, 32, 42);
+  --leather-text: var(--ink);   /* light header: leather is too pale for titles */
+  --control-fill: rgba(35, 38, 41, 0.07);
+  --control-fill-hover: rgba(35, 38, 41, 0.13);
+  --page-texture: var(--tex-weave);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #8a5408;
+  --turn-soft: rgba(200, 130, 20, .18);
+  --select: #1b5fa8;
+  --select-soft: rgba(27, 95, 168, .20);
+}
+
+/* Banner & Blade (fighter) — base tone: light. Polished steel-grey pages under a heraldic scarlet banner with gold charges; crisp, martial and orderly. */
+html[data-palette="banner"] {
+  --palette-tone: light;
+  --page: #cfd3d8;
+  --page-deep: #c6cacf;
+  --page-edge: #a6a9ae;
+  --page-stain-dark: rgba(154,164,176,0.1);
+  --page-stain: rgba(154,164,176,0.06);
+  --ink: #13161b;
+  --ink-soft: #393c41;
+  --ink-faded: #474a4e;
+  --ink-ghost: #979a9f;
+  --leather: #a8172a;
+  --leather-deep: #5e0c16;
+  --leather-soft: #921728;
+  --crimson: #a3121f;
+  --oxblood: #a3121f;
+  --crimson-soft: #a3121f;
+  --gold: #644b00;
+  --gold-deep: #897127;
+  --moss: #256030;
+  --temp-hp: #1a566c;
+  --indigo: #1f3a7a;
+  --rule: #7a7e83;
+  --rule-soft: rgba(19,22,27,0.3);
+  --page-grad-top: #e2e5e8;
+  --page-grad-bottom: #bec2c7;
+  --card-surface: #e9ecef;
+  --card-border: rgba(19,22,27,0.26);
+  --card-shadow: rgba(19,22,27,0.15);
+  --hp-fill-start: #a3121f;
+  --hp-fill-end: #7a5c00;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #474a4f;
+  --rs-card: linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.12) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(19, 22, 27, 0.06), rgba(19, 22, 27, 0.02)), var(--page-deep);
+  --rs-card-border: rgba(19,22,27,0.26);
+  --rs-gold-line: rgba(100, 75, 0, 0.55);
+  --rs-gold-soft: rgba(100, 75, 0, 0.15);
+  --rs-shadow-1: 0 1px 1px rgba(19,22,27,.08), 0 2px 6px rgba(19,22,27,.08);
+  --rs-shadow-2: 0 1px 2px rgba(19,22,27,.10), 0 6px 18px rgba(19,22,27,.12);
+  --rs-shadow-3: 0 2px 6px rgba(19,22,27,.18), 0 18px 48px rgba(19,22,27,.30);
+  --rs-inset: inset 0 1px 0 rgba(255, 255, 255, .55);
+  --rs-btn: linear-gradient(180deg, #a8172a 0%, #7a0f1e 100%);
+  --rs-btn-hover: linear-gradient(180deg, #a8172a 0%, #a8172a 100%);
+  --rs-btn-ink: #ffffff;
+  --rs-btn2: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.12)), var(--page-deep);
+  --rs-focus: #7c6623;
+  --rs-backdrop: rgba(94, 12, 22, 0.55);
+  /* new hooks (see THEMES.md) */
+  --header-a: #5e0c16;
+  --header-b: #a8172a;
+  --header-ink: #ffd65a;
+  --header-sub: #ffe2e2;
+  --plate-ink: #ffffff;
+  --tex-grain: rgba(19,22,27,0.04);
+  --tex-shade: rgba(20,30,40,.18);
+  --gold-text: rgb(85, 65, 5);   /* accent as text: a notch deeper for textures */
+  --crimson-ink: rgb(131, 19, 30);
+  --leather-text: var(--leather);
+  --control-fill: rgba(19, 22, 27, 0.07);
+  --control-fill-hover: rgba(19, 22, 27, 0.13);
+  --page-texture: var(--tex-none);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #8a5408;
+  --turn-soft: rgba(200, 130, 20, .18);
+  --select: #1b5fa8;
+  --select-soft: rgba(27, 95, 168, .20);
+}
+
+/* Clockwork (artificer · gnome) — base tone: dark. Oxidised verdigris-teal panels, brass plating and copper accents; a tinker’s workshop. */
+html[data-palette="clockwork"] {
+  --palette-tone: dark;
+  --page: #082226;
+  --page-deep: #0c2a2f;
+  --page-edge: #2d4d52;
+  --page-stain-dark: rgba(64,192,168,0.07);
+  --page-stain: rgba(242,160,106,0.035);
+  --ink: #e8f4f2;
+  --ink-soft: #bbcac9;
+  --ink-faded: #a1b0b1;
+  --ink-ghost: #4b6163;
+  --leather: #7a5a20;
+  --leather-deep: #3a2a10;
+  --leather-soft: #8b7140;
+  --crimson: #ff8a80;
+  --oxblood: #ff8a80;
+  --crimson-soft: #ff8a80;
+  --gold: #f2a06a;
+  --gold-deep: #c8895e;
+  --moss: #b0e070;
+  --temp-hp: #90d8ff;
+  --indigo: #b0bcff;
+  --rule: #3c4235;
+  --rule-soft: rgba(216,160,96,0.22);
+  --page-grad-top: #0c2e33;
+  --page-grad-bottom: #041315;
+  --card-surface: #0f3238;
+  --card-border: rgba(216,160,96,0.27);
+  --card-shadow: rgba(0,0,0,.5);
+  --hp-fill-start: #ff8a80;
+  --hp-fill-end: #f2a06a;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #a0b1b1;
+  --rs-card: linear-gradient(180deg, rgba(232,244,242,0.07) 0%, rgba(232,244,242,0.015) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(216,160,96,0.27);
+  --rs-gold-line: rgba(242, 160, 106, 0.55);
+  --rs-gold-soft: rgba(242, 160, 106, 0.15);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(232, 244, 242, 0.07);
+  --rs-btn: linear-gradient(180deg, #9a5426 0%, #743a14 100%);
+  --rs-btn-hover: linear-gradient(180deg, #9a5426 0%, #9a5426 100%);
+  --rs-btn-ink: #ffffff;
+  --rs-btn2: linear-gradient(180deg, rgba(232,244,242,0.07), rgba(232,244,242,0.015)), var(--page-deep);
+  --rs-focus: #f2a06a;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #3a2a10;
+  --header-b: #7a5a20;
+  --header-ink: #ffe6a8;
+  --header-sub: #f6ead0;
+  --plate-ink: #fff6e0;
+  --tex-grain: rgba(232,244,242,0.05);
+  --tex-shade: rgba(0,10,10,.45);
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(252, 154, 145);
+  --leather-text: var(--leather);
+  --control-fill: rgba(232, 244, 242, 0.07);
+  --control-fill-hover: rgba(232, 244, 242, 0.13);
+  --page-texture: var(--tex-stone);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #f0b450;
+  --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0;
+  --select-soft: rgba(111, 176, 240, .26);
+}
+
+/* Dragonscale (dragonborn) — base tone: dark. Burnished olive-bronze scales, a molten bronze header and dragonfire-red accents; armoured and fierce. */
+html[data-palette="scales"] {
+  --palette-tone: dark;
+  --page: #191708;
+  --page-deep: #211e0c;
+  --page-edge: #45412b;
+  --page-stain-dark: rgba(255,106,42,0.07);
+  --page-stain: rgba(255,106,42,0.035);
+  --ink: #f6eed4;
+  --ink-soft: #cac3ab;
+  --ink-faded: #a6a18b;
+  --ink-ghost: #5b5845;
+  --leather: #e0aa50;
+  --leather-deep: #b07a26;
+  --leather-soft: #e3b464;
+  --crimson: #ff8a9a;
+  --oxblood: #ff8a9a;
+  --crimson-soft: #ff8a9a;
+  --gold: #ff7448;
+  --gold-deep: #d6633c;
+  --moss: #a6dc78;
+  --temp-hp: #7cc8d8;
+  --indigo: #a8b4ec;
+  --rule: #493d1e;
+  --rule-soft: rgba(216,176,96,0.22);
+  --page-grad-top: #24210d;
+  --page-grad-bottom: #0e0d04;
+  --card-surface: #28250f;
+  --card-border: rgba(216,176,96,0.27);
+  --card-shadow: rgba(0,0,0,.5);
+  --hp-fill-start: #ff8a9a;
+  --hp-fill-end: #ff7448;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #afa993;
+  --rs-card: linear-gradient(180deg, rgba(246,238,212,0.07) 0%, rgba(246,238,212,0.015) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .08)), var(--page-deep);
+  --rs-card-border: rgba(216,176,96,0.27);
+  --rs-gold-line: rgba(255, 116, 72, 0.55);
+  --rs-gold-soft: rgba(255, 116, 72, 0.15);
+  --rs-shadow-1: 0 1px 2px rgba(0, 0, 0, .35), 0 3px 10px rgba(0, 0, 0, .22);
+  --rs-shadow-2: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .32);
+  --rs-shadow-3: 0 4px 10px rgba(0, 0, 0, .45), 0 24px 60px rgba(0, 0, 0, .55);
+  --rs-inset: inset 0 1px 0 rgba(246, 238, 212, 0.07);
+  --rs-btn: linear-gradient(180deg, #c4421c 0%, #8e2c10 100%);
+  --rs-btn-hover: linear-gradient(180deg, #c4421c 0%, #c4421c 100%);
+  --rs-btn-ink: #ffffff;
+  --rs-btn2: linear-gradient(180deg, rgba(246,238,212,0.07), rgba(246,238,212,0.015)), var(--page-deep);
+  --rs-focus: #ff7448;
+  --rs-backdrop: rgba(0, 0, 0, .70);
+  /* new hooks (see THEMES.md) */
+  --header-a: #b07a26;
+  --header-b: #e0aa50;
+  --header-ink: #2a1404;
+  --header-sub: #2a1808;
+  --plate-ink: #1e1004;
+  --tex-grain: rgba(255,220,150,.07);
+  --tex-shade: rgba(0,0,0,.5);
+  --gold-text: var(--gold);
+  --crimson-ink: rgb(254, 153, 163);
+  --leather-text: var(--leather);
+  --control-fill: rgba(246, 238, 212, 0.07);
+  --control-fill-hover: rgba(246, 238, 212, 0.13);
+  --page-texture: var(--tex-scales);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #f0b450;
+  --turn-soft: rgba(240, 180, 80, .16);
+  --select: #6fb0f0;
+  --select-soft: rgba(111, 176, 240, .26);
+}
+
+/* Honeyed Hollow (halfling) — base tone: light. Golden honey pages, a leafy green door of a header and amber accents; snug, cheerful and homely. */
+html[data-palette="hollow"] {
+  --palette-tone: light;
+  --page: #f5d986;
+  --page-deep: #ebd080;
+  --page-edge: #c8b06b;
+  --page-stain-dark: rgba(216,154,32,0.1);
+  --page-stain: rgba(122,160,64,0.06);
+  --ink: #2a1f0a;
+  --ink-soft: #534423;
+  --ink-faded: #5e502d;
+  --ink-ghost: #b8a161;
+  --leather: #3f6a26;
+  --leather-deep: #1e3a14;
+  --leather-soft: #3c5f22;
+  --crimson: #a01c1c;
+  --oxblood: #a01c1c;
+  --crimson-soft: #a01c1c;
+  --gold: #834600;
+  --gold-deep: #9d6418;
+  --moss: #2e6a1c;
+  --temp-hp: #1d5a6a;
+  --indigo: #2c3a70;
+  --rule: #9a854e;
+  --rule-soft: rgba(42,31,10,0.3);
+  --page-grad-top: #fbe8a8;
+  --page-grad-bottom: #e3c87b;
+  --card-surface: #fff3c8;
+  --card-border: rgba(42,31,10,0.26);
+  --card-shadow: rgba(42,31,10,0.15);
+  --hp-fill-start: #a01c1c;
+  --hp-fill-end: #8a4a00;
+  /* v1.x restyle tokens */
+  --rs-label-ink: #5c4e2c;
+  --rs-card: linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.12) 100%), var(--card-surface);
+  --rs-card-sunk: linear-gradient(180deg, rgba(42, 31, 10, 0.06), rgba(42, 31, 10, 0.02)), var(--page-deep);
+  --rs-card-border: rgba(42,31,10,0.26);
+  --rs-gold-line: rgba(131, 70, 0, 0.55);
+  --rs-gold-soft: rgba(131, 70, 0, 0.15);
+  --rs-shadow-1: 0 1px 1px rgba(42,31,10,.08), 0 2px 6px rgba(42,31,10,.08);
+  --rs-shadow-2: 0 1px 2px rgba(42,31,10,.10), 0 6px 18px rgba(42,31,10,.12);
+  --rs-shadow-3: 0 2px 6px rgba(42,31,10,.18), 0 18px 48px rgba(42,31,10,.30);
+  --rs-inset: inset 0 1px 0 rgba(255, 255, 255, .55);
+  --rs-btn: linear-gradient(180deg, #3f6a26 0%, #2a4c18 100%);
+  --rs-btn-hover: linear-gradient(180deg, #3f6a26 0%, #3f6a26 100%);
+  --rs-btn-ink: #ffffff;
+  --rs-btn2: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.12)), var(--page-deep);
+  --rs-focus: #9d6418;
+  --rs-backdrop: rgba(30, 58, 20, 0.55);
+  /* new hooks (see THEMES.md) */
+  --header-a: #1e3a14;
+  --header-b: #3f6a26;
+  --header-ink: #ffd45a;
+  --header-sub: #d8ecb8;
+  --plate-ink: #fbf6dc;
+  --tex-grain: rgba(42,31,10,0.04);
+  --tex-shade: rgba(42,31,10,0.14);
+  --gold-text: rgb(115, 63, 2);   /* accent as text: a notch deeper for textures */
+  --crimson-ink: rgb(134, 29, 24);
+  --leather-text: var(--leather);
+  --control-fill: rgba(42, 31, 10, 0.07);
+  --control-fill-hover: rgba(42, 31, 10, 0.13);
+  --page-texture: var(--tex-parchment);
+  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */
+  --turn: #8a5408;
+  --turn-soft: rgba(200, 130, 20, .18);
+  --select: #1b5fa8;
+  --select-soft: rgba(27, 95, 168, .20);
+}
+
+
+/* texture overrides must come after the palette blocks above */
+html[data-texture="parchment"] { --page-texture: var(--tex-parchment); }
+html[data-texture="leather"]   { --page-texture: var(--tex-leather); }
+html[data-texture="stone"]     { --page-texture: var(--tex-stone); }
+html[data-texture="none"]      { --page-texture: var(--tex-none); }
+html[data-texture="scales"]    { --page-texture: var(--tex-scales); }
+html[data-texture="weave"]     { --page-texture: var(--tex-weave); }
+html[data-texture="stars"]     { --page-texture: var(--tex-stars); }
+/* weave reads too strongly at full shade on the light palettes */
+html[data-palette="mountain"] { --tex-shade: rgba(120, 90, 20, .035); --tex-grain: rgba(35, 38, 41, .055); }
+html[data-palette="encore"]   { --tex-shade: rgba(0, 0, 0, .16); --tex-grain: rgba(255, 200, 210, .035); }
+/* Wild Surge: the raw-magic gradient runs diagonally across the page */
+html[data-palette="surge"] body {
+  background: radial-gradient(ellipse at 85% 8%, rgba(255, 90, 170, .22), transparent 45%),
+    radial-gradient(ellipse at 10% 92%, rgba(255, 130, 40, .20), transparent 45%),
+    linear-gradient(160deg, var(--page-grad-top) 0%, var(--page) 45%, var(--page-grad-bottom) 100%);
+}
+html[data-palette="surge"] .header-compact { background: linear-gradient(110deg, var(--header-a), #8a1a6a 55%, var(--header-b)); }
+
+</style>
 </head>
 <body>
 <div class="app">
@@ -8870,7 +10743,7 @@ html:root .dialog-backdrop.confirm-backdrop { padding: calc(16px + var(--hearth-
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '1.4.1';
+const HEARTH_VERSION = '1.5.0';
 // v1.4.0 — automatic local backup before each app update. Captured here, at
 // the very start, before anything can migrate stored data; written to
 // IndexedDB later (hearthProcessPreUpdate) and the last 3 are kept.
@@ -30539,15 +32412,18 @@ function renderCharacter() {
   });
 
   // v0.20.64 — Settings: theme picker. Save + apply; update highlight in place.
+  // v1.5.0 — picking Light or Dark clears a colour theme.
   document.querySelectorAll('[data-theme-pref]').forEach(b => {
     b.addEventListener('click', () => {
       if (!state.prefs) state.prefs = loadPrefs();
       state.prefs.theme = b.dataset.themePref;
+      state.prefs.palette = '';
       savePrefs(state.prefs);
       applyPrefsToBody();
-      document.querySelectorAll('[data-theme-pref]').forEach(x => x.classList.toggle('selected', x === b));
+      hearthSyncLookPickers();
     });
   });
+  wireHearthLookSettings();
 
   // v0.21.26 — Settings: wide-screen (laptop) mode picker.
   document.querySelectorAll('[data-wide-pref]').forEach(b => {
@@ -33029,17 +34905,8 @@ function homePanelSettings() {
       </div>
 
       <div class="forge-section-label" style="margin-top: 18px;">Theme</div>
-      <div class="ai-helper">Light is the original leather-bound look. Dark swaps to a night palette inspired by Wyrdbound — same warm gold and crimson, easier on the eyes in low light.</div>
-      <div class="settings-size-grid">
-        <button class="settings-size-card ${(prefs.theme || 'light') === 'light' ? 'selected' : ''}" data-theme-pref="light">
-          <div class="settings-size-name">Light <span class="size-preview-aA">☀</span></div>
-          <div class="settings-size-desc">Parchment paper, warm gold ink</div>
-        </button>
-        <button class="settings-size-card ${prefs.theme === 'dark' ? 'selected' : ''}" data-theme-pref="dark">
-          <div class="settings-size-name">Dark <span class="size-preview-aA">☾</span></div>
-          <div class="settings-size-desc">Deep leather, candle-light gold</div>
-        </button>
-      </div>
+      <div class="ai-helper">Light is the original leather-bound look and Dark its night version. The other themes recolour the whole app; Places are moods for the table, Classes &amp; Races are styled after your hero.</div>
+      ${hearthLookSettingsHTML(prefs)}
 
       <div class="forge-section-label" style="margin-top: 18px;">Screen layout</div>
       <div class="ai-helper">On a laptop or desktop the app can widen to use more of the screen. <strong>Auto</strong> widens automatically on big screens and stays phone-shaped on mobile.</div>
@@ -47782,6 +49649,12 @@ const DEFAULT_PREFS = {
   // v0.20.64 — Visual theme. 'light' is the original parchment look;
   // 'dark' is the Wyrdbound-inspired night palette.
   theme: 'light', // 'light' | 'dark'
+  // v1.5.0 — colour theme (Jenny's palettes; '' = classic Light/Dark above) and visual options.
+  palette: '',  // '' | 'tavern' | 'forest' | 'forge' | 'arcane' | 'frost' | 'infernal' | 'contrast' | 'oldmap' | 'hoard'
+  texture: '',  // '' (theme default) | 'parchment' | 'leather' | 'stone' | 'none'
+  font: '',     // '' (theme default: classic serif) | 'classic' | 'clean'
+  cards: '',    // '' (theme default: raised) | 'raised' | 'flat' | 'framed'
+  motion: '',   // '' (follow the device setting) | 'reduced'
   // v0.21.26 — Wide-screen mode for laptops/desktops. 'auto' widens
   // automatically on big viewports; 'on'/'off' force it.
   wideScreen: 'auto', // 'auto' | 'on' | 'off'
@@ -47806,10 +49679,9 @@ function applyPrefsToBody() {
   document.body.classList.add('text-' + (prefs.textSize || 'm'));
   // v0.20.64 — Theme attribute on <html>. CSS reads
   // html[data-theme="dark"] to swap the palette tokens.
-  const theme = prefs.theme === 'dark' ? 'dark' : 'light';
-  if (document.documentElement) {
-    document.documentElement.setAttribute('data-theme', theme);
-  }
+  // v1.5.0 — data-theme (base tone) + data-palette + visual options + browser bar colour.
+  if (typeof window.hearthApplyLook === 'function') window.hearthApplyLook(prefs);
+  else document.documentElement.setAttribute('data-theme', prefs.theme === 'dark' ? 'dark' : 'light');
   // v0.21.26 — Wide-screen mode. 'auto' applies the wide class only on
   // viewports ≥ 900px; 'on' always; 'off' never. Toggled live on resize
   // via the listener registered at startup.
@@ -47817,6 +49689,100 @@ function applyPrefsToBody() {
   const bigViewport = (typeof window !== 'undefined' && window.innerWidth >= 900);
   const wide = ws === 'on' || (ws === 'auto' && bigViewport);
   document.body.classList.toggle('hearth-wide', wide);
+}
+
+// ============================================================
+// v1.5.0 — colour themes (Jenny's palettes) + visual options in Settings.
+// Palette data comes from themes/palettes.js via themes/build.js
+// (window.HEARTH_PALETTES, written into the <head> script).
+// ============================================================
+function hearthPaletteOf(prefs) {
+  const P = window.HEARTH_PALETTES || {};
+  return prefs && prefs.palette && P[prefs.palette] ? prefs.palette : '';
+}
+const HEARTH_LOOK_OPTIONS = [
+  { key: 'texture', label: 'Background texture', help: 'Drawn in CSS, so it works offline and costs nothing to load.',
+    opts: [['', 'Theme default'], ['parchment', 'Parchment'], ['leather', 'Leather'], ['stone', 'Stone'], ['scales', 'Scales'], ['weave', 'Weave'], ['stars', 'Stars'], ['none', 'None']] },
+  { key: 'font', label: 'Font', help: 'Clean uses your device\u2019s own sans-serif font: crisper at small sizes and easier for some dyslexic readers.',
+    opts: [['', 'Theme default'], ['classic', 'Classic serif'], ['clean', 'Clean sans']] },
+  { key: 'cards', label: 'Card style', help: 'Flat drops the shadows (lighter on old phones). Framed adds a solid border.',
+    opts: [['', 'Theme default'], ['raised', 'Raised'], ['flat', 'Flat'], ['framed', 'Framed']] },
+  { key: 'motion', label: 'Motion', help: 'Reduce turns off animations, the tour slide-in and the moving water and fire on painted maps. Hearth already does this when your device asks for reduced motion.',
+    opts: [['', 'Follow device'], ['reduced', 'Reduce motion']] },
+];
+function hearthLookSettingsHTML(prefs) {
+  const P = window.HEARTH_PALETTES || {};
+  const cur = hearthPaletteOf(prefs);
+  const swatch = (sw) => `<div class="settings-palette-swatch" aria-hidden="true" style="background:linear-gradient(135deg, ${escape(sw[4])} 0 34%, ${escape(sw[0])} 34% 100%)">
+            <i style="background:${escape(sw[2])}"></i><i style="background:${escape(sw[3])}"></i><i style="background:${escape(sw[5])}"></i></div>`;
+  const card = (id, t) => `
+        <button class="settings-size-card settings-palette-card ${cur === id ? 'selected' : ''}" data-palette-pref="${escape(id)}" aria-pressed="${cur === id}">
+          ${swatch(t.sw)}
+          <div class="settings-size-name">${escape(t.name)}</div>
+          ${t.from ? `<div class="settings-palette-from">${escape(t.from)}</div>` : ''}
+          <div class="settings-size-desc">${escape(t.blurb)}</div>
+        </button>`;
+  const classic = (tone) => {
+    const on = !cur && (prefs.theme || 'light') === tone;
+    const sw = tone === 'dark' ? ['#221912', '#2e2218', '#f3e3c0', '#d4a04b', '#3e382f', '#e57866'] : ['#e3cf9f', '#e8d6a8', '#2a1a0c', '#a87c38', '#3e382f', '#7a1e1a'];
+    return `
+        <button class="settings-size-card settings-palette-card ${on ? 'selected' : ''}" data-theme-pref="${tone}" aria-pressed="${on}">
+          ${swatch(sw)}
+          <div class="settings-size-name">${tone === 'dark' ? 'Dark <span class="size-preview-aA">☾</span>' : 'Light <span class="size-preview-aA">☀</span>'}</div>
+          <div class="settings-size-desc">${tone === 'dark' ? 'Deep leather, candle-light gold' : 'Parchment paper, warm gold ink'}</div>
+        </button>`;
+  };
+  const group = (g) => Object.entries(P).filter(([, t]) => t.group === g).map(([id, t]) => card(id, t)).join('');
+  const opt = (o) => `
+      <div class="settings-look-row">
+        <div class="settings-look-label" id="lookLbl-${o.key}">${escape(o.label)}</div>
+        <div class="settings-look-seg" role="group" aria-labelledby="lookLbl-${o.key}">
+          ${o.opts.map(([v, l]) => `<button class="settings-look-opt ${(prefs[o.key] || '') === v ? 'selected' : ''}" data-look-pref="${o.key}" data-look-val="${escape(v)}" aria-pressed="${(prefs[o.key] || '') === v}">${escape(l)}</button>`).join('')}
+        </div>
+        <div class="settings-look-help">${escape(o.help)}</div>
+      </div>`;
+  const n = Object.keys(P).length + 2;
+  return `
+      <div class="settings-theme-picker" id="settingsPaletteGrid" tabindex="0" role="region" aria-label="Themes (${n})">
+        <div class="settings-theme-group">Classic</div>
+        <div class="settings-size-grid settings-palette-grid" id="settingsThemeGrid">${classic('light')}${classic('dark')}${group('classic')}
+        </div>
+        <div class="settings-theme-group">Places</div>
+        <div class="settings-size-grid settings-palette-grid">${group('places')}
+        </div>
+        <div class="settings-theme-group">Classes &amp; Races</div>
+        <div class="settings-size-grid settings-palette-grid">${group('classes')}
+        </div>
+      </div>
+      <div class="forge-section-label" style="margin-top: 18px;">Look &amp; feel</div>
+      <div class="settings-look">${HEARTH_LOOK_OPTIONS.map(opt).join('')}
+      </div>`;
+}
+function hearthSyncLookPickers() {
+  const prefs = state.prefs || loadPrefs();
+  const cur = hearthPaletteOf(prefs);
+  document.querySelectorAll('[data-theme-pref]').forEach(x => { const on = !cur && (prefs.theme || 'light') === x.dataset.themePref; x.classList.toggle('selected', on); x.setAttribute('aria-pressed', String(on)); });
+  document.querySelectorAll('[data-palette-pref]').forEach(x => { const on = cur === x.dataset.palettePref; x.classList.toggle('selected', on); x.setAttribute('aria-pressed', String(on)); });
+  document.querySelectorAll('[data-look-pref]').forEach(x => { const on = (prefs[x.dataset.lookPref] || '') === x.dataset.lookVal; x.classList.toggle('selected', on); x.setAttribute('aria-pressed', String(on)); });
+}
+function hearthLookChanged() {
+  // Painted-map overlays obey Reduce motion: stop a running one; re-render brings it back otherwise.
+  try { if (window.hearthReducedMotion() && typeof paintedStopOverlay === 'function') paintedStopOverlay(); } catch (e) {}
+  try { if (window.HEARTH_NATIVE && typeof window.hearthNativeLook === 'function') window.hearthNativeLook(); } catch (e) {}
+}
+function wireHearthLookSettings() {
+  document.querySelectorAll('[data-palette-pref]').forEach(b => b.addEventListener('click', () => {
+    if (!state.prefs) state.prefs = loadPrefs();
+    const P = window.HEARTH_PALETTES || {}; const id = b.dataset.palettePref;
+    if (!P[id]) return;
+    state.prefs.palette = id; state.prefs.theme = P[id].tone;
+    savePrefs(state.prefs); applyPrefsToBody(); hearthSyncLookPickers(); hearthLookChanged();
+  }));
+  document.querySelectorAll('[data-look-pref]').forEach(b => b.addEventListener('click', () => {
+    if (!state.prefs) state.prefs = loadPrefs();
+    state.prefs[b.dataset.lookPref] = b.dataset.lookVal;
+    savePrefs(state.prefs); applyPrefsToBody(); hearthSyncLookPickers(); hearthLookChanged();
+  }));
 }
 
 function loadAiHomebrew() {
@@ -52568,8 +54534,11 @@ function paintedAttachOverlay(slot, v) {
   if (_paintedOvCtl) { try { _paintedOvCtl.stop(); } catch (e) {} _paintedOvCtl = null; }
   _paintedOvNode = slot;
   const key = slot.dataset.key;
+  // v1.5.0 — the in-app Reduce motion switch (as well as the OS setting) keeps the painted map still.
+  if (window.hearthReducedMotion && window.hearthReducedMotion()) return;
   loadPaintedMaps().then(H => {
     if (!H.createOverlay || _paintedOvNode !== slot || slot.dataset.key !== key) return;
+    if (window.hearthReducedMotion && window.hearthReducedMotion()) return;
     const ctl = H.createOverlay({ id: v.id, cols: v.cols, rows: v.rows, px: (v.meta && v.meta.px) || PAINTED_PX });
     _paintedOvCtl = ctl;
     slot.innerHTML = '';
@@ -53792,7 +55761,7 @@ function wireDMMap(enc, cell, cols, rows) {
           state.ui.dmHighlightMon = wasHi ? null : id;
           document.querySelectorAll('[data-dm-tile]').forEach(cc => cc.classList.toggle('dm-tile-highlight', cc.dataset.dmTile === state.ui.dmHighlightMon));
           document.querySelectorAll('[data-map-token]').forEach(tt => tt.classList.toggle('token-highlight', tt.dataset.mapToken === state.ui.dmHighlightMon));
-          if (!wasHi) { const card = document.querySelector('[data-dm-tile="' + id + '"]'); if (card) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+          if (!wasHi) { const card = document.querySelector('[data-dm-tile="' + id + '"]'); if (card) card.scrollIntoView({ block: 'nearest', behavior: (window.hearthReducedMotion && window.hearthReducedMotion()) ? 'auto' : 'smooth' }); }
         }
       }
       groupStart = null;
@@ -53886,6 +55855,26 @@ function openProjectorWindow(enc) {
   setTimeout(() => broadcastMap(loadEncounter()), 300);
 }
 
+// v1.5.0 — the projector follows the DM's colour theme when it is a dark one
+// (a TV in a dim room wants a dark board); light themes keep the classic dark
+// projector. Turn = amber and the boss/initiative colours stay as they are.
+function projectorReducedMotion() { try { return !!(window.hearthReducedMotion && window.hearthReducedMotion()); } catch (e) { return false; } }
+function projectorLookCSS() {
+  try {
+    const h = document.documentElement; const pal = h.getAttribute('data-palette');
+    const reduce = projectorReducedMotion() ? '* { animation: none !important; transition: none !important; }' : '';
+    if (!pal || h.getAttribute('data-theme') !== 'dark') return reduce;
+    const cs = getComputedStyle(h); const v = (k, d) => { const x = cs.getPropertyValue(k).trim(); return /^#[0-9a-f]{3,8}$|^rgba?\([\d., ]+\)$/i.test(x) ? x : d; };
+    const page = v('--page', '#15110c'), deep = v('--page-deep', '#241a10'), ink = v('--ink', '#e8d9b5'), faded = v('--ink-faded', '#7a6a4a'), gold = v('--gold', '#d4a04b'), line = v('--rs-gold-line', 'rgba(184,137,61,0.55)');
+    return `html,body { background:${page}; color:${ink}; }
+  .grid { background: linear-gradient(${line} 1px, transparent 1px), linear-gradient(90deg, ${line} 1px, transparent 1px), radial-gradient(circle at 50% 40%, ${deep}, ${page}); border-color:${line}; }
+  .initpanel, .fsbtn { background:${page}; border-color:${line}; color:${ink}; }
+  .init-title { color:${gold}; } .init-row { color:${ink}; } .idle { color:${faded}; }
+  .tok-cap { background:${page}; color:${ink}; }
+  ${reduce}`;
+  } catch (e) { return ''; }
+}
+
 // The self-contained HTML document for the projector window. It listens on
 // the same BroadcastChannel and re-renders the clean grid + tokens.
 function projectorDocumentHTML() {
@@ -53903,7 +55892,7 @@ function projectorDocumentHTML() {
   }
   .tok { position:absolute; display:flex; align-items:center; justify-content:center; z-index:2;
     border-radius:50%; font-weight:bold; transition: left 0.25s ease, top 0.25s ease; }
-  .tok.player { background: radial-gradient(circle at 40% 35%, #5b8c9c, #2f5563); color:#eaf4f6; border:2px solid #8fc0cf; }
+  .tok.player { background: radial-gradient(circle at 40% 35%, #3f6f80, #234452); color:#f2fafc; border:2px solid #8fc0cf; }
   .tok.monster { background: radial-gradient(circle at 40% 35%, #b34a3c, #7a1e1a); color:#ffe9e4; border:2px solid #e08070; }
   .tok.disp-neutral { background: radial-gradient(circle at 40% 35%, #6b6153, #4a4238); color:#f3ead8; border:2px solid #c3b79d; }
   .tok.disp-ally { background: radial-gradient(circle at 40% 35%, #3f7a4e, #2f5b3a); color:#eafaea; border:2px solid #86c892; }
@@ -53945,6 +55934,7 @@ function projectorDocumentHTML() {
   body.cursor-hidden { cursor:none; }
   ${PAINTED_OVERLAY_CSS}
   .grid > .pm-ov { z-index:1; }
+  ${projectorLookCSS()}
 </style></head>
 <body>
   <button class="fsbtn" id="fsBtn" title="Fill this screen for the players">⛶ Fullscreen</button>
@@ -54026,6 +56016,7 @@ function projectorDocumentHTML() {
       // v1.2.0 — v6 canvas overlay (same renderer as the DM screen).
       pmLoadScript().then(function(H){
         if (_pm.key !== key || !H.createOverlay) return;
+        if (${projectorReducedMotion() ? 'true' : 'false'}) return; // v1.5.0: the DM's Reduce motion switch
         pmStop();
         _pm.ctl = H.createOverlay({ id: m.id, cols: m.cols || 20, rows: m.rows || 15, px: m.px || 64 });
         _pm.node = _pm.ctl.el; window.__pmOv = _pm.ctl;
@@ -57410,7 +59401,7 @@ try { linkBoot(); } catch (e) { console.warn('Hearth live game boot failed:', e)
 // control the page reloads once by itself unless you are mid-edit (typing, a
 // popup open, or the character builder), in which case the toast stays up.
 (function () {
-  const APP_VERSION = 'v1.4.1';
+  const APP_VERSION = 'v1.5.0';
   window.HEARTH_VERSION = APP_VERSION;
 
   function hearthHasUnsavedEdits() {

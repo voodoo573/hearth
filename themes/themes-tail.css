@@ -1,0 +1,111 @@
+/* =====================================================================
+   Signature textures for palettes that have one (overridable below)
+   ===================================================================== */
+html[data-palette="arcane"] { --page-texture: var(--tex-stars); }
+html[data-palette="oldmap"] { --page-texture: var(--tex-chart); --tex-grain: rgba(60, 45, 25, .07); }
+
+/* =====================================================================
+   Hooks: the few places the app hard-codes colours instead of tokens
+   ===================================================================== */
+html[data-palette] body {
+  background: var(--page-texture),
+    linear-gradient(180deg, var(--page-grad-top) 0%, var(--page) 40%, var(--page-grad-bottom) 100%);
+  background-color: var(--page);
+}
+html[data-palette] { background: var(--page); color-scheme: var(--palette-tone); }
+/* header plate is a fixed dark-leather gradient in the app */
+html[data-palette] .header-compact {
+  background: linear-gradient(135deg, var(--header-a), var(--header-b));
+  border-color: var(--rs-gold-line);
+}
+html[data-palette] .header-compact h1,
+html[data-palette] .hearth-edition-badge { color: var(--header-ink); }
+html[data-palette] .header .subtitle { color: var(--header-sub); }
+/* sheet controls hard-coded as warm brown veils / gold hairlines */
+html:root[data-palette][data-palette] body :is(.hp-btn, .hp-quickstep-btn, .action-tab, .action-tab-card, .hp-input, .stat-cell) {
+  background-color: var(--control-fill);
+}
+html:root[data-palette][data-palette] body :is(.hp-btn, .hp-quickstep-btn, .action-tab, .action-tab-card):hover { background-color: var(--control-fill-hover); }
+html:root[data-palette][data-palette] body .hp-btn.damage:hover { background-color: var(--crimson); color: var(--page); }
+html:root[data-palette][data-palette] body .hp-btn.heal { border-color: var(--moss); color: var(--moss); }
+html:root[data-palette][data-palette] body .hp-btn.more { color: var(--ink-soft); }
+html:root[data-palette][data-palette] body .action-tab-card.active { background-color: var(--rs-gold-soft); }
+html:root[data-palette][data-palette] body :is(.stat-cell, .action-roll-btn) { border-color: var(--rs-card-border); }
+/* ability-score band: a "leather plate" in the app, now the palette's plate */
+html:root[data-palette] .stats-bar { background: linear-gradient(180deg, var(--header-b) 0%, var(--header-a) 100%); border-color: var(--rs-gold-line); }
+html:root[data-palette] .stats-bar .stat-cell { background-color: rgba(255, 255, 255, .04); }
+html:root[data-palette] .stats-bar :is(.stat-cell-label, .stat-cell-score) { color: var(--header-sub); }
+html:root[data-palette] .stats-bar :is(.stat-cell-mod, .stat-cell-val) { color: var(--plate-ink); }
+html:root[data-palette] .stats-bar .stat-cell-save.proficient { color: var(--header-ink); }
+html:root[data-palette] .stats-bar .skills-under-stats-btn { color: var(--plate-ink); border-color: var(--rs-gold-line); }
+/* primary buttons */
+html[data-palette] :is(.btn.primary, button.btn.primary) { background: var(--rs-btn); color: var(--rs-btn-ink); }
+/* High Contrast: solid outlines everywhere, underline links, thicker focus */
+html[data-palette="contrast"] .header-compact { border: 2px solid var(--gold); }
+html[data-palette="contrast"] .tabs { border: 2px solid #fff; background: #000; }
+html[data-palette="contrast"] .tab.active { background: var(--gold); color: #000; box-shadow: none; }
+html[data-palette="contrast"] .tab.active::after { background: #000; }
+html[data-palette="contrast"] a { text-decoration: underline; }
+html[data-palette="contrast"] :focus-visible { outline-width: 3px !important; }
+
+/* =====================================================================
+   VISUAL OPTION 1 — background texture (overrides the palette default)
+   ===================================================================== */
+html[data-texture="parchment"] { --page-texture: var(--tex-parchment); }
+html[data-texture="leather"]   { --page-texture: var(--tex-leather); }
+html[data-texture="stone"]     { --page-texture: var(--tex-stone); }
+html[data-texture="none"]      { --page-texture: var(--tex-none); }
+/* texture on the classic light/dark themes too (no palette attribute) */
+html[data-texture]:not([data-palette]) body {
+  background: var(--page-texture),
+    linear-gradient(180deg, var(--page-grad-top) 0%, var(--page) 40%, var(--page-grad-bottom) 100%);
+}
+html[data-texture]:not([data-palette]) { --tex-grain: rgba(120, 80, 30, .035); --tex-shade: rgba(60, 35, 10, .22); }
+html[data-texture]:not([data-palette])[data-theme="dark"] { --tex-grain: rgba(255, 210, 150, .04); --tex-shade: rgba(0, 0, 0, .45); }
+
+/* =====================================================================
+   VISUAL OPTION 2 — font style. "classic" = today's Georgia serif.
+   "clean" = the system sans the app already ships (--rs-sans): crisper
+   at small sizes and easier for dyslexic readers. No web fonts needed.
+   ===================================================================== */
+html[data-font="clean"] body,
+html[data-font="clean"] body :is(h1, h2, h3, h4, h5, p, em, i, span, div, button, a, li, td, th, label, input, select, textarea, summary):not([class*="mono"]):not(code):not(kbd) {
+  font-family: var(--rs-sans) !important;
+}
+html[data-font="clean"] .header-compact h1 { letter-spacing: -.01em; font-weight: 700; }
+
+/* =====================================================================
+   VISUAL OPTION 3 — card style
+   raised (default) = soft shadow + top sheen
+   flat   = solid fill, hairline border, no shadow (cleaner, faster)
+   framed = no fill gradient, solid 2px ink-coloured frame (bold, printable)
+   ===================================================================== */
+html:root[data-cards="flat"] :is(.home-tile, .ai-card, .vitals, .gear-summary-card, .gear-section, .defense-item, .prep-status,
+  .spellbook-slots-top, .cond-strip, .coin-strip, .xp-strip, .slots-bar, .rest-status, .vellum-box, .card,
+  .feature, .panel, .stat-card, .ability-card, .settings-size-card, .rules-home, .option-card, .spell-card) {
+  background: var(--card-surface);
+  box-shadow: inset 3px 0 0 var(--rs-gold-line);
+  border: 1px solid var(--rs-card-border);
+}
+html:root[data-cards="framed"] :is(.home-tile, .ai-card, .vitals, .gear-summary-card, .gear-section, .defense-item, .prep-status,
+  .spellbook-slots-top, .cond-strip, .coin-strip, .xp-strip, .slots-bar, .rest-status, .vellum-box, .card,
+  .feature, .panel, .stat-card, .ability-card, .settings-size-card, .rules-home, .option-card, .spell-card) {
+  background: var(--page-deep);
+  box-shadow: inset 4px 0 0 var(--gold);
+  border: 2px solid var(--rule);
+}
+html:root[data-cards="framed"][data-palette="contrast"] :is(.home-tile, .card, .panel, .feature, .vellum-box, .stat-card, .ability-card) {
+  border-color: #fff; background: #000;
+}
+
+/* =====================================================================
+   VISUAL OPTION 4 — reduced motion (manual switch; the app already
+   honours the OS setting via prefers-reduced-motion)
+   ===================================================================== */
+html[data-motion="reduced"] { --rs-dur: 0ms; }
+html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-motion="reduced"] *::after {
+  animation-duration: 0.001ms !important; animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important; scroll-behavior: auto !important;
+}
+/* painted-map overlays (fire/water/lava…): Lumi, gate the canvas loop on
+   document.documentElement.dataset.motion === 'reduced' as well as the media query. */
