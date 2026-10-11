@@ -1,0 +1,1465 @@
+{
+ "light": {
+  "name": "Current Light (parchment)",
+  "rows": [
+   {
+    "label": "Body text (ink)",
+    "k": "ink",
+    "val": "#2a1a0c",
+    "ratio": 8.896958082783005,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Secondary text (ink-soft)",
+    "k": "ink-soft",
+    "val": "#4a3018",
+    "ratio": 6.4468869545569065,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Faded/meta text (ink-faded)",
+    "k": "ink-faded",
+    "val": "#5e4527",
+    "ratio": 4.72512582724778,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Small caps labels (rs-label-ink)",
+    "k": "rs-label-ink",
+    "val": "#5a4024",
+    "ratio": 5.076062796962288,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on page",
+    "k": "gold",
+    "val": "#5e4010",
+    "ratio": 5.022911140480705,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on cards",
+    "k": "gold",
+    "val": "#5e4010",
+    "ratio": 6.855888151391663,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Danger/low HP (crimson) on cards",
+    "k": "crimson",
+    "val": "#7a1e1a",
+    "ratio": 7.493551593736819,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Heal (moss) on cards",
+    "k": "moss",
+    "val": "#4a5e2c",
+    "ratio": 5.189465922408861,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Temp HP on cards",
+    "k": "temp-hp",
+    "val": "#2c5d6d",
+    "ratio": 5.252163340783857,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Wordmark on header plate",
+    "k": "header-ink",
+    "val": "#a87c38",
+    "ratio": 3.094119840599494,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Header subtitle (9px caps)",
+    "k": "header-sub",
+    "val": "#c9ad7a",
+    "ratio": 5.37771217278334,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Ability plate text (plate-ink)",
+    "k": "plate-ink",
+    "val": "#f6e7c6",
+    "ratio": 9.475002049819341,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Primary button text",
+    "k": "btn-ink",
+    "val": "#f3e3c0",
+    "ratio": 9.608090566847698,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Focus ring vs page (non-text)",
+    "k": "focus",
+    "val": "#7a5218",
+    "ratio": 3.6535616270016953,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Turn ring (amber) vs page/cards (non-text)",
+    "k": "turn",
+    "val": "#8a5408",
+    "ratio": 3.321512362560166,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Selection ring (blue) vs page/cards (non-text)",
+    "k": "select",
+    "val": "#1b5fa8",
+    "ratio": 3.427196205058846,
+    "min": 3,
+    "pass": true
+   }
+  ]
+ },
+ "dark": {
+  "name": "Current Dark",
+  "rows": [
+   {
+    "label": "Body text (ink)",
+    "k": "ink",
+    "val": "#f3e3c0",
+    "ratio": 10.370909198527615,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Secondary text (ink-soft)",
+    "k": "ink-soft",
+    "val": "#d8c298",
+    "ratio": 7.57157825533938,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Faded/meta text (ink-faded)",
+    "k": "ink-faded",
+    "val": "#b9a27a",
+    "ratio": 5.330847072534591,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Small caps labels (rs-label-ink)",
+    "k": "rs-label-ink",
+    "val": "#c4ad84",
+    "ratio": 6.048400185799476,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on page",
+    "k": "gold",
+    "val": "#d4a04b",
+    "ratio": 6.840977755437618,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on cards",
+    "k": "gold",
+    "val": "#d4a04b",
+    "ratio": 5.592199652450936,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Danger/low HP (crimson) on cards",
+    "k": "crimson",
+    "val": "#e57866",
+    "ratio": 4.515461531669784,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Heal (moss) on cards",
+    "k": "moss",
+    "val": "#8aa66a",
+    "ratio": 4.849396947635513,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Temp HP on cards",
+    "k": "temp-hp",
+    "val": "#7fb2c2",
+    "ratio": 5.667502371560982,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Wordmark on header plate",
+    "k": "header-ink",
+    "val": "#d4a04b",
+    "ratio": 4.929130183305978,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Header subtitle (9px caps)",
+    "k": "header-sub",
+    "val": "#c9ad7a",
+    "ratio": 5.37771217278334,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Ability plate text (plate-ink)",
+    "k": "plate-ink",
+    "val": "#f6e7c6",
+    "ratio": 9.475002049819341,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Primary button text",
+    "k": "btn-ink",
+    "val": "#fbefd6",
+    "ratio": 6.103887888781613,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Focus ring vs page (non-text)",
+    "k": "focus",
+    "val": "#e2b45e",
+    "ratio": 8.369052320219785,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Turn ring (amber) vs page/cards (non-text)",
+    "k": "turn",
+    "val": "#f0b450",
+    "ratio": 7.107818972299483,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Selection ring (blue) vs page/cards (non-text)",
+    "k": "select",
+    "val": "#6fb0f0",
+    "ratio": 5.72682154444516,
+    "min": 3,
+    "pass": true
+   }
+  ]
+ },
+ "tavern": {
+  "name": "Tavern Night",
+  "rows": [
+   {
+    "label": "Body text (ink)",
+    "k": "ink",
+    "val": "#f7e4c0",
+    "ratio": 11.001919449753863,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Secondary text (ink-soft)",
+    "k": "ink-soft",
+    "val": "#e6c999",
+    "ratio": 8.623917594606915,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Faded/meta text (ink-faded)",
+    "k": "ink-faded",
+    "val": "#c9a771",
+    "ratio": 6.052428733500131,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Small caps labels (rs-label-ink)",
+    "k": "rs-label-ink",
+    "val": "#d2b07a",
+    "ratio": 6.695039624986615,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on page",
+    "k": "gold",
+    "val": "#f2b65c",
+    "ratio": 9.07423109673555,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on cards",
+    "k": "gold",
+    "val": "#f2b65c",
+    "ratio": 7.604385835715999,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Danger/low HP (crimson) on cards",
+    "k": "crimson",
+    "val": "#ee826c",
+    "ratio": 5.264311697817352,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Heal (moss) on cards",
+    "k": "moss",
+    "val": "#a3bf7a",
+    "ratio": 6.7337549406244035,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Temp HP on cards",
+    "k": "temp-hp",
+    "val": "#78b4c2",
+    "ratio": 5.958650731399983,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Wordmark on header plate",
+    "k": "header-ink",
+    "val": "#f6bb62",
+    "ratio": 7.768941683498662,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Header subtitle (9px caps)",
+    "k": "header-sub",
+    "val": "#d8b47e",
+    "ratio": 6.84358546924197,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Ability plate text (plate-ink)",
+    "k": "plate-ink",
+    "val": "#fbecd0",
+    "ratio": 11.466396300656791,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Primary button text",
+    "k": "btn-ink",
+    "val": "#fff2d8",
+    "ratio": 5.501045686927594,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Focus ring vs page (non-text)",
+    "k": "focus",
+    "val": "#ffc66c",
+    "ratio": 10.57734518748338,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Turn ring (amber) vs page/cards (non-text)",
+    "k": "turn",
+    "val": "#f0b450",
+    "ratio": 7.426547370575515,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Selection ring (blue) vs page/cards (non-text)",
+    "k": "select",
+    "val": "#6fb0f0",
+    "ratio": 5.983623337679797,
+    "min": 3,
+    "pass": true
+   }
+  ]
+ },
+ "forest": {
+  "name": "Elven Forest",
+  "rows": [
+   {
+    "label": "Body text (ink)",
+    "k": "ink",
+    "val": "#18251a",
+    "ratio": 10.820449955802154,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Secondary text (ink-soft)",
+    "k": "ink-soft",
+    "val": "#2e4130",
+    "ratio": 7.449464580968632,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Faded/meta text (ink-faded)",
+    "k": "ink-faded",
+    "val": "#4a5d45",
+    "ratio": 4.847515419064307,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Small caps labels (rs-label-ink)",
+    "k": "rs-label-ink",
+    "val": "#465a41",
+    "ratio": 5.096243619641975,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on page",
+    "k": "gold",
+    "val": "#4d5c16",
+    "ratio": 4.991420592243188,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on cards",
+    "k": "gold",
+    "val": "#4d5c16",
+    "ratio": 6.521433022783618,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Danger/low HP (crimson) on cards",
+    "k": "crimson",
+    "val": "#8f2a22",
+    "ratio": 7.389645861966029,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Heal (moss) on cards",
+    "k": "moss",
+    "val": "#2c6a3a",
+    "ratio": 5.77070472760442,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Temp HP on cards",
+    "k": "temp-hp",
+    "val": "#22606f",
+    "ratio": 6.274019613493025,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Wordmark on header plate",
+    "k": "header-ink",
+    "val": "#e9efdb",
+    "ratio": 7.018257796693546,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Header subtitle (9px caps)",
+    "k": "header-sub",
+    "val": "#bccaa6",
+    "ratio": 4.776290846880881,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Ability plate text (plate-ink)",
+    "k": "plate-ink",
+    "val": "#f1f5e6",
+    "ratio": 7.454887904845186,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Primary button text",
+    "k": "btn-ink",
+    "val": "#f2f6e8",
+    "ratio": 6.701096514711812,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Focus ring vs page (non-text)",
+    "k": "focus",
+    "val": "#4f7a1c",
+    "ratio": 3.4515754659347326,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Turn ring (amber) vs page/cards (non-text)",
+    "k": "turn",
+    "val": "#8a5408",
+    "ratio": 4.25544267721332,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Selection ring (blue) vs page/cards (non-text)",
+    "k": "select",
+    "val": "#1b5fa8",
+    "ratio": 4.390842303820197,
+    "min": 3,
+    "pass": true
+   }
+  ]
+ },
+ "forge": {
+  "name": "Dwarven Forge",
+  "rows": [
+   {
+    "label": "Body text (ink)",
+    "k": "ink",
+    "val": "#edebe7",
+    "ratio": 10.622697760014697,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Secondary text (ink-soft)",
+    "k": "ink-soft",
+    "val": "#d2cdc5",
+    "ratio": 7.99743341586342,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Faded/meta text (ink-faded)",
+    "k": "ink-faded",
+    "val": "#aca79f",
+    "ratio": 5.289178374294931,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Small caps labels (rs-label-ink)",
+    "k": "rs-label-ink",
+    "val": "#b6b1a8",
+    "ratio": 5.928200424298147,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on page",
+    "k": "gold",
+    "val": "#ff8c40",
+    "ratio": 6.641583063047468,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on cards",
+    "k": "gold",
+    "val": "#ff8c40",
+    "ratio": 5.466849085124497,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Danger/low HP (crimson) on cards",
+    "k": "crimson",
+    "val": "#fa8472",
+    "ratio": 5.184401819747853,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Heal (moss) on cards",
+    "k": "moss",
+    "val": "#93c26e",
+    "ratio": 6.132472607581099,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Temp HP on cards",
+    "k": "temp-hp",
+    "val": "#6cb2c9",
+    "ratio": 5.329492072214039,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Wordmark on header plate",
+    "k": "header-ink",
+    "val": "#ff9a50",
+    "ratio": 5.615347916222256,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Header subtitle (9px caps)",
+    "k": "header-sub",
+    "val": "#bdb7ad",
+    "ratio": 5.924783244882302,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Ability plate text (plate-ink)",
+    "k": "plate-ink",
+    "val": "#f1efea",
+    "ratio": 10.272160647599092,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Primary button text",
+    "k": "btn-ink",
+    "val": "#fff4e8",
+    "ratio": 5.342250410958189,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Focus ring vs page (non-text)",
+    "k": "focus",
+    "val": "#ff9a50",
+    "ratio": 7.309461724787384,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Turn ring (amber) vs page/cards (non-text)",
+    "k": "turn",
+    "val": "#f0b450",
+    "ratio": 6.835254035156232,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Selection ring (blue) vs page/cards (non-text)",
+    "k": "select",
+    "val": "#6fb0f0",
+    "ratio": 5.50721398826294,
+    "min": 3,
+    "pass": true
+   }
+  ]
+ },
+ "arcane": {
+  "name": "Arcane Tower",
+  "rows": [
+   {
+    "label": "Body text (ink)",
+    "k": "ink",
+    "val": "#eeedff",
+    "ratio": 11.572074806297271,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Secondary text (ink-soft)",
+    "k": "ink-soft",
+    "val": "#d2cdf6",
+    "ratio": 8.780059458853865,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Faded/meta text (ink-faded)",
+    "k": "ink-faded",
+    "val": "#aca6db",
+    "ratio": 5.871882240461424,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Small caps labels (rs-label-ink)",
+    "k": "rs-label-ink",
+    "val": "#b6b0e2",
+    "ratio": 6.549826935735075,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on page",
+    "k": "gold",
+    "val": "#f4d47e",
+    "ratio": 10.983788988674727,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on cards",
+    "k": "gold",
+    "val": "#f4d47e",
+    "ratio": 9.264530488838,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Danger/low HP (crimson) on cards",
+    "k": "crimson",
+    "val": "#ff7d8c",
+    "ratio": 5.44738427573264,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Heal (moss) on cards",
+    "k": "moss",
+    "val": "#8fd8a2",
+    "ratio": 7.958500353881023,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Temp HP on cards",
+    "k": "temp-hp",
+    "val": "#7ad2e2",
+    "ratio": 7.724648286193132,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Wordmark on header plate",
+    "k": "header-ink",
+    "val": "#f6da8c",
+    "ratio": 9.771537047467728,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Header subtitle (9px caps)",
+    "k": "header-sub",
+    "val": "#bdb5ec",
+    "ratio": 7.00359544677534,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Ability plate text (plate-ink)",
+    "k": "plate-ink",
+    "val": "#f2f0ff",
+    "ratio": 11.912340736259893,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Primary button text",
+    "k": "btn-ink",
+    "val": "#ffffff",
+    "ratio": 7.444015294840516,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Focus ring vs page (non-text)",
+    "k": "focus",
+    "val": "#f6da8c",
+    "ratio": 11.557312660439699,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Turn ring (amber) vs page/cards (non-text)",
+    "k": "turn",
+    "val": "#f0b450",
+    "ratio": 7.219001111504348,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Selection ring (blue) vs page/cards (non-text)",
+    "k": "select",
+    "val": "#6fb0f0",
+    "ratio": 5.816401804246,
+    "min": 3,
+    "pass": true
+   }
+  ]
+ },
+ "frost": {
+  "name": "Frost (Icewind)",
+  "rows": [
+   {
+    "label": "Body text (ink)",
+    "k": "ink",
+    "val": "#122238",
+    "ratio": 11.337806795977915,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Secondary text (ink-soft)",
+    "k": "ink-soft",
+    "val": "#2a3f57",
+    "ratio": 7.637646194517158,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Faded/meta text (ink-faded)",
+    "k": "ink-faded",
+    "val": "#445d77",
+    "ratio": 4.831546158842193,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Small caps labels (rs-label-ink)",
+    "k": "rs-label-ink",
+    "val": "#415a73",
+    "ratio": 5.067165856349693,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on page",
+    "k": "gold",
+    "val": "#6c4f0a",
+    "ratio": 5.387278107508717,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on cards",
+    "k": "gold",
+    "val": "#6c4f0a",
+    "ratio": 7.195670101419581,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Danger/low HP (crimson) on cards",
+    "k": "crimson",
+    "val": "#a3242c",
+    "ratio": 6.979191304920801,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Heal (moss) on cards",
+    "k": "moss",
+    "val": "#2d6a3c",
+    "ratio": 6.133496782027227,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Temp HP on cards",
+    "k": "temp-hp",
+    "val": "#1d5d73",
+    "ratio": 6.9316564860139,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Wordmark on header plate",
+    "k": "header-ink",
+    "val": "#eef5fb",
+    "ratio": 6.70307350870028,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Header subtitle (9px caps)",
+    "k": "header-sub",
+    "val": "#bcd0e0",
+    "ratio": 4.648050914050021,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Ability plate text (plate-ink)",
+    "k": "plate-ink",
+    "val": "#f4f9fd",
+    "ratio": 6.957953946044439,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Primary button text",
+    "k": "btn-ink",
+    "val": "#ffffff",
+    "ratio": 8.0173652598684,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Focus ring vs page (non-text)",
+    "k": "focus",
+    "val": "#1d5d9a",
+    "ratio": 4.821066752784167,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Turn ring (amber) vs page/cards (non-text)",
+    "k": "turn",
+    "val": "#8a5408",
+    "ratio": 4.43609177197564,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Selection ring (blue) vs page/cards (non-text)",
+    "k": "select",
+    "val": "#1b5fa8",
+    "ratio": 4.577239289420917,
+    "min": 3,
+    "pass": true
+   }
+  ]
+ },
+ "infernal": {
+  "name": "Infernal",
+  "rows": [
+   {
+    "label": "Body text (ink)",
+    "k": "ink",
+    "val": "#f1e6d2",
+    "ratio": 12.86686723809561,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Secondary text (ink-soft)",
+    "k": "ink-soft",
+    "val": "#dccbb0",
+    "ratio": 10.00632028483404,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Faded/meta text (ink-faded)",
+    "k": "ink-faded",
+    "val": "#bba78c",
+    "ratio": 6.830569521695342,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Small caps labels (rs-label-ink)",
+    "k": "rs-label-ink",
+    "val": "#c5af92",
+    "ratio": 7.513677623276546,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on page",
+    "k": "gold",
+    "val": "#ff8e4e",
+    "ratio": 7.844707194780513,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on cards",
+    "k": "gold",
+    "val": "#ff8e4e",
+    "ratio": 6.991183890979404,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Danger/low HP (crimson) on cards",
+    "k": "crimson",
+    "val": "#ff6e5e",
+    "ratio": 5.7891235774269045,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Heal (moss) on cards",
+    "k": "moss",
+    "val": "#a4c274",
+    "ratio": 7.9879942858122,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Temp HP on cards",
+    "k": "temp-hp",
+    "val": "#7cbac6",
+    "ratio": 7.343204555378635,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Wordmark on header plate",
+    "k": "header-ink",
+    "val": "#ff9c5c",
+    "ratio": 7.349527803289857,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Header subtitle (9px caps)",
+    "k": "header-sub",
+    "val": "#d2bb9e",
+    "ratio": 8.203136047488123,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Ability plate text (plate-ink)",
+    "k": "plate-ink",
+    "val": "#f6ece0",
+    "ratio": 13.013363830263293,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Primary button text",
+    "k": "btn-ink",
+    "val": "#fff1e2",
+    "ratio": 7.754571603783961,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Focus ring vs page (non-text)",
+    "k": "focus",
+    "val": "#ff9c5c",
+    "ratio": 8.635632023019616,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Turn ring (amber) vs page/cards (non-text)",
+    "k": "turn",
+    "val": "#f0b450",
+    "ratio": 8.595371605891529,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Selection ring (blue) vs page/cards (non-text)",
+    "k": "select",
+    "val": "#6fb0f0",
+    "ratio": 6.92535354191879,
+    "min": 3,
+    "pass": true
+   }
+  ]
+ },
+ "contrast": {
+  "name": "High Contrast",
+  "rows": [
+   {
+    "label": "Body text (ink)",
+    "k": "ink",
+    "val": "#ffffff",
+    "ratio": 19.168645448127652,
+    "min": 7,
+    "pass": true
+   },
+   {
+    "label": "Secondary text (ink-soft)",
+    "k": "ink-soft",
+    "val": "#f2f2f2",
+    "ratio": 17.12258638503033,
+    "min": 7,
+    "pass": true
+   },
+   {
+    "label": "Faded/meta text (ink-faded)",
+    "k": "ink-faded",
+    "val": "#d9d9d9",
+    "ratio": 13.580013381981335,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Small caps labels (rs-label-ink)",
+    "k": "rs-label-ink",
+    "val": "#e4e4e4",
+    "ratio": 15.076088862964724,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on page",
+    "k": "gold",
+    "val": "#ffd83d",
+    "ratio": 15.141731093745175,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on cards",
+    "k": "gold",
+    "val": "#ffd83d",
+    "ratio": 13.821260705090067,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Danger/low HP (crimson) on cards",
+    "k": "crimson",
+    "val": "#ff7676",
+    "ratio": 7.398161090962658,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Heal (moss) on cards",
+    "k": "moss",
+    "val": "#6cf08a",
+    "ratio": 13.206886294440903,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Temp HP on cards",
+    "k": "temp-hp",
+    "val": "#6fd8ff",
+    "ratio": 11.813588888541524,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Wordmark on header plate",
+    "k": "header-ink",
+    "val": "#ffd83d",
+    "ratio": 15.141731093745175,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Header subtitle (9px caps)",
+    "k": "header-sub",
+    "val": "#ffffff",
+    "ratio": 21,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Ability plate text (plate-ink)",
+    "k": "plate-ink",
+    "val": "#ffffff",
+    "ratio": 21,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Primary button text",
+    "k": "btn-ink",
+    "val": "#000000",
+    "ratio": 15.141731093745175,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Focus ring vs page (non-text)",
+    "k": "focus",
+    "val": "#ffd83d",
+    "ratio": 15.141731093745175,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Turn ring (amber) vs page/cards (non-text)",
+    "k": "turn",
+    "val": "#ffd83d",
+    "ratio": 13.821260705090067,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Selection ring (blue) vs page/cards (non-text)",
+    "k": "select",
+    "val": "#7fb2ff",
+    "ratio": 8.867381672028005,
+    "min": 3,
+    "pass": true
+   }
+  ]
+ },
+ "oldmap": {
+  "name": "Old Map",
+  "rows": [
+   {
+    "label": "Body text (ink)",
+    "k": "ink",
+    "val": "#241a10",
+    "ratio": 10.09296359623653,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Secondary text (ink-soft)",
+    "k": "ink-soft",
+    "val": "#3f3020",
+    "ratio": 7.50270531329396,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Faded/meta text (ink-faded)",
+    "k": "ink-faded",
+    "val": "#5c4930",
+    "ratio": 5.066552846092677,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Small caps labels (rs-label-ink)",
+    "k": "rs-label-ink",
+    "val": "#584630",
+    "ratio": 5.320728173724131,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on page",
+    "k": "gold",
+    "val": "#6a4310",
+    "ratio": 5.1242220734244,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on cards",
+    "k": "gold",
+    "val": "#6a4310",
+    "ratio": 7.35675587811988,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Danger/low HP (crimson) on cards",
+    "k": "crimson",
+    "val": "#8c2418",
+    "ratio": 7.4882413162257,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Heal (moss) on cards",
+    "k": "moss",
+    "val": "#3b5c28",
+    "ratio": 6.488440499943882,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Temp HP on cards",
+    "k": "temp-hp",
+    "val": "#245966",
+    "ratio": 6.612713680176994,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Wordmark on header plate",
+    "k": "header-ink",
+    "val": "#f1ddb0",
+    "ratio": 6.665520071090984,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Header subtitle (9px caps)",
+    "k": "header-sub",
+    "val": "#cdb68c",
+    "ratio": 4.525396902740024,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Ability plate text (plate-ink)",
+    "k": "plate-ink",
+    "val": "#f8eed6",
+    "ratio": 7.7188147656796025,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Primary button text",
+    "k": "btn-ink",
+    "val": "#f6ecd4",
+    "ratio": 8.929594879684979,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Focus ring vs page (non-text)",
+    "k": "focus",
+    "val": "#7a4e16",
+    "ratio": 4.239506081103833,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Turn ring (amber) vs page/cards (non-text)",
+    "k": "turn",
+    "val": "#8a5408",
+    "ratio": 3.7040058064646546,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Selection ring (blue) vs page/cards (non-text)",
+    "k": "select",
+    "val": "#1b5fa8",
+    "ratio": 3.821859821002442,
+    "min": 3,
+    "pass": true
+   }
+  ]
+ },
+ "hoard": {
+  "name": "Dragon Hoard",
+  "rows": [
+   {
+    "label": "Body text (ink)",
+    "k": "ink",
+    "val": "#f7eecb",
+    "ratio": 11.453671346825317,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Secondary text (ink-soft)",
+    "k": "ink-soft",
+    "val": "#e4d6a4",
+    "ratio": 9.173019367639519,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Faded/meta text (ink-faded)",
+    "k": "ink-faded",
+    "val": "#c2b487",
+    "ratio": 6.455880656268887,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Small caps labels (rs-label-ink)",
+    "k": "rs-label-ink",
+    "val": "#ccbd8d",
+    "ratio": 7.127923380909784,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on page",
+    "k": "gold",
+    "val": "#f5c94c",
+    "ratio": 10.101799691297384,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Accent text (gold) on cards",
+    "k": "gold",
+    "val": "#f5c94c",
+    "ratio": 8.467294885574791,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Danger/low HP (crimson) on cards",
+    "k": "crimson",
+    "val": "#ff7b6b",
+    "ratio": 5.266066801646502,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Heal (moss) on cards",
+    "k": "moss",
+    "val": "#86e2a4",
+    "ratio": 8.522359377396866,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Temp HP on cards",
+    "k": "temp-hp",
+    "val": "#7ad2e0",
+    "ratio": 7.693648600133439,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Wordmark on header plate",
+    "k": "header-ink",
+    "val": "#f8d05a",
+    "ratio": 7.41981503016349,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Header subtitle (9px caps)",
+    "k": "header-sub",
+    "val": "#d6c690",
+    "ratio": 6.465336863028261,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Ability plate text (plate-ink)",
+    "k": "plate-ink",
+    "val": "#fbf3d6",
+    "ratio": 9.899052166276391,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Primary button text",
+    "k": "btn-ink",
+    "val": "#1a1205",
+    "ratio": 5.445157805890822,
+    "min": 4.5,
+    "pass": true
+   },
+   {
+    "label": "Focus ring vs page (non-text)",
+    "k": "focus",
+    "val": "#f8d05a",
+    "ratio": 10.722501622804925,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Turn ring (amber) vs page/cards (non-text)",
+    "k": "turn",
+    "val": "#f0b450",
+    "ratio": 7.202980502326752,
+    "min": 3,
+    "pass": true
+   },
+   {
+    "label": "Selection ring (blue) vs page/cards (non-text)",
+    "k": "select",
+    "val": "#6fb0f0",
+    "ratio": 5.803493882680897,
+    "min": 3,
+    "pass": true
+   }
+  ]
+ }
+}
