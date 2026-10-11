@@ -111,7 +111,7 @@ Same mechanism: `data-theme` = base tone, `data-palette` = id. Add these to the 
 | scales | Dragonscale | dragonborn | dark | scales | Burnished olive-bronze scales, a molten bronze header and dragonfire-red accents | 11.0 | 4.9 |
 | hollow | Honeyed Hollow | halfling | light | parchment | Golden honey pages, a leafy green door of a header and amber accents | 9.9 | 4.5 |
 | scott-ultramarine | Scott's Ultramarine | custom, for Scott (Thomas's friend) | dark | brushed (own) | Saturated true-ultramarine panels, polished-silver lettering and borders under a brushed-silver header band | 9.4 | 6.0 |
-| scott-marine | Scott's Royal Marine | custom, for Scott (Royal Marines colours) | dark | none + stripes (own) | Deep navy, gold lettering and brass buttons, edged with thin red/gold/green regimental stripes like a stable belt | 10.5 | 6.0 |
+| scott-marine | Scott's Royal Marine | custom, for Scott (Royal Marines colours) | dark | none + stripes (own) | Deep navy, gold lettering and brass buttons, edged with thin gold/green/red regimental stripes like a stable belt | 10.5 | 6.0 |
 
 All 15 pass all 14 checks from batch 1: body, secondary, faded and label text at 4.5:1 or better on page and cards; gold accent text on page and cards; crimson, heal and temp-HP text on cards; wordmark at 3:1; subtitle, ability plate and button text at 4.5:1; and focus ring at 3:1. Full tables are in `contrast-2.md`. A few derived colours were nudged automatically by `build2.js` to clear 4.5. They're listed there.
 
@@ -144,10 +144,11 @@ Same remaining leaks as batch 1 (`.feature-spell-tag` text and `.action-roll-btn
 - **Name:** "Scott's Royal Marine". "Scott's Corps" was considered, but on a small header it reads like "corpse" and needs explaining, so the fuller name is used. The id is `scott-marine` as requested. `scott-ultramarine` is unchanged; Scott can pick either.
 - **Look:** a dark, deep-navy base (not ultramarine). The page runs from #0a2442 to #020a14 (#05162a mid) and the cards are #0c2b4b. Lettering is ivory (#f4efdf / #ddd6c0 / #bfb79c, labels #c9c0a2). The wordmark, "whose turn" accent and focus ring are Royal Marines yellow-gold #f5c518. Card borders are brass #d4a83a. Primary buttons are brass-gold (#e8b820 → #c2940e) with navy text (#0a1426).
 - **Regimental stripes:** colours are `--rm-red #c8102e`, `--rm-gold #f5c518` and `--rm-green #2e8b3a`, defined in rules after the palette blocks (`build2.js` tail):
-  - Header plate: red/gold/green bands across the bottom edge (4px / 2px / 4px), with a gold border.
-  - Play-screen vitals card (HP, AC, speed…): red/gold/green bands across the top edge as inset shadows.
+  - Order everywhere (Thomas, v1.5.0): YELLOW (gold), then GREEN, then RED, top to bottom or left to right.
+  - Header plate: gold/green/red bands across the bottom edge (3px / 4px / 4px), with a gold border.
+  - Play-screen vitals card (HP, AC, speed…): gold/green/red bands across the top edge as inset shadows.
   - Ability-score band (`.stats-bar`, the sheet view): the same bands across its top.
-  - Home tiles: a thin red/gold/green edge stripe down the left side, like a stable belt.
+  - Home tiles: a thin gold/green/red edge stripe down the left side, like a stable belt.
   - Active tab: a gold underline over a red rule.
 - **HP colours echo the regiment:** damage red #ff7671 and heal green #5fd47a (lightened from the regimental red and green so they pass 4.5:1 on the navy cards). Temp HP is #7fd0f0.
 - **Texture and font:** no page texture by default, for a crisp look. The default font is classic. The clean sans (`data-font="clean"`) suits it well and is offered as an option.

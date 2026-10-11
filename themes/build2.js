@@ -106,13 +106,14 @@ html:root[data-palette="scott-marine"] .vitals {
 }
 html:root[data-palette="scott-marine"] .tab.active::after { background: var(--rm-gold); box-shadow: 0 2px 0 var(--rm-red); }
 
-/* texture overrides must come after the palette blocks above */
+/* texture overrides must come after the palette blocks above.
+   --tex-wash (set by the app's build.js only when a light palette shows a texture it wasn't designed for) softens it so text stays >= 4.5 */
 html[data-texture="parchment"] { --page-texture: var(--tex-parchment); }
-html[data-texture="leather"]   { --page-texture: var(--tex-leather); }
-html[data-texture="stone"]     { --page-texture: var(--tex-stone); }
+html[data-texture="leather"]   { --page-texture: linear-gradient(var(--tex-wash, transparent), var(--tex-wash, transparent)), var(--tex-leather); }
+html[data-texture="stone"]     { --page-texture: linear-gradient(var(--tex-wash, transparent), var(--tex-wash, transparent)), var(--tex-stone); }
 html[data-texture="none"]      { --page-texture: var(--tex-none); }
-html[data-texture="scales"]    { --page-texture: var(--tex-scales); }
-html[data-texture="weave"]     { --page-texture: var(--tex-weave); }
+html[data-texture="scales"]    { --page-texture: linear-gradient(var(--tex-wash, transparent), var(--tex-wash, transparent)), var(--tex-scales); }
+html[data-texture="weave"]     { --page-texture: linear-gradient(var(--tex-wash, transparent), var(--tex-wash, transparent)), var(--tex-weave); }
 html[data-texture="stars"]     { --page-texture: var(--tex-stars); }
 /* weave reads too strongly at full shade on the light palettes */
 html[data-palette="mountain"] { --tex-shade: rgba(120, 90, 20, .035); --tex-grain: rgba(35, 38, 41, .055); }
