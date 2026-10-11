@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Hearth: a free, offline D&amp;D 5e companion for players and DMs</title>
-<meta name="description" content="Hearth is a free, offline, no-account D&amp;D 5e companion. Players get a calm character sheet that levels to 20. DMs get encounters, a battle map with fog of war, and a projector screen for the table." />
+<title>Hearth: a free, offline 5e-compatible companion for players and DMs</title>
+<meta name="description" content="Hearth is a free, offline, no-account companion for fifth-edition (5e-compatible) tabletop RPGs. Players get a calm character sheet that levels to 20. DMs get encounters, a battle map with fog of war, and a projector screen for the table." />
 <meta name="theme-color" content="#1a120c" />
 <meta name="color-scheme" content="dark" />
 
 <!-- Open Graph / link previews -->
-<meta property="og:title" content="Hearth: a D&amp;D 5e companion for players and DMs" />
+<meta property="og:title" content="Hearth: a 5e-compatible companion for players and DMs" />
 <meta property="og:description" content="Character sheets, spells and combat for players. Encounters, battle map, fog of war and a projector screen for DMs. Free, offline, no accounts." />
 <meta property="og:image" content="/icons/icon-512-v75.png" />
 <meta property="og:type" content="website" />
@@ -21,9 +21,8 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16-v75.png" />
 <meta name="apple-mobile-web-app-title" content="Hearth" />
 
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IM+Fell+English+SC&display=swap" rel="stylesheet" />
+<!-- Web fonts are self-hosted (SIL OFL 1.1, see /fonts/OFL.txt): no requests to Google Fonts. -->
+<link href="/fonts/fonts.css" rel="stylesheet" />
 
 <style>
 :root {
@@ -318,6 +317,9 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 28px; justify-content: s
 .foot-links a { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; display: inline-block; padding: 8px 0; }
 .foot-links a:hover { color: var(--ink); text-decoration: underline; }
 .foot-links a.foot-email { text-transform: none; letter-spacing: 0.02em; }
+.foot-legal { flex-basis: 100%; margin-top: 6px; font-size: 0.8rem; line-height: 1.5; color: var(--ink-faded); }
+.foot-legal p + p { margin-top: 6px; }
+.foot-legal a { color: var(--ink-soft); overflow-wrap: anywhere; }
 .foot-note { flex-basis: 100%; margin: 8px 0 0; font-size: 0.85rem; line-height: 1.45; color: var(--ink-soft); }
 
 /* Install sheet (dialog) */
@@ -446,7 +448,7 @@ dialog.sheet[open] { animation: sheetIn 260ms var(--ease); }
   <section class="hero" aria-labelledby="hero-title">
     <div class="wrap hero-grid">
       <div>
-        <p class="eyebrow">A D&amp;D 5e companion</p>
+        <p class="eyebrow">A 5e-compatible companion</p>
         <h1 id="hero-title">The party gathers <em>by the hearth.</em></h1>
         <p class="lead">A calm character sheet for <strong>players</strong> and a battle table for <strong>DMs</strong>, in one free app that works offline.</p>
         <div class="cta-row">
@@ -682,16 +684,24 @@ dialog.sheet[open] { animation: sheetIn 260ms var(--ease); }
 
 <footer>
   <div class="wrap">
-    <span class="foot-meta">Hearth · A D&amp;D 5e companion · <span data-version>v1.4.1</span></span>
+    <span class="foot-meta">Hearth · A 5e-compatible companion · <span data-version>v1.4.1</span></span>
     <ul class="foot-links">
       <li><a href="/app/">Open Hearth</a></li>
       <li><a href="#install">Install</a></li>
       <li><a href="#about">About</a></li>
       <li><a href="/privacy.html">Privacy</a></li>
+      <li><a href="/terms.html">Terms</a></li>
+      <li><a href="/legal.html">Legal &amp; licences</a></li>
       <li><a href="https://github.com/voodoo573/hearth/issues/new?template=bug_report.yml" id="bugLink" target="_blank" rel="noopener noreferrer">Report a bug</a></li>
       <li id="contactSlot" hidden><a href="#" id="contactLink" class="foot-email">Contact</a></li>
     </ul>
     <p class="foot-note" id="bugNote" role="status" hidden></p>
+    <div class="foot-legal">
+      <p>Hearth is unofficial, fan-made software. It is not affiliated with, endorsed or sponsored by Wizards of the Coast. Dungeons &amp; Dragons and D&amp;D are trademarks of Wizards of the Coast LLC.</p>
+      <p>This work includes material taken from the System Reference Document 5.1 (&ldquo;SRD 5.1&rdquo;) by Wizards of the Coast LLC and available at <a href="https://dnd.wizards.com/resources/systems-reference-document" rel="noopener">https://dnd.wizards.com/resources/systems-reference-document</a>. The SRD 5.1 is licensed under the Creative Commons Attribution 4.0 International License available at <a href="https://creativecommons.org/licenses/by/4.0/legalcode" rel="noopener">https://creativecommons.org/licenses/by/4.0/legalcode</a>.</p>
+      <p>This work includes material from the System Reference Document 5.2 (&ldquo;SRD 5.2&rdquo;) by Wizards of the Coast LLC, available at <a href="https://www.dndbeyond.com/srd" rel="noopener">https://www.dndbeyond.com/srd</a>. The SRD 5.2 is licensed under the Creative Commons Attribution 4.0 International License, available at <a href="https://creativecommons.org/licenses/by/4.0/legalcode" rel="noopener">https://creativecommons.org/licenses/by/4.0/legalcode</a>.</p>
+      <p>Copyright or takedown concerns: <a href="mailto:hearthdnd@gmail.com">hearthdnd@gmail.com</a> (see <a href="/terms.html#copyright">Terms</a>).</p>
+    </div>
   </div>
 </footer>
 

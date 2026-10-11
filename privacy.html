@@ -10,58 +10,103 @@
   h1 { font-size: 28px; margin-bottom: 4px; }
   .updated { color: #8a6a40; font-size: 14px; margin-bottom: 28px; }
   h2 { font-size: 19px; margin-top: 28px; }
-  p, li { font-size: 16px; }
+  p, li, td, th { font-size: 16px; }
   a { color: #a87c38; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  th, td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom: 1px solid #c9b17c; font-size: 15px; }
   .footer { margin-top: 40px; font-size: 14px; color: #8a6a40; }
 </style>
 </head>
 <body>
   <h1>Hearth — Privacy Policy</h1>
-  <div class="updated">Last updated: 10 October 2026 (Hearth 1.4.0)</div>
+  <div class="updated">Last updated: [PUBLICATION DATE]</div>
 
-  <p>Hearth is a companion app for the tabletop game Dungeons &amp; Dragons. This policy explains, plainly, what happens to your information when you use it, on the website (hearthdnd.org) and in the Android app. The short version: <strong>Hearth works fully on your device without an account. Nothing leaves your device unless you choose one of the optional features below.</strong> There are no ads, no analytics and no tracking of any kind.</p>
+  <p>Hearth is a free companion app for fifth-edition (5e-compatible) tabletop role-playing games. This policy explains, plainly, what happens to your information when you use it, on the website (hearthdnd.org) and in the Android app. The short version: <strong>Hearth works fully on your device without an account. Nothing you create leaves your device unless you choose one of the optional features below.</strong> There are no ads, no analytics and no tracking of any kind.</p>
+
+  <h2 id="who">Who is responsible for your data</h2>
+  <p>Hearth is made and run by one person, Thomas Dalton, [OPERATOR POSTAL ADDRESS], United Kingdom ("Hearth", "we", "us"). He is the data controller for the personal data described here. Contact: <a href="mailto:hearthdnd@gmail.com">hearthdnd@gmail.com</a>. This policy is written for UK data protection law (the UK GDPR and the Data Protection Act 2018) and also covers users in the European Union under the EU GDPR.</p>
 
   <h2>Where your data lives</h2>
-  <p>Everything you create in Hearth (characters, campaigns, encounters, maps, notes, settings and any photos you add) is stored on your own device, in the app's local storage. If you uninstall the app or clear its data, that information is gone, unless you exported it or turned on the optional Google sync below.</p>
+  <p>Everything you create in Hearth (characters, campaigns, encounters, maps, notes, settings and any photos you add) is stored on your own device, in the app's local storage. If you uninstall the app or clear its data, that information is gone, unless you exported it or turned on the optional Google sync below. Hearth uses your browser's local storage only to make the app work; it sets no advertising or tracking cookies.</p>
 
   <h2>Optional: Sign in with Google (character sync and game invites)</h2>
   <p>Signing in is never required. If you choose <em>Sync with Google</em>:</p>
   <ul>
     <li><strong>What Google shares with Hearth:</strong> your Google account's email address, display name and a unique account ID. Hearth does not get your password, contacts or anything else from your Google account.</li>
     <li><strong>What Hearth stores in the cloud:</strong> a copy of your characters (so they appear on your other devices). If you are a Dungeon Master and invite players, Hearth also stores the game's name, your display name, the email addresses you invited and the current join code. When an invited player joins, a short note with their account ID, email, display name and a random device ID is stored so the DM can see the invite is genuine.</li>
-    <li><strong>Where:</strong> in Google Firebase (Firebase Authentication and Cloud Firestore), operated by Google on Hearth's behalf. Data is encrypted in transit. Security rules let only you read and change your own characters, and only the DM and the people they invited can see a game's invite details.</li>
+    <li><strong>Where:</strong> in Google Firebase (Firebase Authentication and Cloud Firestore), operated by Google on Hearth's behalf. Data is encrypted in transit. Security rules let only you read and change your own characters, and only the DM and the people they invited can see a game's invite details (so invited players can see each other's invited email addresses).</li>
     <li><strong>What it is used for:</strong> only to sync your characters and run game invites. It is never sold, shared with advertisers, or used for any other purpose.</li>
+    <li><strong>If a DM invited you:</strong> your email address was added by that DM. You can ask the DM to remove it, or email us and we will delete it.</li>
   </ul>
 
   <h2 id="delete">Deleting your cloud data and account</h2>
   <p>You can delete everything Hearth stores in the cloud at any time, in the app or on hearthdnd.org: open <em>Sync with Google</em>, then tap <strong>Delete my cloud data</strong>. This permanently deletes your synced characters, any games and invites you created, your join notes, and your Hearth sign-in record. Characters on your device are kept. Signing out (without deleting) stops syncing but leaves the cloud copy in place until you delete it. If you can't use the app, email <a href="mailto:hearthdnd@gmail.com?subject=Hearth%20account%20deletion">hearthdnd@gmail.com</a> from the Google account you signed in with and ask for deletion. We delete the data within 30 days.</p>
 
   <h2>Optional: Live game (linking phones at the table)</h2>
-  <p>When a DM starts a live game and players join, the devices connect directly to each other (peer-to-peer WebRTC). To find each other they briefly use a free public connection service (PeerJS) and standard STUN servers, which see the devices' IP addresses and a random session code. The game data itself (character names, hit points, conditions and similar) goes directly between the devices in the game, encrypted, and is not stored on any server.</p>
+  <p>When a DM starts a live game and players join, the devices connect directly to each other (peer-to-peer WebRTC). To find each other they briefly use a free public connection service (the PeerJS cloud broker, 0.peerjs.com) and Google's public STUN servers, which see the devices' IP addresses and a random session code. The game data itself (character names, hit points, conditions and similar) goes directly between the devices in the game, encrypted, and is not stored on any server. Only players the DM accepts can join, and the DM can remove anyone.</p>
 
   <h2 id="camera">Camera</h2>
   <p>The camera is used only if you tap <em>Scan QR</em> to join a DM's live game. The picture is processed on your device just to read the code. It is never recorded, saved or sent anywhere. You can always type the code instead, and you can deny the camera permission.</p>
 
   <h2>Other internet use</h2>
-  <p>Two other optional features use the internet only if you choose them:</p>
+  <p>Some optional features fetch files from the internet only when you use them. The services involved see your IP address and normal browser information, as with any website:</p>
   <ul>
-    <li><strong>Text recognition (OCR):</strong> if you use the feature to read text from an image, the app loads a recognition library over the internet at that moment. The image is processed on your device; it is not uploaded to us.</li>
-    <li><strong>Optional AI features:</strong> if you choose to connect your own AI service by entering its address, requests go directly to the service you specify. Hearth does not provide, operate, or receive any of that data.</li>
+    <li><strong>Text recognition (OCR):</strong> the first time you read text from a photo, the app downloads the recognition engine (about 5 MB) from cdn.jsdelivr.net. The image is processed on your device; it is not uploaded to us or to jsDelivr.</li>
+    <li><strong>Community Content Library:</strong> when you open the Library, Hearth downloads its catalogue and the items you preview or add from GitHub (raw.githubusercontent.com).</li>
+    <li><strong>Optional AI features:</strong> if you choose to connect your own AI service by entering its address, requests go directly to the service you specify. Hearth does not provide, operate, or receive any of that data; that service's own privacy terms apply.</li>
   </ul>
-  <p>The website also loads app updates from hearthdnd.org. If you use none of the optional features, Hearth sends nothing about you anywhere.</p>
+  <p>The website and app are served by Netlify, which, like any web host, processes your IP address and request details (for example in server logs) to deliver and protect the site. The website's fonts are served from hearthdnd.org itself, not from Google. Apart from this, if you use none of the optional features, Hearth sends nothing about you anywhere.</p>
 
-  <h2>Children's privacy</h2>
-  <p>Hearth is not directed at children under 13. The optional Google sign-in is subject to Google's own age requirements. Without signing in, Hearth collects no personal information from anyone.</p>
+  <h2 id="bugs">Bug reports and emails</h2>
+  <p><em>Report a bug</em> (in Settings and on hearthdnd.org) opens a new issue on Hearth's public GitHub page with the app version, platform, browser (user agent) and screen size filled in. Nothing is sent unless you submit the issue on GitHub yourself, and what you submit there is public and handled by GitHub under its own privacy statement. If you email us, we use your email address and message only to reply and deal with your request. Before each app update Hearth also saves a backup snapshot of your data on your device (never uploaded).</p>
+
+  <h2 id="bases">Why we can use your data (legal bases)</h2>
+  <table>
+    <thead><tr><th>What</th><th>Legal basis (UK GDPR Article 6)</th></tr></thead>
+    <tbody>
+      <tr><td>Google sign-in, character sync and game invites</td><td>Contract: providing the optional feature you asked for (Art. 6(1)(b)).</td></tr>
+      <tr><td>Invited players' email addresses (entered by a DM) and join notes with a random device ID</td><td>Legitimate interests: letting a DM invite their table and confirm an invite is genuine, with minimal data (Art. 6(1)(f)).</td></tr>
+      <tr><td>Hosting and security logs (Netlify, Firebase)</td><td>Legitimate interests: delivering the site and protecting it from abuse (Art. 6(1)(f)).</td></tr>
+      <tr><td>Replying to emails, bug reports and deletion or rights requests</td><td>Legitimate interests in answering you, and our legal obligation to handle data protection requests (Art. 6(1)(f) and (c)).</td></tr>
+    </tbody>
+  </table>
+  <p>Where we rely on legitimate interests, you can object at any time (see Your rights). Hearth does not use your data for marketing, profiling or automated decisions.</p>
+
+  <h2 id="retention">How long we keep it</h2>
+  <ul>
+    <li><strong>Data on your device:</strong> until you delete it, clear the app's data or uninstall.</li>
+    <li><strong>Synced characters, games, invites and join notes:</strong> until you delete them (or delete your cloud data), or until you ask us to. Deletion requests by email are completed within 30 days.</li>
+    <li><strong>Emails to us:</strong> only as long as needed to deal with your request, normally no more than 12 months.</li>
+    <li><strong>Hosting logs:</strong> kept by Netlify and Google for short periods under their own retention policies.</li>
+  </ul>
+
+  <h2 id="processors">Who else handles your data</h2>
+  <ul>
+    <li><strong>Google (Firebase Authentication, Cloud Firestore, Google sign-in):</strong> our processor for the optional sync and invites. Google's public STUN servers help connect live games.</li>
+    <li><strong>Netlify:</strong> hosts hearthdnd.org (our processor).</li>
+    <li><strong>GitHub (Microsoft):</strong> serves the Community Content Library files and hosts public bug reports. For bug reports and your GitHub account, GitHub is an independent controller.</li>
+    <li><strong>jsDelivr:</strong> serves the text-recognition engine, only if you use Import from photo.</li>
+    <li><strong>PeerJS cloud broker:</strong> a free public service used only to start a live game connection.</li>
+    <li><strong>Google Play:</strong> if you install the Android app from Google Play, Google handles the download under its own terms.</li>
+  </ul>
+  <p>We never sell your data or share it with advertisers.</p>
+
+  <h2 id="transfers">International transfers</h2>
+  <p>Google, Netlify, GitHub and jsDelivr may process data in the United States and other countries outside the UK and EEA. Where data goes to the US, we rely on the UK Extension to the EU–US Data Privacy Framework (the "UK–US data bridge") for providers certified under it, or on the providers' standard contractual clauses with the UK International Data Transfer Addendum. You can ask us for more information about these safeguards.</p>
+
+  <h2 id="rights">Your rights</h2>
+  <p>You have the right to: access the personal data we hold about you; have it corrected; have it deleted; restrict or object to how we use it; and receive it in a portable format (for your characters, use Export in the app). To use any of these rights, email <a href="mailto:hearthdnd@gmail.com">hearthdnd@gmail.com</a>. We will reply within one month. We may ask you to email from the Google account you signed in with, so we can check it is you.</p>
+  <p>If you are unhappy with how we have handled your data, please tell us first. You also have the right to complain to the UK Information Commissioner's Office (ICO): <a href="https://ico.org.uk/make-a-complaint/">ico.org.uk/make-a-complaint</a>, telephone 0303 123 1113. If you live in the EU, you can complain to your local data protection authority.</p>
+
+  <h2 id="children">Children and young people</h2>
+  <p>Hearth is meant for players aged 13 and over and is not directed at children under 13. Children under 13 should not use the optional Google sign-in (Google's own age rules also apply). Without signing in, Hearth collects no personal information from anyone. Every optional feature is off until the user turns it on, there are no ads, public profiles, chat or location features, and live games only connect people a DM accepts at their own table. If you are a parent or guardian and think your child has given us personal data, email us and we will delete it.</p>
 
   <h2>Changes to this policy</h2>
   <p>If this policy changes, the updated version will be posted at this address with a new "last updated" date.</p>
 
-  <h2 id="bugs">Bug reports</h2>
-  <p><em>Report a bug</em> (in Settings and on hearthdnd.org) opens a new issue on Hearth's public GitHub page with the app version, platform, browser (user agent) and screen size filled in. Nothing is sent unless you submit the issue on GitHub yourself, and what you submit there is public. Before each app update Hearth also saves a backup snapshot of your data on your device (never uploaded).</p>
-
   <h2>Contact</h2>
-  <p>Questions about this policy, deletion requests and anything else: <a href="mailto:hearthdnd@gmail.com">hearthdnd@gmail.com</a>.</p>
+  <p>Questions about this policy, deletion requests and anything else: <a href="mailto:hearthdnd@gmail.com">hearthdnd@gmail.com</a>. See also the <a href="/terms.html">Terms of Use</a> and <a href="/legal.html">legal notices</a>.</p>
 
-  <div class="footer">Hearth is an independent fan-made tool and is not affiliated with or endorsed by Wizards of the Coast.</div>
+  <div class="footer">Hearth is unofficial, fan-made software and is not affiliated with, endorsed or sponsored by Wizards of the Coast.</div>
 </body>
 </html>
