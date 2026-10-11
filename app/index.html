@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-<title>Hearth — D&amp;D Companion</title>
+<title>Hearth — 5e-compatible tabletop RPG companion</title>
 
 <!-- PWA: install to home screen, run standalone -->
 <link rel="manifest" href="manifest.json">
@@ -8745,6 +8745,20 @@ html:root .hearth-snap-meta { font-family: var(--rs-sans); font-size: 12px; colo
 html:root .hearth-snap .btn { flex: none; min-height: var(--rs-touch); }
 html:root .hearth-snap-empty { font-family: var(--rs-sans); font-size: 13px; color: var(--ink); opacity: .8; padding: 6px 0; }
 
+/* ---------- About & legal dialog ---------- */
+html:root .hearth-legal { max-width: 560px; width: 100%; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); display: flex; flex-direction: column; }
+html:root .hearth-legal-body { overflow-y: auto; font-family: var(--rs-sans); font-size: 13px; line-height: 1.5; color: var(--ink); padding-right: 4px; }
+html:root .hearth-legal-body p { margin: 0 0 8px; }
+html:root .hearth-legal-body .forge-section-label { margin-top: 14px; }
+html:root .hearth-legal-body a { color: inherit; overflow-wrap: anywhere; }
+html:root .hearth-legal-quote { padding: 8px 10px; border-radius: var(--rs-r-md); background: var(--rs-card-sunk); border: 1px solid var(--rs-card-border); }
+html:root .hearth-legal-oss { margin: 0 0 8px; padding-left: 18px; }
+html:root .hearth-legal-oss li { margin-bottom: 4px; }
+html:root .hearth-legal-where { color: var(--ink-faded); }
+html:root .hearth-legal-licence { margin: 6px 0; }
+html:root .hearth-legal-licence summary { cursor: pointer; font-weight: 600; min-height: 32px; display: flex; align-items: center; }
+html:root .hearth-legal-licence pre { white-space: pre-wrap; font-size: 11px; line-height: 1.4; max-height: 240px; overflow: auto; padding: 8px; background: var(--rs-card-sunk); border-radius: var(--rs-r-md); }
+.legal-note .legal-note-link { font: inherit; letter-spacing: inherit; color: inherit; background: none; border: 0; padding: 6px 4px; text-decoration: underline; cursor: pointer; }
 /* ---------- Report a bug dialog ---------- */
 html:root .hearth-bug { max-width: 480px; width: 100%; }
 html:root .hearth-bug-details { margin: 12px 0 6px; padding: 10px 12px; border-radius: var(--rs-r-md); background: var(--rs-card-sunk); border: 1px solid var(--rs-card-border); display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
@@ -8858,8 +8872,9 @@ html:root .dialog-backdrop.confirm-backdrop { padding: calc(16px + var(--hearth-
 
   <div class="legal-note" id="legalNote">
     Hearth · v<span id="legalVersion">…</span><br>
-    Uses content from the SRD 5.1 under CC-BY-4.0<br>
-    Not affiliated with Wizards of the Coast
+    Includes SRD 5.1 &amp; SRD 5.2 material (CC-BY-4.0)<br>
+    Unofficial · not affiliated with Wizards of the Coast<br>
+    <button type="button" class="legal-note-link" data-legal-open="1">About &amp; legal</button>
   </div>
 </div>
 
@@ -8870,7 +8885,7 @@ html:root .dialog-backdrop.confirm-backdrop { padding: calc(16px + var(--hearth-
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '1.4.1';
+const HEARTH_VERSION = '1.4.2';
 // v1.4.0 — automatic local backup before each app update. Captured here, at
 // the very start, before anything can migrate stored data; written to
 // IndexedDB later (hearthProcessPreUpdate) and the last 3 are kept.
@@ -8892,7 +8907,9 @@ const HEARTH_PRE_UPDATE = (function () {
 })();
 // ============================================================
 // SRD 5.1 DATA v2 - structured for in-app casting
-// All content here is from the SRD 5.1 (CC-BY-4.0)
+// Rules data. SRD 5.1 / SRD 5.2 material is CC-BY-4.0 (attribution: About & legal
+// dialog, hearthOpenLegal). Not all entries below come from the SRDs; see
+// /workspace/hearth-legal-review/report.md findings 1-2.
 // ============================================================
 
 const ABILITIES = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
@@ -21839,7 +21856,7 @@ function renderB55Equipment() {
       <span class="eq-choice-summary">${escape(equipChoiceSummary(choice))}</span>
     </button>`;
   content.innerHTML = `
-    <div class="b55-tag-row"><span class="b55-tag">D&D 2024 · Starting Equipment</span></div>
+    <div class="b55-tag-row"><span class="b55-tag">2024 rules (5.5e) · Starting Equipment</span></div>
     <section class="section">
       <div class="section-label">${escape(clsName)} — choose your kit</div>
       <div class="section-helper">Take your class's equipment package, or the gold to buy your own.</div>
@@ -27878,7 +27895,7 @@ function welcomeBodyHTML() {
   return `
       <div class="welcome-crest">🔥</div>
       <h1 class="welcome-title">Welcome to Hearth</h1>
-      <p class="welcome-tagline">Your offline companion for Dungeons &amp; Dragons — at the table or on the go.</p>
+      <p class="welcome-tagline">Your offline companion for fifth-edition tabletop RPGs — at the table or on the go.</p>
 
       <div class="welcome-cards">
         <div class="welcome-card">
@@ -27934,7 +27951,7 @@ function renderHelpOverlay() {
 // ============================================================
 const HEARTH_TOUR_STEPS = [
   { art: '🔥', title: 'Welcome to Hearth',
-    text: 'A companion for your D&D 5e table: character sheets that do the maths, a battle map for the DM, and a live link between phones.',
+    text: 'A companion for your 5e table: character sheets that do the maths, a battle map for the DM, and a live link between phones.',
     points: ['Works offline, on phones, tablets and laptops.', 'Everything stays on this device. No account needed.'] },
   { art: '🛡️', title: 'Players: make a character',
     text: 'Build a hero step by step, or roll a random one. The sheet works out attacks, saves, spell slots and resources, and tracks HP as you play.',
@@ -28228,6 +28245,54 @@ function hearthOpenBugReport() {
   if (typeof hearthSyncShellState === 'function') hearthSyncShellState();
 }
 
+// ---------- About & legal (v1.4.2 legal fixes) ----------
+// SRD 5.1 / 5.2 attribution statements are Wizards' required wording; keep them verbatim.
+// Same text as /legal.html on hearthdnd.org. Links go to the website so they also work in the Android app.
+const HEARTH_SITE_URL = 'https://hearthdnd.org';
+const HEARTH_LEGAL = {"srd51": "This work includes material taken from the System Reference Document 5.1 (“SRD 5.1”) by Wizards of the Coast LLC and available at https://dnd.wizards.com/resources/systems-reference-document. The SRD 5.1 is licensed under the Creative Commons Attribution 4.0 International License available at https://creativecommons.org/licenses/by/4.0/legalcode.", "srd52": "This work includes material from the System Reference Document 5.2 (“SRD 5.2”) by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode.", "disclaimer": "Hearth is unofficial, fan-made software. It is not affiliated with, endorsed or sponsored by Wizards of the Coast. Dungeons & Dragons and D&D are trademarks of Wizards of the Coast LLC; they are used here only to describe compatibility.", "oss": [{"name": "PeerJS", "version": "1.5.5", "licence": "MIT", "copyright": "Copyright (c) 2015 Michelle Bu and Eric Zhang, http://peerjs.com", "where": "Bundled in the app (live game link)", "url": "https://github.com/peers/peerjs"}, {"name": "jsQR", "version": "1.4.0", "licence": "Apache-2.0", "copyright": "Copyright Cosmo Wolfe and jsQR contributors", "where": "Bundled in the app (QR scanning)", "url": "https://github.com/cozmo/jsQR"}, {"name": "qrcode-generator", "version": "2.0.4", "licence": "MIT", "copyright": "Copyright (c) 2009 Kazuhiko Arase", "where": "Bundled in the app (QR codes)", "url": "https://github.com/kazuhikoarase/qrcode-generator"}, {"name": "Firebase JavaScript SDK", "version": "12.6.0", "licence": "Apache-2.0 (bundled protobuf definitions: BSD-3-Clause, Copyright 2008 Google Inc.)", "copyright": "Copyright Google LLC", "where": "Loaded from www.gstatic.com only if you use Google sign-in", "url": "https://github.com/firebase/firebase-js-sdk"}, {"name": "tesseract.js and tesseract.js-core (including Tesseract OCR and Leptonica)", "version": "", "licence": "Apache-2.0 (Leptonica: BSD-style Leptonica licence)", "copyright": "Copyright tesseract.js contributors; Tesseract OCR authors; Copyright Dan Bloomberg (Leptonica)", "where": "Loaded from cdn.jsdelivr.net only if you use Import from photo", "url": "https://github.com/naptha/tesseract.js"}, {"name": "Capacitor (@capacitor/core, android, app, browser, filesystem, share, splash-screen, status-bar)", "version": "7.x", "licence": "MIT", "copyright": "Copyright (c) 2017-present Drifty Co.", "where": "Android app only", "url": "https://github.com/ionic-team/capacitor"}, {"name": "@capacitor-firebase/authentication", "version": "7.5", "licence": "Apache-2.0", "copyright": "Copyright 2022 Robin Genz", "where": "Android app only (Google sign-in)", "url": "https://github.com/capawesome-team/capacitor-firebase"}, {"name": "AndroidX libraries, Firebase Authentication for Android, Google Play services auth", "version": "", "licence": "Apache-2.0 (Google Play services: Android Software Development Kit licence terms)", "copyright": "Copyright The Android Open Source Project / Google LLC", "where": "Android app only", "url": "https://developer.android.com/jetpack/androidx"}], "mit": "Permission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.", "apache": "                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions\n      to that Work or Derivative Works thereof, that is intentionally\n      submitted to Licensor for inclusion in the Work by the copyright owner\n      or by an individual or Legal Entity authorized to submit on behalf of\n      the copyright owner. For the purposes of this definition, \"submitted\"\n      means any form of electronic, verbal, or written communication sent\n      to the Licensor or its representatives, including but not limited to\n      communication on electronic mailing lists, source code control systems,\n      and issue tracking systems that are managed by, or on behalf of, the\n      Licensor for the purpose of discussing and improving the Work, but\n      excluding communication that is conspicuously marked or otherwise\n      designated in writing by the copyright owner as \"Not a Contribution.\"\n\n      \"Contributor\" shall mean Licensor and any individual or Legal Entity\n      on behalf of whom a Contribution has been received by Licensor and\n      subsequently incorporated within the Work.\n\n   2. Grant of Copyright License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      copyright license to reproduce, prepare Derivative Works of,\n      publicly display, publicly perform, sublicense, and distribute the\n      Work and such Derivative Works in Source or Object form.\n\n   3. Grant of Patent License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      (except as stated in this section) patent license to make, have made,\n      use, offer to sell, sell, import, and otherwise transfer the Work,\n      where such license applies only to those patent claims licensable\n      by such Contributor that are necessarily infringed by their\n      Contribution(s) alone or by combination of their Contribution(s)\n      with the Work to which such Contribution(s) was submitted. If You\n      institute patent litigation against any entity (including a\n      cross-claim or counterclaim in a lawsuit) alleging that the Work\n      or a Contribution incorporated within the Work constitutes direct\n      or contributory patent infringement, then any patent licenses\n      granted to You under this License for that Work shall terminate\n      as of the date such litigation is filed.\n\n   4. Redistribution. You may reproduce and distribute copies of the\n      Work or Derivative Works thereof in any medium, with or without\n      modifications, and in Source or Object form, provided that You\n      meet the following conditions:\n\n      (a) You must give any other recipients of the Work or\n          Derivative Works a copy of this License; and\n\n      (b) You must cause any modified files to carry prominent notices\n          stating that You changed the files; and\n\n      (c) You must retain, in the Source form of any Derivative Works\n          that You distribute, all copyright, patent, trademark, and\n          attribution notices from the Source form of the Work,\n          excluding those notices that do not pertain to any part of\n          the Derivative Works; and\n\n      (d) If the Work includes a \"NOTICE\" text file as part of its\n          distribution, then any Derivative Works that You distribute must\n          include a readable copy of the attribution notices contained\n          within such NOTICE file, excluding those notices that do not\n          pertain to any part of the Derivative Works, in at least one\n          of the following places: within a NOTICE text file distributed\n          as part of the Derivative Works; within the Source form or\n          documentation, if provided along with the Derivative Works; or,\n          within a display generated by the Derivative Works, if and\n          wherever such third-party notices normally appear. The contents\n          of the NOTICE file are for informational purposes only and\n          do not modify the License. You may add Your own attribution\n          notices within Derivative Works that You distribute, alongside\n          or as an addendum to the NOTICE text from the Work, provided\n          that such additional attribution notices cannot be construed\n          as modifying the License.\n\n      You may add Your own copyright statement to Your modifications and\n      may provide additional or different license terms and conditions\n      for use, reproduction, or distribution of Your modifications, or\n      for any such Derivative Works as a whole, provided Your use,\n      reproduction, and distribution of the Work otherwise complies with\n      the conditions stated in this License.\n\n   5. Submission of Contributions. Unless You explicitly state otherwise,\n      any Contribution intentionally submitted for inclusion in the Work\n      by You to the Licensor shall be under the terms and conditions of\n      this License, without any additional terms or conditions.\n      Notwithstanding the above, nothing herein shall supersede or modify\n      the terms of any separate license agreement you may have executed\n      with Licensor regarding such Contributions.\n\n   6. Trademarks. This License does not grant permission to use the trade\n      names, trademarks, service marks, or product names of the Licensor,\n      except as required for reasonable and customary use in describing the\n      origin of the Work and reproducing the content of the NOTICE file.\n\n   7. Disclaimer of Warranty. Unless required by applicable law or\n      agreed to in writing, Licensor provides the Work (and each\n      Contributor provides its Contributions) on an \"AS IS\" BASIS,\n      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or\n      implied, including, without limitation, any warranties or conditions\n      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A\n      PARTICULAR PURPOSE. You are solely responsible for determining the\n      appropriateness of using or redistributing the Work and assume any\n      risks associated with Your exercise of permissions under this License.\n\n   8. Limitation of Liability. In no event and under no legal theory,\n      whether in tort (including negligence), contract, or otherwise,\n      unless required by applicable law (such as deliberate and grossly\n      negligent acts) or agreed to in writing, shall any Contributor be\n      liable to You for damages, including any direct, indirect, special,\n      incidental, or consequential damages of any character arising as a\n      result of this License or out of the use or inability to use the\n      Work (including but not limited to damages for loss of goodwill,\n      work stoppage, computer failure or malfunction, or any and all\n      other commercial damages or losses), even if such Contributor\n      has been advised of the possibility of such damages.\n\n   9. Accepting Warranty or Additional Liability. While redistributing\n      the Work or Derivative Works thereof, You may choose to offer,\n      and charge a fee for, acceptance of support, warranty, indemnity,\n      or other liability obligations and/or rights consistent with this\n      License. However, in accepting such obligations, You may act only\n      on Your own behalf and on Your sole responsibility, not on behalf\n      of any other Contributor, and only if You agree to indemnify,\n      defend, and hold each Contributor harmless for any liability\n      incurred by, or claims asserted against, such Contributor by reason\n      of your accepting any such warranty or additional liability.\n\n   END OF TERMS AND CONDITIONS\n\n   APPENDIX: How to apply the Apache License to your work.\n\n      To apply the Apache License to your work, attach the following\n      boilerplate notice, with the fields enclosed by brackets \"[]\"\n      replaced with your own identifying information. (Don't include\n      the brackets!)  The text should be enclosed in the appropriate\n      comment syntax for the file format. We also recommend that a\n      file or class name and description of purpose be included on the\n      same \"printed page\" as the copyright notice for easier\n      identification within third-party archives.\n\n   Copyright [yyyy] [name of copyright owner]\n\n   Licensed under the Apache License, Version 2.0 (the \"License\");\n   you may not use this file except in compliance with the License.\n   You may obtain a copy of the License at\n\n       http://www.apache.org/licenses/LICENSE-2.0\n\n   Unless required by applicable law or agreed to in writing, software\n   distributed under the License is distributed on an \"AS IS\" BASIS,\n   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n   See the License for the specific language governing permissions and\n   limitations under the License."};
+function hearthLegalLinkify(t) {
+  return escape(t).replace(/(https:\/\/[^\s<]+?)(\.?)(?=\s|$)/g, (m, u, dot) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>${dot}`);
+}
+function hearthOpenLegal() {
+  if (document.getElementById('hearthLegalDlg')) return;
+  const L = HEARTH_LEGAL;
+  const wrap = document.createElement('div');
+  wrap.className = 'dialog-backdrop';
+  wrap.id = 'hearthLegalDlg';
+  wrap.style.display = 'flex';
+  wrap.setAttribute('role', 'dialog');
+  wrap.setAttribute('aria-modal', 'true');
+  wrap.setAttribute('aria-labelledby', 'hearthLegalTitle');
+  const oss = L.oss.map(o => `<li><a href="${escape(o.url)}" target="_blank" rel="noopener noreferrer">${escape(o.name)}</a>${o.version ? ' ' + escape(o.version) : ''} \u2014 ${escape(o.licence)}. ${escape(o.copyright)}. <span class="hearth-legal-where">${escape(o.where)}.</span></li>`).join('');
+  wrap.innerHTML = `
+    <div class="dialog hearth-legal">
+      <div class="dialog-title" id="hearthLegalTitle">About &amp; legal</div>
+      <div class="hearth-legal-body">
+        <p><strong>Hearth v${escape(HEARTH_VERSION)}</strong> \u2014 a free, 5e-compatible tabletop RPG companion.</p>
+        <p>${escape(L.disclaimer)}</p>
+        <div class="forge-section-label">Game rules (Creative Commons)</div>
+        <p class="hearth-legal-quote" id="hearthLegalSrd51">${hearthLegalLinkify(L.srd51)}</p>
+        <p class="hearth-legal-quote" id="hearthLegalSrd52">${hearthLegalLinkify(L.srd52)}</p>
+        <p>Items you add from the Community Content Library show their own credit and licence (CC BY 4.0 or OGL 1.0a) on their cards.</p>
+        <div class="forge-section-label">Open-source software</div>
+        <ul class="hearth-legal-oss">${oss}</ul>
+        <details class="hearth-legal-licence"><summary>MIT License (full text)</summary><pre>${escape(L.mit)}</pre></details>
+        <details class="hearth-legal-licence"><summary>Apache License 2.0 (full text)</summary><pre>${escape(L.apache)}</pre></details>
+        <div class="forge-section-label">Terms, privacy and takedowns</div>
+        <p><a href="${HEARTH_SITE_URL}/terms.html" target="_blank" rel="noopener noreferrer">Terms of Use</a> \u00b7 <a href="${HEARTH_SITE_URL}/privacy.html" target="_blank" rel="noopener noreferrer">Privacy policy</a> \u00b7 <a href="${HEARTH_SITE_URL}/legal.html" target="_blank" rel="noopener noreferrer">Legal notices</a></p>
+        <p>Copyright or takedown concerns, questions and deletion requests: <a href="mailto:hearthdnd@gmail.com">hearthdnd@gmail.com</a>.</p>
+      </div>
+      <div class="hearth-bug-actions"><button class="btn primary" id="hearthLegalClose">Close</button></div>
+    </div>`;
+  document.body.appendChild(wrap);
+  const close = () => { try { wrap.remove(); } catch (e) {} if (typeof hearthSyncShellState === 'function') hearthSyncShellState(); };
+  wrap.querySelector('#hearthLegalClose').addEventListener('click', close);
+  wrap.addEventListener('click', (e) => { if (e.target === wrap) close(); });
+  wrap.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  try { wrap.querySelector('#hearthLegalClose').focus({ preventScroll: true }); } catch (e) {}
+  if (typeof hearthSyncShellState === 'function') hearthSyncShellState();
+}
+
 // ---------- Data-safety nudge ----------
 const HEARTH_NUDGE_KEY = 'hearth.nudge.v1';
 const HEARTH_LAST_EXPORT_KEY = 'hearth.lastExportAt';
@@ -28385,6 +28450,7 @@ if (typeof document !== 'undefined') document.addEventListener('click', (e) => {
     if (a === 'later') { hearthNudgeDismiss(); render(); return; }
   }
   if (t.closest('[data-bug-report]')) { hearthOpenBugReport(); return; }
+  if (t.closest('[data-legal-open]')) { hearthOpenLegal(); return; }
   if (t.closest('[data-tour-replay]')) { state.ui.homePanel = null; render(); hearthOpenTour(); return; }
   if (t.closest('[data-sample-remove]')) {
     confirmDialog('Remove the sample character and sample game? Your own characters and games are not touched.', () => { hearthRemoveSampleData(); render(); showToast('Sample data removed.'); }, { title: 'Remove sample data?', yes: 'Remove', danger: true });
@@ -29546,7 +29612,7 @@ function renderB55Class() {
 
   const ready = b55ClassComplete(b);
   content.innerHTML = `
-    <div class="b55-tag-row"><span class="b55-tag">D&D 2024 · Class</span></div>
+    <div class="b55-tag-row"><span class="b55-tag">2024 rules (5.5e) · Class</span></div>
     <section class="section">
       <div class="section-label">Class</div>
       <div class="section-helper">Choose your class. (More 2024 classes are being added; Fighter is ready now.)</div>
@@ -29578,7 +29644,7 @@ function b55ClassComplete(b) {
 function renderB55Name() {
   const b = ensure55State();
   content.innerHTML = `
-    <div class="b55-tag-row"><span class="b55-tag">D&D 2024 · Name</span></div>
+    <div class="b55-tag-row"><span class="b55-tag">2024 rules (5.5e) · Name</span></div>
     <section class="section">
       <div class="section-label">Name</div>
       <div class="section-helper">What shall the bard sing of you?</div>
@@ -29602,7 +29668,7 @@ function renderB55Abilities() {
   const final = finalScores(draft);
   const manual = b.statMode === 'manual';
   content.innerHTML = `
-    <div class="b55-tag-row"><span class="b55-tag">D&D 2024 · Ability Scores</span></div>
+    <div class="b55-tag-row"><span class="b55-tag">2024 rules (5.5e) · Ability Scores</span></div>
     <section class="section">
       <div class="section-label">Ability Scores</div>
       <div class="section-helper">Choose point buy, or switch to rolled/manual and type your own. Your background's boost is applied automatically on top.</div>
@@ -30006,7 +30072,7 @@ function renderB55Origins() {
 
   content.innerHTML = `
     <div class="b55-tag-row">
-      <span class="b55-tag">D&D 2024 · Character Origins</span>
+      <span class="b55-tag">2024 rules (5.5e) · Character Origins</span>
     </div>
     <section class="rules55-panel">
       <h2>Create a 2024 Character</h2>
@@ -33072,8 +33138,10 @@ function homePanelSettings() {
       <div class="forge-section-label" style="margin-top: 18px;">About</div>
       <div class="ai-helper">
         Hearth · v${HEARTH_VERSION}<br>
-        Single-file companion app for D&amp;D 5e. Built iteratively, one feature at a time.
+        Single-file companion app for fifth-edition (5e-compatible) tabletop RPGs. Built iteratively, one feature at a time.<br>
+        Unofficial fan-made software, not affiliated with, endorsed or sponsored by Wizards of the Coast.
       </div>
+      <div class="hearth-settings-actions"><button class="btn" data-legal-open="1">About &amp; legal (licences, terms, privacy)</button></div>
     </section>
   `;
 }
@@ -49641,7 +49709,7 @@ function analyseCharacter(ch) {
   if (ch.currentHp != null && maxHp) {
     const mh = maxHp(ch);
     if (ch.currentHp > mh) out.push(aiFinding('warn', 'HP above max', `Current HP is ${ch.currentHp}, but calculated max HP is ${mh}. Temporary HP should be tracked separately.`));
-    if (ch.currentHp < 0) out.push(aiFinding('error', 'HP below zero', 'D&D usually holds current HP at 0, then uses death saves.'));
+    if (ch.currentHp < 0) out.push(aiFinding('error', 'HP below zero', 'The 5e rules usually hold current HP at 0, then use death saves.'));
   }
   if (classLevelFor(ch, 'barbarian') >= 1 && state.ui.concentration) out.push(aiFinding('warn', 'Rage versus concentration', 'A raging barbarian normally cannot cast or concentrate on spells. Check whether this concentration should end.'));
   // v0.20.52 — Surface the compiled damage resistances and condition
@@ -57410,7 +57478,7 @@ try { linkBoot(); } catch (e) { console.warn('Hearth live game boot failed:', e)
 // control the page reloads once by itself unless you are mid-edit (typing, a
 // popup open, or the character builder), in which case the toast stays up.
 (function () {
-  const APP_VERSION = 'v1.4.1';
+  const APP_VERSION = 'v1.4.2';
   window.HEARTH_VERSION = APP_VERSION;
 
   function hearthHasUnsavedEdits() {
