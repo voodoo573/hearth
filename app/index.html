@@ -13889,9 +13889,9 @@ const SUBCLASSES = {
         3: [
           { name: 'Spellcasting', desc: 'You learn Battle Caster spells. Use Constitution for spell attacks and save DCs. Cantrips come from the Wizard list; leveled spells come from Wizard or Paladin and are limited to abjuration, evocation, or transmutation, excluding healing spells.' },
           { name: 'Arcane Rage', desc: 'While raging, you can cast and concentrate on spells. Your rage does not end early because you cast a spell, and rage damage can be added to spell damage rolls.' },
-          { name: 'Weapon Bond', desc: 'During a short rest, bond up to two weapons. You cannot be disarmed of a bonded weapon unless incapacitated, and you can summon it to your hand as a bonus action if it is on the same plane.' }
+          { name: 'Spellbound Arms', desc: 'During a short rest, bond up to two weapons. You cannot be disarmed of a bonded weapon unless incapacitated, and you can summon it to your hand as a bonus action if it is on the same plane.' }
         ],
-        6: [{ name: 'Eldritch Smite', desc: 'When you hit with a melee weapon attack, expend a spell slot to add force damage: 2d8 for a 1st-level slot, +1d8 per slot level above 1st, max 5d8.' }],
+        6: [{ name: 'Runic Smite', desc: 'When you hit with a melee weapon attack, expend a spell slot to add force damage: 2d8 for a 1st-level slot, +1d8 per slot level above 1st, max 5d8.' }],
         10: [{ name: 'Runic Inscription', desc: 'Inscribe spells into weapons or armor. You can maintain inscriptions up to your Constitution modifier, minimum one.' }],
         14: [{ name: 'Reserve of Rage', desc: 'While raging, gain reserve spell slots: at 14th, one 1st and one 2nd-level slot; at 18th, two 1st, one 2nd, and one 3rd-level slot; at 20th, you also gain one 4th-level reserve slot.' }]
       }
@@ -14212,7 +14212,7 @@ function battleCasterCantripAllowed(spell) {
 //     default — endRage() is only called manually or via the
 //     resource UI, so casting never ends rage in this app.
 //
-//   • Weapon Bond (L3) — bond up to two weapons. Bonded weapons
+//   • Spellbound Arms (L3) — bond up to two weapons. Bonded weapons
 //     show a 🔗 badge in inventory and are listed in the Features
 //     tab; players track their cannot-be-disarmed protection and
 //     bonus-action summon themselves at the table.
@@ -16178,7 +16178,7 @@ function hasEldritchSmite(ch) {
   return classLevelFor(ch, 'barbarian') >= 6 && subclassIdFor(ch, 'barbarian') === 'battle_caster';
 }
 
-// Eldritch Smite damage dice = 2 base + (slot - 1), capped at 5d8.
+// Runic Smite damage dice = 2 base + (slot - 1), capped at 5d8.
 function eldritchSmiteDice(slotLevel) {
   if (!slotLevel || slotLevel < 1) return 0;
   return Math.min(5, 1 + slotLevel);
@@ -42872,7 +42872,7 @@ function renderMiForgeStepImport() {
   `;
 }
 
-// Renders Battle Caster's interactive feature panels (Weapon Bond, Runic
+// Renders Battle Caster's interactive feature panels (Spellbound Arms, Runic
 // Inscription) for use inside the Features tab. Returns '' when the
 // character isn't a Battle Caster of the right level.
 //
@@ -42887,7 +42887,7 @@ function renderBattleCasterPanels(ch) {
   if (!isBattleCaster(ch)) return '';
   let out = '';
 
-  // ----- Weapon Bond (L3+) -----
+  // ----- Spellbound Arms (L3+) -----
   if (hasWeaponBond(ch)) {
     pruneBondedWeapons(ch);
     const weapons = (ch.inventory?.weapons || []);
@@ -42899,7 +42899,7 @@ function renderBattleCasterPanels(ch) {
     out += `
       <div class="feature subclass-feature bc-panel">
         <div class="bc-panel-head">
-          <div class="feature-name">Weapon Bond</div>
+          <div class="feature-name">Spellbound Arms</div>
           <div class="bc-counter${atCapClass}">${bonded.length}/${cap}</div>
         </div>
         <div class="feature-desc">During a short rest, bond up to ${cap} weapons. Cannot be disarmed unless incapacitated. Bonus action: summon a bonded weapon to your hand.</div>
@@ -44595,7 +44595,7 @@ function wirePlay(ch) {
     });
   });
 
-  // ----- Battle Caster: Weapon Bond toggle -----
+  // ----- Battle Caster: Spellbound Arms toggle -----
   document.querySelectorAll('[data-toggle-bond]').forEach(b => {
     b.addEventListener('click', () => {
       const wid = b.dataset.toggleBond;
@@ -45553,7 +45553,7 @@ function wirePlay(ch) {
         }
       }
 
-      // Eldritch Smite — Battle Caster (barbarian subclass) L6+ melee, requires spell slot.
+      // Runic Smite — Battle Caster (barbarian subclass) L6+ melee, requires spell slot.
       // Same shape as Divine Smite: expend a slot, get more dice with bigger slots.
       if (classLevelFor(ch, 'barbarian') >= 6 && subclassIdFor(ch, 'barbarian') === 'battle_caster' && weapon.kind === 'melee') {
         const usableSlots = slotsRemaining(ch).filter(s => s.remaining > 0);
@@ -45563,7 +45563,7 @@ function wirePlay(ch) {
             id: `eldritch_smite_${s.level}`,
             kind: 'eldritch_smite',
             slotLevel: s.level,
-            label: `Eldritch Smite (L${s.level} slot)`,
+            label: `Runic Smite (L${s.level} slot)`,
             sublabel: `+${dice}d8 force${s.level >= 1 ? ' · target up to Large knocked prone' : ''}`,
             dice: { count: dice, sides: 8 },
             damageType: 'force',
