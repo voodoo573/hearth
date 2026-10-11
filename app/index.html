@@ -11068,10 +11068,15 @@ const RACES = {
         name: 'Wood Elf',
         bonuses: { wis: 1 },
         speed: 35,
+        spellAbility: 'wis',
+        racialSpells: [
+          { spell: 'Druidcraft', level: 0 },
+          { spell: 'Longstrider', level: 1, atLevel: 3, freePerLongRest: 1 },
+          { spell: 'Pass without Trace', level: 2, atLevel: 5, freePerLongRest: 1 }
+        ],
         traits: [
-          { name: 'Elf Weapon Training', desc: 'Proficiency with longsword, shortsword, shortbow, and longbow.' },
-          { name: 'Fleet of Foot', desc: 'Walking speed increases to 35 feet.' },
-          { name: 'Mask of the Wild', desc: 'You can attempt to hide even when only lightly obscured by foliage, rain, snow, mist, or other natural phenomena.' }
+          { name: 'Swift Stride', desc: 'Your base walking speed is 35 feet.' },
+          { name: 'Woodland Lineage', desc: 'You know the druidcraft cantrip. From 3rd level you can cast longstrider, and from 5th level pass without trace, each once per long rest without a slot. Wisdom is your spellcasting ability for these.' }
         ]
       },
       drow: {
@@ -11084,10 +11089,8 @@ const RACES = {
           { spell: 'Darkness', level: 2, atLevel: 5, freePerLongRest: 1 }
         ],
         traits: [
-          { name: 'Superior Darkvision', desc: 'Your darkvision range is 120 feet (replaces the standard elf 60 ft).' },
-          { name: 'Sunlight Sensitivity', desc: 'Disadvantage on attack rolls and Wisdom (Perception) checks relying on sight in direct sunlight.' },
-          { name: 'Drow Magic', desc: 'You know the dancing lights cantrip. At 3rd level, faerie fire 1/day. At 5th, darkness 1/day. Charisma is the spellcasting ability.' },
-          { name: 'Drow Weapon Training', desc: 'Proficiency with rapiers, shortswords, and hand crossbows.' }
+          { name: 'Deep Sight', desc: 'Your darkvision reaches 120 feet instead of 60.' },
+          { name: 'Underdark Lineage', desc: 'You know the dancing lights cantrip. From 3rd level you can cast faerie fire, and from 5th level darkness, each once per long rest without a slot. Charisma is your spellcasting ability for these.' }
         ]
       },
     }
@@ -11247,11 +11250,11 @@ const RACES = {
         bonuses: { dex: 1 },
         spellAbility: 'int',
         racialSpells: [
-          { spell: 'Minor Illusion', level: 0 }
+          { spell: 'Minor Illusion', level: 0 },
+          { spell: 'Speak with Animals', level: 1, atLevel: 1, freePerLongRest: 1 }
         ],
         traits: [
-          { name: 'Natural Illusionist', desc: 'You know the minor illusion cantrip. Intelligence is your spellcasting ability for it.' },
-          { name: 'Speak with Small Beasts', desc: 'You can communicate simple ideas with Small or smaller beasts through sounds and gestures.' }
+          { name: 'Woodland Gnome Lineage', desc: 'You know the minor illusion cantrip, and you always have speak with animals ready: cast it once per long rest without a slot. Intelligence is your spellcasting ability for these.' }
         ]
       },
       rock: {
@@ -11295,7 +11298,7 @@ const RACES = {
     ],
     subraces: {
       asmodeus: {
-        name: 'Asmodean (default)',
+        name: 'Infernal Legacy',
         racialSpells: [
           { spell: 'Thaumaturgy', level: 0 },
           { spell: 'Hellish Rebuke', level: 1, atLevel: 3, freePerLongRest: 1 },
@@ -11312,7 +11315,6 @@ const RACES = {
     name: 'Goliath', speed: 30, size: 'Medium',
     bonuses: { str: 2, con: 1 },
     languages: ['Common', 'Giant'],
-    proficiencies: { skills: ['athletics'] },
     racialAbilities: [
       {
         id: 'stones_endurance',
@@ -11325,8 +11327,7 @@ const RACES = {
     ],
     traits: [
       { name: 'Stone\'s Endurance', desc: 'Reaction when you take damage: reduce that damage by 1d12 + Con mod. Once per short or long rest.' },
-      { name: 'Powerful Build', desc: 'Count as one size larger for carrying capacity, push, drag, and lift.' },
-      { name: 'Mountain Born', desc: 'Acclimated to high altitude (any elevation up to 20,000 ft). Resistance to cold damage.' }
+      { name: 'Powerful Build', desc: 'Count as one size larger for carrying capacity, push, drag, and lift.' }
     ]
   },
   lion: {
@@ -11337,17 +11338,17 @@ const RACES = {
     racialAbilities: [
       {
         id: 'daunting_roar',
-        name: 'Daunting Roar',
+        name: 'Rumbling Roar',
         action: 'bonus',
         usesPerLongRest: 'prof',
-        desc: 'As a bonus action, you let out a menacing roar. Each creature within 10 feet of you that can hear you must succeed on a Constitution saving throw (DC 8 + your proficiency bonus + your Constitution modifier) or be frightened of you until the end of your next turn. Uses equal to your proficiency bonus, all regained on a long rest.'
+        desc: 'Bonus action: roar. Anyone within 10 ft who hears it rolls a Con save against 8 + proficiency + your Con modifier; on a failure they are frightened of you until your next turn ends. You get a number of roars equal to your proficiency bonus, back on a long rest.'
       }
     ],
     traits: [
       { name: 'Darkvision', desc: 'See in dim light within 60 feet as if it were bright light, and in darkness as if it were dim light.' },
       { name: 'Claws', desc: 'Your unarmed strikes deal 1d4 slashing damage instead of bludgeoning.' },
       { name: 'Keen Smell', desc: 'You have advantage on Perception, Survival, and Investigation checks that rely on smell.' },
-      { name: 'Daunting Roar', desc: 'As a bonus action, roar to frighten foes within 10 feet (Constitution save). Uses equal to your proficiency bonus per long rest.' },
+      { name: 'Rumbling Roar', desc: 'Bonus action: a roar that can frighten creatures within 10 ft (Con save). Proficiency-bonus uses per long rest.' },
       { name: 'Pride Hunter', desc: 'You have proficiency in the Perception and Athletics skills.' }
     ]
   },
@@ -11362,13 +11363,13 @@ const RACES = {
         name: "Pride's Bellow",
         action: 'bonus',
         usesPerLongRest: 'prof',
-        desc: "As a bonus action, you loose a shattering bellow. Each creature of your choice within 10 feet of you that can hear you must succeed on a Wisdom saving throw (DC 8 + your proficiency bonus + your Wisdom modifier) or become frightened of you until the end of your next turn. You can use this a number of times equal to your proficiency bonus, and regain all expended uses when you finish a long rest."
+        desc: "Bonus action: bellow at creatures you pick within 10 ft. Each that hears it rolls a Wis save against 8 + proficiency + your Wis modifier, or is frightened of you until your next turn ends. Proficiency-bonus uses, back on a long rest."
       }
     ],
     traits: [
       { name: 'Feline Sight', desc: "You have darkvision out to 60 feet. Within that range you see in dim light as if it were bright light, and in darkness as if it were dim light (shades of grey only)." },
-      { name: 'Rending Claws', desc: "Your claws are natural weapons. Your unarmed strikes deal 1d4 slashing damage instead of the bludgeoning damage normal for an unarmed strike, and you can use Dexterity or Strength for their attack and damage rolls." },
-      { name: 'Scent of the Hunt', desc: "You have advantage on Wisdom (Perception), Wisdom (Survival), and Intelligence (Investigation) checks that rely on smell." },
+      { name: 'Rending Claws', desc: "Unarmed strikes with your claws do 1d4 slashing, using Strength or Dexterity." },
+      { name: 'Scent of the Hunt', desc: "Advantage on smell-based Perception, Survival and Investigation checks." },
       { name: "Pride's Bellow", desc: "As a bonus action, roar to frighten creatures within 10 feet that can hear you (Wisdom save, DC 8 + proficiency bonus + Wisdom modifier). Uses equal to your proficiency bonus, regained on a long rest." },
       { name: 'Savanna-Born', desc: "You have proficiency in the Intimidation and Survival skills." }
     ]
@@ -11404,8 +11405,8 @@ const SPECIES_55 = {
       { name: 'Darkvision', desc: 'See in dim light within 60 feet as if bright light, and darkness as dim light.' },
       { name: 'Claws', desc: 'You have a Climb Speed of 20 feet, and your Unarmed Strikes can deal 1d6 Slashing damage (using Strength) instead of the normal damage.' },
       { name: 'Keen Smell', desc: 'You have Advantage on Wisdom (Perception), Wisdom (Survival), and Intelligence (Investigation) checks that rely on smell.' },
-      { name: 'Daunting Roar', desc: 'As a Bonus Action, you emit a roar. Each creature within 10 feet of you that can hear you must succeed on a Constitution saving throw (DC 8 + Proficiency Bonus + Constitution modifier) or have the Frightened condition until the end of your next turn. Uses equal to your Proficiency Bonus, all regained on a Long Rest.' },
-      { name: 'Hunter\'s Instinct', desc: 'You have proficiency in one skill of your choice: Athletics, Perception, or Survival.' }
+      { name: 'Rumbling Roar', desc: 'Bonus Action: roar at creatures within 10 ft that can hear you. Each rolls a Con save against 8 + Proficiency Bonus + your Con modifier or is Frightened of you until your next turn ends. Proficiency Bonus uses per Long Rest.' },
+      { name: 'Plains Tracker', desc: 'Pick one: Athletics, Perception or Survival. You are proficient in it.' }
     ]
   },
   pridefolk: {
@@ -11413,9 +11414,9 @@ const SPECIES_55 = {
     languages: ['Common', 'one of choice'],
     traits: [
       { name: 'Feline Sight', desc: "You have Darkvision with a range of 60 feet." },
-      { name: 'Rending Claws', desc: "You have a Climb Speed of 20 feet, and your Unarmed Strikes can deal 1d6 Slashing damage instead of the normal damage, using Dexterity or Strength for the attack and damage rolls." },
-      { name: 'Scent of the Hunt', desc: "You have Advantage on Wisdom (Perception), Wisdom (Survival), and Intelligence (Investigation) checks that rely on smell." },
-      { name: "Pride's Bellow", desc: "As a Bonus Action, you loose a bellow. Each creature of your choice within 10 feet of you that can hear you must succeed on a Wisdom saving throw (DC 8 + your Proficiency Bonus + your Wisdom modifier) or have the Frightened condition until the end of your next turn. You can use this a number of times equal to your Proficiency Bonus, and regain all expended uses when you finish a Long Rest." },
+      { name: 'Rending Claws', desc: "Climb Speed 20 ft. Claw Unarmed Strikes do 1d6 Slashing, using Strength or Dexterity." },
+      { name: 'Scent of the Hunt', desc: "Advantage on smell-based Perception, Survival and Investigation checks." },
+      { name: "Pride's Bellow", desc: "Bonus Action: bellow at creatures you pick within 10 ft. Each that hears it rolls a Wis save against 8 + Proficiency Bonus + your Wis modifier or is Frightened of you until your next turn ends. Proficiency Bonus uses per Long Rest." },
       { name: 'Savanna-Born', desc: "You gain proficiency in one skill of your choice from Athletics, Intimidation, Perception, or Survival." }
     ]
   },
@@ -11454,7 +11455,7 @@ const SPECIES_55 = {
         name: 'Wood Elf', speed: 35,
         lineageSpells: { 3: 'Longstrider', 5: 'Pass Without Trace' },
         traits: [
-          { name: 'Fleet of Foot', desc: 'Your walking speed is 35 feet.' },
+          { name: 'Swift Stride', desc: 'Your Speed is 35 feet.' },
           { name: 'Lineage Spells', desc: 'Longstrider at level 3, Pass Without Trace at level 5 — once per Long Rest each (or with slots).' }
         ]
       },
@@ -13584,12 +13585,12 @@ const FORGE_ENERGY_TYPES = ['acid', 'cold', 'fire', 'force', 'lightning', 'necro
 const FORGE_ELEMENT_SPELLS = {
   fire:      ['Burning Hands', 'Scorching Ray', 'Fireball', 'Fire Bolt'],
   cold:      ['Ray of Frost', 'Sleet Storm', 'Cone of Cold', 'Ice Knife'],
-  lightning: ['Witch Bolt', 'Shatter', 'Lightning Bolt', 'Thunderwave'],
+  lightning: ['Shocking Grasp', 'Lightning Bolt', 'Call Lightning', 'Chain Lightning'],
   thunder:   ['Thunderwave', 'Shatter', 'Gust of Wind'],
   necrotic:  ['Inflict Wounds', 'Ray of Sickness', 'Vampiric Touch', 'Blight'],
   radiant:   ['Guiding Bolt', 'Searing Smite', 'Spirit Guardians', 'Sacred Flame'],
   poison:    ['Ray of Sickness', 'Poison Spray', 'Stinking Cloud', 'Cloudkill'],
-  psychic:   ['Dissonant Whispers', 'Phantasmal Force', 'Hunger of Hadar'],
+  psychic:   ['Dissonant Whispers', 'Phantasmal Force', 'Phantasmal Killer'],
   acid:      ['Acid Splash', 'Vitriolic Sphere', 'Acid Arrow'],
   force:     ['Magic Missile', 'Spiritual Weapon', 'Arcane Hand'],
 };
@@ -13931,11 +13932,6 @@ const SUBCLASSES = {
     // shadow. Trickery clerics deceive and misdirect.
     // v0.20.59 — Nature Domain. Gods of nature, sky, and storm.
     // Druidic clerics standing at the boundary of the wild.
-    // v0.20.60 — Forge Domain (Xanathar's). Gods of craft, fire, and
-    // smithing. Forge clerics wield molten flame and shape iron.
-    // v0.20.61 — Grave Domain (Xanathar's). Gods of the boundary
-    // between life and death. Grave clerics protect the cycle and
-    // hunt undead.
   },
   druid: {
     land: {
@@ -13977,9 +13973,6 @@ const SUBCLASSES = {
         17: [{ name: 'Quivering Palm', desc: 'Spend 3 ki on hit: vibrations linger. Action later: target Con saves or drops to 0 HP. Save = takes 10d10 necrotic.' }]
       }
     },
-    // v0.20.63 — Way of Mercy (Tasha's). Monks of mercy walk the
-    // boundary between healer and reaper. Their gloved hands deal
-    // life or death.
   },
   paladin: {
     devotion: {
@@ -14002,7 +13995,7 @@ const SUBCLASSES = {
       levelFeatures: {
         3: [
           { name: 'Tenets of the Veil', desc: 'Embrace the dark, hunt the hidden, and be the last light when hope is swallowed.' },
-          { name: 'Oath Spells', desc: 'Always prepared: 3rd disguise self, cause fear; 5th darkness, shadow blade; 9th fear, hunger of Hadar; 13th greater invisibility, phantasmal killer; 17th enervation, mislead.' },
+          { name: 'Oath Spells', desc: 'Always prepared: 3rd disguise self, bane; 5th darkness, blindness/deafness; 9th fear, bestow curse; 13th greater invisibility, phantasmal killer; 17th hold monster, mislead.' },
           { name: 'Channel Divinity: Veil of Dread', desc: 'Action: chosen creatures within 10 ft make a Wisdom save. On a fail, they are frightened for 1 minute; in dim light or darkness their speed is also reduced to 0.' },
           { name: 'Channel Divinity: Shadow Smite', desc: 'When you hit with a melee weapon attack, expend Channel Divinity to add 2d8 necrotic damage and prevent the target regaining HP until your next turn. In dim light or darkness, this becomes 3d8.' }
         ],
@@ -14019,7 +14012,7 @@ const SUBCLASSES = {
           { name: 'Tenets of the Forge', desc: 'Order from disorder, perfection in your craft, and progress passed to the next generation.' },
           { name: 'Channel Divinity: Molten Weapon', desc: 'Bonus action: imbue one melee weapon for 1 minute. It deals +1d6 fire damage on hit; Divine Smite damage with it becomes fire and uses d10s instead of d8s.' },
           { name: 'Channel Divinity: Ironworks', desc: 'Action: touch your holy symbol to a Medium or smaller metal object and reshape it. Proficiency with the relevant artisan tools is needed for skilled work.' },
-          { name: 'Forge Spells', desc: 'Always prepared: 3rd identify, searing smite; 5th heat metal, magic weapon; 9th elemental weapon, protection from energy; 13th fabricate, wall of fire; 17th animate objects, creation.' }
+          { name: 'Forge Spells', desc: 'Always prepared: 3rd identify, searing smite; 5th heat metal, magic weapon; 9th glyph of warding, protection from energy; 13th fabricate, wall of fire; 17th animate objects, creation.' }
         ],
         7: [{ name: 'Aura of Iron', desc: 'Metal armor of chosen creatures in your Aura of Protection gains +1 AC, and mundane weapons in the aura count as magical.' }],
         15: [{ name: 'Unyielding Steel', desc: 'Reaction, once per turn while wearing heavy armor: halve damage you take. Uses equal your Charisma modifier, minimum 1, refreshing on short or long rest.' }],
@@ -14068,8 +14061,6 @@ const SUBCLASSES = {
         18: [{ name: 'Draconic Presence', desc: 'Spend 5 sorcery points: each creature within 60 ft saves Wis or is charmed or frightened (your choice) for 1 minute.' }]
       }
     },
-    // v0.20.62 — Storm Sorcery (Xanathar's). Sorcerers whose magic
-    // springs from the eye of the storm. Wind, thunder, lightning.
   },
   warlock: {
     fiend: {
@@ -14279,9 +14270,8 @@ function isHexWarriorWeapon(ch, weaponInvId) {
 // resistances the character currently has. Used by AI Core checks
 // and the Features tab to surface resistances clearly. This compiles
 // from:
-//   - Race traits (Dwarven/Stout Resilience, Genasi heritage, Tiefling
-//     Hellish Resistance, Aasimar resistance, Draconic Ancestry, Goliath
-//     Mountain Born, etc.)
+//   - Race traits (Dwarven Resilience, Tiefling Hellish Resistance,
+//     Draconic Ancestry, etc.)
 //   - Active rage (Barbarian resistance to bludgeoning, piercing, slashing)
 //   - Heavy Armor Master (feat: 3 less BPS damage; reported here too)
 //   - Bear Totem (resistance to all damage except psychic while raging)
@@ -14296,11 +14286,9 @@ function characterDamageResistances(ch) {
   if (race === 'dwarf' || race === 'hill_dwarf' || race === 'mountain_dwarf') {
     add('poison', 'Dwarven Resilience');
   }
-  if (race === 'stout_halfling' || (race === 'halfling' && ch.subrace === 'stout')) add('poison', 'Stout Resilience');
+  if (race === 'stout_halfling' || (race === 'halfling' && ch.subrace === 'stout')) add('poison', 'Resilience');
   if (race === 'tiefling') add('fire', 'Hellish Resistance');
-  if (race === 'aasimar') add('necrotic', 'Celestial Resistance');
-  if (race === 'aasimar') add('radiant', 'Celestial Resistance');
-  if (race === 'goliath') add('cold', 'Mountain Born');
+  if (race === 'aasimar') { add('necrotic', 'Heritage resistance'); add('radiant', 'Heritage resistance'); }
 
   // Draconic Ancestry damage type (from Dragonborn or Draconic Sorcerer
   // tagged via ch.draconicAncestry)
@@ -15654,8 +15642,6 @@ function canSpendKi(ch, amount = 1) {
 //   d6 at L2, d8 at L9, d10 at L13, d12 at L17.
 // Jack of All Trades (L2): add half prof bonus to non-prof ability checks.
 // Font of Inspiration (L5): already wired (recovers on short rest).
-// Magical Inspiration (Tasha's, L2): inspiration die can be added
-//   to a damage or healing roll from a spell.
 // Countercharm (L6): action — until the start of your next turn, allies
 //   within 30 ft who can hear you have advantage on saves vs frightened
 //   or charmed.
@@ -16681,14 +16667,14 @@ const FEATURE_SPELL_GRANTS = [
 
   // Oath of the Umbral Veil — oath spells
   { id:'veil_disguise_self', klass:'paladin', subclass:'umbral_veil', minLevel:3, spell:'Disguise Self', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
-  { id:'veil_cause_fear', klass:'paladin', subclass:'umbral_veil', minLevel:3, spell:'Cause Fear', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
+  { id:'veil_bane', klass:'paladin', subclass:'umbral_veil', minLevel:3, spell:'Bane', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
   { id:'veil_darkness', klass:'paladin', subclass:'umbral_veil', minLevel:5, spell:'Darkness', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
-  { id:'veil_shadow_blade', klass:'paladin', subclass:'umbral_veil', minLevel:5, spell:'Shadow Blade', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
+  { id:'veil_blindness_deafness', klass:'paladin', subclass:'umbral_veil', minLevel:5, spell:'Blindness/Deafness', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
   { id:'veil_fear', klass:'paladin', subclass:'umbral_veil', minLevel:9, spell:'Fear', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
-  { id:'veil_hunger_hadar', klass:'paladin', subclass:'umbral_veil', minLevel:9, spell:'Hunger of Hadar', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
+  { id:'veil_bestow_curse', klass:'paladin', subclass:'umbral_veil', minLevel:9, spell:'Bestow Curse', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
   { id:'veil_greater_invisibility', klass:'paladin', subclass:'umbral_veil', minLevel:13, spell:'Greater Invisibility', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
   { id:'veil_phantasmal_killer', klass:'paladin', subclass:'umbral_veil', minLevel:13, spell:'Phantasmal Killer', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
-  { id:'veil_enervation', klass:'paladin', subclass:'umbral_veil', minLevel:17, spell:'Enervation', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
+  { id:'veil_hold_monster', klass:'paladin', subclass:'umbral_veil', minLevel:17, spell:'Hold Monster', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
   { id:'veil_mislead', klass:'paladin', subclass:'umbral_veil', minLevel:17, spell:'Mislead', reset:'known', source:'Oath of the Umbral Veil', ability:'cha' },
 
   // Oath of the Forge — oath spells
@@ -16696,7 +16682,7 @@ const FEATURE_SPELL_GRANTS = [
   { id:'forge_searing_smite', klass:'paladin', subclass:'forge', minLevel:3, spell:'Searing Smite', reset:'known', source:'Oath of the Forge', ability:'cha' },
   { id:'forge_heat_metal', klass:'paladin', subclass:'forge', minLevel:5, spell:'Heat Metal', reset:'known', source:'Oath of the Forge', ability:'cha' },
   { id:'forge_magic_weapon', klass:'paladin', subclass:'forge', minLevel:5, spell:'Magic Weapon', reset:'known', source:'Oath of the Forge', ability:'cha' },
-  { id:'forge_elemental_weapon', klass:'paladin', subclass:'forge', minLevel:9, spell:'Elemental Weapon', reset:'known', source:'Oath of the Forge', ability:'cha' },
+  { id:'forge_glyph_of_warding', klass:'paladin', subclass:'forge', minLevel:9, spell:'Glyph of Warding', reset:'known', source:'Oath of the Forge', ability:'cha' },
   { id:'forge_protection_energy', klass:'paladin', subclass:'forge', minLevel:9, spell:'Protection from Energy', reset:'known', source:'Oath of the Forge', ability:'cha' },
   { id:'forge_fabricate', klass:'paladin', subclass:'forge', minLevel:13, spell:'Fabricate', reset:'known', source:'Oath of the Forge', ability:'cha' },
   { id:'forge_wall_of_fire', klass:'paladin', subclass:'forge', minLevel:13, spell:'Wall of Fire', reset:'known', source:'Oath of the Forge', ability:'cha' },
@@ -16855,11 +16841,7 @@ const FEATURE_SPELL_GRANTS = [
   { id:'land_desert_wall_of_stone',        klass:'druid', subclass:'land', terrain:'desert', minLevel:9, spell:'Wall of Stone',        reset:'known', source:'Circle of the Land (Desert)', ability:'wis' },
 
   // ============================================================
-  // v0.21.43 — Oath/subclass spell grants for the newly-wired subclasses.
-  // RAW always-prepared lists, as ready-to-cast grants (don't count vs prep
-  // cap). Only spells present in this build's SPELLS data are included;
-  // a few (Ensnaring Strike, Armor of Agathys, the Summon spells, Rary's,
-  // Arms of Hadar) are not yet in the catalogue and are omitted until added.
+  // v0.21.43 — subclass spell grants (ready-to-cast; don't count vs prep cap).
   // ---- Oath of Vengeance ----
   // ---- Oath of the Ancients ----
   // ---- Oath of Conquest ----
@@ -18425,7 +18407,7 @@ const MONSTERS = [
       { name: 'Life Drain', desc: 'Melee Attack: +4 to hit, 5 ft. Hit: 1d6+2 necrotic + DC 13 Con save or max HP reduced by the damage.' },
       { name: 'Longsword', desc: 'Melee Attack: +4 to hit, 5 ft. Hit: 1d8+2 slashing (1d10+2 two-handed).' },
     ] },
-  { id: 'm_gnoll_pack_lord', name: 'Gnoll Pack Lord', cr: 2, size: 'Medium', type: 'humanoid', ac: 15, hp: 49, hpFormula: '9d8+9',
+  { id: 'm_gnoll_pack_lord', name: 'Gnoll Packleader', cr: 2, size: 'Medium', type: 'humanoid', ac: 15, hp: 49, hpFormula: '9d8+9',
     speed: { walk: 30 }, abilities: { str: 16, dex: 14, con: 13, int: 8, wis: 11, cha: 9 },
     senses: 'darkvision 60 ft.',
     traits: [{ name: 'Rampage', desc: 'On reducing a creature to 0 HP, can use a bonus action to move and bite.' }],
@@ -18515,7 +18497,7 @@ const MONSTERS = [
       { name: 'Slam', desc: 'Melee Attack: +8 to hit, 5 ft. Hit: 2d8+5 bludgeoning.' },
       { name: 'Whirlwind (Recharge 4–6)', desc: 'DC 13 Str save for each creature in its space: 3d8 bludgeoning and flung 20 ft. + prone (half and no fling on save).' },
     ] },
-  { id: 'm_flameskull', name: 'Flameskull', cr: 4, size: 'Tiny', type: 'undead', ac: 13, hp: 40, hpFormula: '9d4+18',
+  { id: 'm_flameskull', name: 'Burning Skull', cr: 4, size: 'Tiny', type: 'undead', ac: 13, hp: 40, hpFormula: '9d4+18',
     speed: { walk: 0, fly: 40 }, abilities: { str: 1, dex: 17, con: 14, int: 16, wis: 10, cha: 11 },
     senses: 'darkvision 60 ft.', damageImmunities: 'cold, fire, poison', damageResistances: 'lightning, necrotic, piercing/slashing/bludgeoning from nonmagical weapons',
     conditionImmunities: 'charmed, frightened, paralyzed, poisoned, prone',
@@ -18731,18 +18713,6 @@ const MONSTERS = [
       { name: 'Claw', desc: 'Melee Attack: +11 to hit, 5 ft. Hit: 2d6+6 slashing.' },
       { name: 'Cold Breath (Recharge 5–6)', desc: '60-ft. cone, DC 19 Con save: 12d8 cold (half on save).' },
     ] },
-  { id: 'm_beholder', name: 'Beholder', cr: 13, size: 'Large', type: 'aberration', ac: 18, hp: 180, hpFormula: '19d10+76',
-    speed: { walk: 0, fly: 20 }, abilities: { str: 10, dex: 14, con: 18, int: 17, wis: 15, cha: 17 },
-    skills: { perception: '+12' }, senses: 'darkvision 120 ft.',
-    conditionImmunities: 'prone', legendary: true,
-    traits: [
-      { name: 'Antimagic Cone', desc: 'Its central eye creates a 150-ft. cone of antimagic; nothing magical functions within it.' },
-      { name: 'Legendary Resistance (3/day)', desc: 'If it fails a save, it can choose to succeed instead.' },
-    ],
-    actions: [
-      { name: 'Bite', desc: 'Melee Attack: +5 to hit, 5 ft. Hit: 4d6 piercing.' },
-      { name: 'Eye Rays', desc: 'Fires 3 random eye rays at targets within 120 ft. (charm, paralyze, fear, slow, enervation, telekinesis, sleep, petrify, disintegrate, death).' },
-    ] },
   { id: 'm_adult_red_dragon', name: 'Adult Red Dragon', cr: 17, size: 'Huge', type: 'dragon', ac: 19, hp: 256, hpFormula: '19d12+133',
     speed: { walk: 40, climb: 40, fly: 80 }, abilities: { str: 27, dex: 10, con: 25, int: 16, wis: 13, cha: 21 },
     skills: { perception: '+13', stealth: '+6' }, senses: 'blindsight 60 ft., darkvision 120 ft.',
@@ -18782,19 +18752,6 @@ const MONSTERS = [
       { name: 'Multiattack', desc: 'Six longsword attacks and one tail attack.' },
       { name: 'Longsword', desc: 'Melee Attack: +9 to hit, 5 ft. Hit: 2d8+4 slashing.' },
       { name: 'Tail', desc: 'Melee Attack: +9 to hit, 10 ft. Hit: 2d10+4 bludgeoning + DC 19 grapple.' },
-    ] },
-  { id: 'm_demilich', name: 'Demilich', cr: 18, size: 'Tiny', type: 'undead', ac: 20, hp: 80, hpFormula: '32d4',
-    speed: { walk: 0, fly: 30 }, abilities: { str: 1, dex: 20, con: 10, int: 20, wis: 17, cha: 20 },
-    senses: 'truesight 120 ft.', damageImmunities: 'poison, psychic; nonmagical weapons',
-    conditionImmunities: 'charmed, deafened, exhaustion, frightened, paralyzed, petrified, poisoned, prone, stunned',
-    damageResistances: 'necrotic; bludgeoning/piercing/slashing', legendary: true,
-    traits: [
-      { name: 'Avoidance', desc: 'Takes only half damage from any effect that allows a save, and none on a success.' },
-      { name: 'Legendary Resistance (4/day)', desc: 'If it fails a save, it can choose to succeed instead.' },
-    ],
-    actions: [
-      { name: 'Howl (Recharge 5–6)', desc: 'Each creature within 30 ft. makes a DC 15 Con save or drops to 0 HP. On a success, 10d10 psychic.' },
-      { name: 'Life Drain', desc: 'DC 19 Con save for three creatures within 10 ft. or take 21 (6d6) necrotic and the demilich regains that much.' },
     ] },
   { id: 'm_glabrezu', name: 'Glabrezu', cr: 9, size: 'Large', type: 'fiend (demon)', ac: 17, hp: 157, hpFormula: '15d10+75',
     speed: { walk: 40 }, abilities: { str: 20, dex: 15, con: 21, int: 19, wis: 17, cha: 16 },
@@ -19028,7 +18985,7 @@ const MONSTERS = [
   { id: 'm_hell_hound', name: 'Hell Hound', cr: 3, size: 'Medium', type: 'fiend', ac: 15, hp: 45, hpFormula: '7d8+14', speed: { walk: 50 }, abilities: { str: 17, dex: 12, con: 14, int: 6, wis: 13, cha: 6 }, skills: { perception: '+5' }, senses: 'darkvision 60 ft.', traits: [{ name: 'Pack Tactics', desc: 'Advantage on attacks when an ally is within 5 ft of the target.' }, { name: 'Fire Immunity', desc: 'Immune to fire damage.' }], actions: [{ name: 'Bite', desc: 'Melee Attack: +5 to hit, 5 ft. Hit: 1d8+3 piercing + 2d6 fire.' }, { name: 'Fire Breath (Recharge 5-6)', desc: '15-ft cone, DC 12 Dexterity save: 6d6 fire (half on save).' }] },
   { id: 'm_doppelganger', name: 'Doppelganger', cr: 3, size: 'Medium', type: 'monstrosity', ac: 14, hp: 52, hpFormula: '8d8+16', speed: { walk: 30 }, abilities: { str: 11, dex: 18, con: 14, int: 11, wis: 12, cha: 14 }, skills: { deception: '+6', insight: '+3' }, senses: '-', traits: [{ name: 'Shapechanger', desc: 'Can polymorph into any Small or Medium humanoid it has seen as an action.' }, { name: 'Ambusher', desc: 'Advantage on attacks against a surprised creature; a hit is a critical.' }], actions: [{ name: 'Multiattack', desc: 'Two slam attacks.' }, { name: 'Slam', desc: 'Melee Attack: +6 to hit, 5 ft. Hit: 1d6+4 bludgeoning.' }, { name: 'Read Thoughts', desc: 'Magically reads the surface thoughts of one creature within 60 ft, gaining advantage on attacks and social checks against it.' }] },
   { id: 'm_winter_wolf', name: 'Winter Wolf', cr: 3, size: 'Large', type: 'monstrosity', ac: 13, hp: 75, hpFormula: '10d10+20', speed: { walk: 50 }, abilities: { str: 18, dex: 13, con: 14, int: 7, wis: 12, cha: 8 }, skills: { perception: '+5', stealth: '+3' }, senses: '-', traits: [{ name: 'Pack Tactics', desc: 'Advantage on attacks when an ally is within 5 ft of the target.' }, { name: 'Cold Immunity', desc: 'Immune to cold; vulnerable to fire.' }], actions: [{ name: 'Bite', desc: 'Melee Attack: +6 to hit, 5 ft. Hit: 2d6+4 piercing; DC 14 Strength save or knocked prone.' }, { name: 'Cold Breath (Recharge 5-6)', desc: '15-ft cone, DC 12 Dexterity save: 4d8 cold (half on save).' }] },
-  { id: 'm_banshee', name: 'Banshee', cr: 4, size: 'Medium', type: 'undead', ac: 12, hp: 58, hpFormula: '13d8', speed: { walk: 0, fly: 40 }, abilities: { str: 1, dex: 14, con: 10, int: 12, wis: 11, cha: 17 }, senses: 'darkvision 60 ft.', traits: [{ name: 'Incorporeal Movement', desc: 'Can move through creatures and objects as difficult terrain (takes 1d10 force if it ends inside one).' }, { name: 'Undead Resistances', desc: 'Resistance to cold and nonmagical weapons; immune to necrotic and poison.' }], actions: [{ name: 'Corrupting Touch', desc: 'Melee Attack: +4 to hit, 5 ft. Hit: 3d6+2 necrotic.' }, { name: 'Wail (1/day)', desc: 'Not against constructs or undead: each creature within 30 ft that can hear it, DC 13 Constitution save or drop to 0 HP (half its normal effect on save deals 3d6 psychic).' }] },
+  { id: 'm_banshee', name: 'Wailing Spirit', cr: 4, size: 'Medium', type: 'undead', ac: 12, hp: 58, hpFormula: '13d8', speed: { walk: 0, fly: 40 }, abilities: { str: 1, dex: 14, con: 10, int: 12, wis: 11, cha: 17 }, senses: 'darkvision 60 ft.', traits: [{ name: 'Incorporeal Movement', desc: 'Can move through creatures and objects as difficult terrain (takes 1d10 force if it ends inside one).' }, { name: 'Undead Resistances', desc: 'Resistance to cold and nonmagical weapons; immune to necrotic and poison.' }], actions: [{ name: 'Corrupting Touch', desc: 'Melee Attack: +4 to hit, 5 ft. Hit: 3d6+2 necrotic.' }, { name: 'Wail (1/day)', desc: 'Not against constructs or undead: each creature within 30 ft that can hear it, DC 13 Constitution save or drop to 0 HP (half its normal effect on save deals 3d6 psychic).' }] },
   { id: 'm_shambling_mound', name: 'Shambling Mound', cr: 5, size: 'Large', type: 'plant', ac: 15, hp: 136, hpFormula: '16d10+48', speed: { walk: 20, swim: 20 }, abilities: { str: 18, dex: 8, con: 16, int: 5, wis: 10, cha: 5 }, skills: { stealth: '+2' }, senses: 'blindsight 60 ft.', traits: [{ name: 'Lightning Absorption', desc: 'Lightning damage instead restores HP equal to the damage.' }, { name: 'Resistances', desc: 'Resistance to cold and fire.' }], actions: [{ name: 'Multiattack', desc: 'Two Slam attacks; if both hit one Medium or smaller target it is grappled (escape DC 14) and the mound uses Engulf.' }, { name: 'Slam', desc: 'Melee Attack: +7 to hit, 5 ft. Hit: 2d8+4 bludgeoning.' }, { name: 'Engulf', desc: 'A grappled creature is pulled inside, blinded, restrained, unable to breathe, and takes 2d8+4 bludgeoning at the start of each of the mound\'s turns.' }] },
   { id: 'm_water_elemental', name: 'Water Elemental', cr: 5, size: 'Large', type: 'elemental', ac: 14, hp: 114, hpFormula: '12d10+48', speed: { walk: 30, swim: 90 }, abilities: { str: 18, dex: 14, con: 18, int: 5, wis: 10, cha: 8 }, senses: 'darkvision 60 ft.', traits: [{ name: 'Water Form', desc: 'Can move through a space as narrow as 1 inch without squeezing.' }, { name: 'Freeze', desc: 'Cold damage that leaves it unmoving makes it restrained until the end of its next turn.' }, { name: 'Elemental Resistances', desc: 'Resistance to acid and nonmagical weapons; immune to poison and many conditions.' }], actions: [{ name: 'Multiattack', desc: 'Two Slam attacks.' }, { name: 'Slam', desc: 'Melee Attack: +7 to hit, 5 ft. Hit: 2d8+4 bludgeoning.' }, { name: 'Whelm (Recharge 4-6)', desc: 'Creatures in its space, DC 15 Strength save: 2d8+4 bludgeoning and grappled (Large or smaller), taking that damage each turn and unable to breathe.' }] },
   { id: 'm_gorgon', name: 'Gorgon', cr: 5, size: 'Large', type: 'monstrosity', ac: 19, hp: 114, hpFormula: '12d10+48', speed: { walk: 40 }, abilities: { str: 20, dex: 11, con: 18, int: 2, wis: 12, cha: 7 }, skills: { perception: '+4' }, senses: 'darkvision 60 ft.', traits: [{ name: 'Trampling Charge', desc: 'Moving 20 ft straight in then hitting with Gore lets it use a bonus action Hooves; the target DC 16 Strength save or knocked prone.' }], actions: [{ name: 'Gore', desc: 'Melee Attack: +8 to hit, 5 ft. Hit: 2d12+5 piercing.' }, { name: 'Hooves', desc: 'Melee Attack: +8 to hit, 5 ft. Hit: 2d10+5 bludgeoning.' }, { name: 'Petrifying Breath (Recharge 5-6)', desc: '30-ft cone, DC 13 Constitution save or begin to turn to stone (restrained, then petrified on a second failed save at end of next turn).' }] },
@@ -19038,7 +18995,6 @@ const MONSTERS = [
   { id: 'm_cloud_giant', name: 'Cloud Giant', cr: 9, size: 'Huge', type: 'giant', ac: 14, hp: 200, hpFormula: '16d12+96', speed: { walk: 40 }, abilities: { str: 27, dex: 10, con: 22, int: 12, wis: 16, cha: 16 }, skills: { insight: '+7', perception: '+7' }, senses: '-', traits: [{ name: 'Keen Smell', desc: 'Advantage on Perception checks that rely on smell.' }], actions: [{ name: 'Multiattack', desc: 'Two Morningstar attacks.' }, { name: 'Morningstar', desc: 'Melee Attack: +12 to hit, 10 ft. Hit: 3d8+8 piercing.' }, { name: 'Rock', desc: 'Ranged Attack: +12 to hit, 60/240 ft. Hit: 4d10+8 bludgeoning.' }] },
   { id: 'm_storm_giant', name: 'Storm Giant', cr: 13, size: 'Huge', type: 'giant', ac: 16, hp: 230, hpFormula: '20d12+100', speed: { walk: 50, swim: 50 }, abilities: { str: 29, dex: 14, con: 20, int: 16, wis: 18, cha: 18 }, skills: { athletics: '+14', perception: '+9' }, senses: '-', traits: [{ name: 'Amphibious', desc: 'Can breathe air and water.' }, { name: 'Storm Traits', desc: 'Immune to lightning and thunder; resistance to cold.' }], actions: [{ name: 'Multiattack', desc: 'Two Greatsword attacks.' }, { name: 'Greatsword', desc: 'Melee Attack: +14 to hit, 10 ft. Hit: 6d6+9 slashing.' }, { name: 'Rock', desc: 'Ranged Attack: +14 to hit, 60/240 ft. Hit: 4d12+9 bludgeoning.' }, { name: 'Lightning Strike (Recharge 5-6)', desc: 'A bolt at a point within 500 ft: creatures within 10 ft, DC 17 Dexterity save: 12d8 lightning (half on save).' }] },
   { id: 'm_rakshasa', name: 'Rakshasa', cr: 13, size: 'Medium', type: 'fiend', ac: 16, hp: 110, hpFormula: '13d8+52', speed: { walk: 40 }, abilities: { str: 14, dex: 17, con: 18, int: 13, wis: 16, cha: 20 }, skills: { deception: '+10', insight: '+8' }, senses: 'darkvision 60 ft.', traits: [{ name: 'Limited Magic Immunity', desc: 'Cannot be affected by spells of 6th level or lower unless it wishes to be; advantage on saves against all other spells.' }, { name: 'Innate Spellcasting', desc: 'Casts detect thoughts, disguise self, mage hand, minor illusion, charm person, detect magic, invisibility, major image, suggestion, dominate person, fly, plane shift, true seeing.' }], actions: [{ name: 'Multiattack', desc: 'Two Claw attacks.' }, { name: 'Claw', desc: 'Melee Attack: +7 to hit, 5 ft. Hit: 2d6+2 slashing + 2d8 necrotic, and the target is cursed if it takes damage (cannot regain HP while cursed until the rakshasa dies).' }] },
-  { id: 'm_death_knight', name: 'Death Knight', cr: 17, size: 'Medium', type: 'undead', ac: 20, hp: 180, hpFormula: '19d8+95', speed: { walk: 30 }, abilities: { str: 20, dex: 11, con: 20, int: 12, wis: 16, cha: 18 }, senses: 'darkvision 120 ft.', traits: [{ name: 'Magic Resistance', desc: 'Advantage on saves against spells and magical effects.' }, { name: 'Marshal Undead', desc: 'Undead within 60 ft (not the knight) have advantage on saves against turning.' }, { name: 'Undead Resistances', desc: 'Immune to necrotic and poison; resistance to nonmagical weapons.' }], actions: [{ name: 'Multiattack', desc: 'Three Longsword attacks.' }, { name: 'Longsword', desc: 'Melee Attack: +11 to hit, 5 ft. Hit: 1d8+5 slashing (1d10+5 two-handed) + 4d8 necrotic.' }, { name: 'Hellfire Orb (1/day)', desc: 'A 20-ft-radius sphere at a point within 120 ft, DC 18 Dexterity save: 10d6 fire and 10d6 necrotic (half on save).' }, { name: 'Spellcasting (Cha, DC 18)', desc: 'Paladin spells: command, compelled duel, dispel magic, staggering smite, destructive wave.' }] },
 ];
 
 // ===========================================================================
@@ -20045,8 +20001,7 @@ const SPELLS = [
   // "+NdN <type> on next melee hit" line.
 
   // v0.16.1 — SRD coverage pass. These were missing from the catalogue;
-  // some are referenced by built-in races (Hellish Rebuke / Floating Disk /
-  // Crown of Madness for Tiefling subraces) and others were just plain SRD
+  // some are referenced by built-in races and others were just plain SRD
   // gaps. Adding them lets prepared casters find them in the spell browser
   // and lets race grants resolve to a real spell.
   { name: 'Hellish Rebuke', level: 1, school: 'evocation', classes: ['warlock'],
@@ -20740,12 +20695,7 @@ const SPELLS = [
 
 // v0.12.0: keep the built-in spell catalogue to official/SRD-style spells only.
 // v0.12.3: HP controls are grouped into a clear input + Damage/Heal layout with passive Perception beneath.
-// v0.14.21+: Shape Water removed from this strip-list. It IS SRD (SRD 5.1
-//   cantrip; reprinted in Xanathar's). The Water Genasi subrace built into
-//   Hearth references it as a racial cantrip, so stripping it left every
-//   Water Genasi character showing "(spell not in catalogue)" on their
-//   racial card. If you want to ban it for a specific table, use the
-//   homebrew/house-rule controls instead.
+// v1.5.1: the built-in catalogue is limited to SRD 5.1 / SRD 5.2 spells (CC-BY-4.0).
 // Any homebrew/non-open spell accidentally added to the library is stripped here,
 // while the rest of the app still works from this same SPELLS array.
 const NON_SRD_OR_HOMEBREW_SPELLS = new Set([]);
@@ -20895,7 +20845,7 @@ const MAGIC_ITEMS = {
   potion_of_health_min: { name: 'Potion of Minor Healing', type: 'potion', rarity: 'common', attune: false, desc: 'As an action, drink to regain 2d4 + 2 HP.' },
   candle_of_truth:      { name: 'Candle of Honesty', type: 'wondrous', rarity: 'common', attune: false, desc: 'When lit, the candle burns for 6 hours. Within 30 ft of the flame, creatures find it harder to lie — they have disadvantage on Charisma (Deception) checks. The candle can be re-lit.' },
   cantrip_quill:        { name: 'Quill of Practice', type: 'wondrous', rarity: 'common', attune: false, desc: 'A quill that never runs out of ink. Writing with it is unusually neat regardless of your handwriting.' },
-  driftglobe:           { name: 'Driftglobe',        type: 'wondrous', rarity: 'common', attune: false, desc: 'A small glass sphere. As an action, command it to shed bright light in a 30-foot radius (and dim light for another 30) and float up to 5 ft above the ground, following you within 60 ft. Once per day it can also cast Daylight from its current position.', perDay: 2,},
+  driftglobe:           { name: 'Wandering Lightstone',        type: 'wondrous', rarity: 'common', attune: false, desc: 'A palm-sized glowing stone. Speak its word and it lights the area around you and hovers at your shoulder, trailing after you as you walk. Speak again to douse it.', perDay: 2,},
   rope_of_mending:      { name: 'Rope of Mending',   type: 'wondrous', rarity: 'common', attune: false, desc: '50 ft of silk rope. If cut, the two pieces can be re-joined as an action and bond seamlessly.' },
   pot_of_warming:       { name: 'Cauldron of Warmth',type: 'wondrous', rarity: 'common', attune: false, desc: 'A small iron pot that, when commanded, gently warms whatever is inside it to a perfect temperature. Useful for cold camps and bad rations.' },
   unbreakable_arrow:    { name: 'Unbreakable Arrow', type: 'wondrous', rarity: 'common', attune: false, desc: 'A single arrow that cannot be broken short of being destroyed by magic, fire, or extreme force. Recovered after every shot unless lost in deep water or similar.' },
@@ -21024,9 +20974,9 @@ const MAGIC_ITEMS = {
   scroll_5th:           { name: 'Spell Scroll (5th Level)',  type: 'scroll', rarity: 'rare',      attune: false, desc: 'Cast the 5th-level spell scribed on this scroll (save DC 17, attack +9). The scroll then crumbles to dust.' },
   scroll_protection:    { name: 'Scroll of Protection',      type: 'scroll', rarity: 'rare',      attune: false, desc: 'Read as an action to become protected for 5 minutes against one chosen creature type, which cannot willingly approach within 5 ft of you.' },
   spellscroll_cantrip:  { name: 'Spell Scroll (Cantrip)', type: 'scroll',   rarity: 'common', attune: false, desc: 'Holds one cantrip. Reading it casts the spell at its lowest level; the scroll then crumbles. If the cantrip is on your class list you can cast it; otherwise make a DC 10 ability check or the casting fails.' },
-  wand_pyrotechnics:    { name: 'Wand of Pyrotechnics',   type: 'wand',     rarity: 'common', attune: false, desc: '7 charges. Expend 1 charge as an action to create harmless bursts of multicoloured light and sparks at a point within 60 ft. Regains 1d6+1 charges at dawn.', charges: { max: 7, recover: 'dawn', regain: '1d6+1' },},
-  charlatan_dice:       { name: "Charlatan's Dice",       type: 'wondrous', rarity: 'common', attune: false, desc: 'Whenever you make a roll with these loaded dice, you can choose the result instead of rolling. Works only once per short rest before luck reasserts itself.' },
-  cloak_billowing:      { name: 'Cloak of Billowing',     type: 'wondrous', rarity: 'common', attune: false, desc: 'As a bonus action, you can make this cloak billow dramatically. Purely cosmetic — and magnificent.' },
+  wand_pyrotechnics:    { name: 'Wand of Sparkworks',   type: 'wand',     rarity: 'common', attune: false, desc: '7 charges. Expend 1 charge as an action to create harmless bursts of multicoloured light and sparks at a point within 60 ft. Regains 1d6+1 charges at dawn.', charges: { max: 7, recover: 'dawn', regain: '1d6+1' },},
+  charlatan_dice:       { name: 'Lucky Loaded Dice',       type: 'wondrous', rarity: 'common', attune: false, desc: 'Whenever you make a roll with these loaded dice, you can choose the result instead of rolling. Works only once per short rest before luck reasserts itself.' },
+  cloak_billowing:      { name: 'Cloak of Grand Entrances', type: 'wondrous', rarity: 'common', attune: false, desc: 'On command the cloak sweeps and ripples as if caught in a stage wind. It does nothing useful, and looks wonderful doing it.' },
 
   // ---------- UNCOMMON ----------
   bag_beans:            { name: 'Bag of Beans',           type: 'wondrous', rarity: 'uncommon', attune: false, desc: 'Holds 3d4 dry beans. Planting and watering a bean produces a random magical effect after 1 minute — from a treant to a geyser to a small pyramid. Unpredictable and often dangerous.' },
@@ -21082,7 +21032,7 @@ const MAGIC_ITEMS = {
   staff_frost:          { name: 'Staff of Frost',         type: 'staff',    rarity: 'very_rare', attune: true, desc: 'You have resistance to cold damage. 10 charges to cast Cone of Cold, Fog Cloud, Ice Storm, and Wall of Ice. Regains 1d6+4 charges at dawn.', resist: 'cold', charges: { max: 10, recover: 'dawn', regain: '1d6+4' },},
   staff_thunder:        { name: 'Staff of Thunder and Lightning', type: 'staff', rarity: 'very_rare', attune: true, desc: 'Functions as a +2 quarterstaff. Several daily powers: a lightning strike on a hit (2d10), a thunderclap, or both at once. Each property has its own daily recharge.', mech: { attackBonus: 2, damageBonus: 2 } },
   dwarven_plate:        { baseArmor: 'plate', armorMagicBonus: 2, name: 'Dwarven Plate',          type: 'armor',    rarity: 'very_rare', attune: false, desc: 'While wearing this armor, you gain a +2 bonus to AC. Once per long rest, when an effect would move you against your will along the ground, you can use your reaction to reduce that distance by up to 10 ft.', mech: { acBonus: 2 } },
-  efreeti_chain:        { baseArmor: 'chain_mail', armorMagicBonus: 3, name: 'Efreeti Chain',          type: 'armor',    rarity: 'legendary', attune: true, desc: 'You gain a +3 bonus to AC, resistance to fire damage, the ability to walk on lava as if solid ground, and you understand and speak Primordial. While wearing it you can also cast Plane Shift to the Elemental Plane of Fire once per day.', mech: { acBonus: 3 }, resist: 'fire',},
+  efreeti_chain:        { baseArmor: 'chain_mail', armorMagicBonus: 3, name: 'Emberforged Chain',          type: 'armor',    rarity: 'legendary', attune: true, desc: 'You gain a +3 bonus to AC, resistance to fire damage, the ability to walk on lava as if solid ground, and you understand and speak Primordial. While wearing it you can also cast Plane Shift to the Elemental Plane of Fire once per day.', mech: { acBonus: 3 }, resist: 'fire',},
   ring_telekinesis:     { name: 'Ring of Telekinesis',    type: 'ring',     rarity: 'very_rare', attune: true, desc: 'While wearing this ring, you can cast Telekinesis at will, but you can target only objects that aren\'t being worn or carried.' },
 
   // ---------- LEGENDARY ----------
@@ -21095,20 +21045,13 @@ const MAGIC_ITEMS = {
   ring_regeneration:    { name: 'Ring of Regeneration',   type: 'ring',     rarity: 'very_rare', attune: true, desc: 'While wearing this ring, you regain 1d6 hit points every 10 minutes provided you have at least 1 HP. If you lose a body part, the ring regrows it over 1d6+1 days as long as you keep at least 1 HP.' },
   rod_alertness:        { name: 'Rod of Alertness',       type: 'rod',      rarity: 'very_rare', attune: true, desc: 'While holding it, you have advantage on initiative and Perception checks, and it can radiate a protective aura (allies in 30 ft gain +1 AC and saves). Several daily detection spells.', mech: {} },
   staff_magi:           { name: 'Staff of the Magi',      type: 'staff',    rarity: 'legendary', attune: true, mech: { spellAttackBonus: 2 }, desc: 'A staff of immense power for wizards and sorcerers. +2 to spell attack rolls, advantage on saves against spells, and spell absorption. 50 charges for a huge list of spells; can be broken in a retributive strike of devastating force.', charges: { max: 50, recover: 'dawn', regain: '4d6+2' },},
-  apparatus_kwalish:    { name: 'Apparatus of Kwalish',   type: 'wondrous', rarity: 'legendary', attune: false, desc: 'An iron barrel that unfolds into a crablike vehicle with 10 levers controlling legs, pincers, movement, and submersion. Provides total cover and can operate underwater. Famously baffling to pilot.' },
   well_worlds:          { name: 'Well of Many Worlds',    type: 'wondrous', rarity: 'legendary', attune: false, desc: 'A fine black cloth that, when unfolded and placed on a surface, opens a two-way portal to another world or plane (random or, if attuned to a destination, fixed). Folding it closes the portal.' },
 
   // ---------- ARTIFACT ----------
-  eye_vecna:            { name: 'Eye of Vecna',           type: 'wondrous', rarity: 'artifact', attune: true, desc: 'The preserved eye of the lich-god Vecna. Replacing your own eye grants truesight out to 120 ft, the ability to cast Clairvoyance at will and several powerful spells per day. The eye slowly corrupts its bearer and cannot be removed once set.' },
-  hand_vecna:           { name: 'Hand of Vecna',          type: 'wondrous', rarity: 'artifact', attune: true, desc: 'The withered hand of Vecna. Grafted onto a severed wrist, it grants a Strength of 20, the ability to cast several spells, and a chilling touch attack (3d6 cold + 5d6 necrotic). It corrupts its bearer toward evil.', setScore: { ability: 'str', value: 20 },},
-  book_exalted:         { name: 'Book of Exalted Deeds',  type: 'wondrous', rarity: 'artifact', attune: true, desc: 'The definitive treatise on virtue. A devoted good creature who studies it for the required time gains lasting boons: ability increases, alignment-locked protection, and access to celestial power. Evil readers are seared by its pages.' },
-  book_vile:            { name: 'Book of Vile Darkness',  type: 'wondrous', rarity: 'artifact', attune: true, desc: 'A foul tome of forbidden lore assembled by Vecna. Studying it grants dark boons — ability increases, immunity to disease and poison, command of undeath — at terrible cost to the soul and body.' },
 
   // ---------- v0.21.68 — expanded legendaries + artifacts ----------
-  crown_lich_king:      { name: 'Crown of the Lich King',  type: 'wondrous', rarity: 'artifact', attune: true, desc: 'A frozen circlet that whispers of dominion over death. While worn and attuned you gain +2 AC, immunity to necrotic damage, and command over undead within 120 ft. The crown gnaws at your warmth — each long rest, the cold sinks a little deeper.', mech: { acBonus: 2 }, resist: 'necrotic' },
-  axe_dwarvish_lords:   { name: 'Axe of the Dwarvish Lords', type: 'weapon', rarity: 'artifact', attune: true, desc: 'The masterwork of an entire dwarven dynasty. A +3 battleaxe that lets you sense the location of gems and precious metal, grants darkvision and tremorsense, and burns enemies who strike its bearer. While attuned your Constitution rises to match a mountain.', onHit: { dice: { count: 2, sides: 6 }, type: 'fire' }, setScore: { ability: 'con', value: 20 }, baseWeapon: 'battleaxe',},
+  crown_lich_king:      { name: 'Crown of the Deathless Throne',  type: 'wondrous', rarity: 'artifact', attune: true, desc: 'A frozen circlet that whispers of dominion over death. While worn and attuned you gain +2 AC, immunity to necrotic damage, and command over undead within 120 ft. The crown gnaws at your warmth — each long rest, the cold sinks a little deeper.', mech: { acBonus: 2 }, resist: 'necrotic' },
   orb_dragonkind:       { name: 'Orb of Dragonkind',      type: 'wondrous', rarity: 'artifact', attune: true, desc: 'A smoky crystal sphere that holds the rage of bound dragons. You gain +2 AC, resistance to fire, advantage on saves against the Frightful Presence of dragons, and can attempt to dominate a dragon you can see. The orb hungers to corrupt, urging cruelty.', mech: { acBonus: 2 }, resist: 'fire' },
-  wand_orcus:           { name: 'Wand of Orcus',          type: 'rod',      rarity: 'artifact', attune: true, desc: 'A grisly skull-topped rod of the Demon Prince of Undeath. A +3 mace that deals an extra 2d12 necrotic on a hit, summons hordes of undead, and radiates death. Wielding it draws the attention — and wrath — of Orcus himself.', onHit: { dice: { count: 2, sides: 12 }, type: 'necrotic', save: { ability: 'con', dc: 18, effect: 'frightened (its wrath)' } } },
   blade_black:          { name: 'The Black Blade',        type: 'weapon',   rarity: 'artifact', attune: true, desc: 'A sentient greatsword forged from captured shadow. A +3 weapon that deals an extra 3d6 necrotic on a hit and drinks the life it takes; once per long rest a slain foe rises briefly to fight for you. The blade argues for blood, always.', onHit: { dice: { count: 3, sides: 6 }, type: 'necrotic' }, baseWeapon: 'greatsword', note: 'Drinks the life it takes; once per long rest, a humanoid you slay with it can rise briefly to fight for you.',},
 
   ring_three_wishes:    { name: 'Ring of Three Wishes',   type: 'ring',     rarity: 'legendary', attune: false, desc: 'A plain gold band shot through with starlight. It holds 3 charges; expend a charge to cast Wish. When the last charge is spent, the ring loses its magic and becomes ordinary.', charges: { max: 3, recover: 'long', regain: null } },
@@ -24912,18 +24855,13 @@ const SPELL_GROUP_OVERRIDES = {
   // they enable a weapon attack to do extra). Per Tom's call, these belong
   // in Attack & Damage so they sit next to the weapons that trigger them.
   'Searing Smite': 'attack',
-  'Wrathful Smite': 'attack',
   'Branding Smite': 'attack',
   'Thunderous Smite': 'attack',
-  'Staggering Smite': 'attack',
-  'Banishing Smite': 'attack',
   'Blinding Smite': 'attack',
   'Divine Favor': 'attack',
   'Hex': 'attack',
   "Hunter's Mark": 'attack',
-  'Crusader\'s Mantle': 'attack',
   'Spirit Shroud': 'attack',
-  'Elemental Weapon': 'attack',
   // Conjurations / summons that exist primarily to attack things
   'Spiritual Weapon': 'attack',
   'Flame Blade': 'attack',
@@ -24932,31 +24870,25 @@ const SPELL_GROUP_OVERRIDES = {
   'Spike Growth': 'attack',
   'Spirit Guardians': 'attack',
   'Wall of Fire': 'attack',
-  'Cloud of Daggers': 'attack',
   'Blade Barrier': 'attack',
   'Sunbeam': 'attack',
-  'Shadow Blade': 'attack',
   'Arcane Hand': 'attack',
   'Arcane Sword': 'attack',
   'Conjure Animals': 'attack',
   'Conjure Elemental': 'attack',
   'Conjure Woodland Beings': 'attack',
   'Conjure Minor Elementals': 'attack',
-  'Conjure Volley': 'attack',
   'Insect Plague': 'attack',
   'Animate Objects': 'attack',
   'Animate Dead': 'attack',
   'Vampiric Touch': 'attack',
-  'Witch Bolt': 'attack',
   'Hellish Rebuke': 'attack',
   'Inflict Wounds': 'attack',
   'Guiding Bolt': 'attack',
-  'Hunger of Hadar': 'attack',
   'Sickening Radiance': 'attack',
   'Storm of Vengeance': 'attack',
   'Tsunami': 'attack',
   'Earthquake': 'attack',
-  'Grasping Vine': 'attack',
 
   // Healing-adjacent: HP buffs, condition removal, death prevention
   'Aid': 'heal',
@@ -41440,18 +41372,6 @@ function renderChoiceDialog(ch, kind) {
       })),
       field: 'draconicAncestryColor', // synthetic field; handler stores the object
       data: 'data-draconic-ancestry',
-    },
-    genasi_heritage: {
-      title: 'Genasi Heritage',
-      helper: 'Choose your elemental heritage. Determines bonus damage resistance and racial spells.',
-      options: [
-        { id: 'fire', name: 'Fire Genasi', desc: 'Resistance to fire damage. Reach to the Blaze (Produce Flame cantrip, Burning Hands 1/LR at L3).' },
-        { id: 'water', name: 'Water Genasi', desc: 'Resistance to acid damage. Call to the Wave (Shape Water cantrip, Create or Destroy Water 1/LR at L3).' },
-        { id: 'air', name: 'Air Genasi', desc: 'Unending Breath; Mingle with the Wind (Levitate 1/LR). No damage resistance (EEPC).' },
-        { id: 'earth', name: 'Earth Genasi', desc: 'Earth Walk; Merge with Stone (Pass Without Trace 1/LR). No damage resistance (EEPC).' },
-      ],
-      field: 'genasiHeritage',
-      data: 'data-genasi-heritage',
     },
   }[kind];
   if (!config) return '';
