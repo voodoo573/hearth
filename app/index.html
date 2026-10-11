@@ -3934,7 +3934,7 @@
   .hearth-toast {
     position: fixed;
     left: 50%;
-    bottom: calc(94px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(94px + var(--hearth-safe-bottom));
     transform: translateX(-50%) translateY(14px);
     z-index: 5000;
     max-width: min(91vw, 440px);
@@ -7771,35 +7771,45 @@
 @media (max-width:620px){ .spell-filter-row{grid-template-columns:1fr;} }
 
 
+/* v1.4.1 — one source of truth for safe areas. --hearth-native-* is written by the
+   Android app (HearthInsets plugin: real WindowInsets in CSS px, with a JS fallback),
+   because some devices report env(safe-area-inset-*) as 0 while the page still runs
+   under the status bar. In a browser the native values are unset, so this is plain env(). */
+:root {
+  --hearth-safe-top: max(env(safe-area-inset-top, 0px), var(--hearth-native-top, 0px));
+  --hearth-safe-right: max(env(safe-area-inset-right, 0px), var(--hearth-native-right, 0px));
+  --hearth-safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--hearth-native-bottom, 0px));
+  --hearth-safe-left: max(env(safe-area-inset-left, 0px), var(--hearth-native-left, 0px));
+}
 /* v0.93.1 — safe areas. On Android 15 edge-to-edge (and iOS home-screen apps
    with a translucent status bar) the page runs under the status and gesture
    bars; these keep the header, sticky bars, dialogs and toasts clear of them.
    In a normal browser tab every env() value is 0, so nothing moves. */
 .app {
-  padding-top: calc(18px + env(safe-area-inset-top, 0px));
-  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
-  padding-left: calc(16px + env(safe-area-inset-left, 0px));
-  padding-right: calc(16px + env(safe-area-inset-right, 0px));
+  padding-top: calc(18px + var(--hearth-safe-top));
+  padding-bottom: calc(100px + var(--hearth-safe-bottom));
+  padding-left: calc(16px + var(--hearth-safe-left));
+  padding-right: calc(16px + var(--hearth-safe-right));
 }
 body.hearth-wide .app {
-  padding-left: calc(28px + env(safe-area-inset-left, 0px));
-  padding-right: calc(28px + env(safe-area-inset-right, 0px));
+  padding-left: calc(28px + var(--hearth-safe-left));
+  padding-right: calc(28px + var(--hearth-safe-right));
 }
-.dm-run-top, .dm-map-top, body.hearth-wide .os-controls { top: env(safe-area-inset-top, 0px); }
-.dm-run-toolbar, .enemy-done-bar { padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+.dm-run-top, .dm-map-top, body.hearth-wide .os-controls { top: var(--hearth-safe-top); }
+.dm-run-toolbar, .enemy-done-bar { padding-bottom: calc(10px + var(--hearth-safe-bottom)); }
 .death-lock-backdrop, .death-outcome-backdrop {
-  padding: calc(18px + env(safe-area-inset-top, 0px)) calc(18px + env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) calc(18px + env(safe-area-inset-left, 0px));
+  padding: calc(18px + var(--hearth-safe-top)) calc(18px + var(--hearth-safe-right)) calc(18px + var(--hearth-safe-bottom)) calc(18px + var(--hearth-safe-left));
 }
 .dialog-backdrop {
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
+  padding-top: var(--hearth-safe-top);
+  padding-left: var(--hearth-safe-left);
+  padding-right: var(--hearth-safe-right);
 }
-.dialog-backdrop { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.dialog-backdrop { padding-bottom: var(--hearth-safe-bottom); }
 .skills-dialog-backdrop {
-  padding: calc(16px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px));
+  padding: calc(16px + var(--hearth-safe-top)) calc(16px + var(--hearth-safe-right)) calc(16px + var(--hearth-safe-bottom)) calc(16px + var(--hearth-safe-left));
 }
-.hearth-roll-toast { bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+.hearth-roll-toast { bottom: calc(18px + var(--hearth-safe-bottom)); }
   /* v1.1.0 — Live game link */
   .dm-link-btn.live { background: #2f5b3a; color: #eafaea; border-color: #86c892; }
   .dm-link-btn.live.warn { background: #7a5a1c; border-color: #f4d27a; }
@@ -7846,7 +7856,7 @@ body.hearth-wide .app {
   .link-char-opt em { font-size: 12px; opacity: 0.75; font-style: normal; }
   .link-join-status { min-height: 1.3em; margin-top: 8px; font-size: 14px; line-height: 1.4; }
   .link-join-status.err { color: #9a2a1e; }
-  .hearth-link-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 9000; width: min(460px, calc(100vw - 20px)); background: #1a1814; color: #f5efe2; border: 1px solid #c2a878; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); font-size: 14px; }
+  .hearth-link-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(76px + var(--hearth-safe-bottom)); z-index: 9000; width: min(460px, calc(100vw - 20px)); background: #1a1814; color: #f5efe2; border: 1px solid #c2a878; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); font-size: 14px; }
   .hearth-link-bar.your-turn { border-color: #f4d27a; box-shadow: 0 0 0 2px rgba(244,210,122,0.6), 0 8px 24px rgba(0,0,0,0.35); }
   .hearth-link-bar.away { opacity: 0.85; }
   .hearth-link-bar-main { display: flex; align-items: center; gap: 8px; width: 100%; background: none; border: 0; color: inherit; font: inherit; padding: 9px 12px; cursor: pointer; text-align: left; }
@@ -8582,7 +8592,7 @@ html:root .dialog {
   border-top: 1px solid var(--rs-gold-line);
   border-radius: var(--rs-r-xl) var(--rs-r-xl) 0 0;
   box-shadow: var(--rs-shadow-3), var(--rs-inset);
-  padding: 26px 22px calc(18px + env(safe-area-inset-bottom, 0px));
+  padding: 26px 22px calc(18px + var(--hearth-safe-bottom));
 }
 html:root[data-theme="dark"] .dialog {
   background: radial-gradient(120% 60% at 50% 0%, rgba(212, 160, 75, .10), transparent 60%), #1c140d;
@@ -8757,6 +8767,73 @@ html:root body .dm-difficulty-row button.dm-diff-btn.dm-diff-btn { font-family: 
 html:root .dm-tile-init.dm-tile-init-empty { align-self: flex-start; min-height: 58px; border-style: dashed; border-color: var(--gold); }
 html:root .dm-tile-init.dm-tile-init-empty .dm-tile-init-num { color: var(--gold-deep, var(--gold)); font-weight: 400; }
 html[data-theme="dark"] .dm-tile-init.dm-tile-init-empty .dm-tile-init-num { color: var(--gold); }
+/* v1.4.1 — contrast + states (light-theme audit at 390 / 773 / 1280).
+   Restyle .btn gave danger/success the pale --rs-btn2 fill while keeping cream text (1.1:1). */
+html:root .btn.danger:not(:disabled) {
+  background: linear-gradient(180deg, #8e2620, #6a1814); border: 1px solid #5a1410;
+  color: #fff4e2; text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
+  box-shadow: var(--rs-shadow-1), inset 0 1px 0 rgba(255, 200, 180, .18);
+}
+html:root .btn.danger:hover:not(:disabled), html:root .btn.danger:focus-visible:not(:disabled) {
+  background: linear-gradient(180deg, #7a1e1a, #4f100d); border-color: #3e0c0a; color: #fff;
+}
+html:root .btn.success:not(:disabled) {
+  background: linear-gradient(180deg, #55692f, #3d4f22); border: 1px solid #33431c;
+  color: #f8f6e6; text-shadow: 0 1px 0 rgba(0, 0, 0, .2);
+}
+html:root .btn.success:hover:not(:disabled) { background: linear-gradient(180deg, #4a5e2c, #34421e); color: #fff; }
+html[data-theme="dark"] .btn.danger:not(:disabled) { background: linear-gradient(180deg, #a03428, #7e2219); border-color: #c25a4a; color: #fff1dc; }
+html[data-theme="dark"] .btn.danger:hover:not(:disabled) { background: linear-gradient(180deg, #b23d30, #8a271d); }
+html[data-theme="dark"] .btn.success:not(:disabled) { background: linear-gradient(180deg, #4f6a32, #3a5024); border-color: #8aa66a; color: #f3f7e6; }
+/* one clear disabled look for every button: flat, dashed edge, muted but readable label */
+html:root .btn:disabled, html:root .btn[aria-disabled="true"] {
+  opacity: 1; cursor: not-allowed; transform: none; text-shadow: none; box-shadow: none;
+  background: repeating-linear-gradient(135deg, rgba(42, 26, 12, .05) 0 6px, transparent 6px 12px), var(--rs-card-sunk, var(--page-deep));
+  border: 1px dashed rgba(42, 26, 12, .38); color: #6a5236;
+}
+html:root .btn.danger:disabled { border-color: rgba(122, 30, 26, .55); color: #6e3a2e; }
+html[data-theme="dark"] .btn:disabled, html[data-theme="dark"] .btn[aria-disabled="true"] {
+  background: repeating-linear-gradient(135deg, rgba(243, 227, 192, .05) 0 6px, transparent 6px 12px), #1c140e;
+  border-color: rgba(243, 227, 192, .3); color: #b9a27a;
+}
+html[data-theme="dark"] .btn.danger:disabled { border-color: rgba(194, 90, 74, .6); color: #d0a090; }
+/* gold-filled controls: dark ink on a brighter gold in the light theme (was cream on gold, 2.4:1) */
+html:not([data-theme="dark"]) .dm-map-btn,
+html:not([data-theme="dark"]) .dm-map-btn:hover:not(:disabled),
+html:not([data-theme="dark"]) .dm-map-project,
+html:not([data-theme="dark"]) .dm-map-tool.dm-map-addmap,
+html:not([data-theme="dark"]) .ref-pill.on,
+html:not([data-theme="dark"]) .transfer-cat.active,
+html:not([data-theme="dark"]) .subclass-nag-btn {
+  background: linear-gradient(180deg, #cfa255, #b7893f) !important; border-color: #7a5828 !important;
+  color: #22140a !important; text-shadow: 0 1px 0 rgba(255, 240, 210, .35); font-weight: 700;
+}
+html:not([data-theme="dark"]) .subclass-nag-btn:hover { background: var(--ink) !important; color: var(--page) !important; text-shadow: none; }
+html:not([data-theme="dark"]) .link-acct-link { color: #5e4220; }
+html:not([data-theme="dark"]) .dm-hp-btn[data-dm-hp^="heal"] { color: #2c5a2c; }
+html[data-theme="dark"] .dm-hp-btn[data-dm-hp^="heal"] { color: #8cc08c; }
+html[data-theme="dark"] .dm-hp-btn[data-dm-hp^="dmg"] { color: #e08a7a; }
+html:not([data-theme="dark"]) .dm-diff-btn.easy { color: #2f5a3b; }
+html:not([data-theme="dark"]) .dm-diff-btn.medium { color: #634618; }
+html:not([data-theme="dark"]) .dm-diff-btn.hard { color: #7e4310; }
+html[data-theme="dark"] .dm-diff-btn.easy { color: #8cc09a; }
+html[data-theme="dark"] .dm-diff-btn.hard { color: #e49a5c; }
+html[data-theme="dark"] .dm-diff-btn.deadly { color: #e08a7a; }
+html:not([data-theme="dark"]) .dm-manage-btn { color: #5a4226 !important; border-color: #8a6a40 !important; }
+html:not([data-theme="dark"]) .dm-manage-btn:hover { color: var(--crimson) !important; border-color: var(--crimson) !important; }
+html:not([data-theme="dark"]) .hp-btn.heal { color: #3a4c20; border-color: #4a5e2c; }
+html:not([data-theme="dark"]) .hp-btn.more { color: #5a4226; }
+html:root .hearth-nudge-close { opacity: 1; color: var(--ink-faded); }
+/* round bar: buttons share the row evenly and never wrap their labels ("Start combat" broke onto two lines at 773) */
+html:root .dm-enc-roundbar-btns { flex: 1 1 auto; }
+html:root .dm-enc-roundbar-btns > .btn { flex: 1 1 auto; white-space: nowrap; }
+html:not([data-theme="dark"]) .dm-enc-round { color: var(--gold-deep); }
+html[data-theme="dark"] .dm-run-it-btn { background: #a03428 !important; border-color: #c25a4a !important; color: #fff1dc !important; }
+/* safe areas: the restyle's fixed dialog padding dropped the inset; add it back (0 in a browser) */
+html:root .dialog-backdrop.confirm-backdrop { padding: calc(16px + var(--hearth-safe-top)) calc(16px + var(--hearth-safe-right)) calc(16px + var(--hearth-safe-bottom)) calc(16px + var(--hearth-safe-left)); }
+@media (min-width: 600px) {
+  html:root .dialog-backdrop:not(.skills-dialog-backdrop) { padding: calc(24px + var(--hearth-safe-top)) calc(24px + var(--hearth-safe-right)) calc(24px + var(--hearth-safe-bottom)) calc(24px + var(--hearth-safe-left)); }
+}
 </style>
 </head>
 <body>
@@ -57367,7 +57444,7 @@ try { linkBoot(); } catch (e) { console.warn('Hearth live game boot failed:', e)
     t.id = 'hearth-update-toast';
     t.setAttribute('role', 'status');
     t.style.cssText = [
-      'position:fixed', 'left:50%', 'transform:translateX(-50%)', 'bottom:calc(76px + env(safe-area-inset-bottom, 0px))', 'z-index:99999',
+      'position:fixed', 'left:50%', 'transform:translateX(-50%)', 'bottom:calc(76px + var(--hearth-safe-bottom))', 'z-index:99999',
       'background:#1a1814', 'color:#f5efe2', 'border:1px solid #c2a878',
       'border-radius:999px', 'box-shadow:0 6px 18px rgba(0,0,0,.3)',
       'padding:8px 14px', 'max-width:calc(100vw - 24px)', 'white-space:nowrap', 'cursor:pointer',
