@@ -8784,7 +8784,9 @@ html:root .hearth-legal-where { color: var(--ink-faded); }
 html:root .hearth-legal-licence { margin: 6px 0; }
 html:root .hearth-legal-licence summary { cursor: pointer; font-weight: 600; min-height: 32px; display: flex; align-items: center; }
 html:root .hearth-legal-licence pre { white-space: pre-wrap; font-size: 11px; line-height: 1.4; max-height: 240px; overflow: auto; padding: 8px; background: var(--rs-card-sunk); border-radius: var(--rs-r-md); }
-.legal-note .legal-note-link { font: inherit; letter-spacing: inherit; color: inherit; background: none; border: 0; padding: 6px 4px; text-decoration: underline; cursor: pointer; }
+.legal-note .legal-note-link { font: inherit; letter-spacing: inherit; color: inherit; background: none; border: 0; padding: 6px 4px; text-decoration: underline; cursor: pointer; position: relative; }
+/* v1.5.0: 44px tap target without changing the note's layout */
+.legal-note .legal-note-link::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 44px; transform: translateY(-50%); }
 /* ---------- Report a bug dialog ---------- */
 html:root .hearth-bug { max-width: 480px; width: 100%; }
 html:root .hearth-bug-details { margin: 12px 0 6px; padding: 10px 12px; border-radius: var(--rs-r-md); background: var(--rs-card-sunk); border: 1px solid var(--rs-card-border); display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
