@@ -76,7 +76,7 @@ function block(id,t){const v=t.v,L=[];
   L.push(`  /* new hooks (see THEMES.md) */`);
   ['header-a','header-b','header-ink','header-sub','plate-ink','tex-grain','tex-shade'].forEach(k=>L.push(`  --${k}: ${v[k]};`));
   { const g=parse(v.gold),k=parse(v.ink); L.push(t.tone==='dark'||id==='contrast'?`  --gold-text: var(--gold);`:`  --gold-text: rgb(${g.slice(0,3).map((x,i)=>Math.round(x*.82+k[i]*.18)).join(', ')});   /* accent as text: a notch deeper for textures */`); }
-  { const c=parse(v.crimson),k=parse(v.ink),m=c.map((x,i)=>i<3?x*(t.tone==='dark'?.85:.78)+k[i]*(t.tone==='dark'?.15:.22):x); L.push(`  --crimson-ink: rgb(${m.slice(0,3).map(Math.round).join(', ')});`); }
+  { const c=parse(v.crimson),k=parse(v.ink),m=c.map((x,i)=>i<3?x*(t.tone==='dark'?.75:.78)+k[i]*(t.tone==='dark'?.25:.22):x); L.push(`  --crimson-ink: rgb(${m.slice(0,3).map(Math.round).join(', ')});`); }
   { const lt=(t.tone!=='dark' && Math.min(ratio(parse(v.leather),parse(v['card-surface'])),ratio(parse(v.leather),parse(v.page)))<4.5); L.push(`  --leather-text: ${lt?'var(--ink)':'var(--leather)'};${lt?'   /* light header: leather is too pale for titles */':''}`); }
   L.push(`  --control-fill: ${rgb(v.ink,hc?.10:.07)};`);
   L.push(`  --control-fill-hover: ${rgb(v.ink,hc?.2:.13)};`);

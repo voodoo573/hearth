@@ -107,7 +107,7 @@ html[data-palette="tavern"] {
   --tex-grain: rgba(255,200,140,.05);
   --tex-shade: rgba(0,0,0,.45);
   --gold-text: var(--gold);
-  --crimson-ink: rgb(239, 145, 121);
+  --crimson-ink: rgb(240, 155, 129);
   --leather-text: var(--leather);
   --control-fill: rgba(247, 228, 192, 0.07);
   --control-fill-hover: rgba(247, 228, 192, 0.13);
@@ -247,7 +247,7 @@ html[data-palette="forge"] {
   --tex-grain: rgba(255,255,255,.035);
   --tex-shade: rgba(0,0,0,.55);
   --gold-text: var(--gold);
-  --crimson-ink: rgb(248, 147, 132);
+  --crimson-ink: rgb(247, 158, 143);
   --leather-text: var(--leather);
   --control-fill: rgba(237, 235, 231, 0.07);
   --control-fill-hover: rgba(237, 235, 231, 0.13);
@@ -317,7 +317,7 @@ html[data-palette="arcane"] {
   --tex-grain: rgba(255,245,210,.5);
   --tex-shade: rgba(0,0,10,.5);
   --gold-text: var(--gold);
-  --crimson-ink: rgb(252, 142, 157);
+  --crimson-ink: rgb(251, 153, 169);
   --leather-text: var(--leather);
   --control-fill: rgba(238, 237, 255, 0.07);
   --control-fill-hover: rgba(238, 237, 255, 0.13);
@@ -457,7 +457,7 @@ html[data-palette="infernal"] {
   --tex-grain: rgba(255,140,90,.045);
   --tex-shade: rgba(0,0,0,.55);
   --gold-text: var(--gold);
-  --crimson-ink: rgb(253, 128, 111);
+  --crimson-ink: rgb(252, 140, 123);
   --leather-text: var(--leather);
   --control-fill: rgba(241, 230, 210, 0.07);
   --control-fill-hover: rgba(241, 230, 210, 0.13);
@@ -525,7 +525,7 @@ html[data-palette="contrast"] {
   --tex-grain: transparent;
   --tex-shade: transparent;
   --gold-text: var(--gold);
-  --crimson-ink: rgb(255, 139, 139);
+  --crimson-ink: rgb(255, 152, 152);
   --leather-text: var(--leather);
   --control-fill: rgba(255, 255, 255, 0.1);
   --control-fill-hover: rgba(255, 255, 255, 0.2);
@@ -665,7 +665,7 @@ html[data-palette="hoard"] {
   --tex-grain: rgba(245,201,76,.05);
   --tex-shade: rgba(0,0,0,.5);
   --gold-text: var(--gold);
-  --crimson-ink: rgb(254, 140, 121);
+  --crimson-ink: rgb(253, 152, 131);
   --leather-text: var(--leather);
   --control-fill: rgba(247, 238, 203, 0.07);
   --control-fill-hover: rgba(247, 238, 203, 0.13);
