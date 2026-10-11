@@ -101,6 +101,7 @@ module.exports = {
     top:'#141c86', bottom:'#06073a', deep:'#101a7c',
     ha:'#b9c0cc', hb:'#eef1f6', hink:'#14208f', hsub:'#24305a', plate:'#0e1660', btn:['#dfe4ec','#b4bcc8'], btnInk:'#101a80',
     line:'#c8d2e4', glow:'#e6ecff', stain:'#3a5aff', stain2:'#c8d2e4', grain:'rgba(220,228,245,.05)', focus:'#e6ecff'}),
+  // Scott's Royal Marine: stripe order everywhere is yellow (gold) / green / red, drawn by build2.js (tail rules)
   'scott-marine': mk({name:"Scott's Royal Marine", from:'custom · for Scott · Royal Marines colours', tone:'dark', texture:'none', themeColor:'#081426',
     blurb:'Deep navy with gold lettering and brass buttons, edged with thin red and green regimental stripes like a stable belt; crisp and military.',
     page:'#05162a', card:'#0c2b4b', ink:'#f4efdf', soft:'#ddd6c0', faded:'#bfb79c', label:'#c9c0a2', gold:'#f5c518', crimson:'#ff7671', moss:'#5fd47a', temp:'#7fd0f0', indigo:'#a8c0ff',

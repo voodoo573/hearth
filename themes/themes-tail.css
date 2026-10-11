@@ -90,7 +90,7 @@ html:root[data-cards="flat"] :is(.home-tile, .ai-card, .vitals, .gear-summary-ca
 html:root[data-cards="framed"] :is(.home-tile, .ai-card, .vitals, .gear-summary-card, .gear-section, .defense-item, .prep-status,
   .spellbook-slots-top, .cond-strip, .coin-strip, .xp-strip, .slots-bar, .rest-status, .vellum-box, .card,
   .feature, .panel, .stat-card, .ability-card, .settings-size-card, .rules-home, .option-card, .spell-card) {
-  background: var(--page-deep);
+  background: var(--card-surface);   /* v1.5.0: text colours are tuned for cards; page-deep cost ~0.5 of contrast */
   box-shadow: inset 4px 0 0 var(--gold);
   border: 2px solid var(--rule);
 }
