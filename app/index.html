@@ -9767,6 +9767,15 @@ html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-
 /* painted-map overlays (fire/water/lava…): Lumi, gate the canvas loop on
    document.documentElement.dataset.motion === 'reduced' as well as the media query. */
 
+/* v1.5.0: dark colour themes repaint dialogs and sheets. The classic Dark theme
+   pins every .dialog to leather #1a120c with !important; without this the
+   Settings sheet, pickers and popups kept a brown frame on Arcane, Frost-dark,
+   Scott's themes etc. Light palettes already follow --page. */
+html[data-palette][data-theme="dark"] :is(.dialog, .browse-dialog, .dialog.browse-dialog, .death-outcome-dialog) { background: var(--page) !important; }
+html[data-palette][data-theme="dark"] .death-outcome-dialog.dead { background: linear-gradient(180deg, var(--page) 0%, rgba(110, 24, 24, 0.35) 100%) !important; }
+html[data-palette][data-theme="dark"] :is(.roll-log, .roll-log-body, .dice-tray) { background: var(--page); }
+html[data-palette][data-theme="dark"] .dialog :is(.browse-row, .dialog-option, .card, .feature, .option-card):not(.selected) { background: var(--card-surface); }
+
 
 /* =====================================================================
    Hearth — theme batch 2: class & ancestry themes        (Jenny, art)
