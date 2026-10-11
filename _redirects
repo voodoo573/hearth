@@ -1,5 +1,10 @@
 # Hearth redirect rules. Netlify reads top to bottom.
 
+# Internal docs (docs/, incl. docs/legal) are not published: always 404,
+# even though the SPA fallback below would otherwise answer 200.
+/docs    /docs-not-published  404!
+/docs/*  /docs-not-published  404!
+
 # Pretty path for the app — both /app and /app/ serve the app
 /app    /app/index.html  200
 
