@@ -1,8 +1,8 @@
 # Data protection impact assessment (DPIA): Hearth
 
 - **Service:** Hearth (hearthdnd.org and the Android app `org.hearthdnd.app`), v1.4.x
-- **Controller:** Thomas Dalton, [OPERATOR POSTAL ADDRESS]. Contact: hearthdnd@gmail.com
-- **Prepared:** 11 October 2026 (draft, legal-fixes branch). **Approved by / date:** [NAME, DATE]
+- **Controller:** Thomas Dalton (United Kingdom). Contact: hearthdnd@gmail.com (email only)
+- **Prepared:** 11 October 2026 **Approved by / date:** Thomas Dalton, 11 October 2026
 - **Status:** a light-touch DPIA. A DPIA isn't clearly *mandatory* here, since there's no large-scale or high-risk processing. The ICO's Children's Code expects one for services likely to be accessed by under-18s, so this is it.
 
 ## 1. What the processing is

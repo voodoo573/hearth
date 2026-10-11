@@ -8885,7 +8885,7 @@ html:root .dialog-backdrop.confirm-backdrop { padding: calc(16px + var(--hearth-
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '1.4.1';
+const HEARTH_VERSION = '1.4.2';
 // v1.4.0 — automatic local backup before each app update. Captured here, at
 // the very start, before anything can migrate stored data; written to
 // IndexedDB later (hearthProcessPreUpdate) and the last 3 are kept.
@@ -57478,7 +57478,7 @@ try { linkBoot(); } catch (e) { console.warn('Hearth live game boot failed:', e)
 // control the page reloads once by itself unless you are mid-edit (typing, a
 // popup open, or the character builder), in which case the toast stays up.
 (function () {
-  const APP_VERSION = 'v1.4.1';
+  const APP_VERSION = 'v1.4.2';
   window.HEARTH_VERSION = APP_VERSION;
 
   function hearthHasUnsavedEdits() {
