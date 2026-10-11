@@ -63,6 +63,48 @@ html[data-palette="dawn"], html[data-palette="warpaint"], html[data-palette="mou
 `;
 const P2b=Object.fromEntries(Object.entries(P2).map(([id,t])=>[id,{...t,name:`${t.name} (${t.from})`}]));
 const tail=`
+/* Scott's Ultramarine: brushed-silver fine-line texture (own layer, CSS-only) */
+html[data-palette="scott-ultramarine"] {
+  --tex-brushed:
+    repeating-linear-gradient(0deg, transparent 0 2px, var(--tex-grain) 2px 3px, transparent 3px 5px, rgba(255, 255, 255, .025) 5px 6px),
+    linear-gradient(100deg, transparent 20%, rgba(200, 215, 255, .05) 45%, transparent 70%),
+    radial-gradient(ellipse at 50% 0%, rgba(60, 90, 255, .18), transparent 60%);
+}
+html[data-palette="scott-ultramarine"] .header-compact {
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0) 0 1px, rgba(255, 255, 255, .22) 1px 2px),
+    linear-gradient(180deg, var(--header-b) 0%, var(--header-a) 100%);
+  border-color: #eef1f6;
+}
+
+/* Scott's Royal Marine: regimental stripes (red / gold / green, stable-belt style).
+   Purely decorative bands; no text sits on them. */
+html[data-palette="scott-marine"] { --rm-red: #c8102e; --rm-gold: #f5c518; --rm-green: #2e8b3a; }
+html[data-palette="scott-marine"] .header-compact {
+  background:
+    linear-gradient(var(--rm-red), var(--rm-red)) 0 100% / 100% 4px no-repeat,
+    linear-gradient(var(--rm-gold), var(--rm-gold)) 0 calc(100% - 4px) / 100% 2px no-repeat,
+    linear-gradient(var(--rm-green), var(--rm-green)) 0 calc(100% - 6px) / 100% 4px no-repeat,
+    linear-gradient(135deg, var(--header-a), var(--header-b));
+  border-color: rgba(245, 197, 24, .7);
+  padding-bottom: 20px;
+}
+html:root[data-palette="scott-marine"] .stats-bar {
+  background:
+    linear-gradient(var(--rm-red), var(--rm-red)) 0 0 / 100% 3px no-repeat,
+    linear-gradient(var(--rm-gold), var(--rm-gold)) 0 3px / 100% 2px no-repeat,
+    linear-gradient(var(--rm-green), var(--rm-green)) 0 5px / 100% 3px no-repeat,
+    linear-gradient(180deg, var(--header-b) 0%, var(--header-a) 100%);
+}
+html:root[data-palette="scott-marine"] .home-tile {
+  box-shadow: var(--rs-shadow-1), var(--rs-inset), inset 3px 0 0 var(--rm-red), inset 5px 0 0 var(--rm-gold), inset 8px 0 0 var(--rm-green);
+  padding-left: 22px;
+}
+html:root[data-palette="scott-marine"] .vitals {
+  box-shadow: var(--rs-shadow-1), var(--rs-inset), inset 0 3px 0 var(--rm-red), inset 0 5px 0 var(--rm-gold), inset 0 8px 0 var(--rm-green);
+  padding-top: 14px;
+}
+html:root[data-palette="scott-marine"] .tab.active::after { background: var(--rm-gold); box-shadow: 0 2px 0 var(--rm-red); }
+
 /* texture overrides must come after the palette blocks above */
 html[data-texture="parchment"] { --page-texture: var(--tex-parchment); }
 html[data-texture="leather"]   { --page-texture: var(--tex-leather); }

@@ -19,6 +19,8 @@ Same checks and worst-case method as contrast.md (batch 1). AA body text 4.5:1, 
 | Clockwork | artificer · gnome | dark | 10.00 | 6.65 | 5.02 | 5.05 | 5.37 | 4.93 | pass (14/14) |
 | Dragonscale | dragonborn | dark | 10.96 | 7.21 | 4.90 | 5.40 | 4.75 | 5.66 | pass (14/14) |
 | Honeyed Hollow | halfling | light | 9.87 | 5.77 | 4.81 | 4.96 | 4.51 | 5.99 | pass (14/14) |
+| Scott's Ultramarine | custom · for Scott | dark | 9.38 | 7.72 | 5.98 | 6.42 | 7.49 | 5.08 | pass (14/14) |
+| Scott's Royal Marine | custom · for Scott · Royal Marines colours | dark | 10.50 | 8.31 | 6.02 | 6.64 | 7.41 | 4.65 | pass (14/14) |
 
 Colours nudged by build2.js to reach their target: dawn ink-faded #736e62→#635f54; dawn rs-label-ink #6b6659→#615c51; wildwood ink-faded #9d9d87→#a2a28d; surge header-sub #ffe0f0→#ffeaf6; warpaint ink-faded #64615d→#565350; warpaint rs-label-ink #5c5955→#53514d; warpaint gold #a2340f→#9a310e; mountain ink-faded #6b6c65→#575852; mountain rs-label-ink #63645e→#555651; mountain gold #a14800→#994400; banner ink-faded #575a5f→#474a4e; banner rs-label-ink #4f5257→#474a4f; banner gold #7a5c00→#644b00; banner focus #897127→#7c6623; clockwork ink-faded #97a8a9→#a1b0b1; hollow ink-faded #736237→#5e502d; hollow rs-label-ink #6b5b32→#5c4e2c; hollow gold #8a4a00→#834600.
 
@@ -268,4 +270,42 @@ Colours nudged by build2.js to reach their target: dawn ink-faded #736e62→#635
 | Ability plate text (plate-ink) | `#fbf6dc` | 5.85:1 | 4.5 | pass |
 | Primary button text | `#ffffff` | 6.36:1 | 4.5 | pass |
 | Focus ring vs page (non-text) | `#9d6418` | 3.00:1 | 3 | pass |
+
+## Scott's Ultramarine · custom · for Scott
+
+| Check | Colour | Ratio | Needs | |
+|---|---|---|---|---|
+| Body text (ink) | `#f2f5fa` | 9.38:1 | 4.5 | pass |
+| Secondary text (ink-soft) | `#d9e0ec` | 7.72:1 | 4.5 | pass |
+| Faded/meta text (ink-faded) | `#bcc6dc` | 5.98:1 | 4.8 | pass |
+| Small caps labels (rs-label-ink) | `#c4cde0` | 6.42:1 | 4.8 | pass |
+| Accent text (gold) on page | `#cfdcff` | 9.96:1 | 4.5 | pass |
+| Accent text (gold) on cards | `#cfdcff` | 7.49:1 | 4.5 | pass |
+| Danger/low HP (crimson) on cards | `#ff9aa4` | 5.08:1 | 4.5 | pass |
+| Heal (moss) on cards | `#a8eca0` | 7.41:1 | 4.5 | pass |
+| Temp HP on cards | `#8ae6ff` | 7.25:1 | 4.5 | pass |
+| Wordmark on header plate | `#14208f` | 7.03:1 | 3 | pass |
+| Header subtitle (9px caps) | `#24305a` | 6.97:1 | 4.5 | pass |
+| Ability plate text (plate-ink) | `#0e1660` | 8.81:1 | 4.5 | pass |
+| Primary button text | `#101a80` | 7.40:1 | 4.5 | pass |
+| Focus ring vs page (non-text) | `#e6ecff` | 11.56:1 | 3 | pass |
+
+## Scott's Royal Marine · custom · for Scott · Royal Marines colours
+
+| Check | Colour | Ratio | Needs | |
+|---|---|---|---|---|
+| Body text (ink) | `#f4efdf` | 10.50:1 | 4.5 | pass |
+| Secondary text (ink-soft) | `#ddd6c0` | 8.31:1 | 4.5 | pass |
+| Faded/meta text (ink-faded) | `#bfb79c` | 6.02:1 | 4.8 | pass |
+| Small caps labels (rs-label-ink) | `#c9c0a2` | 6.64:1 | 4.8 | pass |
+| Accent text (gold) on page | `#f5c518` | 9.59:1 | 4.5 | pass |
+| Accent text (gold) on cards | `#f5c518` | 7.41:1 | 4.5 | pass |
+| Danger/low HP (crimson) on cards | `#ff7671` | 4.65:1 | 4.5 | pass |
+| Heal (moss) on cards | `#5fd47a` | 6.43:1 | 4.5 | pass |
+| Temp HP on cards | `#7fd0f0` | 7.01:1 | 4.5 | pass |
+| Wordmark on header plate | `#f5c518` | 7.97:1 | 3 | pass |
+| Header subtitle (9px caps) | `#e8dcb4` | 9.49:1 | 4.5 | pass |
+| Ability plate text (plate-ink) | `#f4efdf` | 11.30:1 | 4.5 | pass |
+| Primary button text | `#0a1426` | 6.61:1 | 4.5 | pass |
+| Focus ring vs page (non-text) | `#f5c518` | 9.59:1 | 3 | pass |
 

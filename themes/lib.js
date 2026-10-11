@@ -45,6 +45,8 @@ function semantic(tone,hc){
     ? {turn:'#f0b450','turn-soft':'rgba(240, 180, 80, .16)',select:'#6fb0f0','select-soft':'rgba(111, 176, 240, .26)'}
     : {turn:'#8a5408','turn-soft':'rgba(200, 130, 20, .18)',select:'#1b5fa8','select-soft':'rgba(27, 95, 168, .20)'};
 }
+// per-palette DM selection colour (Scott's Ultramarine: white, since blue would vanish on the ultramarine page)
+const SELECT_OVERRIDE={'scott-ultramarine':{select:'#ffffff','select-soft':'rgba(255, 255, 255, .16)','select-map':'#ffffff'}};
 // ---------- CSS ----------
 const appTokens=['page','page-deep','page-edge','page-stain-dark','page-stain','ink','ink-soft','ink-faded','ink-ghost','leather','leather-deep','leather-soft',
  'crimson','oxblood','crimson-soft','gold','gold-deep','moss','temp-hp','indigo','rule','rule-soft','page-grad-top','page-grad-bottom','card-surface','card-border','card-shadow','hp-fill-start','hp-fill-end'];
@@ -80,6 +82,8 @@ function block(id,t){const v=t.v,L=[];
   L.push(`  --control-fill-hover: ${rgb(v.ink,hc?.2:.13)};`);
   L.push(`  --page-texture: var(--tex-${t.texture});`);
   L.push(`  /* v1.5.0 semantic colours: amber = whose turn, blue = DM selection (same meaning in every theme) */`);
-  Object.entries(semantic(t.tone,hc)).forEach(([k,c])=>L.push(`  --${k}: ${c};`));
+  const sem=semantic(t.tone,hc);
+  if(SELECT_OVERRIDE[id]) Object.assign(sem,SELECT_OVERRIDE[id]);
+  Object.entries(sem).forEach(([k,c])=>L.push(`  --${k}: ${c};`));
   L.push(`}`); return L.join('\n');}
 module.exports={parse,over,lum,ratio,audit,BASE,appTokens,rgb,block,semantic};

@@ -98,7 +98,7 @@ const css2=fs.readFileSync(__dirname+'/themes-2.css','utf8');
 const APP=__dirname+'/../app/index.html';
 if(fs.existsSync(APP)){const h=fs.readFileSync(APP,'utf8');const re=/(<style id="hearthThemes">\n)[\s\S]*?(<\/style>)/;
   if(!re.test(h)) throw new Error('no <style id="hearthThemes"> block in app/index.html');
-  const data={};for(const [id,t] of [...Object.entries(P),...Object.entries(P2)]){data[id]={name:t.name,tone:t.tone,color:t.themeColor,texture:t.texture,group:P2[id]?'classes':(id==='contrast'?'classic':'places')}; if(t.from)data[id].from=t.from;
+  const data={};for(const [id,t] of [...Object.entries(P),...Object.entries(P2)]){data[id]={name:t.name,tone:t.tone,color:t.themeColor,texture:t.texture,group:id.startsWith('scott-')?'friends':P2[id]?'classes':(id==='contrast'?'classic':'places')}; if(t.from)data[id].from=t.from;
     if(t.font)data[id].font=t.font; if(t.cards)data[id].cards=t.cards; if(t.optional)data[id].optional=true;
     data[id].blurb=t.blurb.split(/[;]/)[0].replace(/\.$/,'')+'.'; data[id].sw=[t.v.page,t.v['card-surface'],t.v.ink,t.v.gold,t.v['header-b'],t.v.crimson];}
   const re2=/\/\* @palettes \*\/[\s\S]*?\/\* @palettes-end \*\//; let h2=h.replace(re,(m,a,b)=>a+css+'\n'+css2+b);

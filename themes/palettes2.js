@@ -14,7 +14,7 @@ function mk(o){
   v['page-edge']=d?mix(card,ink,.14):mix(page,ink,.22);
   v['card-border']=d?rgba(o.line||gold,.27):rgba(o.line||ink,.26);
   v['card-shadow']=d?'rgba(0,0,0,.5)':rgba(ink,.15);
-  v.ink=ink; v['ink-soft']=o.soft||mix(ink,page,.2); v['ink-faded']=mix(ink,page,.36); v['rs-label-ink']=mix(ink,page,.32); v['ink-ghost']=mix(ink,page,.7);
+  v.ink=ink; v['ink-soft']=o.soft||mix(ink,page,.2); v['ink-faded']=o.faded||mix(ink,page,.36); v['rs-label-ink']=o.label||mix(ink,page,.32); v['ink-ghost']=mix(ink,page,.7);
   v.leather=o.hb; v['leather-deep']=o.ha; v['leather-soft']=mix(o.hb,ink,.15);
   v.crimson=o.crimson; v.oxblood=o.crimson; v['crimson-soft']=o.crimson;
   v.gold=gold; v['gold-deep']=mix(gold,page,.18);
@@ -95,4 +95,16 @@ module.exports = {
     page:'#f5d986', card:'#fff3c8', top:'#fbe8a8', ink:'#2a1f0a', gold:'#8a4a00', crimson:'#a01c1c', moss:'#2e6a1c', temp:'#1d5a6a', indigo:'#2c3a70',
     ha:'#1e3a14', hb:'#3f6a26', hink:'#ffd45a', hsub:'#d8ecb8', plate:'#fbf6dc', btn:['#3f6a26','#2a4c18'], btnInk:'#ffffff',
     stain:'#d89a20', stain2:'#7aa040'}),
+  'scott-ultramarine': mk({name:"Scott's Ultramarine", from:'custom · for Scott', tone:'dark', texture:'brushed', themeColor:'#0b0c5a',
+    blurb:'Saturated true-ultramarine panels, polished-silver lettering and borders under a brushed-silver header band; bold, cool and crisp.',
+    page:'#0b0c5a', card:'#16249a', ink:'#f2f5fa', soft:'#d9e0ec', faded:'#bcc6dc', label:'#c4cde0', gold:'#cfdcff', crimson:'#ff9aa4', moss:'#a8eca0', temp:'#8ae6ff', indigo:'#ffffff',
+    top:'#141c86', bottom:'#06073a', deep:'#101a7c',
+    ha:'#b9c0cc', hb:'#eef1f6', hink:'#14208f', hsub:'#24305a', plate:'#0e1660', btn:['#dfe4ec','#b4bcc8'], btnInk:'#101a80',
+    line:'#c8d2e4', glow:'#e6ecff', stain:'#3a5aff', stain2:'#c8d2e4', grain:'rgba(220,228,245,.05)', focus:'#e6ecff'}),
+  'scott-marine': mk({name:"Scott's Royal Marine", from:'custom · for Scott · Royal Marines colours', tone:'dark', texture:'none', themeColor:'#081426',
+    blurb:'Deep navy with gold lettering and brass buttons, edged with thin red and green regimental stripes like a stable belt; crisp and military.',
+    page:'#05162a', card:'#0c2b4b', ink:'#f4efdf', soft:'#ddd6c0', faded:'#bfb79c', label:'#c9c0a2', gold:'#f5c518', crimson:'#ff7671', moss:'#5fd47a', temp:'#7fd0f0', indigo:'#a8c0ff',
+    top:'#0a2442', bottom:'#020a14', deep:'#082038',
+    ha:'#04101f', hb:'#0e3258', hink:'#f5c518', hsub:'#e8dcb4', plate:'#f4efdf', btn:['#e8b820','#c2940e'], btnInk:'#0a1426',
+    line:'#d4a83a', glow:'#ffe6a0', stain:'#f5c518', stain2:'#2e8b3a', focus:'#f5c518', hpEnd:'#5fd47a'}),
 };

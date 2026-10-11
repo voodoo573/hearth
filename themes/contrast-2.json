@@ -1533,6 +1533,242 @@
      "pass": true
     }
    ]
+  },
+  "scott-ultramarine": {
+   "name": "Scott's Ultramarine",
+   "from": "custom · for Scott",
+   "rows": [
+    {
+     "label": "Body text (ink)",
+     "k": "ink",
+     "val": "#f2f5fa",
+     "ratio": 9.381290537624274,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Secondary text (ink-soft)",
+     "k": "ink-soft",
+     "val": "#d9e0ec",
+     "ratio": 7.724889581502064,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Faded/meta text (ink-faded)",
+     "k": "ink-faded",
+     "val": "#bcc6dc",
+     "ratio": 5.979905841377482,
+     "min": 4.8,
+     "pass": true
+    },
+    {
+     "label": "Small caps labels (rs-label-ink)",
+     "k": "rs-label-ink",
+     "val": "#c4cde0",
+     "ratio": 6.422528010292339,
+     "min": 4.8,
+     "pass": true
+    },
+    {
+     "label": "Accent text (gold) on page",
+     "k": "gold",
+     "val": "#cfdcff",
+     "ratio": 9.956780546221898,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Accent text (gold) on cards",
+     "k": "gold",
+     "val": "#cfdcff",
+     "ratio": 7.485939304002336,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Danger/low HP (crimson) on cards",
+     "k": "crimson",
+     "val": "#ff9aa4",
+     "ratio": 5.082111959442337,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Heal (moss) on cards",
+     "k": "moss",
+     "val": "#a8eca0",
+     "ratio": 7.406073368508015,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Temp HP on cards",
+     "k": "temp-hp",
+     "val": "#8ae6ff",
+     "ratio": 7.2462528135652065,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Wordmark on header plate",
+     "k": "header-ink",
+     "val": "#14208f",
+     "ratio": 7.026795222487943,
+     "min": 3,
+     "pass": true
+    },
+    {
+     "label": "Header subtitle (9px caps)",
+     "k": "header-sub",
+     "val": "#24305a",
+     "ratio": 6.973634693064651,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Ability plate text (plate-ink)",
+     "k": "plate-ink",
+     "val": "#0e1660",
+     "ratio": 8.810773721490555,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Primary button text",
+     "k": "btn-ink",
+     "val": "#101a80",
+     "ratio": 7.403328900324664,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Focus ring vs page (non-text)",
+     "k": "focus",
+     "val": "#e6ecff",
+     "ratio": 11.562152349759588,
+     "min": 3,
+     "pass": true
+    }
+   ]
+  },
+  "scott-marine": {
+   "name": "Scott's Royal Marine",
+   "from": "custom · for Scott · Royal Marines colours",
+   "rows": [
+    {
+     "label": "Body text (ink)",
+     "k": "ink",
+     "val": "#f4efdf",
+     "ratio": 10.503481921853924,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Secondary text (ink-soft)",
+     "k": "ink-soft",
+     "val": "#ddd6c0",
+     "ratio": 8.314887058509951,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Faded/meta text (ink-faded)",
+     "k": "ink-faded",
+     "val": "#bfb79c",
+     "ratio": 6.022209389135056,
+     "min": 4.8,
+     "pass": true
+    },
+    {
+     "label": "Small caps labels (rs-label-ink)",
+     "k": "rs-label-ink",
+     "val": "#c9c0a2",
+     "ratio": 6.641390454758284,
+     "min": 4.8,
+     "pass": true
+    },
+    {
+     "label": "Accent text (gold) on page",
+     "k": "gold",
+     "val": "#f5c518",
+     "ratio": 9.585487554916828,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Accent text (gold) on cards",
+     "k": "gold",
+     "val": "#f5c518",
+     "ratio": 7.410568262952287,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Danger/low HP (crimson) on cards",
+     "k": "crimson",
+     "val": "#ff7671",
+     "ratio": 4.6491263435662065,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Heal (moss) on cards",
+     "k": "moss",
+     "val": "#5fd47a",
+     "ratio": 6.434250494934464,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Temp HP on cards",
+     "k": "temp-hp",
+     "val": "#7fd0f0",
+     "ratio": 7.008361995422016,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Wordmark on header plate",
+     "k": "header-ink",
+     "val": "#f5c518",
+     "ratio": 7.972491401829929,
+     "min": 3,
+     "pass": true
+    },
+    {
+     "label": "Header subtitle (9px caps)",
+     "k": "header-sub",
+     "val": "#e8dcb4",
+     "ratio": 9.485839512711184,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Ability plate text (plate-ink)",
+     "k": "plate-ink",
+     "val": "#f4efdf",
+     "ratio": 11.29993225079555,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Primary button text",
+     "k": "btn-ink",
+     "val": "#0a1426",
+     "ratio": 6.605133697695288,
+     "min": 4.5,
+     "pass": true
+    },
+    {
+     "label": "Focus ring vs page (non-text)",
+     "k": "focus",
+     "val": "#f5c518",
+     "ratio": 9.585487554916828,
+     "min": 3,
+     "pass": true
+    }
+   ]
   }
  },
  "near": {
@@ -1552,8 +1788,8 @@
     7.163161382238746
    ],
    "b2": [
-    "Eldritch Deep",
-    8.418322455938137
+    "Scott's Royal Marine",
+    8.206566992244372
    ]
   },
   "wildwood": {
@@ -1602,8 +1838,8 @@
     6.733133725605094
    ],
    "b2": [
-    "Nightshade",
-    10.145026560213836
+    "Scott's Royal Marine",
+    9.82914171519289
    ]
   },
   "warpaint": {
@@ -1664,6 +1900,26 @@
    "b2": [
     "Warpaint",
     8.796130793332784
+   ]
+  },
+  "scott-ultramarine": {
+   "b1": [
+    "Arcane Tower",
+    19.523507048177315
+   ],
+   "b2": [
+    "Moonsilver",
+    17.9148825021489
+   ]
+  },
+  "scott-marine": {
+   "b1": [
+    "Arcane Tower",
+    4.484831913010983
+   ],
+   "b2": [
+    "Nightshade",
+    8.206566992244372
    ]
   }
  },
