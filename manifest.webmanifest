@@ -1,7 +1,7 @@
 {
-  "name": "Hearth — D&D Companion",
+  "name": "Hearth — 5e Companion",
   "short_name": "Hearth",
-  "description": "A leather-bound companion app for D&D 5e — characters, combat, spells, and lore in one place.",
+  "description": "A leather-bound companion app for 5e-compatible tabletop RPGs — characters, combat, spells, and lore in one place.",
   "id": "/app/",
   "start_url": "/app/",
   "scope": "/app/",

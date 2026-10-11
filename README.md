@@ -1,6 +1,6 @@
 # Hearth — Netlify deploy bundle
 
-A complete static deployment of Hearth, the D&D companion app, with a
+A complete static deployment of Hearth, the 5e-compatible tabletop RPG companion app, with a
 landing page and Progressive Web App (PWA) installation.
 
 ## What's in here

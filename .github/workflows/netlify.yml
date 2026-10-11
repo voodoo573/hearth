@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: 20
       - name: Prepare site folder
-        run: rsync -a --exclude '.git' --exclude '.github' ./ _site/
+        run: rsync -a --exclude '.git' --exclude '.github' --exclude '/docs' ./ _site/  # docs/ stays in the repo but is never published
       - name: Deploy to production (main)
         if: github.event_name != 'pull_request'
         run: npx --yes netlify-cli@17 deploy --prod --dir _site --message "main ${GITHUB_SHA::7}"
