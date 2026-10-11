@@ -12569,28 +12569,7 @@ const SUBCLASSES_55 = {
 };
 
 // Battle Master maneuvers (2024). Each is selectable; the count known scales with level.
-const MANEUVERS_55 = {
-  ambush: { name: 'Ambush', desc: 'Add a Superiority Die to a Dexterity (Stealth) check or an initiative roll (unless Incapacitated).' },
-  'bait-and-switch': { name: 'Bait and Switch', desc: 'Expend a die to switch places with a willing creature within 5 ft (no Opportunity Attacks); you or it gains AC bonus = die roll until your next turn.' },
-  'commanders-strike': { name: "Commander's Strike", desc: 'Replace one attack to let a willing creature use its Reaction to attack, adding the die to its damage.' },
-  'commanding-presence': { name: 'Commanding Presence', desc: 'Add a die to a Charisma (Intimidation, Performance, or Persuasion) check.' },
-  'disarming-attack': { name: 'Disarming Attack', desc: 'On a hit, add the die to damage; target makes a Strength save or drops one held object.' },
-  'distracting-strike': { name: 'Distracting Strike', desc: 'On a hit, add the die to damage; the next attack against the target by someone else has Advantage.' },
-  'evasive-footwork': { name: 'Evasive Footwork', desc: 'As a Bonus Action, Disengage and add the die to your AC until your next turn.' },
-  'feinting-attack': { name: 'Feinting Attack', desc: 'As a Bonus Action, gain Advantage on your next attack vs a creature within 5 ft; on a hit add the die to damage.' },
-  'goading-attack': { name: 'Goading Attack', desc: 'On a hit, add the die to damage; target makes a Wisdom save or has Disadvantage attacking anyone but you until end of your next turn.' },
-  'lunging-attack': { name: 'Lunging Attack', desc: 'As a Bonus Action, Dash; if you moved 5+ ft in a straight line before a melee hit, add the die to damage.' },
-  'maneuvering-attack': { name: 'Maneuvering Attack', desc: 'On a hit, add the die to damage; a willing ally can use its Reaction to move half its Speed without provoking the target.' },
-  'menacing-attack': { name: 'Menacing Attack', desc: 'On a hit, add the die to damage; target makes a Wisdom save or is Frightened until end of your next turn.' },
-  parry: { name: 'Parry', desc: 'As a Reaction when a melee attack damages you, reduce the damage by the die roll + your Str or Dex modifier.' },
-  'precision-attack': { name: 'Precision Attack', desc: 'When you miss, expend a die and add it to the attack roll, potentially turning it into a hit.' },
-  'pushing-attack': { name: 'Pushing Attack', desc: 'On a hit, add the die to damage; a Large-or-smaller target makes a Strength save or is pushed up to 15 ft away.' },
-  rally: { name: 'Rally', desc: 'As a Bonus Action, a chosen ally within 30 ft gains Temporary HP = die roll + half your Fighter level.' },
-  riposte: { name: 'Riposte', desc: 'As a Reaction when a creature misses you with a melee attack, make a melee attack against it; on a hit add the die to damage.' },
-  'sweeping-attack': { name: 'Sweeping Attack', desc: 'On a melee hit, a second creature within 5 ft of the target takes die-roll damage of the same type if the roll would also hit it.' },
-  'tactical-assessment': { name: 'Tactical Assessment', desc: 'Add a die to an Intelligence (History or Investigation) or Wisdom (Insight) check.' },
-  'trip-attack': { name: 'Trip Attack', desc: 'On a hit, add the die to damage; a Large-or-smaller target makes a Strength save or is knocked Prone.' },
-};
+const MANEUVERS_55 = {} /* v1.5.1: removed with its subclass (non-SRD) */;
 
 
 
@@ -12948,40 +12927,7 @@ const SUBCLASS_RESOURCES = {
 // player when to spend the die. `save` is the saving throw
 // imposed (if any) — Battle Master DC = 8 + prof + max(Str, Dex).
 // ============================================================
-const MANEUVERS = [
-  { id: 'commanders_strike', name: "Commander's Strike", trigger: 'When you take the Attack action, forgo one attack and use your bonus action.', save: null, damage: false,
-    desc: 'Choose an ally that can see/hear you. They use their reaction to make a weapon attack, adding the superiority die to the damage.' },
-  { id: 'disarming_attack', name: 'Disarming Attack', trigger: 'When you hit a creature with a weapon attack.', save: 'str', damage: true,
-    desc: 'Add the superiority die to damage. The target makes a Strength save; on a fail, it drops one item of your choice that it is holding.' },
-  { id: 'distracting_strike', name: 'Distracting Strike', trigger: 'When you hit a creature with a weapon attack.', save: null, damage: true,
-    desc: 'Add the superiority die to damage. The next attack roll against the target by an attacker other than you has advantage if the attack is made before your next turn.' },
-  { id: 'evasive_footwork', name: 'Evasive Footwork', trigger: 'When you move.', save: null, damage: false,
-    desc: 'Roll the superiority die and add it to your AC until you stop moving.' },
-  { id: 'feinting_attack', name: 'Feinting Attack', trigger: 'Bonus action, before a weapon attack on your turn.', save: null, damage: true,
-    desc: 'Feint at a creature within 5 ft. You have advantage on your next attack against it this turn. If that attack hits, add the superiority die to damage.' },
-  { id: 'goading_attack', name: 'Goading Attack', trigger: 'When you hit a creature with a weapon attack.', save: 'wis', damage: true,
-    desc: 'Add the superiority die to damage. The target makes a Wisdom save; on a fail, it has disadvantage on attacks against anyone other than you until the end of your next turn.' },
-  { id: 'lunging_attack', name: 'Lunging Attack', trigger: 'When you make a melee weapon attack.', save: null, damage: true,
-    desc: 'Reach is increased by 5 ft for that attack. If it hits, add the superiority die to damage.' },
-  { id: 'maneuvering_attack', name: 'Maneuvering Attack', trigger: 'When you hit a creature with a weapon attack.', save: null, damage: true,
-    desc: 'Add the superiority die to damage. Choose an ally that can see/hear you; they can use their reaction to move up to half their speed without provoking an opportunity attack from the target.' },
-  { id: 'menacing_attack', name: 'Menacing Attack', trigger: 'When you hit a creature with a weapon attack.', save: 'wis', damage: true,
-    desc: 'Add the superiority die to damage. The target makes a Wisdom save; on a fail, it is frightened of you until the end of your next turn.' },
-  { id: 'parry', name: 'Parry', trigger: 'When another creature damages you with a melee attack.', save: null, damage: false,
-    desc: 'Use your reaction and roll the superiority die. Reduce the damage to you by the die + your Dex modifier.' },
-  { id: 'precision_attack', name: 'Precision Attack', trigger: 'When you make a weapon attack roll against a creature.', save: null, damage: false,
-    desc: 'Add the superiority die to the attack roll. You can use this before or after the d20, but before any effects. Cannot be used on a roll with disadvantage.' },
-  { id: 'pushing_attack', name: 'Pushing Attack', trigger: 'When you hit a creature with a weapon attack (Large or smaller, within 5 ft).', save: 'str', damage: true,
-    desc: 'Add the superiority die to damage. Target makes a Strength save; on a fail, push it up to 15 ft away.' },
-  { id: 'rally', name: 'Rally', trigger: 'Bonus action.', save: null, damage: false,
-    desc: 'Choose a willing creature within 30 ft. It gains temp HP equal to the superiority die + your Charisma modifier.' },
-  { id: 'riposte', name: 'Riposte', trigger: 'When a creature misses you with a melee attack.', save: null, damage: true,
-    desc: 'Use your reaction to make a melee weapon attack against it. If the attack hits, add the superiority die to damage.' },
-  { id: 'sweeping_attack', name: 'Sweeping Attack', trigger: 'When you hit a creature with a melee weapon attack.', save: null, damage: false,
-    desc: 'Choose another creature within 5 ft of the original target and within reach. If the original attack roll would hit the second creature, it takes damage equal to the superiority die (same type as the original weapon).' },
-  { id: 'trip_attack', name: 'Trip Attack', trigger: 'When you hit a creature with a weapon attack (Large or smaller).', save: 'str', damage: true,
-    desc: 'Add the superiority die to damage. Target makes a Strength save; on a fail, it is knocked prone.' },
-];
+const MANEUVERS = [] /* v1.5.1: removed with its subclass (non-SRD) */;
 const MANEUVERS_BY_ID = Object.fromEntries(MANEUVERS.map(m => [m.id, m]));
 
 function isBattleMaster(ch) {
@@ -13644,8 +13590,8 @@ const FORGE_ELEMENT_SPELLS = {
   radiant:   ['Guiding Bolt', 'Searing Smite', 'Spirit Guardians', 'Sacred Flame'],
   poison:    ['Ray of Sickness', 'Poison Spray', 'Stinking Cloud', 'Cloudkill'],
   psychic:   ['Dissonant Whispers', 'Phantasmal Force', 'Hunger of Hadar'],
-  acid:      ['Acid Splash', 'Vitriolic Sphere', 'Melf\'s Acid Arrow'],
-  force:     ['Magic Missile', 'Spiritual Weapon', 'Bigby\'s Hand'],
+  acid:      ['Acid Splash', 'Vitriolic Sphere', 'Acid Arrow'],
+  force:     ['Magic Missile', 'Spiritual Weapon', 'Arcane Hand'],
 };
 
 function forgeKeyAbility(klass) {
@@ -15418,12 +15364,7 @@ function hasThirdEye(ch) {
 }
 
 // The four mode options for The Third Eye.
-const THIRD_EYE_MODES = [
-  { id: 'darkvision', name: 'Darkvision', desc: 'Darkvision 60 ft.' },
-  { id: 'ethereal_sight', name: 'Ethereal Sight', desc: 'See into the Ethereal Plane within 60 ft.' },
-  { id: 'greater_comp', name: 'Greater Comprehension', desc: 'Read any language at sight, even script you don\'t know.' },
-  { id: 'see_invisible', name: 'See Invisibility', desc: 'See invisible creatures and objects within 10 ft.' },
-];
+const THIRD_EYE_MODES = [] /* v1.5.1: removed with its subclass */;
 
 // Apply Expert Divination's slot refund. Called from onCommit after
 // the slot has been spent. Walks slot levels [slotLevel-1 .. 1] looking
@@ -16237,21 +16178,9 @@ function hasWolfTotem(ch) {
 // v0.20.55 — Totem option catalogs for the picker UI. Each level
 // has its own flavor text (L3 spirit, L6 aspect, L14 attunement);
 // the same three animals appear at each tier per RAW.
-const TOTEM_SPIRIT_OPTIONS = [
-  { id: 'bear', name: 'Spirit of the Bear', desc: 'While raging, resistance to all damage except psychic. You can carry, push, drag, or lift twice as much weight.' },
-  { id: 'eagle', name: 'Spirit of the Eagle', desc: 'While raging and not wearing heavy armor, hostile creatures provoke opportunity attacks if they try to attack any other creature than you. You can take the Dash action as a bonus action.' },
-  { id: 'wolf', name: 'Spirit of the Wolf', desc: 'While raging, your friends have advantage on melee attack rolls against any creature within 5 ft of you that is hostile to you.' },
-];
-const TOTEM_ASPECT_OPTIONS = [
-  { id: 'bear', name: 'Aspect of the Bear', desc: 'You gain the might of the bear: your carrying capacity (including maximum load and maximum lift) doubles, and you have advantage on Strength checks made to push, pull, lift, or break objects.' },
-  { id: 'eagle', name: 'Aspect of the Eagle', desc: 'You gain the eyesight of an eagle: you can see up to 1 mile away with no difficulty, and dim light doesn\'t impose disadvantage on Wisdom (Perception) checks.' },
-  { id: 'wolf', name: 'Aspect of the Wolf', desc: 'You gain the hunting sensibilities of a wolf: you can track other creatures while travelling at a fast pace, and you can move stealthily while travelling at a normal pace.' },
-];
-const TOTEM_ATTUNEMENT_OPTIONS = [
-  { id: 'bear', name: 'Bear Attunement', desc: 'While raging, any creature within 5 ft that is hostile to you has disadvantage on attack rolls against targets other than you (or another character with this feature). They\'re drawn to you like nails to a magnet.' },
-  { id: 'eagle', name: 'Eagle Attunement', desc: 'While raging, you have a flying speed equal to your current walking speed. This benefit works only in short bursts; you fall at the end of your turn if you are still aloft and nothing else is holding you up.' },
-  { id: 'wolf', name: 'Wolf Attunement', desc: 'While raging, you can use a bonus action on your turn to knock a Large or smaller creature prone when you hit it with a melee weapon attack.' },
-];
+const TOTEM_SPIRIT_OPTIONS = [];
+const TOTEM_ASPECT_OPTIONS = [];
+const TOTEM_ATTUNEMENT_OPTIONS = [];
 
 function hasArcaneRage(ch) {
   if (!ch) return false;
@@ -16566,108 +16495,7 @@ function applyReliableTalent(ch, d20Result, isProficient) {
 
 // Wild Magic Surge table — d100 entries. Sourced from SRD 5.1.
 // Each entry: { roll: number, desc: string }. `roll` is the d100 result.
-const WILD_MAGIC_SURGES = [
-  { roll: 1, desc: 'Roll on this table at the start of each of your turns for the next minute, ignoring this result on subsequent rolls.' },
-  { roll: 2, desc: 'For the next minute, you can see any invisible creature if it has line of sight to you.' },
-  { roll: 3, desc: 'A modron chosen and controlled by the DM appears in an unoccupied space within 5 ft of you, then disappears 1 minute later.' },
-  { roll: 4, desc: 'Cast Fireball as a 3rd-level spell centered on yourself.' },
-  { roll: 5, desc: 'Cast Magic Missile as a 5th-level spell.' },
-  { roll: 6, desc: 'Roll a d10. Your height changes by a number of inches equal to the roll. If the roll is odd, you shrink. If even, you grow.' },
-  { roll: 7, desc: 'You cast Confusion centered on yourself.' },
-  { roll: 8, desc: 'For the next minute, you regain 5 HP at the start of each of your turns.' },
-  { roll: 9, desc: 'You grow a long beard made of feathers that remains until you sneeze, at which point the feathers explode out from your face.' },
-  { roll: 10, desc: 'You cast Grease centered on yourself.' },
-  { roll: 11, desc: 'Creatures have disadvantage on saving throws against the next spell you cast in the next minute that involves a saving throw.' },
-  { roll: 12, desc: 'Your skin turns a vivid shade of blue. A Remove Curse spell can end this effect.' },
-  { roll: 13, desc: 'An eye appears on your forehead for the next minute. During that time, you have advantage on Wisdom (Perception) checks that rely on sight.' },
-  { roll: 14, desc: 'For the next minute, all your spells with a casting time of 1 action have a casting time of 1 bonus action.' },
-  { roll: 15, desc: 'You teleport up to 60 ft to an unoccupied space of your choice that you can see.' },
-  { roll: 16, desc: 'You are transported to the Astral Plane until the end of your next turn, after which you return to the space you previously occupied or the nearest unoccupied space if that space is occupied.' },
-  { roll: 17, desc: 'Maximize the damage of the next damaging spell you cast within the next minute.' },
-  { roll: 18, desc: 'Roll a d10. Your age changes by a number of years equal to the roll. If the roll is odd, you get younger (minimum 1 year old). If the roll is even, you get older.' },
-  { roll: 19, desc: '1d6 flumphs controlled by the DM appear in unoccupied spaces within 60 ft of you and are frightened of you. They vanish after 1 minute.' },
-  { roll: 20, desc: 'You regain 2d10 HP.' },
-  { roll: 21, desc: 'You turn into a potted plant until the start of your next turn. While a plant, you are incapacitated and have vulnerability to all damage. If you drop to 0 HP, your pot breaks, and your form reverts.' },
-  { roll: 22, desc: 'For the next minute, you can teleport up to 20 ft as a bonus action on each of your turns.' },
-  { roll: 23, desc: 'You cast Levitate on yourself.' },
-  { roll: 24, desc: 'A unicorn controlled by the DM appears in a space within 5 ft of you, then disappears 1 minute later.' },
-  { roll: 25, desc: 'You can\'t speak for the next minute. Whenever you try, pink bubbles float out of your mouth.' },
-  { roll: 26, desc: 'A spectral shield hovers near you for the next minute, granting you a +2 bonus to AC and immunity to Magic Missile.' },
-  { roll: 27, desc: 'You are immune to being intoxicated by alcohol for the next 5d6 days.' },
-  { roll: 28, desc: 'Your hair falls out but grows back within 24 hours.' },
-  { roll: 29, desc: 'For the next minute, any flammable object you touch that isn\'t being worn or carried by another creature bursts into flame.' },
-  { roll: 30, desc: 'You regain your lowest-level expended spell slot.' },
-  { roll: 31, desc: 'For the next minute, you must shout when you speak.' },
-  { roll: 32, desc: 'You cast Fog Cloud centered on yourself.' },
-  { roll: 33, desc: 'Up to three creatures you choose within 30 ft of you take 4d10 lightning damage.' },
-  { roll: 34, desc: 'You are frightened by the nearest creature until the end of your next turn.' },
-  { roll: 35, desc: 'Each creature within 30 ft of you becomes invisible for the next minute. The invisibility ends on a creature when it attacks or casts a spell.' },
-  { roll: 36, desc: 'You gain resistance to all damage for the next minute.' },
-  { roll: 37, desc: 'A random creature within 60 ft of you becomes poisoned for 1d4 hours.' },
-  { roll: 38, desc: 'You glow with bright light in a 30-ft radius for the next minute. Any creature that ends its turn within 5 ft of you is blinded until the end of its next turn.' },
-  { roll: 39, desc: 'You cast Polymorph on yourself. If you fail the saving throw, you turn into a sheep for the spell\'s duration.' },
-  { roll: 40, desc: 'Illusory butterflies and flower petals flutter in the air within 10 ft of you for the next minute.' },
-  { roll: 41, desc: 'You can take one additional action immediately.' },
-  { roll: 42, desc: 'Each creature within 30 ft of you takes 1d10 necrotic damage. You regain HP equal to the sum of the necrotic damage dealt.' },
-  { roll: 43, desc: 'You cast Mirror Image.' },
-  { roll: 44, desc: 'You cast Fly on a random creature within 60 ft of you.' },
-  { roll: 45, desc: 'You become invisible for the next minute. During that time, other creatures can\'t hear you. The invisibility ends if you attack or cast a spell.' },
-  { roll: 46, desc: 'If you die within the next minute, you immediately come back to life as if by the Reincarnate spell.' },
-  { roll: 47, desc: 'Your size increases by one category — from Medium to Large, for example. If there isn\'t enough room for you to increase your size, you attain the largest size possible in the available space.' },
-  { roll: 48, desc: 'You and all creatures within 30 ft of you gain vulnerability to piercing damage for the next minute.' },
-  { roll: 49, desc: 'You are surrounded by faint, ethereal music for the next minute.' },
-  { roll: 50, desc: 'You regain all expended sorcery points.' },
-  { roll: 51, desc: 'For the next minute, all your spells with a casting time of 1 action have a casting time of 1 reaction in response to being damaged.' },
-  { roll: 52, desc: 'A nonhostile unicorn under the DM\'s control appears in a space within 5 ft of you, then disappears 1 minute later.' },
-  { roll: 53, desc: 'For the next minute, you can\'t cast spells.' },
-  { roll: 54, desc: 'The DM rerolls one of your missed attacks for the next minute.' },
-  { roll: 55, desc: 'For the next minute, you have the same alignment as the nearest creature.' },
-  { roll: 56, desc: 'You and one random creature within 60 ft swap positions.' },
-  { roll: 57, desc: 'You exude a strong smell of lavender for the next 1d4 days. Any creature within 5 ft can smell you, even with a blocked nose.' },
-  { roll: 58, desc: 'Your spell deals one additional damage type at random (DM\'s choice).' },
-  { roll: 59, desc: 'You hear a soft, ghostly whisper of advice from a long-dead sorcerer at the start of each of your turns for the next minute.' },
-  { roll: 60, desc: 'You and all creatures within 30 ft of you gain the ability to speak and understand a random language for the next hour.' },
-  { roll: 61, desc: 'You are surrounded by a faint, glowing aura that makes you visible in darkness for the next minute.' },
-  { roll: 62, desc: 'For the next minute, you can see through solid objects up to 30 ft thick.' },
-  { roll: 63, desc: 'A random magical effect from the Prestidigitation spell occurs around you.' },
-  { roll: 64, desc: 'A small cloud rains over your head for the next 24 hours.' },
-  { roll: 65, desc: 'You hiccup whenever you speak for the next minute. Each hiccup releases a small puff of harmless smoke.' },
-  { roll: 66, desc: 'Your spells require no verbal components for the next minute.' },
-  { roll: 67, desc: 'You and one random creature within 60 ft become magically linked: when one takes damage, the other does too.' },
-  { roll: 68, desc: 'You cast Mage Hand. It is invisible and bound to you for 1 hour.' },
-  { roll: 69, desc: 'You attract small woodland creatures that follow you for the next hour.' },
-  { roll: 70, desc: 'You cast Bless on yourself with a random duration up to 1 minute.' },
-  { roll: 71, desc: 'You sneeze fire for the next minute. Whenever you sneeze, you exhale 5-ft cone of fire (2d6 fire damage, DEX save half).' },
-  { roll: 72, desc: 'Your hair grows 1 ft instantly.' },
-  { roll: 73, desc: 'Your eyes glow with arcane power for the next hour.' },
-  { roll: 74, desc: 'You are immune to fall damage for the next 24 hours.' },
-  { roll: 75, desc: 'You shrink in height by half for the next minute.' },
-  { roll: 76, desc: 'A random magical item within 30 ft of you is teleported to your hand.' },
-  { roll: 77, desc: 'Your skin sparkles for the next 1d4 days.' },
-  { roll: 78, desc: 'You speak only in rhymes for the next hour.' },
-  { roll: 79, desc: 'You gain the ability to understand and speak with animals for 24 hours.' },
-  { roll: 80, desc: 'Your gaze can turn one creature you can see into stone for 1 round (CON save; usable once before the surge ends).' },
-  { roll: 81, desc: 'Each creature within 30 ft of you is healed for 1d6 HP.' },
-  { roll: 82, desc: 'You smell of fresh-baked bread for 1d6 days.' },
-  { roll: 83, desc: 'You sprout a small pair of wings — Fly speed 30 for 1 minute.' },
-  { roll: 84, desc: 'For the next minute, every word you speak appears briefly in floating letters above your head.' },
-  { roll: 85, desc: 'Your shadow detaches and acts independently for 1 minute, then reattaches.' },
-  { roll: 86, desc: 'A small fire elemental appears in an adjacent space, friendly to you, lasts 1 minute.' },
-  { roll: 87, desc: 'You are blinded for 1d4 rounds.' },
-  { roll: 88, desc: 'You float 1 ft off the ground for 1 minute (no movement bonus).' },
-  { roll: 89, desc: 'You learn the surface thoughts of one creature you can see for the next minute.' },
-  { roll: 90, desc: 'Each creature within 10 ft of you must succeed on a DEX save or fall prone, suddenly unbalanced.' },
-  { roll: 91, desc: 'You can\'t be charmed or frightened for the next hour.' },
-  { roll: 92, desc: 'A harmless illusory dragon flies overhead, visible only to you.' },
-  { roll: 93, desc: 'You feel intensely hungry; consuming a ration restores 1d6 HP this time only.' },
-  { roll: 94, desc: 'For the next minute, every spell you cast also produces a brief, harmless flash of colored light.' },
-  { roll: 95, desc: 'You gain Darkvision 60 ft for 24 hours, or extend it to 120 ft if you already have it.' },
-  { roll: 96, desc: 'A familiar appears under your control for 1 hour, then vanishes.' },
-  { roll: 97, desc: 'Your weapons sparkle and deal +1 force damage on hits for 1 minute.' },
-  { roll: 98, desc: 'A random spell scroll of 1st level appears in your hand.' },
-  { roll: 99, desc: 'You are filled with overwhelming confidence — advantage on CHA checks for 1 hour.' },
-  { roll: 100, desc: 'You regain all expended hit dice.' },
-];
+const WILD_MAGIC_SURGES = [] /* v1.5.1: removed (non-SRD table) */;
 
 // Look up the surge entry for a given d100 roll.
 function wildSurgeForRoll(d100) {
@@ -17400,7 +17228,7 @@ function levelForXp(xp) {
 // a successful save. Cantrips never do (Poison Spray, Sacred Flame, Toll the
 // Dead…); a spell can set halfOnSave: false; community spells must say "half"
 // in their text; a few built-ins deal no damage on a success.
-const NO_HALF_SAVE_SPELLS = new Set(['Disintegrate', 'Phantasmal Killer', "Evard's Black Tentacles", 'Ensnaring Strike', 'Weird', 'Heat Metal', 'Feeblemind']);
+const NO_HALF_SAVE_SPELLS = new Set(['Disintegrate', 'Phantasmal Killer', "Black Tentacles", 'Ensnaring Strike', 'Weird', 'Heat Metal', 'Feeblemind']);
 function spellHalvesOnSave(spell) {
   if (!spell || spell.kind !== 'save') return false;
   if (spell.halfOnSave === false) return false;
@@ -19986,10 +19814,6 @@ const SPELLS = [
     kind: 'save', save: 'wis', damageType: 'psychic',
     dice: { count: 1, sides: 4 }, scaleType: 'cantrip', scaleAt: { dice: 1 } },
 
-  { name: 'Shape Water', level: 0, school: 'transmutation', classes: ['druid','sorcerer','wizard'],
-    time: 'action', range: '30 ft', components: 'S', duration: 'Instant or 1 hour',
-    desc: 'Choose an area of water up to 5 ft cube. Move it, change its colour or opacity, freeze it, or shape it into simple shapes for 1 hour.',
-    kind: 'utility' },
 
   // ===== LEVEL 1 =====
   { name: 'Alarm', level: 1, school: 'abjuration', classes: ['ranger','wizard'],
@@ -20181,11 +20005,6 @@ const SPELLS = [
     kind: 'save', save: 'con', damageType: 'thunder',
     dice: { count: 2, sides: 8 }, scaleType: 'slot', scaleAt: { dice: 1 } },
 
-  { name: 'Witch Bolt', level: 1, school: 'evocation', classes: ['sorcerer','warlock','wizard'],
-    time: 'action', range: '30 ft', components: 'V, S, M', duration: 'Concentration, 1 min',
-    desc: 'Beam of crackling lightning. Action each turn: same target takes 1d12.',
-    kind: 'attack', damageType: 'lightning',
-    dice: { count: 1, sides: 12 }, scaleType: 'slot', scaleAt: { dice: 1 }, concentration: true },
 
   // v0.91.2 — PHB spells that were missing from the list.
   { name: 'Chromatic Orb', level: 1, school: 'evocation', classes: ['sorcerer','wizard'],
@@ -20200,10 +20019,6 @@ const SPELLS = [
     kind: 'attack', damageType: 'poison',
     dice: { count: 2, sides: 8 }, scaleType: 'slot', scaleAt: { dice: 1 } },
 
-  { name: 'Cloud of Daggers', level: 2, school: 'conjuration', classes: ['bard','sorcerer','warlock','wizard'],
-    time: 'action', range: '60 ft', components: 'V, S, M', duration: 'Concentration, 1 min',
-    desc: 'Spinning daggers fill a 5-ft cube. A creature takes 4d4 slashing when it enters the cube for the first time on a turn or starts its turn there (no attack or save). +2d4 per slot above 2.',
-    kind: 'utility', concentration: true },
 
   // v0.16.0 — added so warlock patron / paladin oath / domain spell grants
   // resolve their references in the SPELLS catalogue (silent skip otherwise).
@@ -20218,7 +20033,7 @@ const SPELLS = [
     desc: 'Your weapon attacks deal an extra 1d4 radiant damage on hit.',
     kind: 'utility', concentration: true },
 
-  { name: 'Tasha\'s Hideous Laughter', level: 1, school: 'enchantment', classes: ['bard','warlock','wizard'],
+  { name: 'Hideous Laughter', level: 1, school: 'enchantment', classes: ['bard','warlock','wizard'],
     time: 'action', range: '30 ft', components: 'V, S, M', duration: 'Concentration, 1 min',
     desc: 'Wis save or fall prone, incapacitated, laughing. New save end of turn or when damaged.',
     kind: 'save', save: 'wis', concentration: true },
@@ -20228,11 +20043,6 @@ const SPELLS = [
   // encode "on your next melee weapon hit, +NdN <type>" — distinct from
   // a spell-attack roll. The damage helper renders this as a clear
   // "+NdN <type> on next melee hit" line.
-  { name: 'Wrathful Smite', level: 1, school: 'evocation', classes: ['paladin'],
-    time: 'bonus_action', range: 'Self', components: 'V', duration: 'Concentration, 1 min',
-    desc: 'Next melee weapon hit this turn deals +1d6 psychic; target makes Wis save or be frightened.',
-    kind: 'utility', concentration: true,
-    riderDice: { count: 1, sides: 6 }, riderDamageType: 'psychic' },
 
   // v0.16.1 — SRD coverage pass. These were missing from the catalogue;
   // some are referenced by built-in races (Hellish Rebuke / Floating Disk /
@@ -20245,7 +20055,7 @@ const SPELLS = [
     kind: 'save', save: 'dex', damageType: 'fire',
     dice: { count: 2, sides: 10 }, scaleType: 'slot', scaleAt: { dice: 1 } },
 
-  { name: "Tenser's Floating Disk", level: 1, school: 'conjuration', classes: ['wizard'],
+  { name: "Floating Disk", level: 1, school: 'conjuration', classes: ['wizard'],
     time: 'action', range: '30 ft', components: 'V, S, M', duration: '1 hour',
     desc: 'Create a 3-ft circular disk of force that floats 3 ft above the ground. Carries up to 500 lb. Follows you within 20 ft.',
     kind: 'utility', ritual: true },
@@ -20422,10 +20232,6 @@ const SPELLS = [
     kind: 'save', save: 'int', damageType: 'psychic', concentration: true },
 
   // v0.16.1 — SRD coverage pass.
-  { name: 'Crown of Madness', level: 2, school: 'enchantment', classes: ['bard','sorcerer','warlock','wizard'],
-    time: 'action', range: '120 ft', components: 'V, S', duration: 'Concentration, 1 min',
-    desc: 'Wis save or charmed; you direct one of its attacks per turn against another creature you choose.',
-    kind: 'save', save: 'wis', concentration: true },
 
   { name: 'Enthrall', level: 2, school: 'enchantment', classes: ['bard','warlock'],
     time: 'action', range: '60 ft', components: 'V, S', duration: '1 min',
@@ -20561,10 +20367,6 @@ const SPELLS = [
     desc: 'Roll d20 at end of each turn. On 11+, vanish to Ethereal until start of your next turn.',
     kind: 'utility' },
 
-  { name: 'Crusader\'s Mantle', level: 3, school: 'evocation', classes: ['paladin'],
-    time: 'action', range: 'Self (30-ft aura)', components: 'V', duration: 'Concentration, 1 min',
-    desc: 'Allies in 30-ft aura deal +1d4 radiant damage on weapon attacks.',
-    kind: 'utility', concentration: true },
 
   { name: 'Sending', level: 3, school: 'evocation', classes: ['bard','cleric','wizard'],
     time: 'action', range: 'Unlimited', components: 'V, S, M', duration: '1 round',
@@ -20576,10 +20378,6 @@ const SPELLS = [
     desc: 'Ask 5 questions of a corpse. The corpse answers cryptically based on what it knew in life.',
     kind: 'utility' },
 
-  { name: 'Elemental Weapon', level: 3, school: 'transmutation', classes: ['artificer','paladin'],
-    time: 'action', range: 'Touch', components: 'V, S', duration: 'Concentration, 1 hour',
-    desc: 'Pick a damage type (acid/cold/fire/lightning/thunder). Weapon gains +1 to attack and deals +1d4 of that type. Higher slots scale.',
-    kind: 'utility', concentration: true, scaleType: 'slot' },
 
   // v0.16.1 — SRD coverage pass.
   { name: 'Remove Curse', level: 3, school: 'abjuration', classes: ['cleric','paladin','warlock','wizard'],
@@ -20660,7 +20458,7 @@ const SPELLS = [
     dice: { count: 5, sides: 8 }, scaleType: 'slot', scaleAt: { dice: 1 }, concentration: true },
 
   // v0.16.0 — added for grant references
-  { name: 'Evard\'s Black Tentacles', level: 4, school: 'conjuration', classes: ['wizard'],
+  { name: 'Black Tentacles', level: 4, school: 'conjuration', classes: ['wizard'],
     time: 'action', range: '90 ft', components: 'V, S, M', duration: 'Concentration, 1 min',
     desc: '20-ft square of writhing tentacles. Dex save or restrained and 3d6 bludgeoning. Each turn: same save.',
     kind: 'save', save: 'dex', damageType: 'bludgeoning',
@@ -20671,24 +20469,19 @@ const SPELLS = [
     desc: 'Large spectral guardian. Hostile creatures within 10 ft take 20 radiant or necrotic (your choice). Dex save half. 60 HP total before vanishing.',
     kind: 'save', save: 'dex' },
 
-  { name: 'Staggering Smite', level: 4, school: 'evocation', classes: ['paladin'],
-    time: 'bonus_action', range: 'Self', components: 'V', duration: 'Instant',
-    desc: 'On your next melee weapon hit this turn: +4d6 psychic; target Wis save or have disadvantage on attacks/checks until end of your next turn.',
-    kind: 'utility',
-    riderDice: { count: 4, sides: 6 }, riderDamageType: 'psychic' },
 
   // v0.16.1 — SRD coverage pass.
-  { name: "Mordenkainen's Faithful Hound", level: 4, school: 'conjuration', classes: ['wizard'],
+  { name: "Faithful Hound", level: 4, school: 'conjuration', classes: ['wizard'],
     time: 'action', range: '30 ft', components: 'V, S, M', duration: '8 hours',
     desc: 'Conjure a phantom watchdog that only you and creatures you choose can see. Barks at unseen invaders within 30 ft, can make a bite attack (4d8 piercing) against anyone hostile within 5 ft.',
     kind: 'utility' },
 
-  { name: "Otiluke's Resilient Sphere", level: 4, school: 'evocation', classes: ['wizard'],
+  { name: "Resilient Sphere", level: 4, school: 'evocation', classes: ['wizard'],
     time: 'action', range: '30 ft', components: 'V, S, M', duration: 'Concentration, 1 min',
     desc: 'A creature or object becomes encased in a sphere of force. Dex save negates. Nothing passes through; the sphere can be slowly rolled.',
     kind: 'save', save: 'dex', concentration: true },
 
-  { name: "Leomund's Secret Chest", level: 4, school: 'conjuration', classes: ['wizard'],
+  { name: "Secret Chest", level: 4, school: 'conjuration', classes: ['wizard'],
     time: 'action', range: 'Touch', components: 'V, S, M', duration: 'Instant',
     desc: 'Hide a chest (and a tiny replica) on the Ethereal Plane. Recall by holding the replica and using an action.',
     kind: 'utility' },
@@ -20746,8 +20539,6 @@ const SPELLS = [
     kind: 'utility', concentration: true },
   // ===== v0.11.0 EXPANDED SRD SPELL LIBRARY =====
   // Compact entries: enough for class lists, casting buttons, tags and core dice rolls.
-  {"name": "Blade Ward", "level": 0, "school": "abjuration", "classes": ["bard", "sorcerer", "warlock", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "1 round", "desc": "Gain resistance to bludgeoning, piercing, and slashing damage from weapon attacks.", "kind": "utility"},
-  {"name": "Friends", "level": 0, "school": "enchantment", "classes": ["bard", "sorcerer", "warlock", "wizard"], "time": "action", "range": "Self", "components": "V, S", "duration": "Concentration, 1 min", "desc": "Advantage on Charisma checks directed at one non-hostile creature. It knows you used magic after.", "kind": "utility", "concentration": true},
   {"name": "Animal Friendship", "level": 1, "school": "enchantment", "classes": ["bard", "druid", "ranger"], "time": "action", "range": "See spell", "components": "V, S", "duration": "24 hours", "desc": "Convince a beast you mean no harm. Wis save negates.", "kind": "save", "save": "wis"},
   {"name": "Detect Evil and Good", "level": 1, "school": "divination", "classes": ["cleric", "paladin"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 10 min", "desc": "Sense aberrations, celestials, elementals, fey, fiends, undead and consecrated/desecrated places.", "kind": "utility", "concentration": true},
   {"name": "Detect Poison and Disease", "level": 1, "school": "divination", "classes": ["cleric", "druid", "paladin", "ranger"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 10 min", "desc": "Sense poisons, poisonous creatures and diseases within 30 ft.", "kind": "utility", "concentration": true, "ritual": true},
@@ -20781,9 +20572,8 @@ const SPELLS = [
   {"name": "Beacon of Hope", "level": 3, "school": "abjuration", "classes": ["cleric"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 1 min", "desc": "Targets gain advantage on Wis/death saves and max healing.", "kind": "utility", "concentration": true},
   {"name": "Clairvoyance", "level": 3, "school": "divination", "classes": ["bard", "cleric", "sorcerer", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 10 min", "desc": "Create invisible sensor for seeing or hearing.", "kind": "utility", "concentration": true},
   {"name": "Create Food and Water", "level": 3, "school": "conjuration", "classes": ["cleric", "paladin"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Instant", "desc": "Create food and water for creatures and mounts.", "kind": "utility"},
-  {"name": "Feign Death", "level": 3, "school": "necromancy", "classes": ["bard", "cleric", "druid", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "1 hour", "desc": "Target appears dead and gains resistance to all damage except psychic.", "kind": "utility", "ritual": true},
   {"name": "Glyph of Warding", "level": 3, "school": "abjuration", "classes": ["bard", "cleric", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Until dispelled/triggered", "desc": "Inscribed magical glyph stores explosive runes or a spell.", "kind": "utility"},
-  {"name": "Leomund's Tiny Hut", "level": 3, "school": "evocation", "classes": ["bard", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "8 hours", "desc": "Create a protective immobile dome.", "kind": "utility", "ritual": true},
+  {"name": "Tiny Hut", "level": 3, "school": "evocation", "classes": ["bard", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "8 hours", "desc": "Create a protective immobile dome.", "kind": "utility", "ritual": true},
   {"name": "Magic Circle", "level": 3, "school": "abjuration", "classes": ["cleric", "paladin", "warlock", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "1 hour", "desc": "Protect area against certain creature types, or trap them.", "kind": "utility", "scaleType": "slot"},
   {"name": "Major Image", "level": 3, "school": "illusion", "classes": ["bard", "sorcerer", "warlock", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 10 min", "desc": "Create a complex sensory illusion.", "kind": "utility", "concentration": true},
   {"name": "Nondetection", "level": 3, "school": "abjuration", "classes": ["bard", "ranger", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "8 hours", "desc": "Hide target from divination magic.", "kind": "utility"},
@@ -20802,15 +20592,12 @@ const SPELLS = [
   {"name": "Dominate Beast", "level": 4, "school": "enchantment", "classes": ["druid", "sorcerer"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 1 min", "desc": "Control a beast on failed Wis save.", "kind": "save", "save": "wis", "concentration": true},
   {"name": "Fire Shield", "level": 4, "school": "evocation", "classes": ["wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "10 min", "desc": "Gain fire/cold resistance and punish melee attackers.", "kind": "utility"},
   {"name": "Giant Insect", "level": 4, "school": "transmutation", "classes": ["druid"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 10 min", "desc": "Transform insects into giant versions.", "kind": "utility", "concentration": true},
-  {"name": "Grasping Vine", "level": 4, "school": "conjuration", "classes": ["druid", "ranger"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 1 min", "desc": "Vine pulls a creature on failed Dex save.", "kind": "save", "save": "dex", "concentration": true},
   {"name": "Hallucinatory Terrain", "level": 4, "school": "illusion", "classes": ["bard", "druid", "warlock", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "24 hours", "desc": "Make natural terrain look, sound, and smell different.", "kind": "utility"},
   {"name": "Locate Creature", "level": 4, "school": "divination", "classes": ["bard", "cleric", "druid", "paladin", "ranger", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 1 hour", "desc": "Sense direction to a familiar creature within 1,000 ft.", "kind": "utility", "concentration": true},
   {"name": "Phantasmal Killer", "level": 4, "school": "illusion", "classes": ["wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 1 min", "desc": "Frighten and damage target with nightmare illusion.", "kind": "save", "save": "wis", "damageType": "psychic", "dice": {"count": 4, "sides": 10}, "scaleType": "slot", "scaleAt": {"dice": 1}, "concentration": true},
   {"name": "Private Sanctum", "level": 4, "school": "abjuration", "classes": ["wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "24 hours", "desc": "Ward an area against sight, sound, teleportation, and divination.", "kind": "utility"},
-  {"name": "Conjure Volley", "level": 5, "school": "conjuration", "classes": ["ranger"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Instant", "desc": "Volley of weapons/ammunition hits a large area.", "kind": "save", "save": "dex", "damageType": "weapon", "dice": {"count": 8, "sides": 8}},
   {"name": "Contact Other Plane", "level": 5, "school": "divination", "classes": ["warlock", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "1 minute", "desc": "Mentally contact an extraplanar entity.", "kind": "utility", "ritual": true},
   {"name": "Contagion", "level": 5, "school": "necromancy", "classes": ["cleric", "druid"], "time": "action", "range": "See spell", "components": "V, S", "duration": "7 days", "desc": "Melee spell attack inflicts disease.", "kind": "attack"},
-  {"name": "Destructive Wave", "level": 5, "school": "evocation", "classes": ["paladin"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Instant", "desc": "Thunder and radiant/necrotic damage around you; knock prone.", "kind": "save", "save": "con", "damageType": "thunder + radiant/necrotic", "dice": {"count": 10, "sides": 6}},
   {"name": "Dispel Evil and Good", "level": 5, "school": "abjuration", "classes": ["cleric", "paladin"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 1 min", "desc": "Protect against certain creatures; can break enchantment or banish.", "kind": "utility", "concentration": true},
   {"name": "Dream", "level": 5, "school": "illusion", "classes": ["bard", "warlock", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "8 hours", "desc": "Send a dream/message to a sleeping creature.", "kind": "utility"},
   {"name": "Geas", "level": 5, "school": "enchantment", "classes": ["bard", "cleric", "druid", "paladin", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "30 days", "desc": "Magically command a creature.", "kind": "save", "save": "wis"},
@@ -20825,26 +20612,21 @@ const SPELLS = [
   {"name": "Scrying", "level": 5, "school": "divination", "classes": ["bard", "cleric", "druid", "warlock", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 10 min", "desc": "Observe a creature or location remotely.", "kind": "save", "save": "wis", "concentration": true},
   {"name": "Telekinesis", "level": 5, "school": "transmutation", "classes": ["sorcerer", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 10 min", "desc": "Move creatures or objects with your mind.", "kind": "utility", "concentration": true},
   {"name": "Tree Stride", "level": 5, "school": "conjuration", "classes": ["druid", "ranger"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 1 min", "desc": "Step between trees of the same kind.", "kind": "utility", "concentration": true},
-  {"name": "Banishing Smite", "level": 5, "school": "abjuration", "classes": ["paladin"], "time": "bonus_action", "range": "Self", "components": "V", "duration": "Concentration, 1 min", "desc": "On your next melee weapon hit: +5d10 force; if target is at 50 HP or fewer, it's banished to its home plane (or harmless demiplane).", "kind": "utility", "concentration": true, "riderDice": {"count": 5, "sides": 10}, "riderDamageType": "force"},
   {"name": "Commune", "level": 5, "school": "divination", "classes": ["cleric"], "time": "1 minute", "range": "Self", "components": "V, S, M", "duration": "1 min", "desc": "Ask a divine being three yes-or-no questions. Repeated use risks no answers.", "kind": "utility", "ritual": true},
   {"name": "Commune with Nature", "level": 5, "school": "divination", "classes": ["druid", "ranger"], "time": "1 minute", "range": "Self", "components": "V, S", "duration": "Instant", "desc": "Learn 3 facts about the surrounding 3 miles (1 mile underground): terrain, water, prevalent creatures, settlements, etc.", "kind": "utility", "ritual": true},
   {"name": "Seeming", "level": 5, "school": "illusion", "classes": ["bard", "sorcerer", "wizard"], "time": "action", "range": "30 ft", "components": "V, S", "duration": "8 hours", "desc": "Change the appearance of any number of creatures you can see. Cha save to disbelieve.", "kind": "save", "save": "cha"},
 
   {"name": "Antilife Shell", "level": 5, "school": "abjuration", "classes": ["druid"], "time": "action", "range": "Self (10-ft radius)", "components": "V, S", "duration": "Concentration, 1 hour", "desc": "Shimmering barrier prevents living creatures from passing through. You can move and the barrier moves with you.", "kind": "utility", "concentration": true},
-  {"name": "Bigby's Hand", "level": 5, "school": "evocation", "classes": ["sorcerer", "wizard"], "time": "action", "range": "120 ft", "components": "V, S, M", "duration": "Concentration, 1 min", "desc": "Spectral hand of force. As a bonus action, command it to clenched fist (4d8 force), grasping (Str check vs grapple), interpose (half cover), or shove.", "kind": "utility", "concentration": true, "scaleType": "slot"},
+  {"name": "Arcane Hand", "level": 5, "school": "evocation", "classes": ["sorcerer", "wizard"], "time": "action", "range": "120 ft", "components": "V, S, M", "duration": "Concentration, 1 min", "desc": "Spectral hand of force. As a bonus action, command it to clenched fist (4d8 force), grasping (Str check vs grapple), interpose (half cover), or shove.", "kind": "utility", "concentration": true, "scaleType": "slot"},
   {"name": "Awaken", "level": 5, "school": "transmutation", "classes": ["bard", "druid"], "time": "8 hours", "range": "Touch", "components": "V, S, M", "duration": "Instant", "desc": "Beast or plant of Int 3 or less gains Int 10, ability to speak, and is charmed for 30 days.", "kind": "utility"},
-  {"name": "Swift Quiver", "level": 5, "school": "transmutation", "classes": ["ranger"], "time": "bonus_action", "range": "Touch", "components": "V, S, M", "duration": "Concentration, 1 min", "desc": "A quiver produces ammunition automatically. Bonus action: make 2 ranged weapon attacks with weapon you draw from it.", "kind": "utility", "concentration": true},
   {"name": "Telepathic Bond", "level": 5, "school": "divination", "classes": ["wizard"], "time": "action", "range": "30 ft", "components": "V, S, M", "duration": "1 hour", "desc": "Up to 8 willing creatures gain telepathic link with each other for the duration. Range unlimited but blocked by other planes.", "kind": "utility", "ritual": true},
   {"name": "Teleportation Circle", "level": 5, "school": "conjuration", "classes": ["bard", "sorcerer", "wizard"], "time": "1 minute", "range": "10 ft", "components": "V, M", "duration": "1 round", "desc": "Inscribe a 10-ft circle linked to a permanent teleportation circle whose sigil sequence you know. Anyone entering teleports.", "kind": "utility"},
 
   // v0.16.0 — supplementary spells referenced by feature/oath/patron grants.
   // (Without these, grants pointing at them silently dropped. Levels match PHB.)
-  {"name": "Cause Fear", "level": 1, "school": "necromancy", "classes": ["warlock", "wizard"], "time": "action", "range": "60 ft", "components": "V", "duration": "Concentration, 1 min", "desc": "Wis save or be frightened. Save again at end of each turn.", "kind": "save", "save": "wis", "concentration": true},
   {"name": "Acid Arrow", "level": 2, "school": "evocation", "classes": ["wizard"], "time": "action", "range": "90 ft", "components": "V, S, M", "duration": "Instant", "desc": "Ranged spell attack. Hit: 4d4 acid + 2d4 acid at end of next turn. Miss: 2d4 acid only.", "kind": "attack", "damageType": "acid", "dice": {"count": 4, "sides": 4}, "scaleType": "slot", "scaleAt": {"dice": 1}},
   {"name": "Darkvision", "level": 2, "school": "transmutation", "classes": ["druid", "ranger", "sorcerer", "wizard"], "time": "action", "range": "Touch", "components": "V, S, M", "duration": "8 hours", "desc": "Target gains darkvision out to 60 ft.", "kind": "utility"},
-  {"name": "Shadow Blade", "level": 2, "school": "illusion", "classes": ["sorcerer", "warlock", "wizard"], "time": "bonus_action", "range": "Self", "components": "V, S", "duration": "Concentration, 1 min", "desc": "Weave shadows into a sword you can wield. 2d8 psychic; finesse, light, thrown 20/60. Advantage in dim light/darkness.", "kind": "utility", "concentration": true, "scaleType": "slot"},
   {"name": "Gaseous Form", "level": 3, "school": "transmutation", "classes": ["sorcerer", "warlock", "wizard"], "time": "action", "range": "Touch", "components": "V, S, M", "duration": "Concentration, 1 hour", "desc": "Target becomes a misty cloud — fly 10 ft, resistance to non-magical damage, can pass through tiny gaps.", "kind": "utility", "concentration": true},
-  {"name": "Hunger of Hadar", "level": 3, "school": "conjuration", "classes": ["warlock"], "time": "action", "range": "150 ft", "components": "V, S, M", "duration": "Concentration, 1 min", "desc": "20-ft sphere of cold void. Creatures starting turn in it: 2d6 cold; ending turn: Dex save or 2d6 acid. Heavily obscured + difficult terrain.", "kind": "save", "save": "dex", "damageType": "cold", "concentration": true},
   {"name": "Meld into Stone", "level": 3, "school": "transmutation", "classes": ["cleric", "druid"], "time": "action", "range": "Self", "components": "V, S", "duration": "8 hours", "desc": "Step into a stone object/surface large enough to contain you. Can perceive but not see clearly.", "kind": "utility", "ritual": true},
   {"name": "Stone Shape", "level": 4, "school": "transmutation", "classes": ["cleric", "druid", "wizard"], "time": "action", "range": "Touch", "components": "V, S, M", "duration": "Instant", "desc": "Reshape an object of stone you touch (no larger than 5 ft on a side) into any shape, including doors, weapons, or simple containers.", "kind": "utility"},
   {"name": "Fabricate", "level": 4, "school": "transmutation", "classes": ["wizard"], "time": "10 minutes", "range": "120 ft", "components": "V, S", "duration": "Instant", "desc": "Convert raw materials you can see into finished products of the same material (cloth, wood, metal, stone). Requires proficiency for fine items.", "kind": "utility"},
@@ -20852,8 +20634,6 @@ const SPELLS = [
   {"name": "Cloudkill", "level": 5, "school": "conjuration", "classes": ["sorcerer", "wizard"], "time": "action", "range": "120 ft", "components": "V, S", "duration": "Concentration, 10 min", "desc": "20-ft sphere of poison fog. Con save or take 5d8 poison. Heavily obscured. Moves 10 ft per turn.", "kind": "save", "save": "con", "damageType": "poison", "dice": {"count": 5, "sides": 8}, "scaleType": "slot", "scaleAt": {"dice": 1}, "concentration": true},
   {"name": "Conjure Elemental", "level": 5, "school": "conjuration", "classes": ["druid", "wizard"], "time": "1 minute", "range": "90 ft", "components": "V, S, M", "duration": "Concentration, 1 hour", "desc": "Summon a CR 5 or lower elemental of the chosen element. It is friendly to you and your companions.", "kind": "utility", "concentration": true, "scaleType": "slot"},
   {"name": "Creation", "level": 5, "school": "illusion", "classes": ["sorcerer", "wizard"], "time": "1 minute", "range": "30 ft", "components": "V, S, M", "duration": "Special", "desc": "Pull wisps of shadow material to form a non-magical object of vegetable matter (small carriage, ladder, etc.). Lasts varying time by material.", "kind": "utility", "scaleType": "slot"},
-  {"name": "Enervation", "level": 5, "school": "necromancy", "classes": ["sorcerer", "warlock", "wizard"], "time": "action", "range": "60 ft", "components": "V, S", "duration": "Concentration, 1 min", "desc": "A black tendril of negative energy drains a creature. Dex save: 4d8 necrotic on fail (half on save). Each turn: tendril deals 4d8 to one creature.", "kind": "save", "save": "dex", "damageType": "necrotic", "dice": {"count": 4, "sides": 8}, "concentration": true},
-  {"name": "Arcane Gate", "level": 6, "school": "conjuration", "classes": ["sorcerer", "warlock", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 10 min", "desc": "Create linked teleportation portals.", "kind": "utility", "concentration": true},
   {"name": "Blade Barrier", "level": 6, "school": "evocation", "classes": ["cleric"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 10 min", "desc": "Wall of blades damages creatures crossing/near it.", "kind": "save", "save": "dex", "damageType": "slashing", "dice": {"count": 6, "sides": 10}, "concentration": true},
   {"name": "Chain Lightning", "level": 6, "school": "evocation", "classes": ["sorcerer", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Instant", "desc": "Lightning arcs to one target then three others.", "kind": "save", "save": "dex", "damageType": "lightning", "dice": {"count": 10, "sides": 8}},
   {"name": "Circle of Death", "level": 6, "school": "necromancy", "classes": ["sorcerer", "warlock", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Instant", "desc": "60-ft radius necrotic burst.", "kind": "save", "save": "con", "damageType": "necrotic", "dice": {"count": 8, "sides": 6}, "scaleType": "slot", "scaleAt": {"dice": 2}},
@@ -20904,7 +20684,7 @@ const SPELLS = [
   {"name": "Symbol", "level": 7, "school": "abjuration", "classes": ["bard", "cleric", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Until dispelled/triggered", "desc": "Magical glyph creates a chosen triggered effect.", "kind": "save", "save": "varies"},
   {"name": "Teleport", "level": 7, "school": "conjuration", "classes": ["bard", "sorcerer", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Instant", "desc": "Teleport yourself and up to 8 willing creatures/objects.", "kind": "utility"},
   {"name": "Conjure Celestial", "level": 7, "school": "conjuration", "classes": ["cleric"], "time": "1 minute", "range": "90 ft", "components": "V, S", "duration": "Concentration, 1 hour", "desc": "Summon a celestial of CR ≤ 4 (or higher with higher slots).", "kind": "utility", "concentration": true, "scaleType": "slot"},
-  {"name": "Mordenkainen's Sword", "level": 7, "school": "evocation", "classes": ["bard", "wizard"], "time": "action", "range": "60 ft", "components": "V, S, M", "duration": "Concentration, 1 min", "desc": "Conjure a spectral sword. As a bonus action, attack a creature: 3d10 force on hit. Move it 20 ft each turn.", "kind": "utility", "concentration": true},
+  {"name": "Arcane Sword", "level": 7, "school": "evocation", "classes": ["bard", "wizard"], "time": "action", "range": "60 ft", "components": "V, S, M", "duration": "Concentration, 1 min", "desc": "Conjure a spectral sword. As a bonus action, attack a creature: 3d10 force on hit. Move it 20 ft each turn.", "kind": "utility", "concentration": true},
   {"name": "Animal Shapes", "level": 8, "school": "transmutation", "classes": ["druid"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 24 hours", "desc": "Transform willing creatures into beasts.", "kind": "utility", "concentration": true},
   {"name": "Antimagic Field", "level": 8, "school": "abjuration", "classes": ["cleric", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Concentration, 1 hour", "desc": "10-ft radius antimagic zone suppresses magic.", "kind": "utility", "concentration": true},
   {"name": "Antipathy/Sympathy", "level": 8, "school": "enchantment", "classes": ["druid", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "10 days", "desc": "Attract or repel a chosen creature type.", "kind": "save", "save": "wis"},
@@ -20921,7 +20701,6 @@ const SPELLS = [
   {"name": "Mind Blank", "level": 8, "school": "abjuration", "classes": ["bard", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "24 hours", "desc": "Target immune to psychic damage, mind reading, charm and divination.", "kind": "utility"},
   {"name": "Power Word Stun", "level": 8, "school": "enchantment", "classes": ["bard", "sorcerer", "warlock", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Instant", "desc": "Stun a creature with 150 HP or fewer.", "kind": "utility"},
   {"name": "Sunburst", "level": 8, "school": "evocation", "classes": ["druid", "sorcerer", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Instant", "desc": "Radiant burst damages and blinds.", "kind": "save", "save": "con", "damageType": "radiant", "dice": {"count": 12, "sides": 6}},
-  {"name": "Telepathy", "level": 8, "school": "evocation", "classes": ["wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "24 hours", "desc": "Telepathic link with a willing creature anywhere on same plane.", "kind": "utility"},
   {"name": "Tsunami", "level": 8, "school": "conjuration", "classes": ["druid"], "time": "1 minute", "range": "Sight", "components": "V, S", "duration": "Concentration, 6 rounds", "desc": "Wall of water 300 ft long × 300 ft tall × 50 ft thick. Each round creatures in it: Str save or 6d10 bludgeoning, half on save. Wall loses 50 ft height each round.", "kind": "save", "save": "str", "damageType": "bludgeoning", "dice": {"count": 6, "sides": 10}, "concentration": true},
   {"name": "Astral Projection", "level": 9, "school": "necromancy", "classes": ["cleric", "warlock", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "Special", "desc": "Project yourself and companions into the Astral Plane.", "kind": "utility"},
   {"name": "Foresight", "level": 9, "school": "divination", "classes": ["bard", "druid", "warlock", "wizard"], "time": "action", "range": "See spell", "components": "V, S", "duration": "8 hours", "desc": "Target cannot be surprised and has advantage; attacks against it have disadvantage.", "kind": "utility"},
@@ -20948,36 +20727,15 @@ const SPELLS = [
     kind: 'save', save: 'str', concentration: true, damageType: 'piercing',
     dice: { count: 1, sides: 6 }, scaleType: 'slot', scaleAt: { dice: 1 } },
 
-  { name: 'Armor of Agathys', level: 1, school: 'abjuration', classes: ['warlock'],
-    time: 'action', range: 'Self', components: 'V, S, M', duration: '1 hour',
-    desc: 'Gain 5 temporary HP. While they last, any creature that hits you with a melee attack takes 5 cold damage. At higher levels both the temp HP and the cold damage increase by 5 per slot above 1st.',
-    kind: 'utility', damageType: 'cold', scaleType: 'slot' },
 
-  { name: 'Arms of Hadar', level: 1, school: 'conjuration', classes: ['warlock'],
-    time: 'action', range: 'Self (10-ft radius)', components: 'V, S', duration: 'Instant',
-    desc: 'Dark tendrils erupt around you. Each creature within 10 ft takes 2d6 necrotic and can\'t take reactions until its next turn; a successful Str save halves the damage and avoids the lost reaction.',
-    kind: 'save', save: 'str', damageType: 'necrotic',
-    dice: { count: 2, sides: 6 }, scaleType: 'slot', scaleAt: { dice: 1 } },
 
-  { name: 'Summon Aberration', level: 4, school: 'conjuration', classes: ['warlock', 'wizard'],
-    time: 'action', range: '60 ft', components: 'V, S, M', duration: 'Concentration, 1 hour',
-    desc: 'Summon an aberrant spirit — beholderkin, slaad, or star spawn — that obeys your commands and acts on your turn. Its statistics scale with the slot level used.',
-    kind: 'utility', concentration: true, scaleType: 'slot' },
 
-  { name: 'Summon Construct', level: 4, school: 'transmutation', classes: ['wizard'],
-    time: 'action', range: '5 ft', components: 'V, S, M', duration: 'Concentration, 1 hour',
-    desc: 'Summon a construct spirit — clay, metal, or stone — that obeys your commands and acts on your turn. Its statistics scale with the slot level used.',
-    kind: 'utility', concentration: true, scaleType: 'slot' },
 
-  { name: "Rary's Telepathic Bond", level: 5, school: 'divination', classes: ['wizard'],
+  { name: "Telepathic Bond", level: 5, school: 'divination', classes: ['wizard'],
     time: 'action', range: '30 ft', components: 'V, S, M', duration: '1 hour',
     desc: 'Link up to eight willing creatures for 1 hour. While on the same plane, linked creatures can communicate telepathically with each other at any distance. Can be cast as a ritual.',
     kind: 'utility', ritual: true },
 
-  { name: 'Steel Wind Strike', level: 5, school: 'conjuration', classes: ['ranger', 'wizard'],
-    time: 'action', range: '30 ft', components: 'S, M', duration: 'Instant',
-    desc: 'Flourish a melee weapon and vanish to strike like the wind. Choose up to five creatures within range and make a melee spell attack against each; a hit deals 6d10 force. Then teleport to an unoccupied space you can see within 5 ft of one of the targets.',
-    kind: 'attack', damageType: 'force', dice: { count: 6, sides: 10 } },
 ];
 
 // v0.12.0: keep the built-in spell catalogue to official/SRD-style spells only.
@@ -25178,8 +24936,8 @@ const SPELL_GROUP_OVERRIDES = {
   'Blade Barrier': 'attack',
   'Sunbeam': 'attack',
   'Shadow Blade': 'attack',
-  'Bigby\'s Hand': 'attack',
-  'Mordenkainen\'s Sword': 'attack',
+  'Arcane Hand': 'attack',
+  'Arcane Sword': 'attack',
   'Conjure Animals': 'attack',
   'Conjure Elemental': 'attack',
   'Conjure Woodland Beings': 'attack',
@@ -25232,7 +24990,7 @@ const SPELL_GROUP_OVERRIDES = {
   'Maze': 'control',
   'Plant Growth': 'control',
   'Black Tentacles': 'control',
-  'Evard\'s Black Tentacles': 'control',
+  'Black Tentacles': 'control',
   'Plane Shift': 'control',
   'Banishment': 'control',
   'Polymorph': 'control',
@@ -54556,7 +54314,6 @@ function renderDMCombatRunner() {
       <div class="dm-run-strip" id="dmRunStrip">${stripHTML}</div>
       <div class="dm-run-card" id="dmRunCard">${cardHTML}</div>
       <div class="dm-run-toolbar">
-        <button class="dm-run-tool" data-run-wildmagic="1">✦ Wild Magic</button>
         <button class="dm-run-tool" data-run-status="${viewing.id}">⚑ Status</button>
         <button class="dm-run-tool primary" data-run-next="1">Next ▸</button>
       </div>
@@ -54834,10 +54591,6 @@ function wireDMCombatRunner(enc, order, turnId) {
     });
   });
 
-  // Wild Magic table.
-  document.querySelectorAll('[data-run-wildmagic]').forEach(b => {
-    b.addEventListener('click', () => { state.ui.wildSurgeDialog = { stage: 'table' }; render(); });
-  });
   // v0.21.28 — Death save pass/fail tracking on the player card.
   document.querySelectorAll('[data-run-ds]').forEach(b => {
     b.addEventListener('click', () => {
