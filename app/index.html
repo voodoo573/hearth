@@ -8745,6 +8745,18 @@ html:root .hearth-bug-actions { display: flex; flex-direction: column; gap: 8px;
 html:root .hearth-bug-actions .btn { width: 100%; min-height: 46px; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
 html:root .hearth-bug-email { font-family: var(--rs-sans); font-size: 13px; text-align: center; margin-top: 4px; }
 html:root .hearth-bug-email a { color: inherit; }
+/* v1.4.1 — Battle Forge header tidy (Fold inner screen) */
+html:root .dm-enc-switcher { flex-wrap: wrap; }
+html:root .dm-enc-switcher .dm-enc-current-name,
+html:root .dm-enc-switcher .dm-enc-name-input { flex: 1 1 100%; }
+html:root .dm-enc-switcher .btn { flex: 1 1 0; min-width: 0; }
+html:root .dm-enc-addbar { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+html:root .dm-enc-addbar > .btn { min-width: 0; grid-column: span 3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html:root .dm-enc-addbar > .btn.primary { grid-column: span 2; }
+html:root body .dm-difficulty-row button.dm-diff-btn.dm-diff-btn { font-family: Georgia, 'Times New Roman', serif; font-size: 13px; letter-spacing: 0.04em; font-variant-numeric: normal; }
+html:root .dm-tile-init.dm-tile-init-empty { align-self: flex-start; min-height: 58px; border-style: dashed; border-color: var(--gold); }
+html:root .dm-tile-init.dm-tile-init-empty .dm-tile-init-num { color: var(--gold-deep, var(--gold)); font-weight: 400; }
+html[data-theme="dark"] .dm-tile-init.dm-tile-init-empty .dm-tile-init-num { color: var(--gold); }
 </style>
 </head>
 <body>
@@ -8781,7 +8793,7 @@ html:root .hearth-bug-email a { color: inherit; }
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '1.4.0';
+const HEARTH_VERSION = '1.4.1';
 // v1.4.0 — automatic local backup before each app update. Captured here, at
 // the very start, before anything can migrate stored data; written to
 // IndexedDB later (hearthProcessPreUpdate) and the last 3 are kept.
@@ -31940,8 +31952,8 @@ function dmEncListHTML(order, turnId) {
               <div class="dm-tile ${c.kind} ${isTurn ? 'active-turn' : ''} ${isDead ? 'dm-tile-dead' : ''} ${c.isBoss ? 'dm-tile-boss' : ''} ${c.id === state.ui.dmHighlightMon ? 'dm-tile-highlight' : ''}" data-dm-tile="${c.id}">
                 ${state.ui.dmInitFor === c.id
                   ? `<input id="dmInitInput" class="dm-tile-init-input" type="number" inputmode="numeric" value="${c.init != null ? c.init : ''}" />`
-                  : `<button class="dm-tile-init" data-dm-init="${c.id}" aria-label="Set initiative">
-                      <div class="dm-tile-init-num">${c.init != null ? c.init : '—'}</div>
+                  : `<button class="dm-tile-init ${c.init != null ? '' : 'dm-tile-init-empty'}" data-dm-init="${c.id}" aria-label="Set initiative">
+                      <div class="dm-tile-init-num">${c.init != null ? c.init : '+'}</div>
                       <div class="dm-tile-init-lbl">init</div>
                     </button>`}
                 <div class="dm-tile-body">
@@ -32182,7 +32194,7 @@ function homePanelDM() {
         <button class="btn dm-enc-switch-btn" data-dm-enc-list="1">Encounters (${coll.encounters.length})</button>
         <button class="btn dm-notes-btn" data-dm-notes-open="1">📓 Notes</button>
       </div>
-      <div class="dm-enc-toolbar">
+      <div class="dm-enc-toolbar dm-enc-addbar">
         <button class="btn primary" data-dm-add="player">+ Player</button>
         <button class="btn primary" data-dm-add-char="1">+ Character</button>
         <button class="btn primary" data-dm-enemy-open="1">+ Enemy</button>
@@ -57321,7 +57333,7 @@ try { linkBoot(); } catch (e) { console.warn('Hearth live game boot failed:', e)
 // control the page reloads once by itself unless you are mid-edit (typing, a
 // popup open, or the character builder), in which case the toast stays up.
 (function () {
-  const APP_VERSION = 'v1.4.0';
+  const APP_VERSION = 'v1.4.1';
   window.HEARTH_VERSION = APP_VERSION;
 
   function hearthHasUnsavedEdits() {
