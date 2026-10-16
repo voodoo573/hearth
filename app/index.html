@@ -15010,72 +15010,72 @@ const SUBCLASSES = {
       }
     },
     totem_warrior: {
-      name: 'Path of the Totem Warrior',
-      desc: 'A spiritual barbarian whose rage draws on a totemic spirit — bear, eagle, or wolf — to shape the storm of combat.',
+      name: 'Path of the Spirit Beast',
+      desc: 'A barbarian who bonds with a guardian animal spirit and lets it steer their fury in battle.',
       levelFeatures: {
         3: [
-          { name: 'Spirit Seeker', desc: 'You gain the ability to cast Beast Sense and Speak with Animals as rituals.' },
-          { name: 'Totem Spirit', desc: 'Choose a spirit: Bear (resistance to all damage except psychic while raging), Eagle (Dash as a bonus action while raging, plus opportunity attacks against you have disadvantage), or Wolf (allies have advantage on melee attacks against any enemy within 5 ft of you).' }
+          { name: 'Wild Listener', desc: 'You can cast Beast Sense and Speak with Animals, as rituals only.' },
+          { name: 'Animal Guardian', desc: 'Pick a guardian animal. Bear: while raging you resist every damage type except psychic. Eagle: while raging you can Dash as a bonus action, and opportunity attacks against you are made at disadvantage. Wolf: your allies have advantage on melee attacks against enemies within 5 ft of you.' }
         ],
-        6: [{ name: 'Aspect of the Beast', desc: 'Choose a new aspect (can differ from level 3 spirit). Bear: carrying capacity doubled, advantage on Str checks to push/pull/lift/break. Eagle: see clearly up to 1 mile in daylight, dim light doesn\'t impose disadvantage on Perception. Wolf: track at fast pace, move stealthily at normal pace.' }],
-        10: [{ name: 'Spirit Walker', desc: 'You can cast Commune with Nature as a ritual.' }],
-        14: [{ name: 'Totemic Attunement', desc: 'Choose a third aspect. Bear: while raging, enemies within 5 ft have disadvantage on attacks against creatures other than you. Eagle: while raging, gain a fly speed equal to your walking speed (turns only, must end on ground or fall). Wolf: when you hit a Large or smaller creature with a melee weapon attack while raging, bonus action knock it prone.' }]
+        6: [{ name: 'Spirit Gift', desc: 'Pick an animal gift (it can differ from your guardian). Bear: you can carry twice as much and have advantage on Strength checks to shove, pull, lift or break things. Eagle: you see clearly for up to a mile in daylight, and dim light doesn\'t hurt your Perception. Wolf: you can track at a fast pace and sneak at a normal pace.' }],
+        10: [{ name: 'Spirit Wanderer', desc: 'You can cast Commune with Nature, as a ritual only.' }],
+        14: [{ name: 'Spirit Communion', desc: 'Pick a final animal blessing. Bear: while you rage, enemies within 5 ft have disadvantage on attacks against anyone but you. Eagle: while you rage you fly at your walking speed, but must land at the end of your turn or fall. Wolf: while you rage, a melee hit on a Large or smaller creature lets you knock it prone as a bonus action.' }]
       }
     },
     zealot: {
-      name: 'Path of the Zealot',
-      desc: 'A barbarian channelling divine fury, burning with the fervour of the gods of war and death.',
+      name: 'Path of the Burning Faith',
+      desc: 'A barbarian whose rage is lit by a holy cause, pouring sacred fire into every blow.',
       levelFeatures: {
         3: [
-          { name: 'Divine Fury', desc: 'While raging, the first creature you hit each turn takes extra damage equal to 1d6 + half your barbarian level (necrotic or radiant, your choice).' },
-          { name: 'Warrior of the Gods', desc: 'A spell or effect that restores you to life needs no material components.' }
+          { name: 'Sacred Wrath', desc: 'While you rage, the first creature you hit each turn takes 1d6 + half your barbarian level extra damage, radiant or necrotic (you choose).' },
+          { name: 'Faith Unbroken', desc: 'Magic that brings you back to life needs no material components for you.' }
         ],
-        6: [{ name: 'Fanatical Focus', desc: 'Once per rage, if you fail a saving throw, you can reroll it and must use the new result.' }],
-        10: [{ name: 'Zealous Presence', desc: 'Bonus action (1/long rest): up to 10 creatures of your choice within 60 ft gain advantage on attack rolls and saving throws until the start of your next turn.' }],
-        14: [{ name: 'Rage Beyond Death', desc: 'While raging, dropping to 0 HP doesn\'t knock you unconscious (you keep fighting). You make death saves as normal but only die if the rage ends while at 0 HP.' }]
+        6: [{ name: 'Unshaken Conviction', desc: 'Once per rage, when you fail a saving throw, you can roll it again; you must keep the second roll.' }],
+        10: [{ name: 'Rallying Cry', desc: 'Bonus action, once per long rest: up to 10 chosen creatures within 60 ft have advantage on attack rolls and saving throws until your next turn starts.' }],
+        14: [{ name: 'Deathless Fury', desc: 'While raging you stay conscious at 0 HP and keep fighting. You still roll death saves, but you only die if your rage ends while you are at 0 HP.' }]
       }
     },
     storm_herald: {
-      name: 'Path of the Storm Herald',
-      desc: 'A barbarian whose rage manifests as a primal aura of desert, sea, or tundra.',
+      name: 'Path of the Weather Caller',
+      desc: 'A barbarian whose fury calls up the wild weather of a homeland: scorching sand, crashing waves or bitter frost.',
       levelFeatures: {
-        3: [{ name: 'Storm Aura', desc: 'While raging, emanate a 10-ft aura. Choose Desert (creatures within take 2 fire damage when you enter rage), Sea (bonus action: lightning strike one creature, 1d6 Dex save), or Tundra (an ally within gains 2 temp HP each turn).' }],
-        6: [{ name: 'Storm Soul', desc: 'Gain resistance based on your aura (fire / lightning / cold) and an environmental benefit (e.g. immunity to extreme heat).' }],
-        10: [{ name: 'Shielding Storm', desc: 'Each creature of your choice within your aura gains the damage resistance of your Storm Soul.' }],
-        14: [{ name: 'Raging Storm', desc: 'Your aura gains a powerful reactive effect — e.g. Desert: a creature that hits you takes fire damage; Sea: knock a struck creature prone; Tundra: halve a creature\'s speed.' }]
+        3: [{ name: 'Weather Aura', desc: 'While raging, you radiate a 10-ft aura. Sand: creatures in it take 2 fire damage when you start raging. Wave: as a bonus action, lightning lashes one creature in it (Dex save, 1d6). Frost: an ally in it gains 2 temporary HP each turn.' }],
+        6: [{ name: 'Weather Heart', desc: 'You resist the damage of your aura (fire, lightning or cold) and adapt to its climate, such as shrugging off extreme heat.' }],
+        10: [{ name: 'Weather Shelter', desc: 'Creatures you choose inside your aura share the resistance from Weather Heart.' }],
+        14: [{ name: 'Weather Fury', desc: 'Your aura lashes back. Sand: a creature that hits you takes fire damage. Wave: you can knock a creature you hit prone. Frost: you can halve a creature\'s speed.' }]
       }
     },
     ancestral_guardian: {
-      name: 'Path of the Ancestral Guardian',
-      desc: 'A barbarian who calls on ancestral spirits to shield allies and hinder foes.',
+      name: 'Path of the Forebears',
+      desc: 'A barbarian who calls on the spirits of their forebears to guard friends and hamper enemies.',
       levelFeatures: {
-        3: [{ name: 'Ancestral Protectors', desc: 'While raging, the first creature you hit each turn is hindered: its attacks against anyone but you have disadvantage, and your allies have resistance to its damage until your next turn.' }],
-        6: [{ name: 'Spirit Shield', desc: 'Reaction while raging: when an ally within 30 ft takes damage, reduce it by 2d6 (rising to 4d6 at higher levels).' }],
-        10: [{ name: 'Consult the Spirits', desc: 'You can cast Augury or Clairvoyance through your ancestral spirits (1/short or long rest, no slot).' }],
-        14: [{ name: 'Vengeful Ancestors', desc: 'When your Spirit Shield reduces damage to an ally, the attacker takes force damage equal to the amount prevented.' }]
+        3: [{ name: 'Forebear Wardens', desc: 'While you rage, the first creature you hit each turn is hampered: until your next turn its attacks on anyone but you have disadvantage, and your allies resist its damage.' }],
+        6: [{ name: 'Forebear Shield', desc: 'Reaction while raging: when an ally within 30 ft takes damage, reduce it by 2d6 (more at higher levels).' }],
+        10: [{ name: 'Ask the Forebears', desc: 'Once per short or long rest, your forebears let you cast Augury or Clairvoyance without a spell slot.' }],
+        14: [{ name: 'Forebear Reprisal', desc: 'When Forebear Shield reduces damage to an ally, the attacker takes force damage equal to the damage you stopped.' }]
       }
     },
     beast: {
-      name: 'Path of the Beast',
-      desc: 'A barbarian who manifests bestial weapons — claw, tail, or bite — when the rage takes them.',
+      name: 'Path of the Wild Hunt',
+      desc: 'A barbarian whose rage grows fangs, claws or a tail.',
       levelFeatures: {
-        3: [{ name: 'Form of the Beast', desc: 'When you rage, manifest a natural weapon: Bite (1d8 piercing, heal when below half HP), Claws (1d6 slashing, make an extra attack as part of the Attack action), or Tail (1d8 slashing, reach + reaction AC bonus).' }],
-        6: [{ name: 'Bestial Soul', desc: 'Your natural weapons count as magical. You can adapt: gain a swim/climb speed, a longer jump, or breathe underwater (changes on a short rest).' }],
-        10: [{ name: 'Infectious Fury', desc: 'When you hit a creature with your natural weapon while raging, you can force it to make a Wis save or attack another creature / take 2d12 psychic (limited uses).' }],
-        14: [{ name: 'Call the Hunt', desc: 'When you rage, choose allies to join the hunt — they gain temp HP and bonus damage on their attacks (limited uses).' }]
+        3: [{ name: 'Hunter\'s Shape', desc: 'When you rage, grow one natural weapon. Fangs: 1d8 piercing, and you heal a little when below half HP. Talons: 1d6 slashing, with one extra talon attack when you take the Attack action. Tail: 1d8 slashing with reach, and a reaction to raise your AC.' }],
+        6: [{ name: 'Feral Spirit', desc: 'Your natural weapons count as magical. On a short rest you can adapt your body: gain a swim or climb speed, jump farther, or breathe underwater.' }],
+        10: [{ name: 'Maddening Bite', desc: 'While raging, when your natural weapon hits, the target makes a Wisdom save or either lashes out at another creature or takes 2d12 psychic damage (limited uses).' }],
+        14: [{ name: 'Lead the Pack', desc: 'When you rage, pick allies to run with you: they gain temporary HP and extra damage on their attacks (limited uses).' }]
       }
     },
     wild_magic_barb: {
-      name: 'Path of Wild Magic',
-      desc: 'A barbarian whose rage tears at the fabric of magic, unleashing chaotic surges.',
+      name: 'Path of the Wildfire Soul',
+      desc: 'A barbarian whose rage cracks open raw, unpredictable magic.',
       levelFeatures: {
         3: [
-          { name: 'Magic Awareness', desc: 'Action: detect magic items and spellcasting within 60 ft (Prof-bonus uses/long rest).' },
-          { name: 'Wild Surge', desc: 'When you enter rage, roll on the Wild Magic table for a random magical effect that lasts as long as the rage.' }
+          { name: 'Sense the Weave', desc: 'Action: sense magic items and spellcasting within 60 ft (uses equal to your proficiency bonus per long rest).' },
+          { name: 'Chaos Burst', desc: 'When you start raging, roll on the Chaos Burst table; the random effect lasts until your rage ends.' }
         ],
-        6: [{ name: 'Bolstering Magic', desc: 'Action: touch an ally to grant a bonus to attacks/checks, or restore a spell slot (limited uses).' }],
-        10: [{ name: 'Unstable Backlash', desc: 'Reaction when you take damage or fail a save while raging: roll a new effect on the Wild Magic table.' }],
-        14: [{ name: 'Controlled Surge', desc: 'When you roll on the Wild Magic table, roll twice and choose which effect occurs.' }]
+        6: [{ name: 'Shared Spark', desc: 'Action: touch an ally to boost their attacks and checks, or to restore a spell slot to them (limited uses).' }],
+        10: [{ name: 'Volatile Recoil', desc: 'Reaction while raging, when you take damage or fail a save: roll a fresh Chaos Burst effect.' }],
+        14: [{ name: 'Tamed Chaos', desc: 'When you roll on the Chaos Burst table, roll twice and pick the result you want.' }]
       }
     }
   },
@@ -15093,64 +15093,64 @@ const SUBCLASSES = {
       }
     },
     valor: {
-      name: 'College of Valor',
-      desc: 'Skalds and battle-bards. The College of Valor sings glory into the fray.',
+      name: 'College of the War Chant',
+      desc: 'Battle-singers whose songs drive their friends forward in the thick of the fight.',
       levelFeatures: {
         3: [
           { name: 'Bonus Proficiencies', desc: 'Proficiency with medium armor, shields, and martial weapons.' },
-          { name: 'Combat Inspiration', desc: 'A creature that has your Bardic Inspiration die can also use it to add to a weapon damage roll on an attack that hits, OR as a reaction to add it to AC against an incoming attack (decided after the d20).' }
+          { name: 'Fighting Verse', desc: 'A creature holding your Bardic Inspiration die can add it to the damage of a weapon hit, or use its reaction to add it to its AC against an attack after seeing the roll.' }
         ],
         6: [{ name: 'Extra Attack', desc: 'Attack twice when you take the Attack action.' }],
-        14: [{ name: 'Battle Magic', desc: 'When you cast a bard spell of 1st level or higher with your action, bonus action: make one weapon attack.' }]
+        14: [{ name: 'Chant and Steel', desc: 'When you use your action to cast a bard spell of 1st level or higher, you can make one weapon attack as a bonus action.' }]
       }
     },
     glamour: {
-      name: 'College of Glamour',
-      desc: 'Bards of glamour weave beguiling Feywild magic that enthralls and inspires.',
+      name: 'College of the Shimmering Court',
+      desc: 'Bards who wear an otherworldly charm that dazzles crowds and lifts allies.',
       levelFeatures: {
         3: [
-          { name: 'Mantle of Inspiration', desc: 'Bonus action: expend a Bardic Inspiration die to grant temp HP (= 2× die roll +... scaling by level) to creatures of your choice within 60 ft (Cha-mod number of creatures); each can immediately use its reaction to move without provoking.' },
-          { name: 'Enthralling Performance', desc: 'After performing for 1 minute, charm up to Cha-mod humanoids within 60 ft (Wis save) for 1 hour.' }
+          { name: 'Shimmering Veil', desc: 'Bonus action: spend a Bardic Inspiration die to give temporary HP (scaling with level) to a number of creatures within 60 ft equal to your Charisma modifier; each can then use its reaction to move without provoking opportunity attacks.' },
+          { name: 'Spellbinding Act', desc: 'After a 1-minute performance, up to your Charisma modifier in humanoids within 60 ft must make a Wisdom save or be charmed by you for 1 hour.' }
         ],
-        6: [{ name: 'Mantle of Majesty', desc: 'Bonus action: cast Command without a slot and gain a majestic presence for 1 minute, recasting Command as a bonus action each turn; charmed creatures obey.' }],
-        14: [{ name: 'Unbreakable Majesty', desc: 'Bonus action: assume a majestic form for 1 minute. A creature attacking you must make a Cha save or it cannot attack you and must choose a new target or waste the attack.' }]
+        6: [{ name: 'Regal Aura', desc: 'Bonus action: cast Command without a spell slot, and for 1 minute you can cast it again as a bonus action each turn; charmed creatures obey automatically.' }],
+        14: [{ name: 'Untouchable Grace', desc: 'Bonus action: take on a radiant, regal form for 1 minute. A creature trying to attack you must pass a Charisma save, or it must pick another target or lose the attack.' }]
       }
     },
     swords: {
-      name: 'College of Swords',
-      desc: 'Blades — bards who wield their weapons with the same flourish as their music.',
+      name: 'College of the Dancing Blade',
+      desc: 'Performer-duellists who fight with the same showmanship they bring to the stage.',
       levelFeatures: {
         3: [
-          { name: 'Bonus Proficiencies', desc: 'Proficiency with medium armor and the scimitar; you can use a weapon as a spellcasting focus for bard spells.' },
-          { name: 'Fighting Style', desc: 'Choose Dueling or Two-Weapon Fighting.' },
-          { name: 'Blade Flourish', desc: 'When you take the Attack action, your walking speed increases by 10 ft that turn, and you can use one Blade Flourish (Defensive, Slashing, or Mobile) per turn by expending a Bardic Inspiration die, adding it to damage.' }
+          { name: 'Bonus Proficiencies', desc: 'You gain medium armor and scimitar proficiency, and can use a weapon as your focus for bard spells.' },
+          { name: 'Fighting Style', desc: 'Choose duelling or two-weapon fighting.' },
+          { name: 'Stage Flourish', desc: 'When you take the Attack action, your speed rises by 10 ft this turn. Once per turn, spend a Bardic Inspiration die on a Stage Flourish (guard, sweep or step), adding the die to the damage.' }
         ],
         6: [{ name: 'Extra Attack', desc: 'Attack twice when you take the Attack action.' }],
-        14: [{ name: 'Master\'s Flourish', desc: 'You can roll a d6 in place of expending a Bardic Inspiration die for a Blade Flourish.' }]
+        14: [{ name: 'Practised Flourish', desc: 'For a Stage Flourish you can roll a d6 instead of spending a Bardic Inspiration die.' }]
       }
     },
     whispers: {
-      name: 'College of Whispers',
-      desc: 'These bards use secrets and fear as weapons, masquerading as ordinary performers.',
+      name: 'College of Hushed Tales',
+      desc: 'Bards who trade in secrets and dread while posing as harmless entertainers.',
       levelFeatures: {
         3: [
-          { name: 'Psychic Blades', desc: 'When you hit with a weapon attack, expend a Bardic Inspiration die to deal extra psychic damage (2d6 at 3rd, scaling to 8d6 at 15th).' },
-          { name: 'Words of Terror', desc: 'Speak with a creature for 1 minute to frighten it (Wis save) for 1 hour or until harmed.' }
+          { name: 'Mind Knives', desc: 'When a weapon attack hits, spend a Bardic Inspiration die to add psychic damage: 2d6 at 3rd level, growing to 8d6 at 15th.' },
+          { name: 'Dread Rumour', desc: 'After talking with a creature for 1 minute, you can make it frightened of you for 1 hour (Wis save), ending early if it is harmed.' }
         ],
-        6: [{ name: 'Mantle of Whispers', desc: 'Reaction when a humanoid dies within 30 ft: capture its shadow to assume its appearance and access surface memories for 1 hour.' }],
-        14: [{ name: 'Shadow Lore', desc: 'Action: whisper to a creature within 30 ft (Wis save) or it becomes charmed, obeying reasonable commands, for 8 hours.' }]
+        6: [{ name: 'Borrowed Face', desc: 'Reaction when a humanoid dies within 30 ft: keep its shadow and, for 1 hour, wear its looks and recall its surface memories.' }],
+        14: [{ name: 'Last Secret', desc: 'Action: whisper to a creature within 30 ft; on a failed Wisdom save it is charmed for 8 hours and follows reasonable commands.' }]
       }
     },
     eloquence: {
-      name: 'College of Eloquence',
-      desc: 'Masters of persuasion who can sway hearts and command crowds with a turn of phrase.',
+      name: 'College of the Golden Word',
+      desc: 'Speakers so persuasive they can turn a crowd with a single sentence.',
       levelFeatures: {
         3: [
-          { name: 'Silver Tongue', desc: 'You are a master of persuasion: treat a d20 roll of 9 or lower as a 10 for Persuasion and Deception checks.' },
-          { name: 'Unsettling Words', desc: 'Bonus action: expend a Bardic Inspiration die and subtract it from the next saving throw a creature within 60 ft makes before your next turn.' }
+          { name: 'Honeyed Speech', desc: 'On Persuasion and Deception checks, a d20 roll of 9 or less counts as a 10.' },
+          { name: 'Doubting Words', desc: 'Bonus action: spend a Bardic Inspiration die; a creature within 60 ft subtracts it from its next saving throw before your next turn.' }
         ],
-        6: [{ name: 'Unfailing Inspiration', desc: 'When a creature adds your Bardic Inspiration die to a roll and still fails, it keeps the die.' }],
-        14: [{ name: 'Infectious Inspiration', desc: 'Reaction (Cha-mod uses/long rest): when a creature within 60 ft succeeds on a roll using your inspiration, grant a d... inspiration to another creature.' }]
+        6: [{ name: 'Lasting Encouragement', desc: 'If a creature uses your Bardic Inspiration die and still fails, it keeps the die.' }],
+        14: [{ name: 'Spreading Encouragement', desc: 'Reaction (Charisma modifier uses per long rest): when a creature within 60 ft succeeds using your inspiration, give a Bardic Inspiration die to another creature.' }]
       }
     }
   },
@@ -15170,124 +15170,124 @@ const SUBCLASSES = {
       }
     },
     war: {
-      name: 'War Domain',
-      desc: 'Gods of war demand champions in arms. The War cleric is one part healer, one part battering ram.',
+      name: 'Battle Banner Domain',
+      desc: 'Priests of battle gods who fight in the front rank, half healer and half hammer.',
       levelFeatures: {
         1: [
           { name: 'Bonus Proficiencies', desc: 'Proficiency with martial weapons and heavy armor.' },
-          { name: 'War Priest', desc: 'When you take the Attack action, bonus action: make one weapon attack. Uses per long rest = your Wisdom modifier (min 1).' }
+          { name: 'Battle Priest', desc: 'When you take the Attack action, make one weapon attack as a bonus action. Uses per long rest equal your Wisdom modifier (at least 1).' }
         ],
-        2: [{ name: 'Channel Divinity: Guided Strike', desc: 'When you make an attack roll, choose to use this CD to add +10 to the roll. Decide after the d20 is rolled, before the DM declares hit or miss.' }],
-        6: [{ name: 'Channel Divinity: War God\'s Blessing', desc: 'Reaction when a creature within 30 ft makes an attack roll: spend Channel Divinity to grant +10 to that roll. Same timing as Guided Strike.' }],
-        8: [{ name: 'Divine Strike', desc: 'Once per turn on a weapon hit, deal +1d8 of the weapon\'s damage type. Increases to 2d8 at level 14.' }],
-        17: [{ name: 'Avatar of Battle', desc: 'Resistance to bludgeoning, piercing, and slashing damage from non-magical weapons.' }]
+        2: [{ name: 'Channel Divinity: Sure Strike', desc: 'Spend Channel Divinity to add +10 to an attack roll you make, after you see the d20 but before the DM says hit or miss.' }],
+        6: [{ name: 'Channel Divinity: Battle Blessing', desc: 'Reaction when a creature within 30 ft makes an attack roll: spend Channel Divinity to add +10 to it, with the same timing as Sure Strike.' }],
+        8: [{ name: 'Divine Strike', desc: 'Once per turn when a weapon hits, deal an extra 1d8 damage of the weapon\'s type (2d8 from level 14).' }],
+        17: [{ name: 'Battle Saint', desc: 'You resist bludgeoning, piercing and slashing damage from nonmagical weapons.' }]
       }
     },
     knowledge: {
-      name: 'Knowledge Domain',
-      desc: 'Gods of secrets, archives, and forbidden libraries. Knowledge clerics turn information into power.',
+      name: 'Archive Domain',
+      desc: 'Priests of gods of lore, record and hidden truth, who treat knowledge as a weapon.',
       levelFeatures: {
         1: [
-          { name: 'Blessings of Knowledge', desc: 'Learn two languages. Proficiency in two of: Arcana, History, Nature, Religion. Your proficiency bonus is doubled for any check using those skills.' }
+          { name: 'Archivist\'s Gifts', desc: 'You learn two languages and become proficient in two of Arcana, History, Nature and Religion; your proficiency bonus is doubled for checks with those skills.' }
         ],
-        2: [{ name: 'Channel Divinity: Knowledge of the Ages', desc: 'Action: choose one skill or tool. For 10 minutes, you have proficiency with it.' }],
-        6: [{ name: 'Channel Divinity: Read Thoughts', desc: 'Action: target one creature within 60 ft. Wis save (no save if unaware). On fail, read its surface thoughts for 1 minute and cast Suggestion as a reaction without a slot.' }],
-        8: [{ name: 'Potent Spellcasting', desc: 'Add Wisdom modifier to damage from cleric cantrips.' }],
-        17: [{ name: 'Visions of the Past', desc: '1 minute concentration to learn the recent history of an object you hold or area you stand in. The DM determines the visions.' }]
+        2: [{ name: 'Channel Divinity: Borrowed Expertise', desc: 'Action: pick a skill or tool; you are proficient with it for 10 minutes.' }],
+        6: [{ name: 'Channel Divinity: Open Mind', desc: 'Action: pick a creature within 60 ft (Wis save, none if it is unaware of you). On a failure you hear its surface thoughts for 1 minute and can cast Suggestion on it as a reaction without a slot.' }],
+        8: [{ name: 'Empowered Cantrips', desc: 'Your cleric cantrips add your Wisdom modifier to their damage.' }],
+        17: [{ name: 'Echoes of Memory', desc: 'Concentrate for 1 minute to glimpse the recent past of an object you hold or the place you stand; the DM describes what you see.' }]
       }
     },
     light: {
-      name: 'Light Domain',
-      desc: 'Gods of dawn, fire, and revelation. Light clerics blast through shadows with searing flame.',
+      name: 'Dawnfire Domain',
+      desc: 'Priests of gods of sunrise and revealing flame, who burn away shadow.',
       levelFeatures: {
         1: [
-          { name: 'Bonus Cantrip', desc: 'Learn the Light cantrip if you don\'t already know it.' },
-          { name: 'Warding Flare', desc: 'Reaction when a creature within 30 ft attacks you: impose disadvantage on the attack roll. Uses per long rest = your Wisdom modifier (min 1).' }
+          { name: 'Bonus Cantrip', desc: 'You learn the Light cantrip if you don\'t know it already.' },
+          { name: 'Dazzling Flash', desc: 'Reaction when a creature within 30 ft attacks you: it has disadvantage on that attack. Uses per long rest equal your Wisdom modifier (at least 1).' }
         ],
-        2: [{ name: 'Channel Divinity: Radiance of the Dawn', desc: 'Action: dispel magical darkness within 30 ft. Each hostile creature there makes a Con save or takes 2d10 + cleric level radiant damage (half on success).' }],
-        6: [{ name: 'Improved Flare', desc: 'You can use Warding Flare when a creature within 30 ft attacks any creature other than you.' }],
-        8: [{ name: 'Potent Spellcasting', desc: 'Add Wisdom modifier to damage from cleric cantrips.' }],
-        17: [{ name: 'Corona of Light', desc: 'Action: emanate sunlight in a 60 ft radius for 1 minute. Bright light. Enemies in the area have disadvantage on saves vs spells dealing fire or radiant damage.' }]
+        2: [{ name: 'Channel Divinity: Burst of Dawn', desc: 'Action: magical darkness within 30 ft ends, and each hostile creature there makes a Con save, taking 2d10 + your cleric level radiant damage on a failure or half on a success.' }],
+        6: [{ name: 'Shielding Flash', desc: 'You can also use Dazzling Flash when a creature within 30 ft attacks someone other than you.' }],
+        8: [{ name: 'Empowered Cantrips', desc: 'Your cleric cantrips add your Wisdom modifier to their damage.' }],
+        17: [{ name: 'Halo of Dawn', desc: 'Action: shed bright sunlight in a 60-ft radius for 1 minute; enemies in it have disadvantage on saves against your fire and radiant spells.' }]
       }
     },
     // v0.20.57 — Tempest Domain. Gods of the sea, sky, and storm.
     // Tempest clerics rain lightning and thunder on their enemies.
     tempest: {
-      name: 'Tempest Domain',
-      desc: 'Gods of the sea, sky, and storm. Tempest clerics rain lightning and thunder on their enemies.',
+      name: 'Stormcall Domain',
+      desc: 'Priests of gods of wind, wave and storm, who hurl thunder and lightning.',
       levelFeatures: {
         1: [
           { name: 'Bonus Proficiencies', desc: 'Proficiency with martial weapons and heavy armor.' },
-          { name: 'Wrath of the Storm', desc: 'Reaction when a creature within 5 ft hits you with an attack: force it to make a Dex save. On failure, takes 2d8 lightning or thunder damage (your choice); half on success. Uses per long rest = your Wisdom modifier (min 1).' }
+          { name: 'Thunderclap Reprisal', desc: 'Reaction when a creature within 5 ft hits you: it makes a Dex save, taking 2d8 lightning or thunder damage (your choice) on a failure or half on a success. Uses per long rest equal your Wisdom modifier (at least 1).' }
         ],
-        2: [{ name: 'Channel Divinity: Destructive Wrath', desc: 'When you roll lightning or thunder damage, spend Channel Divinity to use the maximum value of each damage die instead of rolling.' }],
-        6: [{ name: 'Thunderbolt Strike', desc: 'When you deal lightning damage to a Large or smaller creature, you can also push it up to 10 feet away from you.' }],
-        8: [{ name: 'Divine Strike', desc: 'Once per turn on a weapon hit, deal +1d8 thunder damage. Increases to 2d8 at level 14.' }],
-        17: [{ name: 'Stormborn', desc: 'You have a flying speed equal to your current walking speed whenever you are not underground or indoors.' }]
+        2: [{ name: 'Channel Divinity: Full Fury', desc: 'When you roll lightning or thunder damage, spend Channel Divinity to treat every die as its highest number.' }],
+        6: [{ name: 'Booming Bolt', desc: 'When you deal lightning damage to a Large or smaller creature, you can also shove it up to 10 ft away.' }],
+        8: [{ name: 'Divine Strike', desc: 'Once per turn when a weapon hits, deal an extra 1d8 thunder damage (2d8 from level 14).' }],
+        17: [{ name: 'Riding the Gale', desc: 'Whenever you are outdoors and above ground, you have a flying speed equal to your walking speed.' }]
       }
     },
     // v0.20.58 — Trickery Domain. Gods of mischief, illusion, and
     // shadow. Trickery clerics deceive and misdirect.
     trickery: {
-      name: 'Trickery Domain',
-      desc: 'Gods of mischief, illusion, and shadow. Trickery clerics deceive and misdirect.',
+      name: 'Masque Domain',
+      desc: 'Priests of gods of mischief, masks and misdirection.',
       levelFeatures: {
         1: [
-          { name: 'Blessing of the Trickster', desc: 'Action: touch a willing creature other than yourself. It has advantage on Stealth checks for 1 hour or until you use this feature again. No charges; refresh by touching a new target.' }
+          { name: 'Gift of the Masque', desc: 'Action: touch another willing creature; it has advantage on Stealth checks for 1 hour, or until you use this feature again.' }
         ],
-        2: [{ name: 'Channel Divinity: Invoke Duplicity', desc: 'Action: create a perfect illusion of yourself within 30 ft for 1 minute (concentration). The duplicate moves up to 30 ft each turn (bonus action), and you can cast spells as if you were in its space. You and allies have advantage on attacks against creatures within 5 ft of both you and the duplicate.' }],
-        6: [{ name: 'Channel Divinity: Cloak of Shadows', desc: 'Action: become invisible until the end of your next turn. The invisibility ends if you attack or cast a spell.' }],
-        8: [{ name: 'Divine Strike', desc: 'Once per turn on a weapon hit, deal +1d8 poison damage. Increases to 2d8 at level 14.' }],
-        17: [{ name: 'Improved Duplicity', desc: 'When you use Invoke Duplicity, you can create up to four duplicates instead of one. As a bonus action, you can move any number of them up to 30 ft, with a 120-ft maximum range from you.' }]
+        2: [{ name: 'Channel Divinity: Mirror Self', desc: 'Action: an illusory double of you appears within 30 ft for 1 minute (concentration). As a bonus action it moves up to 30 ft, and you can cast spells from its space. You and your allies have advantage on attacks against a creature that is within 5 ft of both you and the double.' }],
+        6: [{ name: 'Channel Divinity: Veil of Night', desc: 'Action: you turn invisible until the end of your next turn, or until you attack or cast a spell.' }],
+        8: [{ name: 'Divine Strike', desc: 'Once per turn when a weapon hits, deal an extra 1d8 poison damage (2d8 from level 14).' }],
+        17: [{ name: 'Hall of Mirrors', desc: 'Mirror Self can make up to four doubles. As a bonus action you move any of them up to 30 ft, keeping each within 120 ft of you.' }]
       }
     },
     // v0.20.59 — Nature Domain. Gods of nature, sky, and storm.
     // Druidic clerics standing at the boundary of the wild.
     nature: {
-      name: 'Nature Domain',
-      desc: 'Gods of nature, harvest, and beasts. Clerics of nature stand at the boundary between mortals and the wild.',
+      name: 'Greenwood Domain',
+      desc: 'Priests of gods of harvest, forest and beast, who stand between towns and the wild.',
       levelFeatures: {
         1: [
-          { name: 'Acolyte of Nature', desc: 'Learn one druid cantrip and gain proficiency in one of: Animal Handling, Nature, or Survival.' },
-          { name: 'Bonus Proficiency', desc: 'Proficiency with heavy armor.' }
+          { name: 'Greenwood Initiate', desc: 'You learn one druid cantrip and become proficient in Animal Handling, Nature or Survival (pick one).' },
+          { name: 'Bonus Proficiency', desc: 'You gain heavy armor proficiency.' }
         ],
-        2: [{ name: 'Channel Divinity: Charm Animals and Plants', desc: 'Action: each beast or plant creature within 30 ft of you that can see you must make a Wis save (spell save DC) or be charmed for 1 minute, or until it takes damage. The charmed creature is friendly to you.' }],
-        6: [{ name: 'Dampen Elements', desc: 'Reaction when you or a creature within 30 ft takes acid, cold, fire, lightning, or thunder damage: grant resistance against that instance of damage.' }],
-        8: [{ name: 'Divine Strike', desc: 'Once per turn on a weapon hit, deal +1d8 cold, fire, or lightning damage (your choice). Increases to 2d8 at level 14.' }],
-        17: [{ name: 'Master of Nature', desc: 'You can use your action to command any creature you have charmed with Charm Animals and Plants. The creature must be able to hear you, and you can give it simple orders telepathically.' }]
+        2: [{ name: 'Channel Divinity: Soothe the Wild', desc: 'Action: every beast and plant creature within 30 ft that can see you makes a Wis save against your spell save DC or is charmed and friendly to you for 1 minute, or until it takes damage.' }],
+        6: [{ name: 'Weather the Elements', desc: 'Reaction when you or a creature within 30 ft takes acid, cold, fire, lightning or thunder damage: that creature resists that damage.' }],
+        8: [{ name: 'Divine Strike', desc: 'Once per turn when a weapon hits, deal an extra 1d8 cold, fire or lightning damage (your choice; 2d8 from level 14).' }],
+        17: [{ name: 'Voice of the Wild', desc: 'As an action you can give orders to a creature charmed by Soothe the Wild; it must hear you, and you can send it simple commands telepathically.' }]
       }
     },
     // v0.20.60 — Forge Domain (Xanathar's). Gods of craft, fire, and
     // smithing. Forge clerics wield molten flame and shape iron.
     forge_cleric: {
-      name: 'Forge Domain',
-      desc: 'Gods of craft, fire, and smithing. Forge clerics wield molten flame and shape iron.',
+      name: 'Anvil Domain',
+      desc: 'Priests of gods of smithing and craft, who work holy fire into iron.',
       levelFeatures: {
         1: [
-          { name: 'Bonus Proficiencies', desc: 'Proficiency with heavy armor and smith\'s tools.' },
-          { name: 'Blessing of the Forge', desc: 'After a long rest, touch a nonmagical weapon or suit of armor. Until your next long rest or you die, that object becomes a magic item granting +1 to AC (armor) or +1 to attack and damage rolls (weapon).' }
+          { name: 'Bonus Proficiencies', desc: 'You gain proficiency with heavy armor and smith\'s tools.' },
+          { name: 'Anvil Blessing', desc: 'At the end of a long rest, touch a nonmagical weapon or suit of armor; until your next long rest (or your death) it is magical, giving +1 to AC (armor) or +1 to attack and damage (weapon).' }
         ],
-        2: [{ name: 'Channel Divinity: Artisan\'s Blessing', desc: '1-hour ritual: create a single simple or martial weapon, a nonmagical item with no more than 100 gp, or an exact duplicate of such an item if you have it as a model. Used at the table.' }],
-        6: [{ name: 'Soul of the Forge', desc: 'Resistance to fire damage. While wearing heavy armor, you gain a +1 bonus to AC.' }],
-        8: [{ name: 'Divine Strike', desc: 'Once per turn on a weapon hit, deal +1d8 fire damage. Increases to 2d8 at level 14.' }],
-        17: [{ name: 'Saint of Forge and Fire', desc: 'Immunity to fire damage. While wearing heavy armor, you have resistance to bludgeoning, piercing, and slashing damage from non-magical attacks.' }]
+        2: [{ name: 'Channel Divinity: Holy Craft', desc: 'In a 1-hour rite, make a simple or martial weapon, a nonmagical item worth up to 100 gp, or a copy of such an item you have as a model. Handled at the table.' }],
+        6: [{ name: 'Heart of the Anvil', desc: 'You resist fire damage, and gain +1 AC while you wear heavy armor.' }],
+        8: [{ name: 'Divine Strike', desc: 'Once per turn when a weapon hits, deal an extra 1d8 fire damage (2d8 from level 14).' }],
+        17: [{ name: 'Living Anvil', desc: 'You are immune to fire damage, and in heavy armor you resist bludgeoning, piercing and slashing damage from nonmagical attacks.' }]
       }
     },
     // v0.20.61 — Grave Domain (Xanathar's). Gods of the boundary
     // between life and death. Grave clerics protect the cycle and
     // hunt undead.
     grave: {
-      name: 'Grave Domain',
-      desc: 'Gods of the boundary between life and death. Grave clerics protect the natural cycle and hunt the undead.',
+      name: 'Threshold Domain',
+      desc: 'Priests of gods who guard the line between life and death and hunt those who cheat it.',
       levelFeatures: {
         1: [
-          { name: 'Circle of Mortality', desc: 'Healing spells you cast on a creature at 0 HP restore the maximum number of HP possible (no roll). You also learn the spare the dying cantrip at long range (30 ft instead of touch).' },
-          { name: 'Eyes of the Grave', desc: 'Action: detect the presence of undead within 60 ft for 1 minute (no line of sight needed; not through total cover). Uses per long rest = your Wisdom modifier (minimum 1).' }
+          { name: 'Keeper of the Threshold', desc: 'Your healing spells give the maximum possible HP to a creature at 0 HP. You also learn Spare the Dying and can cast it at 30 ft.' },
+          { name: 'Deathsense', desc: 'Action: for 1 minute you sense undead within 60 ft, without needing sight (total cover blocks it). Uses per long rest equal your Wisdom modifier (at least 1).' }
         ],
-        2: [{ name: "Channel Divinity: Path to the Grave", desc: 'Action: choose one creature within 30 ft and curse it until the end of your next turn. The next time you or an ally hits the cursed creature, it has vulnerability to that attack\'s damage (curse then ends).' }],
-        6: [{ name: "Sentinel at Death's Door", desc: 'Reaction when you or a creature within 30 ft suffers a critical hit: turn the critical into a normal hit. Uses per long rest = your Wisdom modifier (minimum 1).' }],
-        8: [{ name: 'Potent Spellcasting', desc: 'Add Wisdom modifier to damage from cleric cantrips.' }],
-        17: [{ name: 'Keeper of Souls', desc: 'When an enemy you can see dies within 60 ft, you or a creature of your choice within 60 ft regains HP equal to the dying creature\'s number of Hit Dice. Once per turn.' }]
+        2: [{ name: "Channel Divinity: Mark of Ending", desc: 'Action: mark a creature within 30 ft until the end of your next turn; the next attack by you or an ally that hits it deals vulnerable damage, ending the mark.' }],
+        6: [{ name: "Threshold Warden", desc: 'Reaction when you or a creature within 30 ft takes a critical hit: it becomes a normal hit. Uses per long rest equal your Wisdom modifier (at least 1).' }],
+        8: [{ name: 'Empowered Cantrips', desc: 'Your cleric cantrips add your Wisdom modifier to their damage.' }],
+        17: [{ name: 'Soul Shepherd', desc: 'Once per turn, when an enemy you can see dies within 60 ft, you or a creature you choose within 60 ft regains HP equal to its Hit Dice count.' }]
       }
     }
   },
@@ -15307,68 +15307,68 @@ const SUBCLASSES = {
       }
     },
     moon: {
-      name: 'Circle of the Moon',
-      desc: 'Druids who become the beasts they speak for. Wild Shape becomes a weapon.',
+      name: 'Circle of the Fang',
+      desc: 'Druids who fight as the beasts they protect, turning Wild Shape into a weapon.',
       levelFeatures: {
         2: [
-          { name: 'Combat Wild Shape', desc: 'Use Wild Shape as a bonus action instead of an action. While transformed, bonus action: spend a spell slot to regain 1d8 HP per slot level.' },
-          { name: 'Circle Forms', desc: 'You can transform into beasts of CR 1 (instead of CR 1/4). At druid level 6, max CR = druid level / 3 (rounded down).' }
+          { name: 'Battle Shape', desc: 'You can Wild Shape as a bonus action. While transformed, you can spend a spell slot as a bonus action to heal 1d8 per slot level.' },
+          { name: 'Fang Forms', desc: 'You can turn into beasts of up to CR 1 (rather than CR 1/4); from druid level 6, the cap is your druid level divided by 3, rounded down.' }
         ],
-        6: [{ name: 'Primal Strike', desc: 'Your attacks in beast form count as magical for overcoming resistance.' }],
-        10: [{ name: 'Elemental Wild Shape', desc: 'Spend two uses of Wild Shape to transform into an air, earth, fire, or water elemental.' }],
-        14: [{ name: 'Thousand Forms', desc: 'You can cast Alter Self at will.' }]
+        6: [{ name: 'Wild Strikes', desc: 'Your beast-form attacks count as magical for overcoming resistance.' }],
+        10: [{ name: 'Elemental Shape', desc: 'Spend two Wild Shape uses to become an air, earth, fire or water elemental.' }],
+        14: [{ name: 'Shapeless', desc: 'You can cast Alter Self at will.' }]
       }
     },
     stars: {
-      name: 'Circle of the Stars',
-      desc: 'Druids who chart the night sky, drawing on constellations for guidance and power.',
+      name: 'Circle of the Night Sky',
+      desc: 'Druids who read the patterns of the stars for guidance and power.',
       levelFeatures: {
         2: [
-          { name: 'Star Map', desc: 'You craft a star chart that serves as a spellcasting focus; you know Guidance and can cast Guiding Bolt a number of times per long rest.' },
-          { name: 'Starry Form', desc: 'Bonus action: expend a use of Wild Shape to take a glowing Starry Form for 10 min. Choose Archer (bonus-action ranged spell attack, 1d8+Wis radiant), Chalice (heal when you cast a healing spell), or Dragon (treat a Con/Int/Wis save or concentration check of 9 or lower as 10).' }
+          { name: 'Sky Chart', desc: 'You make a chart of the heavens that works as your spellcasting focus; you know Guidance and can cast Guiding Bolt a few times per long rest.' },
+          { name: 'Starlit Shape', desc: 'Bonus action: spend a Wild Shape use to glow with starlight for 10 minutes, in one of three shapes. Hunter: bonus-action ranged spell attack for 1d8 + Wis radiant. Cup: your healing spells heal extra. Serpent: on Con, Int or Wis saves and concentration checks, a d20 roll of 9 or less counts as 10.' }
         ],
-        6: [{ name: 'Cosmic Omen', desc: 'After a long rest, roll a die for Weal (even) or Woe (odd). Reaction (Wis-mod/long rest): when a creature you can see rolls a d20, add or subtract 1d6.' }],
-        10: [{ name: 'Twinkling Constellations', desc: 'Your Archer/Chalice damage dice become 2d8, and the Dragon form grants a 20-ft fly speed.' }],
-        14: [{ name: 'Full of Stars', desc: 'While in Starry Form you become partially incorporeal, gaining resistance to bludgeoning, piercing, and slashing damage.' }]
+        6: [{ name: 'Sign of the Heavens', desc: 'After a long rest, roll a die: even for Fortune, odd for Misfortune. Reaction (Wisdom modifier uses per long rest): when a creature you can see rolls a d20, add or subtract 1d6.' }],
+        10: [{ name: 'Brighter Stars', desc: 'Hunter and Cup dice become 2d8, and the Serpent shape grants a 20-ft flying speed.' }],
+        14: [{ name: 'Body of Starlight', desc: 'While in Starlit Shape you are partly insubstantial, resisting bludgeoning, piercing and slashing damage.' }]
       }
     },
     spores: {
-      name: 'Circle of Spores',
-      desc: 'Druids who find beauty in decay, commanding fungal spores and the cycle of life and death.',
+      name: 'Circle of Rot and Bloom',
+      desc: 'Druids who honour decay and regrowth and command clouds of fungal spores.',
       levelFeatures: {
         2: [
-          { name: 'Halo of Spores', desc: 'Reaction: deal 1d4 necrotic (scaling with level) to a creature within 10 ft (Con save negates).' },
-          { name: 'Symbiotic Entity', desc: 'Expend a use of Wild Shape to gain 4× druid level temp HP for 10 min; while active, Halo of Spores damage doubles and melee weapon hits deal +1d6 necrotic.' }
+          { name: 'Spore Cloud', desc: 'Reaction: a creature within 10 ft takes 1d4 necrotic damage (grows with level) unless it passes a Con save.' },
+          { name: 'Mycelial Armour', desc: 'Spend a Wild Shape use for 4 × your druid level temporary HP for 10 minutes; meanwhile Spore Cloud damage is doubled and your melee weapon hits add 1d6 necrotic.' }
         ],
-        6: [{ name: 'Fungal Infestation', desc: 'Reaction when a Small/Medium beast or humanoid dies within 10 ft: animate it as a zombie under your control for 1 hour (Wis-mod uses/long rest).' }],
-        10: [{ name: 'Spreading Spores', desc: 'Bonus action: hurl your Halo of Spores into a 10-ft cube within 30 ft for 1 min; creatures starting their turn there take the Halo damage.' }],
-        14: [{ name: 'Fungal Body', desc: 'You can\'t be blinded, deafened, frightened, or poisoned, and any critical hit against you is a normal hit while Symbiotic Entity is active.' }]
+        6: [{ name: 'Fungal Puppet', desc: 'Reaction when a Small or Medium beast or humanoid dies within 10 ft: it rises as a zombie you control for 1 hour (Wisdom modifier uses per long rest).' }],
+        10: [{ name: 'Drifting Spores', desc: 'Bonus action: send your Spore Cloud into a 10-ft cube within 30 ft for 1 minute; creatures starting their turn there take its damage.' }],
+        14: [{ name: 'Rooted Flesh', desc: 'You can\'t be blinded, deafened, frightened or poisoned, and while Mycelial Armour is up, critical hits on you are normal hits.' }]
       }
     },
     wildfire: {
-      name: 'Circle of Wildfire',
-      desc: 'Druids who embrace the dual nature of fire — destruction and the renewal that follows.',
+      name: 'Circle of Ash and Ember',
+      desc: 'Druids who serve fire as both destroyer and renewer.',
       levelFeatures: {
         2: [
-          { name: 'Summon Wildfire Spirit', desc: 'Expend a use of Wild Shape to summon a wildfire spirit; when it appears, each creature within 10 ft of it takes 2d6 fire (Dex save). It acts on your turn (bonus action to command).' },
-          { name: 'Bonus Cantrip', desc: 'You learn the Fire Bolt cantrip.' }
+          { name: 'Call the Ember Spirit', desc: 'Spend a Wild Shape use to call an ember spirit; when it appears, creatures within 10 ft of it take 2d6 fire (Dex save). It acts on your turn, and you command it as a bonus action.' },
+          { name: 'Bonus Cantrip', desc: 'You learn Fire Bolt.' }
         ],
-        6: [{ name: 'Enhanced Bond', desc: 'While your spirit is summoned, your fire/healing spells deal/heal +1d8, and you can cast spells as though you were in the spirit\'s space.' }],
-        10: [{ name: 'Cauterizing Flames', desc: 'When a Small+ creature dies within 30 ft of you or your spirit, a spectral flame springs up; a creature entering it takes or heals 2d10 fire.' }],
-        14: [{ name: 'Blazing Revival', desc: 'If you drop to 0 HP while your spirit is summoned, you can dismiss it to instead drop to half your HP maximum.' }]
+        6: [{ name: 'Kindred Flame', desc: 'While your spirit is present, your fire spells deal 1d8 more and your healing spells heal 1d8 more, and you can cast spells as if standing in its space.' }],
+        10: [{ name: 'Healing Embers', desc: 'When a Small or larger creature dies within 30 ft of you or your spirit, a ghostly flame rises there; a creature that enters it either takes or regains 2d10 (fire).' }],
+        14: [{ name: 'Rise from Ashes', desc: 'If you drop to 0 HP while your spirit is present, you can release it and instead fall to half your HP maximum.' }]
       }
     },
     shepherd: {
-      name: 'Circle of the Shepherd',
-      desc: 'Druids who commune with and protect the spirits of nature and beasts.',
+      name: 'Circle of the Herd',
+      desc: 'Druids who befriend and guard the spirits of the wild.',
       levelFeatures: {
         2: [
-          { name: 'Speech of the Woods', desc: 'You learn Sylvan and can speak with beasts.' },
-          { name: 'Spirit Totem', desc: 'Bonus action: summon an incorporeal Bear (temp HP + advantage on Str), Hawk (reaction to grant advantage on an attack, advantage on Perception), or Unicorn (heal when you cast a healing spell) spirit in a 30-ft aura for 1 minute.' }
+          { name: 'Tongue of the Glade', desc: 'You learn Sylvan and can talk with beasts.' },
+          { name: 'Herd Spirit', desc: 'Bonus action: call a ghostly animal spirit with a 30-ft aura for 1 minute. Bear: temporary HP and advantage on Strength checks. Hawk: a reaction to grant advantage on an attack, plus advantage on Perception. Stag: extra healing when you cast a healing spell.' }
         ],
-        6: [{ name: 'Mighty Summoner', desc: 'Beasts and fey you conjure gain +2 HP per Hit Die, and their attacks count as magical.' }],
-        10: [{ name: 'Guardian Spirit', desc: 'Beasts and fey that start their turn in your Spirit Totem aura regain HP equal to half your druid level.' }],
-        14: [{ name: 'Faithful Summons', desc: 'When you drop to 0 HP or are incapacitated, you automatically cast Conjure Animals (four beasts of CR 2 or lower) to defend you (1/long rest).' }]
+        6: [{ name: 'Strong Callings', desc: 'Beasts and fey you summon gain 2 extra HP per Hit Die, and their attacks count as magical.' }],
+        10: [{ name: 'Restoring Herd', desc: 'Beasts and fey that begin their turn in your Herd Spirit aura regain HP equal to half your druid level.' }],
+        14: [{ name: 'Loyal Pack', desc: 'Once per long rest, when you drop to 0 HP or become incapacitated, you automatically cast Conjure Animals (four beasts of CR 2 or lower) to protect you.' }]
       }
     }
   },
@@ -15385,118 +15385,118 @@ const SUBCLASSES = {
       }
     },
     battle_master: {
-      name: 'Battle Master',
-      desc: 'A student of weapons and tactics. Combat Superiority lets you carve fights into pieces.',
+      name: 'Tactician',
+      desc: 'A fighter who studies weapons and formations, winning fights with clever manoeuvres.',
       levelFeatures: {
         3: [
-          { name: 'Combat Superiority', desc: 'Gain four superiority dice (d8). When you hit, spend one to add the die to damage. Specific maneuvers cost a die each (Riposte, Trip, Disarm, Menacing, Goading, Precision, etc.). Dice recover on a short or long rest.' },
-          { name: 'Maneuvers', desc: 'Learn three maneuvers. Save DC for any maneuver = 8 + prof + Str or Dex (your choice per maneuver).' },
-          { name: 'Student of War', desc: 'Proficiency with one type of artisan tool of your choice.' }
+          { name: 'Tactical Edge', desc: 'You have four tactics dice (d8). When you hit, spend one to add it to the damage; each tactic you know also costs a die. Dice return on a short or long rest.' },
+          { name: 'Tactics', desc: 'Learn three tactics. A tactic\'s save DC is 8 + proficiency bonus + Strength or Dexterity (pick for each tactic).' },
+          { name: 'Drillmaster\'s Craft', desc: 'You become proficient with one kind of artisan\'s tools.' }
         ],
         7: [
-          { name: 'Know Your Enemy', desc: 'Spend at least 1 minute observing a creature outside combat. Learn whether it\'s superior, inferior, or equal in two of: Str, Dex, Con, AC, current HP, total class levels.' },
-          { name: 'Maneuvers Known', desc: 'You know two more maneuvers (5 total). Superiority die becomes d10.' }
+          { name: 'Size Up', desc: 'Watch a creature for at least a minute outside combat to learn whether it is stronger, weaker or equal to you in two of: Strength, Dexterity, Constitution, AC, current HP, total class levels.' },
+          { name: 'More Tactics', desc: 'You learn two more tactics (5 in all), and your tactics die becomes a d10.' }
         ],
-        10: [{ name: 'Improved Combat Superiority', desc: 'Superiority die becomes a d10. You also gain a 5th superiority die.' }],
-        15: [{ name: 'Relentless', desc: 'When you roll initiative with no superiority dice remaining, regain one.' }],
-        18: [{ name: 'Improved Combat Superiority (II)', desc: 'Superiority die becomes a d12. You learn two more maneuvers (7 total) and gain a 6th superiority die.' }]
+        10: [{ name: 'Sharper Edge', desc: 'Your tactics die becomes a d10 and you gain a fifth tactics die.' }],
+        15: [{ name: 'Never Out of Ideas', desc: 'If you roll initiative with no tactics dice left, you get one back.' }],
+        18: [{ name: 'Master Tactician', desc: 'Your tactics die becomes a d12; you learn two more tactics (7 in all) and gain a sixth die.' }]
       }
     },
     eldritch_knight: {
-      name: 'Eldritch Knight',
-      desc: 'A fighter who weaves abjuration and evocation into their swordwork.',
+      name: 'Spellblade Knight',
+      desc: 'A fighter who threads protective and destructive spells through their swordplay.',
       levelFeatures: {
         3: [
-          { name: 'Spellcasting', desc: 'Learn wizard cantrips and spells (mainly abjuration and evocation, plus a few free choices). Use Intelligence for spell attacks and save DCs. Spell slots use the third-caster table.' },
-          { name: 'Weapon Bond', desc: 'During a 1-hour ritual, bond up to two weapons. You can\'t be disarmed of a bonded weapon unless incapacitated. As a bonus action you can summon a bonded weapon to your hand if it\'s on the same plane.' }
+          { name: 'Spellcasting', desc: 'You learn wizard cantrips and spells, mostly abjuration and evocation with a few free picks. Intelligence is your spellcasting ability; you use the one-third caster slot table.' },
+          { name: 'Bound Blade', desc: 'In a 1-hour rite, bind up to two weapons to yourself. You can\'t be disarmed of a bound weapon unless incapacitated, and as a bonus action you can call one to your hand from anywhere on the same plane.' }
         ],
-        7: [{ name: 'War Magic', desc: 'When you take the Attack action, bonus action: cast a wizard cantrip.' }],
-        10: [{ name: 'Eldritch Strike', desc: 'When you hit a creature with a weapon attack, that creature has disadvantage on the next saving throw it makes against a spell you cast before the end of your next turn.' }],
-        15: [{ name: 'Arcane Charge', desc: 'When you use Action Surge, you can teleport up to 30 ft to an unoccupied space you can see, before or after the action.' }],
-        18: [{ name: 'Improved War Magic', desc: 'When you take the Attack action, bonus action: cast a wizard cantrip OR a wizard spell of 1st level or higher (instead of just a cantrip).' }]
+        7: [{ name: 'Blade and Spell', desc: 'When you take the Attack action, you can cast a wizard cantrip as a bonus action.' }],
+        10: [{ name: 'Spell-Opening Strike', desc: 'A creature you hit with a weapon has disadvantage on its next save against a spell you cast before the end of your next turn.' }],
+        15: [{ name: 'Blink Surge', desc: 'When you use Action Surge, you can teleport up to 30 ft to a space you can see, before or after the extra action.' }],
+        18: [{ name: 'Greater Blade and Spell', desc: 'When you take the Attack action, your bonus-action spell can be a wizard spell of 1st level or higher instead of only a cantrip.' }]
       }
     },
     echo_knight: {
-      name: 'Echo Knight',
-      desc: 'A warrior who fights alongside an echo of themselves — a shimmering, half-real shadow they can swap places with at will.',
+      name: 'Mirror Knight',
+      desc: 'A warrior who fights beside a flickering double of themselves that they can trade places with.',
       levelFeatures: {
         3: [
-          { name: 'Manifest Echo', desc: 'Bonus action: summon an echo of yourself in an unoccupied space within 15 ft. The echo is a Medium magical construct with AC 14 and 1 HP, and immune to all conditions. It lasts until you dismiss it (no action), it moves more than 30 ft from you, or you manifest a new one. While you can see your echo, you can use a bonus action to swap places with it.' },
-          { name: 'Unleash Incarnation', desc: 'When you take the Attack action, you can make one extra melee attack from your echo\'s position. Uses per long rest = your Constitution modifier (minimum 1). You also regain all uses on a short rest.' }
+          { name: 'Call the Double', desc: 'Bonus action: your double appears in a free space within 15 ft. It is a Medium magical construct with AC 14, 1 HP and immunity to all conditions. It lasts until you dismiss it, it ends up more than 30 ft from you, or you call a new one. While you can see it, you can swap places with it as a bonus action.' },
+          { name: 'Double Strike', desc: 'When you take the Attack action, you can make one extra melee attack from your double\'s space. Uses equal your Constitution modifier (at least 1), regained on a short or long rest.' }
         ],
-        7: [{ name: 'Echo Avatar', desc: 'Action: see and hear through your echo for up to 10 minutes. The echo can move up to 1,000 ft from you during this time. While doing this, you are blind and deaf to your own surroundings.' }],
-        10: [{ name: 'Shadow Martyr', desc: 'When you see a creature within 30 ft of your echo make an attack against another creature, reaction: have your echo intercept the attack as if it were in the way. The attack hits the echo, destroying it. Once per short or long rest.' }],
-        15: [{ name: 'Reclaim Potential', desc: 'When the echo is destroyed by taking damage, gain temporary HP equal to 2d6 + Constitution modifier. Once per turn.' }],
-        18: [{ name: 'Legion of One', desc: 'You can summon two echoes simultaneously instead of one, each in a different space. When you take the Attack action, you can split your attacks between the two echoes. If you have no Unleash Incarnation uses, you regain one when you roll initiative.' }]
+        7: [{ name: 'Far Sight', desc: 'Action: for up to 10 minutes you see and hear through your double, which can travel up to 1,000 ft away; meanwhile you can\'t see or hear your own surroundings.' }],
+        10: [{ name: 'Decoy Guard', desc: 'Reaction when a creature within 30 ft of your double attacks someone else: your double steps into the way and takes the hit, and is destroyed. Once per short or long rest.' }],
+        15: [{ name: 'Recovered Strength', desc: 'Once per turn, when your double is destroyed by damage, you gain 2d6 + your Constitution modifier temporary HP.' }],
+        18: [{ name: 'Twin Doubles', desc: 'You can keep two doubles at once in different spaces, and split your attacks between them. If you roll initiative with no Double Strike uses, you regain one.' }]
       }
     },
     cavalier: {
-      name: 'Cavalier',
-      desc: 'A martial champion who guards allies and locks down enemies, mounted or on foot.',
+      name: 'Shieldwarden',
+      desc: 'A defender who shields friends and pins down foes, on horseback or on foot.',
       levelFeatures: {
         3: [
-          { name: 'Bonus Proficiency', desc: 'Proficiency in one skill (Animal Handling, Athletics, History, Insight, Performance, or Persuasion) or a language.' },
-          { name: 'Born to the Saddle', desc: 'Advantage on saves to avoid falling off a mount; you can mount/dismount cheaply and land on your feet if your mount is knocked prone.' },
-          { name: 'Unwavering Mark', desc: 'When you hit a creature with a melee weapon, you can mark it. A marked creature has disadvantage attacking anyone but you, and you can make a bonus-action punishing attack if it attacks an ally.' }
+          { name: 'Bonus Proficiency', desc: 'You gain one language or a skill from Animal Handling, Athletics, History, Insight, Performance or Persuasion.' },
+          { name: 'Rider\'s Balance', desc: 'You have advantage on saves against being knocked from a mount, mount and dismount quickly, and land on your feet if your mount falls prone.' },
+          { name: 'Challenge Mark', desc: 'When your melee weapon hits a creature you can mark it; it has disadvantage on attacks against anyone except you, and if it attacks an ally you can punish it with a bonus-action attack.' }
         ],
-        7: [{ name: 'Warding Maneuver', desc: 'Reaction when an ally within 5 ft is hit: add 1d8 to their AC against that attack, possibly causing a miss (Con-mod uses/long rest).' }],
-        10: [{ name: 'Hold the Line', desc: 'Creatures provoke opportunity attacks from you when they move 5+ ft while within reach, and your opportunity attack reduces their speed to 0 for the turn.' }],
-        15: [{ name: 'Ferocious Charger', desc: 'If you move 10+ ft in a straight line before hitting a creature, it must save or be knocked prone (1/turn).' }],
-        18: [{ name: 'Vigilant Defender', desc: 'You can make an opportunity attack on every other creature\'s turn, not just once per round.' }]
+        7: [{ name: 'Interpose', desc: 'Reaction when an ally within 5 ft is hit: add 1d8 to their AC against that attack, perhaps turning it into a miss (Constitution modifier uses per long rest).' }],
+        10: [{ name: 'Hold Fast', desc: 'Creatures in your reach provoke opportunity attacks when they move 5 ft or more within it, and your opportunity attack hit stops them moving for the turn.' }],
+        15: [{ name: 'Crashing Charge', desc: 'Once per turn, if you move at least 10 ft straight toward a creature and then hit it, it must save or fall prone.' }],
+        18: [{ name: 'Ever Watchful', desc: 'You can make one opportunity attack on each other creature\'s turn instead of one per round.' }]
       }
     },
     samurai: {
-      name: 'Samurai',
-      desc: 'A disciplined warrior whose fighting spirit lets them push past pain and exhaustion.',
+      name: 'Iron Will Duellist',
+      desc: 'A disciplined blade whose inner resolve carries them past pain and weariness.',
       levelFeatures: {
         3: [
-          { name: 'Bonus Proficiency', desc: 'Proficiency in History, Insight, Performance, or Persuasion (or a language).' },
-          { name: 'Fighting Spirit', desc: 'Bonus action: gain advantage on all weapon attacks this turn plus temporary HP (5/10/15 by level). Three uses per long rest.' }
+          { name: 'Bonus Proficiency', desc: 'You gain one language or one skill from History, Insight, Performance or Persuasion.' },
+          { name: 'Inner Resolve', desc: 'Bonus action: you have advantage on weapon attacks this turn and gain 5, 10 or 15 temporary HP (by level). Three uses per long rest.' }
         ],
-        7: [{ name: 'Elegant Courtier', desc: 'Add your Wisdom modifier to Persuasion checks, and your wisdom of the blade lets you resist being charmed/frightened.' }],
-        10: [{ name: 'Tireless Spirit', desc: 'You regain one use of Fighting Spirit whenever you roll initiative and have none left.' }],
-        15: [{ name: 'Rapid Strike', desc: 'If you have advantage on a weapon attack, you can forgo it to make one additional weapon attack (1/turn).' }],
-        18: [{ name: 'Strength Before Death', desc: 'When you take damage that drops you to 0 HP (but not killed outright), reaction: take a full turn immediately before falling. Once per long rest.' }]
+        7: [{ name: 'Graceful Speaker', desc: 'You add your Wisdom modifier to Persuasion checks, and your calm focus helps you resist being charmed or frightened.' }],
+        10: [{ name: 'Unending Resolve', desc: 'When you roll initiative with no Inner Resolve uses left, you regain one.' }],
+        15: [{ name: 'Swift Cut', desc: 'Once per turn, if you have advantage on a weapon attack, you can give it up to make an extra weapon attack.' }],
+        18: [{ name: 'Last Stand', desc: 'Once per long rest, when damage drops you to 0 HP without killing you, you can use your reaction to take a whole turn before you fall.' }]
       }
     },
     psi_warrior: {
-      name: 'Psi Warrior',
-      desc: 'A fighter who augments martial prowess with telekinetic psionic power.',
+      name: 'Mindblade Warrior',
+      desc: 'A fighter who backs every swing with telekinetic force drawn from the mind.',
       levelFeatures: {
-        3: [{ name: 'Psionic Power', desc: 'You have Psionic Energy dice. Use them for Protective Field (reaction: reduce damage to a creature within 30 ft), Psionic Strike (bonus force damage on a hit), and Telekinetic Movement (move an object/creature 30 ft).' }],
-        7: [{ name: 'Telekinetic Adept', desc: 'Telekinetic Thrust (knock prone or push 10 ft when you use Psionic Strike) and Guarded Mind (spend a die to end the charmed/frightened condition on yourself).' }],
-        10: [{ name: 'Guarded Mind', desc: 'Resistance to psychic damage; if you start your turn charmed or frightened, you can end that condition.' }],
-        15: [{ name: 'Bulwark of Force', desc: 'Bonus action: grant yourself and allies within 30 ft half cover for 1 minute (Prof-bonus uses/long rest).' }],
-        18: [{ name: 'Telekinetic Master', desc: 'You can cast Telekinesis (concentration). On your turn while concentrating, you can make one weapon attack as a bonus action.' }]
+        3: [{ name: 'Mind Force', desc: 'You have Mind Force dice. Spend them to shield (reaction: reduce damage to a creature within 30 ft), to strike (extra force damage on a hit) or to shove (move an object or creature 30 ft).' }],
+        7: [{ name: 'Force Adept', desc: 'Force Shove (knock prone or push 10 ft when you use a Mind Force strike) and Steady Mind (spend a die to end charmed or frightened on yourself).' }],
+        10: [{ name: 'Steady Mind', desc: 'You resist psychic damage, and if you begin your turn charmed or frightened you can end it.' }],
+        15: [{ name: 'Force Wall', desc: 'Bonus action: you and allies within 30 ft gain half cover for 1 minute (proficiency bonus uses per long rest).' }],
+        18: [{ name: 'Force Master', desc: 'You can cast Telekinesis (concentration); while concentrating on it, you can make one weapon attack as a bonus action on your turn.' }]
       }
     },
     rune_knight: {
-      name: 'Rune Knight',
-      desc: 'A fighter who inscribes giant runes onto their gear, drawing on primal giant magic.',
+      name: 'Runecarver Knight',
+      desc: 'A fighter who carves old runes of power into their gear to borrow the strength of the ancient world.',
       levelFeatures: {
         3: [
-          { name: 'Bonus Proficiencies', desc: 'Proficiency with smith\'s tools and you can speak, read, and write Giant.' },
-          { name: 'Rune Carver', desc: 'Learn runes (e.g. Cloud, Fire, Frost, Stone) you inscribe on items. Each grants a passive benefit and an invokable effect (advantage, extra damage, charm, etc.).' },
-          { name: 'Giant\'s Might', desc: 'Bonus action: become Large (if room), gain advantage on Strength checks/saves, and +1d6 damage once per turn. Prof-bonus uses/long rest.' }
+          { name: 'Bonus Proficiencies', desc: 'You gain smith\'s tools proficiency and can speak, read and write Giant.' },
+          { name: 'Rune Carving', desc: 'Learn runes (such as cloud, flame, frost and stone runes) to carve into your gear. Each gives a constant benefit plus a power you can trigger (advantage, extra damage, charm and so on).' },
+          { name: 'Titan\'s Strength', desc: 'Bonus action: grow to Large if there is room, gain advantage on Strength checks and saves, and deal 1d6 extra damage once per turn. Proficiency bonus uses per long rest.' }
         ],
-        7: [{ name: 'Runic Shield', desc: 'Reaction when an ally within 60 ft is hit: force the attacker to reroll the attack (Prof-bonus uses/long rest).' }],
-        10: [{ name: 'Great Stature', desc: 'You grow 3d4 inches taller, and your Giant\'s Might bonus damage becomes 1d8.' }],
-        15: [{ name: 'Master of Runes', desc: 'You can invoke each rune twice per short or long rest.' }],
-        18: [{ name: 'Runic Juggernaut', desc: 'Giant\'s Might can make you Huge, increases your reach by 5 ft, and the bonus damage becomes 1d10.' }]
+        7: [{ name: 'Rune Ward', desc: 'Reaction when an ally within 60 ft is hit: the attacker must reroll the attack (proficiency bonus uses per long rest).' }],
+        10: [{ name: 'Towering Frame', desc: 'You grow 3d4 inches taller, and Titan\'s Strength damage becomes 1d8.' }],
+        15: [{ name: 'Rune Master', desc: 'You can trigger each rune twice per short or long rest.' }],
+        18: [{ name: 'Titan Unleashed', desc: 'Titan\'s Strength can make you Huge, adds 5 ft of reach, and its damage becomes 1d10.' }]
       }
     },
     arcane_archer: {
-      name: 'Arcane Archer',
-      desc: 'A fighter who imbues arrows with eldritch magic, bending shots to their will.',
+      name: 'Spellshot Archer',
+      desc: 'A fighter who fills arrows with magic and steers them to their mark.',
       levelFeatures: {
         3: [
-          { name: 'Arcane Shot', desc: 'Learn Arcane Shot options (e.g. Banishing, Bursting, Grasping, Piercing, Seeking, Shadow Arrow). Twice per short/long rest, infuse a shot with a chosen effect.' },
-          { name: 'Arcane Archer Lore', desc: 'You learn Prestidigitation or Druidcraft, and gain proficiency in Arcana or Nature.' }
+          { name: 'Spellshot', desc: 'Learn Spellshot effects (exiling, blasting, snaring, piercing, seeking, darkening arrow and so on). Twice per short or long rest, load a shot with one of them.' },
+          { name: 'Spellshot Lore', desc: 'You learn Prestidigitation or Druidcraft and become proficient in Arcana or Nature.' }
         ],
-        7: [{ name: 'Curving Shot', desc: 'When you miss with a magic arrow, bonus action: reroll the attack against a different target within 60 ft.' }],
-        10: [{ name: 'Additional Arcane Shot', desc: 'You learn more Arcane Shot options and your shots become more potent.' }],
-        15: [{ name: 'Ever-Ready Shot', desc: 'If you roll initiative with no Arcane Shot uses left, you regain one.' }],
-        18: [{ name: 'Improved Shots', desc: 'Your Arcane Shots deal an extra 1d6 damage and their effects are harder to resist.' }]
+        7: [{ name: 'Bending Shot', desc: 'When a magic arrow misses, you can reroll the attack as a bonus action against another target within 60 ft.' }],
+        10: [{ name: 'More Spellshots', desc: 'You learn more Spellshot effects, and your shots grow stronger.' }],
+        15: [{ name: 'Ready Quiver', desc: 'If you roll initiative with no Spellshot uses left, you get one back.' }],
+        18: [{ name: 'Perfected Spellshot', desc: 'Your Spellshots deal 1d6 more damage and are harder to resist.' }]
       }
     }
   },
@@ -15512,84 +15512,84 @@ const SUBCLASSES = {
       }
     },
     shadow: {
-      name: 'Way of Shadow',
-      desc: 'A monastic tradition of darkness and silence — equal parts ninja and ghost.',
+      name: 'Way of the Silent Dusk',
+      desc: 'Monks who train in darkness and quiet until they move like ghosts.',
       levelFeatures: {
         3: [
-          { name: 'Shadow Arts', desc: 'Spend 2 ki to cast Darkness, Darkvision, Pass Without Trace, or Silence without material components. You also know the Minor Illusion cantrip (Wis is your spellcasting ability for it).' }
+          { name: 'Dusk Arts', desc: 'Spend 2 ki to cast Darkness, Darkvision, Pass without Trace or Silence without material components. You also know Minor Illusion, using Wisdom to cast it.' }
         ],
-        6: [{ name: 'Shadow Step', desc: 'While in dim light or darkness, bonus action: teleport up to 60 ft to another unoccupied space in dim light or darkness. You then have advantage on the first melee attack you make before the end of your turn.' }],
-        11: [{ name: 'Cloak of Shadows', desc: 'Action while in dim light or darkness: become invisible until you make an attack, cast a spell, or are in bright light.' }],
-        17: [{ name: 'Opportunist', desc: 'When a creature within 5 ft is hit by an attack made by a creature other than you, reaction: make one melee attack against that creature.' }]
+        6: [{ name: 'Dusk Step', desc: 'Bonus action while in dim light or darkness: teleport up to 60 ft to another dim or dark space you can see, and gain advantage on your first melee attack before your turn ends.' }],
+        11: [{ name: 'Mantle of Dusk', desc: 'Action in dim light or darkness: turn invisible until you attack, cast a spell or step into bright light.' }],
+        17: [{ name: 'Seize the Gap', desc: 'Reaction when another creature hits a creature within 5 ft of you: make one melee attack against the creature that was hit.' }]
       }
     },
     // v0.20.63 — Way of Mercy (Tasha's). Monks of mercy walk the
     // boundary between healer and reaper. Their gloved hands deal
     // life or death.
     mercy: {
-      name: 'Way of Mercy',
-      desc: 'Monks of mercy walk the boundary between healer and reaper. Their gloved hands deal life or death.',
+      name: 'Way of the Open Palm and Closed Fist',
+      desc: 'Monks who carry both healing and harm in their hands.',
       levelFeatures: {
         3: [
-          { name: 'Implements of Mercy', desc: 'Proficiency in Insight, Medicine, and the herbalism kit. You also gain a unique mask, identifying you as a Disciple of Mercy.' },
-          { name: 'Hand of Healing', desc: "Bonus action: spend 1 ki to touch a creature and restore HP equal to your Martial Arts die roll + your Wisdom modifier. You can forgo a Flurry of Blows attack to do this without spending ki." },
-          { name: 'Hand of Harm', desc: "When you hit with an unarmed strike, spend 1 ki to deal extra necrotic damage equal to one roll of your Martial Arts die + your Wisdom modifier. Use this only once per turn, and not on a Hand of Healing target." }
+          { name: 'Healer\'s Kit', desc: 'You become proficient in Insight, Medicine and the herbalism kit, and wear a distinctive mask of your order.' },
+          { name: 'Mending Palm', desc: "Bonus action: spend 1 ki and touch a creature to heal it by a roll of your Martial Arts die + your Wisdom modifier. You can trade a Flurry of Blows strike for this without spending ki." },
+          { name: 'Withering Palm', desc: "Once per turn when an unarmed strike hits, spend 1 ki to add necrotic damage equal to your Martial Arts die + Wisdom modifier (not against a creature you healed this turn)." }
         ],
-        6: [{ name: 'Physician\'s Touch', desc: "Hand of Healing also ends one of the following conditions on the target: blinded, deafened, paralyzed, poisoned, or stunned. Hand of Harm also imposes the poisoned condition until the end of your next turn." }],
-        11: [{ name: 'Flurry of Healing and Harm', desc: 'When you use Flurry of Blows, you can replace each unarmed strike with a Hand of Healing without spending ki for the healing. You can still spend ki for Hand of Harm on the other attacks.' }],
-        17: [{ name: 'Hand of Ultimate Mercy', desc: 'Action: touch a creature that died within the past 24 hours. Spend 5 ki to return it to life with HP = 4d10 + your Wisdom modifier. Removes ability score reductions, blinded, deafened, paralyzed, poisoned, stunned conditions, and any disease. Once per long rest.' }]
+        6: [{ name: 'Healer\'s Insight', desc: "Mending Palm also ends blinded, deafened, paralysed, poisoned or stunned on the target; Withering Palm also poisons the target until the end of your next turn." }],
+        11: [{ name: 'Storm of Palms', desc: 'When you use Flurry of Blows, you can swap each strike for a free Mending Palm, while still spending ki to use Withering Palm on the others.' }],
+        17: [{ name: 'Palm of Return', desc: 'Once per long rest, as an action, spend 5 ki to touch a creature that died in the last 24 hours and bring it back with 4d10 + your Wisdom modifier HP, curing lowered ability scores, disease and the blinded, deafened, paralysed, poisoned and stunned conditions.' }]
       }
     },
     four_elements: {
-      name: 'Way of the Four Elements',
-      desc: 'A monk who channels ki into the raw power of the elements, bending fire, water, air, and earth.',
+      name: 'Way of the Elemental Flow',
+      desc: 'Monks who pour ki into fire, water, air and earth.',
       levelFeatures: {
         3: [
-          { name: 'Disciple of the Elements', desc: 'You learn elemental disciplines fuelled by ki. You know Elemental Attunement plus one more discipline; learn more as you level.' },
-          { name: 'Elemental Disciplines', desc: 'Spend ki to produce effects like Fangs of the Fire Snake, Water Whip, Fist of Unbroken Air, or (later) Fist of Four Thunders, Sweeping Cinder Strike — many replicate spells using ki points.' }
+          { name: 'Elemental Student', desc: 'You learn ki-powered elemental forms: Elemental Harmony plus one more, gaining further forms as you level.' },
+          { name: 'Elemental Forms', desc: 'Spend ki to unleash elemental forms such as a lashing flame strike, a water lash or a gust punch; later forms include thunder fists and cinder sweeps. Many copy spells using ki.' }
         ],
-        6: [{ name: 'Additional Discipline', desc: 'You learn another elemental discipline; higher-level disciplines (e.g. Flames of the Phoenix, Mist Stance) become available.' }],
-        11: [{ name: 'Greater Disciplines', desc: 'Access powerful disciplines such as Eternal Mountain Defense, River of Hungry Flame, or Wave of Rolling Earth.' }],
-        17: [{ name: 'Mastery of the Elements', desc: 'You learn the most potent elemental disciplines and can cast them by spending the requisite ki.' }]
+        6: [{ name: 'Further Form', desc: 'You learn another elemental form; higher forms such as a rising phoenix flame or a mist step become open to you.' }],
+        11: [{ name: 'Greater Forms', desc: 'You can learn mighty forms such as a mountain guard, a river of fire or a rolling wave of earth.' }],
+        17: [{ name: 'Elemental Mastery', desc: 'You learn the strongest elemental forms and can cast them by spending the ki they need.' }]
       }
     },
     kensei: {
-      name: 'Way of the Kensei',
-      desc: 'A monk who treats certain weapons as extensions of the body, blending martial arts with weapon mastery.',
+      name: 'Way of the Honed Edge',
+      desc: 'A monk who trains with a chosen pair of weapons until steel moves as freely as fist and foot.',
       levelFeatures: {
         3: [
-          { name: 'Path of the Kensei', desc: 'Choose kensei weapons (treat as monk weapons). Gain Agile Parry (+2 AC after an unarmed strike), Kensei\'s Shot (bonus action: +1d4 ranged damage), and weapon-as-focus for calligraphy.' },
-          { name: 'Kensei Weapons', desc: 'Two melee/ranged weapons become kensei weapons; you gain proficiency and special techniques with them.' }
+          { name: 'Edge Discipline', desc: 'Pick two favoured weapons; they count as monk weapons for you. You can raise a quick guard (+2 AC after an unarmed strike) or steady a ranged shot as a bonus action for +1d4 damage.' },
+          { name: 'Favoured Arms', desc: 'Two weapons of your choice become favoured arms; you are proficient with them and can use your monk techniques through them.' }
         ],
-        6: [{ name: 'One with the Blade', desc: 'Kensei weapons count as magical, and once per turn you can spend 1 ki for Deft Strike (+Martial Arts die damage).' }],
-        11: [{ name: 'Sharpen the Blade', desc: 'Spend up to 3 ki (bonus action) to give a kensei weapon a +1/+2/+3 bonus to attack and damage for 1 minute.' }],
-        17: [{ name: 'Unerring Accuracy', desc: 'Once per turn, if you miss with a monk weapon attack, you can reroll it.' }]
+        6: [{ name: 'Blade and Breath', desc: 'Your favoured arms count as magical. Once per turn you can spend 1 ki on a hit to add one Martial Arts die of damage.' }],
+        11: [{ name: 'Whetted Spirit', desc: 'As a bonus action, spend 1 to 3 ki to give a favoured weapon the same bonus (+1 to +3) to attack and damage rolls for 1 minute.' }],
+        17: [{ name: 'True Aim', desc: 'Once per turn, when you miss with a monk weapon, you may roll the attack again.' }]
       }
     },
     drunken_master: {
-      name: 'Way of the Drunken Master',
-      desc: 'A monk whose unpredictable, lurching style baffles foes and turns clumsiness into deadly grace.',
+      name: 'Way of the Staggering Step',
+      desc: 'A monk whose swaying, stumbling style looks careless right up until it lands a blow.',
       levelFeatures: {
         3: [
-          { name: 'Bonus Proficiencies', desc: 'Proficiency in the Performance skill and with brewer\'s supplies.' },
-          { name: 'Drunken Technique', desc: 'When you use Flurry of Blows, you gain the benefit of Disengage and your walking speed increases by 10 ft that turn.' }
+          { name: 'Tavern Training', desc: 'You gain proficiency in Performance and with brewer\'s supplies.' },
+          { name: 'Stumbling Flow', desc: 'Whenever you use Flurry of Blows, you also gain the Disengage benefit and +10 ft walking speed for the rest of the turn.' }
         ],
-        6: [{ name: 'Tipsy Sway', desc: 'Leap to Your Feet (stand from prone using only 5 ft of movement) and Redirect Attack (spend 1 ki when a creature misses you to redirect the attack to another creature within 5 ft).' }],
-        11: [{ name: 'Drunkard\'s Luck', desc: 'When you make an ability check, attack, or save with disadvantage, spend 2 ki to cancel the disadvantage.' }],
-        17: [{ name: 'Intoxicated Frenzy', desc: 'When you use Flurry of Blows, you can make up to three additional attacks (total of five) if each targets a different creature.' }]
+        6: [{ name: 'Wobble and Weave', desc: 'Standing up from prone costs you only 5 ft of movement. When a creature misses you in melee, you can spend 1 ki to make that attack hit another creature of your choice within 5 ft of you.' }],
+        11: [{ name: 'Fool\'s Fortune', desc: 'When you roll with disadvantage on a check, attack or save, you can spend 2 ki to roll normally instead.' }],
+        17: [{ name: 'Reeling Storm', desc: 'Your Flurry of Blows can include up to three extra strikes (five in total), as long as every strike hits a different creature.' }]
       }
     },
     astral_self: {
-      name: 'Way of the Astral Self',
-      desc: 'A monk who manifests a spectral astral form, fighting with arms of pure ki.',
+      name: 'Way of the Inner Phantom',
+      desc: 'A monk who draws their ki out into a ghostly second body that fights alongside their own.',
       levelFeatures: {
         3: [
-          { name: 'Arms of the Astral Self', desc: 'Bonus action: spend 1 ki to summon spectral arms for 10 min. They add your Wisdom to unarmed-strike damage, extend reach to 10 ft, and let you use Wisdom for their attacks.' },
-          { name: 'Astral Arms', desc: 'The arms deal force damage and can strike multiple creatures within reach when you take the Attack action.' }
+          { name: 'Phantom Limbs', desc: 'As a bonus action, spend 1 ki to raise ghostly arms for 10 minutes. Strikes with them can use Wisdom, add your Wisdom to damage, and reach 10 ft.' },
+          { name: 'Phantom Strikes', desc: 'Blows from the ghostly arms deal force damage and can sweep across several foes within reach when you Attack.' }
         ],
-        6: [{ name: 'Visage of the Astral Self', desc: 'Summon a spectral face (1 ki): gain darkvision/120 ft, advantage on Wis (Insight) and Intimidation, and a Wisdom-based "word of the spirit" you can project.' }],
-        11: [{ name: 'Body of the Astral Self', desc: 'When both arms and visage are summoned, gain Deflect Energy (reduce any damage) and bonus +1d6 force damage once per turn.' }],
-        17: [{ name: 'Awakened Astral Self', desc: 'Summon the full astral self as one action; gain +2 AC and a third arm attack when you use the Attack action.' }]
+        6: [{ name: 'Phantom Mask', desc: 'Spend 1 ki to call up a ghostly mask: you see in darkness out to 120 ft, gain advantage on Insight and Intimidation, and can throw your voice or whisper to one creature.' }],
+        11: [{ name: 'Phantom Form', desc: 'While both arms and mask are raised, you can blunt incoming energy damage with a reaction, and once per turn one strike deals an extra 1d6 force.' }],
+        17: [{ name: 'Phantom Ascendant', desc: 'You can raise the whole phantom form in one action, gaining +2 AC and an extra phantom strike whenever you Attack.' }]
       }
     }
   },
@@ -15639,73 +15639,73 @@ const SUBCLASSES = {
       }
     },
     vengeance: {
-      name: 'Oath of Vengeance',
-      desc: 'A paladin sworn to punish wrongdoers by any means — the implacable hunter of the wicked.',
+      name: 'Oath of Retribution',
+      desc: 'A paladin who has sworn to bring the guilty to account, whatever the road and whatever the cost.',
       levelFeatures: {
         3: [
-          { name: 'Channel Divinity: Abjure Enemy', desc: 'Action: one creature within 60 ft makes a Wis save or is frightened and has speed 0 for 1 minute.' },
-          { name: 'Channel Divinity: Vow of Enmity', desc: 'Bonus action: gain advantage on attacks against one creature within 10 ft for 1 minute.' },
-          { name: 'Vengeance Spells', desc: 'Always prepared: bane, hunter\'s mark, hold person, misty step, haste, protection from energy, banishment, dimension door, hold monster, scrying.' }
+          { name: 'Channel Divinity: Stern Rebuke', desc: 'As an action, pick a creature within 60 ft. It makes a Wisdom save or is frightened of you, with speed 0, for 1 minute.' },
+          { name: 'Channel Divinity: Marked Quarry', desc: 'As a bonus action, mark a creature within 10 ft. You have advantage on attacks against it for 1 minute.' },
+          { name: 'Retribution Spells', desc: 'Always prepared: bane, hunter\'s mark, hold person, misty step, haste, protection from energy, banishment, dimension door, hold monster, scrying.' }
         ],
-        7: [{ name: 'Relentless Avenger', desc: 'When you hit a creature with an opportunity attack, you can move up to half your speed immediately (without provoking).' }],
-        15: [{ name: 'Soul of Vengeance', desc: 'Reaction: when a creature under your Vow of Enmity attacks, make a melee attack against it.' }],
-        20: [{ name: 'Avenging Angel', desc: 'Action: gain flight and an aura of menace (frightened, Wis save) for 1 hour. Once per long rest.' }]
+        7: [{ name: 'Dogged Pursuit', desc: 'After you hit with an opportunity attack, you can move up to half your speed at once without provoking.' }],
+        15: [{ name: 'Answering Blade', desc: 'When your marked quarry makes an attack, you can use your reaction to make one melee attack against it.' }],
+        20: [{ name: 'Wings of Judgement', desc: 'Once per long rest, as an action, you sprout spectral wings (fly speed) and radiate dread for 1 hour; foes who see you must make a Wisdom save or be frightened.' }]
       }
     },
     ancients: {
-      name: 'Oath of the Ancients',
-      desc: 'A paladin who safeguards the light and life of the world against the forces of darkness.',
+      name: 'Oath of the Green Flame',
+      desc: 'A paladin who guards the living world, keeping its warmth and growth safe from blight and shadow.',
       levelFeatures: {
         3: [
-          { name: 'Channel Divinity: Nature\'s Wrath', desc: 'Action: spectral vines restrain a creature (Str/Dex save).' },
-          { name: 'Channel Divinity: Turn the Faithless', desc: 'Action: fey and fiends within 30 ft must save or be turned for 1 minute.' },
-          { name: 'Ancients Spells', desc: 'Always prepared: ensnaring strike, speak with animals, moonbeam, misty step, plant growth, protection from energy, ice storm, stoneskin, commune with nature, tree stride.' }
+          { name: 'Channel Divinity: Grasping Roots', desc: 'As an action, roots and vines seize a creature you can see; it makes a Strength or Dexterity save or is restrained.' },
+          { name: 'Channel Divinity: Drive Out the Strange', desc: 'As an action, fey and fiends within 30 ft make a save or are turned for 1 minute.' },
+          { name: 'Green Flame Spells', desc: 'Always prepared: ensnaring strike, speak with animals, moonbeam, misty step, plant growth, protection from energy, ice storm, stoneskin, commune with nature, tree stride.' }
         ],
-        7: [{ name: 'Aura of Warding', desc: 'You and allies within 10 ft (30 ft at 18th) have resistance to damage from spells.' }],
-        15: [{ name: 'Undying Sentinel', desc: 'When you drop to 0 HP and aren\'t killed outright, you can drop to 1 HP instead (1/long rest). You also stop ageing.' }],
-        20: [{ name: 'Elder Champion', desc: 'Action: assume an ancient form for 1 minute — regain 10 HP/turn, cast paladin spells as a bonus action, and enemies within 10 ft have disadvantage on saves against your spells/Channel Divinity.' }]
+        7: [{ name: 'Spellward Aura', desc: 'You and allies within 10 ft (30 ft from 18th level) resist damage dealt by spells.' }],
+        15: [{ name: 'Evergreen Guard', desc: 'Once per long rest, when you would drop to 0 HP without dying outright, you stay at 1 HP. Your body also stops ageing.' }],
+        20: [{ name: 'Verdant Avatar', desc: 'Once per long rest, as an action, take a primeval form for 1 minute: regain 10 HP each turn, cast paladin spells as a bonus action, and nearby foes (10 ft) save with disadvantage against your spells and Channel Divinity.' }]
       }
     },
     conquest: {
-      name: 'Oath of Conquest',
-      desc: 'A paladin who crushes foes and rules through fear and iron discipline.',
+      name: 'Oath of Dominion',
+      desc: 'A paladin who believes order is won by strength and kept by fear.',
       levelFeatures: {
         3: [
-          { name: 'Channel Divinity: Conquering Presence', desc: 'Action: creatures within 30 ft make a Wis save or are frightened for 1 minute.' },
-          { name: 'Channel Divinity: Guided Strike', desc: 'Add +10 to one attack roll (yours or, at 7th, reactively an ally\'s).' },
-          { name: 'Conquest Spells', desc: 'Always prepared: armor of agathys, command, hold person, spiritual weapon, bestow curse, fear, dominate beast, stoneskin, cloudkill, dominate person.' }
+          { name: 'Channel Divinity: Overwhelming Presence', desc: 'As an action, creatures of your choice within 30 ft make a Wisdom save or are frightened for 1 minute.' },
+          { name: 'Channel Divinity: Sure Strike', desc: 'Add +10 to an attack roll you make; from 7th level you can grant it to an ally within 30 ft as a reaction.' },
+          { name: 'Dominion Spells', desc: 'Always prepared: armor of agathys, command, hold person, spiritual weapon, bestow curse, fear, dominate beast, stoneskin, cloudkill, dominate person.' }
         ],
-        7: [{ name: 'Aura of Conquest', desc: 'Frightened creatures within 10 ft have speed 0 and take psychic damage equal to half your paladin level each turn.' }],
-        15: [{ name: 'Scornful Rebuke', desc: 'When a creature hits you, it takes psychic damage equal to your Charisma modifier (if you\'re not incapacitated).' }],
-        20: [{ name: 'Invincible Conqueror', desc: 'Action: for 1 minute gain resistance to all damage, an extra attack on the Attack action, and your melee crits trigger on 19–20. Once per long rest.' }]
+        7: [{ name: 'Aura of Dread', desc: 'Frightened enemies within 10 ft have speed 0 and take psychic damage equal to half your paladin level when they start their turn there.' }],
+        15: [{ name: 'Cold Disdain', desc: 'While you are not incapacitated, a creature that hits you takes psychic damage equal to your Charisma modifier.' }],
+        20: [{ name: 'Unbroken Tyrant', desc: 'Once per long rest, for 1 minute: resist all damage, make one extra attack when you Attack, and score critical hits on 19 or 20 with melee weapons.' }]
       }
     },
     glory: {
-      name: 'Oath of Glory',
-      desc: 'A paladin who strives for legendary heroism, inspiring allies to athletic greatness.',
+      name: 'Oath of Renown',
+      desc: 'A paladin chasing deeds worth singing about, lifting companions toward feats of strength and daring.',
       levelFeatures: {
         3: [
-          { name: 'Channel Divinity: Peerless Athlete', desc: 'Bonus action: for 10 min, advantage on Athletics and Acrobatics, and improved jump/lift.' },
-          { name: 'Channel Divinity: Inspiring Smite', desc: 'After Divine Smite, distribute temp HP (2d8 + paladin level) among creatures within 30 ft.' },
-          { name: 'Glory Spells', desc: 'Always prepared: guiding bolt, heroism, enhance ability, magic weapon, haste, protection from energy, compulsion, freedom of movement, commune, flame strike.' }
+          { name: 'Channel Divinity: Champion\'s Vigour', desc: 'As a bonus action, for 10 minutes you have advantage on Athletics and Acrobatics checks and can jump and carry more.' },
+          { name: 'Channel Divinity: Rallying Smite', desc: 'After you use Divine Smite, share 2d8 + your paladin level in temporary HP among creatures of your choice within 30 ft.' },
+          { name: 'Renown Spells', desc: 'Always prepared: guiding bolt, heroism, enhance ability, magic weapon, haste, protection from energy, compulsion, freedom of movement, commune, flame strike.' }
         ],
-        7: [{ name: 'Aura of Alacrity', desc: 'Your speed increases by 10 ft; allies entering your aura gain +10 ft speed until their next turn.' }],
-        15: [{ name: 'Glorious Defense', desc: 'Reaction when you or an ally within 10 ft is hit: add your Cha mod to AC against it, and if it misses, make a weapon attack back (Cha-mod uses/long rest).' }],
-        20: [{ name: 'Living Legend', desc: 'Bonus action (1/long rest): for 1 minute, gain advantage on Charisma checks, turn a missed attack into a hit (1/turn), and reroll failed saves.' }]
+        7: [{ name: 'Swift Aura', desc: 'Your speed rises by 10 ft, and allies who start their turn within 10 ft of you also gain +10 ft that turn.' }],
+        15: [{ name: 'Shield of Renown', desc: 'When you or an ally within 10 ft is hit, use your reaction to add your Charisma modifier to AC against that attack; if it then misses, you may make one weapon attack against the attacker. Uses equal your Cha modifier per long rest.' }],
+        20: [{ name: 'Hero of Ballads', desc: 'Once per long rest, as a bonus action, for 1 minute: advantage on Charisma checks, once per turn turn a miss into a hit, and reroll a failed save.' }]
       }
     },
     redemption: {
-      name: 'Oath of Redemption',
-      desc: 'A paladin who seeks peace and uses violence only as a last resort, redeeming rather than destroying.',
+      name: 'Oath of Mercy',
+      desc: 'A paladin who seeks peace first, reaching for words and kindness long before the sword.',
       levelFeatures: {
         3: [
-          { name: 'Channel Divinity: Emissary of Peace', desc: 'Bonus action: +5 bonus to Persuasion checks for 10 minutes.' },
-          { name: 'Channel Divinity: Rebuke the Violent', desc: 'Reaction when an attacker within 30 ft damages a creature: deal that much radiant damage back (Wis save halves).' },
-          { name: 'Redemption Spells', desc: 'Always prepared: sanctuary, sleep, calm emotions, hold person, counterspell, hypnotic pattern, Otiluke\'s resilient sphere, stoneskin, hold monster, wall of force.' }
+          { name: 'Channel Divinity: Voice of Peace', desc: 'As a bonus action, gain +5 to Persuasion checks for 10 minutes.' },
+          { name: 'Channel Divinity: Turn Back Harm', desc: 'When a creature within 30 ft deals damage, use your reaction to deal it radiant damage equal to the damage it dealt; a Wisdom save halves it.' },
+          { name: 'Mercy Spells', desc: 'Always prepared: sanctuary, sleep, calm emotions, hold person, counterspell, hypnotic pattern, resilient sphere, stoneskin, hold monster, wall of force.' }
         ],
-        7: [{ name: 'Aura of the Guardian', desc: 'Reaction: when an ally within 10 ft takes damage, you can magically take that damage instead.' }],
-        15: [{ name: 'Protective Spirit', desc: 'Regain HP (1d6 + half paladin level) at the end of your turn in combat if you\'re below half HP.' }],
-        20: [{ name: 'Emissary of Redemption', desc: 'You gain resistance to all damage from creatures; when an attacker hits you, it takes radiant damage equal to half the damage dealt (until you attack or harm a creature).' }]
+        7: [{ name: 'Shielding Aura', desc: 'When an ally within 10 ft takes damage, you can use your reaction to take that damage instead.' }],
+        15: [{ name: 'Gentle Mending', desc: 'In combat, if you end your turn below half HP, you regain 1d6 + half your paladin level HP.' }],
+        20: [{ name: 'Envoy of Mercy', desc: 'You resist damage from creatures, and a creature that hits you takes radiant damage equal to half what it dealt, as long as you haven\'t attacked or harmed anyone since your last long rest.' }]
       }
     }
   },
@@ -15721,67 +15721,67 @@ const SUBCLASSES = {
       }
     },
     gloom_stalker: {
-      name: 'Gloom Stalker',
-      desc: 'A ranger of the dark places — caves, undercities, and the long stretches between stars.',
+      name: 'Duskwalker',
+      desc: 'A ranger at home in the deep dark: caverns, buried roads and moonless wilds.',
       levelFeatures: {
         3: [
-          { name: 'Dread Ambusher', desc: 'In the first round of combat, +10 ft speed and one extra attack on your first turn (+1d8 damage). On Dex initiative checks, add Wis mod to the roll.' },
-          { name: 'Umbral Sight', desc: 'Darkvision 60 ft (or 30 ft beyond your existing). While in darkness, you are invisible to creatures that rely on darkvision to see you.' },
-          { name: 'Gloom Stalker Magic', desc: 'Always prepared: 3rd disguise self; 5th rope trick; 9th fear; 13th greater invisibility; 17th seeming.' }
+          { name: 'Ambush Strike', desc: 'Add your Wisdom modifier to initiative. On your first turn in combat, gain +10 ft speed and make one extra weapon attack that deals an extra 1d8 on a hit.' },
+          { name: 'Dark Eyes', desc: 'You see in darkness to 60 ft (or 30 ft further if you already could). In darkness, creatures relying on darkvision cannot see you.' },
+          { name: 'Duskwalker Magic', desc: 'Always prepared, by ranger level: 3rd disguise self; 5th rope trick; 9th fear; 13th greater invisibility; 17th seeming.' }
         ],
-        7: [{ name: 'Iron Mind', desc: 'Proficiency in Wisdom saves (or Intelligence/Charisma if you already have Wis).' }],
-        11: [{ name: 'Stalker\'s Flurry', desc: 'Once per turn on a weapon attack miss, make one additional weapon attack as part of the same action.' }],
-        15: [{ name: 'Shadowy Dodge', desc: 'Reaction when a creature you can see makes an attack roll against you: impose disadvantage on the attack.' }]
+        7: [{ name: 'Steel Will', desc: 'You gain proficiency in Wisdom saves (or Intelligence or Charisma if you already have Wisdom).' }],
+        11: [{ name: 'Second Cut', desc: 'Once on each of your turns, when you miss with a weapon attack, you can make another weapon attack as part of that action.' }],
+        15: [{ name: 'Fading Step', desc: 'When a creature you can see attacks you, use your reaction to give that attack disadvantage.' }]
       }
     },
     beast_master: {
-      name: 'Beast Master',
-      desc: 'A ranger bonded to a loyal primal companion that fights at their side.',
+      name: 'Beast Bond',
+      desc: 'A ranger joined to a primal animal companion that hunts and fights beside them.',
       levelFeatures: {
-        3: [{ name: 'Primal Companion', desc: 'Summon a Beast of the Land, Sea, or Sky (a spirit beast). It shares your initiative, acts on your turn, and you can use a bonus action to command it to attack (it can take other actions on its own). It scales with your ranger level and you can resummon it after a rest.' }],
-        7: [{ name: 'Exceptional Training', desc: 'On any turn your companion doesn\'t attack, you can use a bonus action to have it Dash, Disengage, Dodge, or Help. Its attacks count as magical.' }],
-        11: [{ name: 'Bestial Fury', desc: 'Your companion makes two attacks when you command it to attack, and adds your Ranger\'s Hunter\'s Mark-style bonus damage once per turn.' }],
-        15: [{ name: 'Share Spells', desc: 'When you cast a spell targeting yourself, you can also affect your companion if it is within 30 ft.' }]
+        3: [{ name: 'Wild Companion', desc: 'Call a spirit beast of land, sea or sky. It shares your initiative and acts on your turn; it moves and defends itself, and attacks when you command it with a bonus action. It grows with your ranger level and returns after a rest.' }],
+        7: [{ name: 'Practised Partner', desc: 'On a turn your companion doesn\'t attack, a bonus action can make it Dash, Disengage, Dodge or Help. Its attacks count as magical.' }],
+        11: [{ name: 'Pack Fury', desc: 'When commanded to attack, your companion attacks twice, and once per turn it can add your marked-quarry bonus damage.' }],
+        15: [{ name: 'Bonded Magic', desc: 'A spell you cast that targets only you can also target your companion if it is within 30 ft.' }]
       }
     },
     fey_wanderer: {
-      name: 'Fey Wanderer',
-      desc: 'A ranger touched by the Feywild, wielding mirthful and beguiling fey magic.',
+      name: 'Glimmerwild Ranger',
+      desc: 'A ranger marked by the glittering twilight realm, carrying its laughter and its menace.',
       levelFeatures: {
         3: [
-          { name: 'Dreadful Strikes', desc: 'Once per turn, deal +1d4 psychic damage with a weapon (1d6 at 11th).' },
-          { name: 'Fey Wanderer Magic', desc: 'Always prepared, gaining a spell at 3/5/9/13/17 (charm person, misty step, dispel magic, dimension door, mislead).' },
-          { name: 'Otherworldly Glamour', desc: 'Add your Wisdom modifier (min +1) to Charisma checks; gain proficiency in one Cha skill.' }
+          { name: 'Unsettling Strikes', desc: 'Once per turn, a weapon hit deals an extra 1d4 psychic damage (1d6 from 11th level).' },
+          { name: 'Glimmerwild Magic', desc: 'Always prepared, one at each of ranger levels 3, 5, 9, 13 and 17: charm person, misty step, dispel magic, dimension door, mislead.' },
+          { name: 'Uncanny Charm', desc: 'Add your Wisdom modifier (minimum +1) to Charisma checks, and gain proficiency in one Charisma skill.' }
         ],
-        7: [{ name: 'Beguiling Twist', desc: 'Advantage on saves vs. charmed and frightened; reaction when a creature near you succeeds on such a save to redirect a charm/fear at another creature.' }],
-        11: [{ name: 'Fey Reinforcements', desc: 'You always have Summon Fey prepared and can cast it once without a slot per long rest.' }],
-        15: [{ name: 'Misty Wanderer', desc: 'You can cast Misty Step without a slot a number of times equal to your Wis mod per long rest, and can bring a willing creature with you.' }]
+        7: [{ name: 'Turnabout', desc: 'You have advantage on saves against being charmed or frightened. When a nearby creature shakes off such an effect, you can use your reaction to aim a charm or fear at another creature.' }],
+        11: [{ name: 'Glimmer Allies', desc: 'You always have Summon Fey prepared and can cast it once per long rest without a slot.' }],
+        15: [{ name: 'Fog Walker', desc: 'You can cast Misty Step without a slot a number of times equal to your Wisdom modifier per long rest, taking one willing creature with you.' }]
       }
     },
     swarmkeeper: {
-      name: 'Swarmkeeper',
-      desc: 'A ranger accompanied by a swarm of nature spirits — insects, fish, or fey motes.',
+      name: 'Hivecaller',
+      desc: 'A ranger trailed by a living cloud of tiny nature spirits: buzzing insects, darting fish or floating motes.',
       levelFeatures: {
         3: [
-          { name: 'Gathered Swarm', desc: 'Once per turn when you hit with an attack, your swarm deals +1d6 piercing/force, or moves the target 15 ft, or moves you 5 ft without provoking.' },
-          { name: 'Swarmkeeper Magic', desc: 'You learn Mage Hand and gain always-prepared spells as you level (faerie fire, web, gaseous form, arcane eye, insect plague).' }
+          { name: 'Living Cloud', desc: 'Once per turn when you hit, your swarm adds 1d6 piercing or force damage, shoves the target 15 ft, or carries you 5 ft without provoking.' },
+          { name: 'Hivecaller Magic', desc: 'You learn Mage Hand, and gain always-prepared spells as you level: faerie fire, web, gaseous form, arcane eye, insect plague.' }
         ],
-        7: [{ name: 'Writhing Tide', desc: 'Bonus action: gain a 10-ft fly speed and hover for 1 minute (Prof-bonus uses/long rest).' }],
-        11: [{ name: 'Mighty Swarm', desc: 'Your Gathered Swarm die becomes 1d8, the forced move knocks prone (Str save), and the self-move grants half cover.' }],
-        15: [{ name: 'Swarming Dispersal', desc: 'Reaction when you take damage: gain resistance to it and teleport up to 30 ft (Prof-bonus uses/long rest).' }]
+        7: [{ name: 'Lifting Cloud', desc: 'As a bonus action, the swarm lifts you: 10 ft fly speed and hover for 1 minute. Uses equal your proficiency bonus per long rest.' }],
+        11: [{ name: 'Greater Cloud', desc: 'The swarm\'s damage die becomes 1d8, its shove can knock prone (Strength save), and when it moves you, you gain half cover.' }],
+        15: [{ name: 'Scatter', desc: 'When you take damage, use your reaction to resist it and burst apart, reappearing up to 30 ft away. Uses equal your proficiency bonus per long rest.' }]
       }
     },
     horizon_walker: {
-      name: 'Horizon Walker',
-      desc: 'A ranger who guards against threats from other planes, wielding planar energy.',
+      name: 'Wayfarer of the Planes',
+      desc: 'A ranger who patrols the thin places between worlds and turns their strange energy into a weapon.',
       levelFeatures: {
         3: [
-          { name: 'Detect Portal', desc: 'Once per short/long rest, sense the distance and direction to the closest planar portal within 1 mile.' },
-          { name: 'Planar Warrior', desc: 'Bonus action: target a creature within 30 ft; your next hit against it this turn deals an extra 1d8 force and all its damage from that attack becomes force (2d8 at 11th).' }
+          { name: 'Rift Sense', desc: 'Once per short or long rest, you learn the distance and direction to the nearest planar doorway within 1 mile.' },
+          { name: 'Rift Strike', desc: 'As a bonus action, choose a creature within 30 ft. Your next hit on it this turn deals an extra 1d8 force damage (2d8 from 11th level) and all its damage becomes force.' }
         ],
-        7: [{ name: 'Ethereal Step', desc: 'Bonus action: cast Etherealness, lasting until the end of the turn (1/short rest).' }],
-        11: [{ name: 'Distant Strike', desc: 'When you take the Attack action, teleport 10 ft before each attack and strike up to three different creatures; if you hit at least two, make a bonus third attack.' }],
-        15: [{ name: 'Spectral Defense', desc: 'Reaction when you take damage from an attack: gain resistance to that attack\'s damage.' }]
+        7: [{ name: 'Veil Step', desc: 'Once per short rest, as a bonus action, slip into the Ethereal Plane until the end of your turn.' }],
+        11: [{ name: 'Blink Assault', desc: 'When you Attack, you can teleport 10 ft before each attack. If you hit two or more different creatures this turn, make one extra attack against a third.' }],
+        15: [{ name: 'Phase Guard', desc: 'When an attack damages you, use your reaction to resist that damage.' }]
       }
     }
   },
@@ -15800,81 +15800,81 @@ const SUBCLASSES = {
       }
     },
     assassin: {
-      name: 'Assassin',
-      desc: 'Murder is just a contract with extra dice.',
+      name: 'Contract Killer',
+      desc: 'A rogue who treats killing as a trade: planned, priced and carried out without fuss.',
       levelFeatures: {
         3: [
-          { name: 'Bonus Proficiencies', desc: 'Proficiency with the disguise kit and poisoner\'s kit.' },
-          { name: 'Assassinate', desc: 'Advantage on attacks against any creature that hasn\'t taken a turn yet in combat. Any hit you score against a creature surprised by combat is a critical hit.' }
+          { name: 'Tools of the Trade', desc: 'You gain proficiency with the disguise kit and the poisoner\'s kit.' },
+          { name: 'First Blood', desc: 'You have advantage on attacks against creatures that haven\'t acted yet in the combat, and any hit against a surprised creature is a critical hit.' }
         ],
-        9: [{ name: 'Infiltration Expertise', desc: 'Spend 7 days and 25 gp to establish a false identity. Once made, the identity is treated as legitimate by anyone short of magical investigation.' }],
-        13: [{ name: 'Imposter', desc: 'Mimic another person\'s speech, writing, and behavior with 3 hours of study. Wisdom (Insight) checks to detect the ruse have disadvantage.' }],
-        17: [{ name: 'Death Strike', desc: 'When you hit a creature surprised by combat, it must Con save (DC 8 + Dex + prof) or take double damage.' }]
+        9: [{ name: 'Borrowed Life', desc: 'Over 7 days and 25 gp you build a false identity with papers, contacts and history, convincing to anyone without magic.' }],
+        13: [{ name: 'Mimicry', desc: 'After 3 hours studying someone, you copy their voice, handwriting and habits; Insight checks to see through you have disadvantage.' }],
+        17: [{ name: 'Killing Blow', desc: 'When you hit a surprised creature, it makes a Constitution save (DC 8 + Dex mod + proficiency) or takes double damage from the attack.' }]
       }
     },
     arcane_trickster: {
-      name: 'Arcane Trickster',
-      desc: 'A rogue who learned wizardry instead of swordplay. Misdirection, illusions, and a sharp dagger.',
+      name: 'Spellfingers',
+      desc: 'A rogue who picked up wizard\'s tricks on the side: sleight of hand, glamour and a hidden knife.',
       levelFeatures: {
         3: [
-          { name: 'Spellcasting', desc: 'Learn wizard cantrips and spells (mainly enchantment and illusion, plus a few free choices). Use Intelligence for spell attacks and save DCs. Spell slots use the third-caster table.' },
-          { name: 'Mage Hand Legerdemain', desc: 'Your Mage Hand becomes invisible. You can use it to stow or retrieve items, pick locks (with thieves\' tools), and pickpocket — all from up to 30 ft away.' }
+          { name: 'Spellcasting', desc: 'You learn a few wizard cantrips and spells, mostly illusion and enchantment with some free picks. Intelligence is your casting ability, and your slots follow the one-third caster table.' },
+          { name: 'Ghost Fingers', desc: 'Your Mage Hand is invisible and deft: from up to 30 ft it can stow or fetch items, pick locks with thieves\' tools and lift purses.' }
         ],
-        9: [{ name: 'Magical Ambush', desc: 'If you\'re hidden when you cast a spell that forces a save, the target has disadvantage on that save.' }],
-        13: [{ name: 'Versatile Trickster', desc: 'Bonus action: have your Mage Hand distract a creature within 5 ft of it. You gain advantage on attack rolls against that target until end of turn.' }],
-        17: [{ name: 'Spell Thief', desc: 'When a creature casts a spell targeting you, reaction: force a save against your DC. On fail, that spell\'s effect on you is negated AND you steal knowledge of the spell for 8 hours, allowing you to cast it once. The original caster cannot cast that spell until 8 hours pass.' }]
+        9: [{ name: 'Hidden Hex', desc: 'If you are hidden when you cast a spell that calls for a save, the target makes that save with disadvantage.' }],
+        13: [{ name: 'Sleight Distraction', desc: 'As a bonus action, your Mage Hand pesters a creature within 5 ft of it; you have advantage on attacks against that creature this turn.' }],
+        17: [{ name: 'Spell Snatch', desc: 'When a creature casts a spell at you, use your reaction to force a save against your spell DC. On a failure the spell doesn\'t affect you, and for 8 hours you can cast it once while the caster cannot cast it at all. Once per long rest.' }]
       }
     },
     swashbuckler: {
-      name: 'Swashbuckler',
-      desc: 'A dashing duelist who relies on speed, charm, and one-on-one finesse.',
+      name: 'Duellist',
+      desc: 'A bold blade who wins on speed, flair and one-on-one footwork.',
       levelFeatures: {
         3: [
-          { name: 'Fancy Footwork', desc: 'When you make a melee attack against a creature, it can\'t make opportunity attacks against you for the rest of your turn.' },
-          { name: 'Rakish Audacity', desc: 'Add your Charisma modifier to initiative. You can use Sneak Attack without advantage if no other creature is within 5 ft of your target (and you don\'t have disadvantage).' }
+          { name: 'Quick Feet', desc: 'After you make a melee attack against a creature, it cannot make opportunity attacks against you for the rest of your turn.' },
+          { name: 'Daring Flair', desc: 'Add your Charisma modifier to initiative. You can Sneak Attack without advantage when your target has no other creature within 5 ft of it and you don\'t have disadvantage.' }
         ],
-        9: [{ name: 'Panache', desc: 'Charisma (Persuasion) vs. Wisdom (Insight): on a win, charm a creature (out of combat) or goad it into duelling you (in combat — disadvantage on attacks against others).' }],
-        13: [{ name: 'Elegant Maneuver', desc: 'Bonus action: gain advantage on the next Athletics or Acrobatics check you make this turn.' }],
-        17: [{ name: 'Master Duelist', desc: 'Once per short/long rest, if you miss with an attack, you can reroll it with advantage.' }]
+        9: [{ name: 'Swagger', desc: 'Contest your Persuasion against a creature\'s Insight. If you win outside combat it is charmed by you; in combat it is goaded, having disadvantage on attacks against anyone but you.' }],
+        13: [{ name: 'Showy Move', desc: 'As a bonus action, gain advantage on your next Acrobatics or Athletics check this turn.' }],
+        17: [{ name: 'Peerless Blade', desc: 'Once per short or long rest, when you miss with an attack, you can roll it again with advantage.' }]
       }
     },
     scout: {
-      name: 'Scout',
-      desc: 'A skirmisher and survivalist, deadly in the wilds and quick to reposition.',
+      name: 'Pathfinder',
+      desc: 'A rogue of the wild roads who moves fast, reads the land and strikes from cover.',
       levelFeatures: {
         3: [
-          { name: 'Skirmisher', desc: 'Reaction: when an enemy ends its turn within 5 ft of you, move up to half your speed without provoking opportunity attacks.' },
-          { name: 'Survivalist', desc: 'Proficiency in Nature and Survival, and your proficiency bonus is doubled for those checks.' }
+          { name: 'Slip Away', desc: 'When an enemy ends its turn within 5 ft of you, use your reaction to move up to half your speed without provoking.' },
+          { name: 'Wildwise', desc: 'You gain proficiency in Nature and Survival, and double your proficiency bonus for both.' }
         ],
-        9: [{ name: 'Superior Mobility', desc: 'Your walking, climbing, and swimming speeds increase by 10 ft.' }],
-        13: [{ name: 'Ambush Master', desc: 'On the first round of combat, if you hit a creature, you and your allies have advantage on attacks against it until your next turn.' }],
-        17: [{ name: 'Sudden Strike', desc: 'When you take the Attack action, you can make one additional attack as a bonus action — and it can deal Sneak Attack damage to a different target than your action attack.' }]
+        9: [{ name: 'Fleet Foot', desc: 'Your walking, climbing and swimming speeds each rise by 10 ft.' }],
+        13: [{ name: 'Opening Ambush', desc: 'In the first round of combat, a creature you hit gives you and your allies advantage on attacks against it until the start of your next turn.' }],
+        17: [{ name: 'Twin Strike', desc: 'When you Attack, you can make one more attack as a bonus action; it can apply Sneak Attack to a different target from your first.' }]
       }
     },
     soulknife: {
-      name: 'Soulknife',
-      desc: 'A rogue who manifests blades of pure psionic energy and touches minds at a distance.',
+      name: 'Mindblade',
+      desc: 'A rogue who shapes thought into knives of light and speaks from mind to mind.',
       levelFeatures: {
         3: [
-          { name: 'Psionic Power', desc: 'You have Psionic Energy dice (d6s). Spend them on Psi-Bolstered Knack (turn a failed check into a success) and Psychic Whispers (telepathy).' },
-          { name: 'Psychic Blades', desc: 'Manifest a psychic blade as an attack (1d6 psychic + dex, can be thrown 60 ft). When you take the Attack action you can make a bonus-action second psychic blade attack (1d4).' }
+          { name: 'Mind Reserve', desc: 'You gain a pool of d6 mind dice. Spend one to turn a failed proficient check into a success when its roll pushes you over, or to link minds telepathically with nearby allies.' },
+          { name: 'Thought Knives', desc: 'As part of an attack you form a blade of thought (1d6 psychic + Dex, thrown 60 ft). When you Attack, you can strike again with a second blade (1d4) as a bonus action.' }
         ],
-        9: [{ name: 'Soul Blades', desc: 'Spend Psionic Energy for Homing Strikes (turn a missed blade attack into a hit) and Psychic Teleportation (throw a blade to teleport).' }],
-        13: [{ name: 'Psychic Veil', desc: 'Action: turn invisible for up to 1 hour or until you attack/force a save (1/long rest free, or spend a Psionic die).' }],
-        17: [{ name: 'Rend Mind', desc: 'When you Sneak Attack with a psychic blade, you can force a Wis save or stun the target for 1 minute (save ends).' }]
+        9: [{ name: 'Seeking Knives', desc: 'Spend a mind die to add it to a missed blade attack, possibly turning it into a hit, or to throw a blade and blink to where it lands.' }],
+        13: [{ name: 'Mind Shroud', desc: 'As an action, become invisible for up to 1 hour or until you attack or force a save. Free once per long rest, or by spending a mind die.' }],
+        17: [{ name: 'Shatter Thought', desc: 'When you Sneak Attack with a thought knife, the target makes a Wisdom save or is stunned for up to 1 minute, repeating the save each turn.' }]
       }
     },
     phantom: {
-      name: 'Phantom',
-      desc: 'A rogue touched by death, gathering the whispers and skills of the slain.',
+      name: 'Gravewhisper',
+      desc: 'A rogue who walks close to death and borrows the knowledge of those who have passed.',
       levelFeatures: {
         3: [
-          { name: 'Whispers of the Dead', desc: 'Whenever you finish a short or long rest, gain proficiency in one skill or tool of your choice (changes each rest).' },
-          { name: 'Wails from the Grave', desc: 'When you deal Sneak Attack damage, a second creature within 30 ft of the target takes necrotic damage equal to half your Sneak Attack (Prof-bonus uses/long rest).' }
+          { name: 'Borrowed Skill', desc: 'Each time you finish a rest, gain proficiency in one skill or tool of your choice until your next rest.' },
+          { name: 'Grave Echo', desc: 'When you deal Sneak Attack damage, another creature within 30 ft takes necrotic damage equal to half the Sneak Attack dice. Uses equal your proficiency bonus per long rest.' }
         ],
-        9: [{ name: 'Tokens of the Departed', desc: 'When a creature dies near you, capture a soul trinket: gain advantage on Con saves and death saves while you hold one, and consume it to power your Wails or learn info from the dead.' }],
-        13: [{ name: 'Ghost Walk', desc: 'Bonus action: assume a spectral form for 10 min — fly speed 10 ft, attacks against you have disadvantage, and you can move through creatures and objects.' }],
-        17: [{ name: 'Death\'s Friend', desc: 'Your Wails from the Grave triggers on every Sneak Attack (no longer limited), and you always have a soul trinket.' }]
+        9: [{ name: 'Soul Keepsake', desc: 'When a creature dies near you, you can bind a keepsake from it. While holding one you have advantage on Constitution and death saves; break it to fuel a Grave Echo or ask the departed a question.' }],
+        13: [{ name: 'Shade Form', desc: 'As a bonus action, become a shade for 10 minutes: fly 10 ft, attacks against you have disadvantage, and you can pass through creatures and objects.' }],
+        17: [{ name: 'Friend of the Grave', desc: 'Grave Echo no longer has a use limit, and you always carry at least one keepsake.' }]
       }
     }
   },
@@ -15893,87 +15893,87 @@ const SUBCLASSES = {
       }
     },
     wild_magic: {
-      name: 'Wild Magic',
-      desc: 'Magic that bubbles up from the chaos of the multiverse, never quite obedient.',
+      name: 'Untamed Blood',
+      desc: 'Your magic boils up from raw chaos and rarely does exactly what you meant.',
       levelFeatures: {
         1: [
-          { name: 'Wild Magic Surge', desc: 'When you cast a sorcerer spell of 1st level or higher, the DM may have you roll d20 — on a 1, roll on the Wild Magic Surge table for an unpredictable effect.' },
-          { name: 'Tides of Chaos', desc: 'Once per long rest, gain advantage on one attack roll, ability check, or save. After using, the DM can trigger a Wild Magic Surge on your next spell cast (refunding the use afterward).' }
+          { name: 'Chaos Flare', desc: 'When you cast a sorcerer spell of 1st level or higher, the DM may ask for a d20; on a 1, something unexpected and magical happens (the DM decides).' },
+          { name: 'Ride the Chaos', desc: 'Once per long rest, gain advantage on one attack, check or save. The DM can trigger a Chaos Flare on a later spell to restore this use.' }
         ],
-        6: [{ name: 'Bend Luck', desc: 'Reaction when a creature you can see makes an attack roll, ability check, or save: spend 2 sorcery points to roll 1d4 and add or subtract from the roll.' }],
-        14: [{ name: 'Controlled Chaos', desc: 'When you roll on the Wild Magic Surge table, roll twice and choose either result.' }],
-        18: [{ name: 'Spell Bombardment', desc: 'When you roll a damage die for a sorcerer spell and the highest number on the die comes up, that die explodes — roll it again and add the new roll to the damage. Once per turn.' }]
+        6: [{ name: 'Twist Fate', desc: 'When a creature you can see makes an attack, check or save, use your reaction and 2 sorcery points to roll 1d4 and add it to or subtract it from the result.' }],
+        14: [{ name: 'Steady Chaos', desc: 'When a Chaos Flare happens, you get two outcomes and choose which one occurs.' }],
+        18: [{ name: 'Wild Surge', desc: 'Once per turn, when a damage die for your sorcerer spell rolls its highest number, roll it again and add the result.' }]
       }
     },
     // v0.20.62 — Storm Sorcery (Xanathar's). Sorcerers whose magic
     // springs from the eye of the storm. Wind, thunder, lightning.
     storm_sorcery: {
-      name: 'Storm Sorcery',
-      desc: 'Your magic comes from the eye of a tempest — wind, thunder, and lightning roar at your call.',
+      name: 'Thunderborn',
+      desc: 'Your power was born in a storm, and wind and lightning come when you call.',
       levelFeatures: {
         1: [
-          { name: 'Wind Speaker', desc: 'You can speak, read, and write Primordial — the language of elementals.' },
-          { name: 'Tempestuous Magic', desc: 'After casting a spell of 1st level or higher (with verbal or somatic components), you can use a bonus action to fly up to 10 ft without provoking opportunity attacks.' }
+          { name: 'Sky Tongue', desc: 'You speak, read and write Primordial.' },
+          { name: 'Gale Lift', desc: 'Right after casting a 1st-level or higher spell, use a bonus action to fly up to 10 ft without provoking opportunity attacks.' }
         ],
         6: [
-          { name: 'Heart of the Storm', desc: 'Resistance to lightning and thunder damage. When you start casting a spell of 1st level or higher that deals lightning or thunder damage, stormy magic erupts: each hostile creature within 10 ft takes lightning or thunder damage (your choice) = half your sorcerer level (round up).' },
-          { name: 'Storm Guide', desc: 'At-will minor effects: stop rain falling on you in a 20-ft cube, or change the direction of a strong wind for up to 1 minute as an action.' }
+          { name: 'Storm Core', desc: 'You resist lightning and thunder damage. When you cast a 1st-level or higher spell that deals either, hostile creatures within 10 ft take lightning or thunder damage equal to half your sorcerer level.' },
+          { name: 'Weatherhand', desc: 'You can keep rain off yourself in a 20-ft cube, or as an action turn a strong wind\'s direction for 1 minute.' }
         ],
-        14: [{ name: "Storm's Fury", desc: 'Reaction when you take damage from a creature within 5 ft: deal lightning damage equal to your sorcerer level. The attacker also makes a Strength save or is pushed 20 ft away.' }],
-        18: [{ name: 'Wind Soul', desc: 'Immunity to lightning and thunder damage. You have a magical flying speed of 60 ft. As an action, reduce flying speed to 30 ft for 1 hour and grant the same fly speed to up to 3 willing creatures within 30 ft. Recharges on a long rest.' }]
+        14: [{ name: "Thunderclap Reply", desc: 'When a creature within 5 ft damages you, use your reaction to deal lightning damage equal to your sorcerer level; it makes a Strength save or is thrown 20 ft away.' }],
+        18: [{ name: 'Sky Spirit', desc: 'You are immune to lightning and thunder and fly at 60 ft. Once per long rest, as an action, drop to 30 ft flight for 1 hour and give up to 3 willing creatures within 30 ft the same flying speed.' }]
       }
     },
     divine_soul: {
-      name: 'Divine Soul',
-      desc: 'A sorcerer whose magic springs from a divine source, blending arcane power with the cleric\'s repertoire.',
+      name: 'Hallowed Blood',
+      desc: 'A sorcerer whose power has a holy origin, letting them draw from priestly magic too.',
       levelFeatures: {
         1: [
-          { name: 'Divine Magic', desc: 'You can choose your spells from the cleric list as well as the sorcerer list. Choose an affinity (Good, Evil, Law, Chaos, Neutrality) granting a bonus always-prepared spell.' },
-          { name: 'Favored by the Gods', desc: 'When you fail a save or miss with an attack, add 2d4 to the total (1/short or long rest).' }
+          { name: 'Hallowed Magic', desc: 'You may choose spells from the cleric list as well as the sorcerer list. Choose an alignment leaning to gain one extra always-prepared spell.' },
+          { name: 'Blessed Luck', desc: 'Once per short or long rest, when you fail a save or miss an attack, add 2d4 to the roll.' }
         ],
-        6: [{ name: 'Empowered Healing', desc: 'When you or an ally within 5 ft rolls dice to heal, spend 1 sorcery point to reroll any number of those dice (1/turn).' }],
-        14: [{ name: 'Otherworldly Wings', desc: 'Bonus action: manifest spectral wings, gaining a 30-ft fly speed.' }],
-        18: [{ name: 'Unearthly Recovery', desc: 'Bonus action when at or below half HP: regain HP equal to half your maximum (1/long rest).' }]
+        6: [{ name: 'Mending Surge', desc: 'Once per turn, when you or an ally within 5 ft rolls healing dice, spend 1 sorcery point to reroll any of them.' }],
+        14: [{ name: 'Radiant Wings', desc: 'As a bonus action, unfurl wings of light and gain a 30 ft fly speed.' }],
+        18: [{ name: 'Second Dawn', desc: 'Once per long rest, when you are at half HP or less, use a bonus action to regain HP equal to half your maximum.' }]
       }
     },
     shadow_magic: {
-      name: 'Shadow Magic',
-      desc: 'A sorcerer infused with the stuff of the Shadowfell — death-touched, hard to kill, and at home in darkness.',
+      name: 'Shadowborn',
+      desc: 'A sorcerer steeped in the realm of shadows: grave-touched, stubborn to kill and at ease in the dark.',
       levelFeatures: {
         1: [
-          { name: 'Eyes of the Dark', desc: 'Darkvision out to 120 ft. You can cast Darkness by spending 2 sorcery points and see through your own darkness.' },
-          { name: 'Strength of the Grave', desc: 'When damage would drop you to 0 HP, make a Cha save (DC = 5 + damage) to drop to 1 HP instead (1/long rest unless you spend a sorcery point).' }
+          { name: 'Night Sight', desc: 'You see in darkness to 120 ft. Spend 2 sorcery points to cast Darkness, and you can see through it.' },
+          { name: 'Refuse the Grave', desc: 'When damage would drop you to 0 HP, make a Charisma save (DC 5 + the damage) to stay at 1 HP. Once per long rest, or again by spending a sorcery point.' }
         ],
-        6: [{ name: 'Hound of Ill Omen', desc: 'Bonus action: spend 3 sorcery points to summon a shadow hound that hunts one creature, giving you advantage on attacks against it; the target\'s saves against your spells suffer.' }],
-        14: [{ name: 'Shadow Walk', desc: 'When in dim light or darkness, bonus action: teleport up to 120 ft to another shadowy space.' }],
-        18: [{ name: 'Umbral Form', desc: 'Spend 6 sorcery points to become shadow-stuff for 1 minute: resistance to all damage except force and radiant, and move through creatures and objects.' }]
+        6: [{ name: 'Shadow Hound', desc: 'As a bonus action, spend 3 sorcery points to send a hound of shadow after one creature; you have advantage on attacks against it and it saves worse against your spells.' }],
+        14: [{ name: 'Shade Step', desc: 'In dim light or darkness, use a bonus action to teleport up to 120 ft to another dim or dark space.' }],
+        18: [{ name: 'Living Shadow', desc: 'Spend 6 sorcery points to become shadow for 1 minute: resist all damage except force and radiant, and move through creatures and objects.' }]
       }
     },
     aberrant_mind: {
-      name: 'Aberrant Mind',
-      desc: 'A sorcerer whose psionic powers stem from an alien influence, manifesting telepathy and mind magic.',
+      name: 'Starsick Mind',
+      desc: 'A sorcerer whose power came from something far beyond the stars, leaving telepathy and strange gifts behind.',
       levelFeatures: {
         1: [
-          { name: 'Telepathic Speech', desc: 'Bonus action: form a telepathic link with a creature within 30 ft for a number of minutes equal to your sorcerer level.' },
-          { name: 'Psionic Spells', desc: 'You gain always-known bonus spells (e.g. arms of Hadar, dissonant whispers, detect thoughts, hunger of Hadar, sending, Evard\'s black tentacles, telekinesis) and can swap them as you level.' }
+          { name: 'Mind Touch', desc: 'As a bonus action, open a telepathic link to a creature within 30 ft for a number of minutes equal to your sorcerer level.' },
+          { name: 'Starsick Spells', desc: 'You always know extra mind-and-void spells (such as dissonant whispers, detect thoughts, sending, black tentacles and telekinesis) and can swap them as you level.' }
         ],
-        6: [{ name: 'Psionic Sorcery', desc: 'Cast your Psionic Spells by spending sorcery points instead of slots, and when you do, they require no verbal or somatic components.' },
-          { name: 'Psychic Defenses', desc: 'Resistance to psychic damage and advantage on saves against being charmed or frightened.' }],
-        14: [{ name: 'Revelation in Flesh', desc: 'Spend sorcery points to gain unsettling powers for 10 min: fly, swim/breathe water, see invisibility, or squeeze through tiny spaces.' }],
-        18: [{ name: 'Warping Implosion', desc: 'Action (1/long rest unless you spend 5 sorcery points): teleport 120 ft and unleash a damaging implosion at your origin (Str save, 3d10 force, pulled toward the point).' }]
+        6: [{ name: 'Silent Casting', desc: 'You can cast your Starsick spells with sorcery points instead of slots, and then they need no verbal or somatic components.' },
+          { name: 'Guarded Mind', desc: 'You resist psychic damage and have advantage on saves against being charmed or frightened.' }],
+        14: [{ name: 'Strange Flesh', desc: 'Spend sorcery points to gain an eerie gift for 10 minutes: flight, water breathing and swimming, seeing the invisible, or squeezing through tiny gaps.' }],
+        18: [{ name: 'Void Collapse', desc: 'Once per long rest (or for 5 sorcery points), as an action, teleport up to 120 ft; creatures near where you left make a Strength save or take 3d10 force and are dragged toward that spot.' }]
       }
     },
     clockwork_soul: {
-      name: 'Clockwork Soul',
-      desc: 'A sorcerer touched by the cosmic force of order, channelling the clockwork harmony of Mechanus.',
+      name: 'Gearbound Soul',
+      desc: 'A sorcerer tied to the great cosmic order, whose magic ticks with perfect precision.',
       levelFeatures: {
         1: [
-          { name: 'Restore Balance', desc: 'Reaction when a creature within 60 ft rolls with advantage or disadvantage: cancel it for that roll (Prof-bonus uses/long rest).' },
-          { name: 'Clockwork Spells', desc: 'Always-known bonus spells of order and protection (e.g. alarm, protection from evil and good, aid, lesser restoration, dispel magic, protection from energy, freedom of movement, summon construct, greater restoration, wall of force).' }
+          { name: 'Even the Scales', desc: 'When a creature within 60 ft rolls with advantage or disadvantage, use your reaction to make it a plain roll. Uses equal your proficiency bonus per long rest.' },
+          { name: 'Gearbound Spells', desc: 'You always know extra order and protection spells such as alarm, aid, lesser restoration, dispel magic, freedom of movement, greater restoration and wall of force.' }
         ],
-        6: [{ name: 'Bastion of Law', desc: 'Spend 1–5 sorcery points to create a ward of dice (d8s) around a creature that absorbs damage by expending the dice.' }],
-        14: [{ name: 'Trance of Order', desc: 'Bonus action: for 1 minute, attack rolls against you can\'t benefit from advantage, and you can treat a d20 roll of 9 or lower as a 10.' }],
-        18: [{ name: 'Clockwork Cavalcade', desc: 'Action (1/long rest unless you spend 7 sorcery points): summon a burst of order that heals creatures, repairs objects, and ends spells of 6th level or lower in a 30-ft cube.' }]
+        6: [{ name: 'Lawful Ward', desc: 'Spend 1 to 5 sorcery points to wrap a creature in a ward of that many d8s; when it takes damage it can spend dice to reduce it.' }],
+        14: [{ name: 'Perfect Order', desc: 'As a bonus action, for 1 minute attacks against you can\'t have advantage, and any d20 you roll below 10 counts as 10.' }],
+        18: [{ name: 'Great Alignment', desc: 'Once per long rest (or for 7 sorcery points), as an action, fill a 30-ft cube with order: heal creatures, mend objects and end spells of 6th level or lower.' }]
       }
     }
   },
@@ -15989,36 +15989,36 @@ const SUBCLASSES = {
       }
     },
     archfey: {
-      name: 'The Archfey',
-      desc: 'A pact with a being of the Feywild — capricious, beautiful, dangerous, and old beyond reckoning.',
+      name: 'The Twilight Court',
+      desc: 'A pact with a noble of the glittering twilight realm: lovely, fickle, dangerous and very old.',
       levelFeatures: {
-        1: [{ name: 'Fey Presence', desc: 'Action: each creature in a 10 ft cube must Wis save or be charmed or frightened by you (your choice) until the end of your next turn. Once per short or long rest.' }],
-        6: [{ name: 'Misty Escape', desc: 'When you take damage, reaction: turn invisible and teleport up to 60 ft to an unoccupied space you can see. Invisibility lasts until your next turn or until you attack/cast. Once per short or long rest.' }],
-        10: [{ name: 'Beguiling Defenses', desc: 'Immune to charmed condition. When a creature tries to charm you, reaction: turn it back on them — Wis save or charmed by you for 1 minute.' }],
-        14: [{ name: 'Dark Delirium', desc: 'Action: target one creature within 60 ft. Wis save or charmed/frightened (your choice) for 1 minute. While in this state, the target perceives a fey illusion of your choice. Once per long rest (or by spending a spell slot).' }]
+        1: [{ name: 'Court Glamour', desc: 'Once per short or long rest, as an action, creatures in a 10-ft cube around you make a Wisdom save or are charmed or frightened (your choice) until the end of your next turn.' }],
+        6: [{ name: 'Vanishing Step', desc: 'Once per short or long rest, when you take damage, use your reaction to turn invisible and teleport up to 60 ft. The invisibility ends at the start of your next turn or when you attack or cast.' }],
+        10: [{ name: 'Mirror Heart', desc: 'You can\'t be charmed. When something tries to charm you, use your reaction to try it back: the creature makes a Wisdom save or is charmed by you for 1 minute.' }],
+        14: [{ name: 'Waking Dream', desc: 'Once per long rest (or by spending a slot), as an action, a creature within 60 ft makes a Wisdom save or is charmed or frightened for 1 minute, lost in an illusion you choose.' }]
       }
     },
     great_old_one: {
-      name: 'The Great Old One',
-      desc: 'A pact with something that should not be — vast, alien, dreaming. You hear it in your sleep.',
+      name: 'The Sleeper Beyond',
+      desc: 'A pact with something vast and unknowable that dreams beyond the stars. It speaks to you in your sleep.',
       levelFeatures: {
-        1: [{ name: 'Awakened Mind', desc: 'Telepathically speak with any creature you can see within 30 ft. The creature understands you only if it shares a language with you.' }],
-        6: [{ name: 'Entropic Ward', desc: 'Reaction when a creature attacks you: impose disadvantage on the attack. If the attack misses, your next attack vs that creature has advantage. Once per short or long rest.' }],
-        10: [{ name: 'Thought Shield', desc: 'Thoughts can\'t be read by telepathy or other means unless you allow it. Resistance to psychic damage. Whenever a creature deals psychic damage to you, the creature takes the same damage.' }],
-        14: [{ name: 'Create Thrall', desc: 'Action: touch an incapacitated humanoid. Charmed by you until a remove curse spell is cast on it, the charm is broken, or you die. While charmed, you can communicate telepathically across any distance on the same plane.' }]
+        1: [{ name: 'Opened Mind', desc: 'You can speak telepathically to any creature you can see within 30 ft; it understands you if you share a language.' }],
+        6: [{ name: 'Warding Void', desc: 'Once per short or long rest, when a creature attacks you, use your reaction to give it disadvantage. If it misses, your next attack against it has advantage.' }],
+        10: [{ name: 'Sealed Mind', desc: 'Your thoughts can\'t be read unless you allow it. You resist psychic damage, and a creature that deals psychic damage to you takes the same amount.' }],
+        14: [{ name: 'Bind Servant', desc: 'As an action, touch an incapacitated humanoid; it is charmed by you until the charm is broken by remove curse or your death, and you can speak to it telepathically anywhere on the same plane.' }]
       }
     },
     hexblade: {
-      name: 'The Hexblade',
-      desc: 'A pact bound to a sentient weapon of shadow. The patron is the blade itself.',
+      name: 'The Bound Blade',
+      desc: 'A pact with a living weapon forged in shadow. The patron is the blade itself.',
       levelFeatures: {
         1: [
-          { name: 'Hexblade\'s Curse', desc: 'Bonus action: curse one creature you can see within 30 ft. For 1 minute (or until target drops to 0 or you become incapacitated): +prof to damage against the target, crits on 19-20 vs target, and if you reduce them to 0 you regain HP equal to warlock level + Cha mod. Once per short or long rest.' },
-          { name: 'Hex Warrior', desc: 'You gain proficiency with medium armor, shields, and martial weapons. Touch a weapon at the end of a long rest — for 1 weapon you\'re proficient with that lacks the two-handed property, you can use Charisma for attack and damage rolls instead of Str/Dex.' }
+          { name: 'Blade\'s Mark', desc: 'Once per short or long rest, as a bonus action, mark a creature within 30 ft for 1 minute: add your proficiency bonus to damage against it, score critical hits on 19-20, and regain warlock level + Cha mod HP if it drops to 0.' },
+          { name: 'Blade Pact Training', desc: 'You gain proficiency with medium armour, shields and martial weapons. After a long rest, pick one one-handed weapon you\'re proficient with; you can use Charisma for its attack and damage rolls.' }
         ],
-        6: [{ name: 'Accursed Specter', desc: 'When you slay a humanoid, action: turn it into a specter under your control until end of next long rest. It rolls initiative, acts on its own turn, and obeys mental commands.' }],
-        10: [{ name: 'Armor of Hexes', desc: 'When the target of your Hexblade\'s Curse hits you with an attack, roll d6 — on a 4-5-6, the attack misses regardless of the roll.' }],
-        14: [{ name: 'Master of Hexes', desc: 'When the target of your Hexblade\'s Curse drops to 0 HP, you can transfer the curse to a different creature within 30 ft (no action). The duration doesn\'t reset.' }]
+        6: [{ name: 'Bound Spirit', desc: 'When you kill a humanoid, you can use an action to raise its spirit as your servant until your next long rest. It acts on its own initiative and follows your mental commands.' }],
+        10: [{ name: 'Mark Ward', desc: 'When your marked creature hits you, roll a d6; on 4 or higher the attack misses instead.' }],
+        14: [{ name: 'Mark Passing', desc: 'When your marked creature drops to 0 HP, you can move the mark to another creature within 30 ft without using an action. The duration doesn\'t restart.' }]
       }
     }
   },
@@ -16037,55 +16037,55 @@ const SUBCLASSES = {
       }
     },
     divination: {
-      name: 'School of Divination',
-      desc: 'Diviners pierce the veil between past and future, twisting fate with foreknowledge.',
+      name: 'School of Foresight',
+      desc: 'Seers who glimpse what is coming and nudge fate before it arrives.',
       levelFeatures: {
         2: [
-          { name: 'Divination Savant', desc: 'Time and gold cost to copy divination spells into your spellbook is halved.' },
-          { name: 'Portent', desc: 'After a long rest, roll two d20s and record the numbers. Once per turn before resolving an attack roll, save, or ability check made by you or any creature you can see, replace that roll with one of your Portent dice. Each die can only be used once. They\'re lost if not used before your next long rest.' }
+          { name: 'Foresight Scholar', desc: 'Copying divination spells into your spellbook takes half the time and gold.' },
+          { name: 'Omen Dice', desc: 'After a long rest, roll two d20s and note them. Once per turn you can swap one of these for any attack, save or check roll made by a creature you can see. Each is used once and unused dice vanish at your next long rest.' }
         ],
-        6: [{ name: 'Expert Divination', desc: 'Whenever you cast a divination spell of 2nd level or higher using a slot, regain one expended slot of lower level (max 5th).' }],
-        10: [{ name: 'The Third Eye', desc: 'Action: gain one of — Darkvision 60 ft, Ethereal Sight 60 ft, Greater Comprehension (read any language), or See Invisibility 10 ft. Lasts until you use the feature again or take a short or long rest.' }],
-        14: [{ name: 'Greater Portent', desc: 'You roll three Portent dice after a long rest instead of two.' }]
+        6: [{ name: 'Seer\'s Return', desc: 'When you cast a divination spell of 2nd level or higher with a slot, regain one spent slot of a lower level (5th at most).' }],
+        10: [{ name: 'Inner Eye', desc: 'As an action, gain one sense until your next rest or until you choose again: darkvision 60 ft, sight into the Ethereal Plane 60 ft, reading any language, or seeing invisible things within 10 ft.' }],
+        14: [{ name: 'Greater Omens', desc: 'You roll three omen dice after a long rest instead of two.' }]
       }
     },
     abjuration: {
-      name: 'School of Abjuration',
-      desc: 'Wards, banishments, and shielded magic that turns enemy spells aside.',
+      name: 'School of Warding',
+      desc: 'Wizards of shields, seals and banishments who turn hostile magic aside.',
       levelFeatures: {
         2: [
-          { name: 'Abjuration Savant', desc: 'Time and gold cost to copy abjuration spells into your spellbook is halved.' },
-          { name: 'Arcane Ward', desc: 'When you cast an abjuration spell of 1st level or higher, conjure a magical ward around yourself with HP = 2 × wizard level + Int mod. Damage is taken by the ward first. Casting more abjuration spells while the ward is up restores HP equal to twice the slot level. The ward vanishes after a long rest.' }
+          { name: 'Warding Scholar', desc: 'Copying abjuration spells into your spellbook takes half the time and gold.' },
+          { name: 'Spell Shield', desc: 'When you cast an abjuration spell of 1st level or higher, a shimmering shield forms around you with HP equal to twice your wizard level + Int mod. It takes damage before you. Casting more abjuration spells restores 2 HP per slot level. It fades after a long rest.' }
         ],
-        6: [{ name: 'Projected Ward', desc: 'Reaction when a creature you can see within 30 ft takes damage: your Arcane Ward absorbs the damage instead. If reduced to 0, the excess damage carries through to the target.' }],
-        10: [{ name: 'Improved Abjuration', desc: 'When you cast an abjuration spell that requires a check to overcome a creature\'s resistance to magic (e.g. counterspell, dispel magic), add your proficiency bonus to that check.' }],
-        14: [{ name: 'Spell Resistance', desc: 'Advantage on saving throws against spells. Resistance to damage from spells.' }]
+        6: [{ name: 'Cast-off Shield', desc: 'When a creature you can see within 30 ft takes damage, use your reaction to let your Spell Shield take it instead; any leftover damage goes through.' }],
+        10: [{ name: 'Strong Wards', desc: 'When an abjuration spell has you make an ability check (such as dispelling or countering magic), add your proficiency bonus to it.' }],
+        14: [{ name: 'Spellproof', desc: 'You have advantage on saves against spells and resist spell damage.' }]
       }
     },
     necromancy: {
-      name: 'School of Necromancy',
-      desc: 'Death is a doorway. Necromancers wedge it open and walk through both ways.',
+      name: 'School of the Grave',
+      desc: 'Wizards who study death closely and know how to step back from its edge.',
       levelFeatures: {
         2: [
-          { name: 'Necromancy Savant', desc: 'Time and gold cost to copy necromancy spells into your spellbook is halved.' },
-          { name: 'Grim Harvest', desc: 'Once per turn, when you kill a creature with a wizard spell of 1st level or higher, regain HP equal to twice the slot level (or three times if it was a necromancy spell). Constructs and undead don\'t count.' }
+          { name: 'Grave Scholar', desc: 'Copying necromancy spells into your spellbook takes half the time and gold.' },
+          { name: 'Life Draw', desc: 'Once per turn, when your wizard spell of 1st level or higher kills a creature (not a construct or undead), regain HP equal to twice the slot level, or three times for a necromancy spell.' }
         ],
-        6: [{ name: 'Undead Thralls', desc: 'You add Animate Dead to your spellbook if not already there. When you cast Animate Dead, you can target one extra corpse. Created undead gain bonus HP = wizard level and add your proficiency bonus to weapon damage rolls.' }],
-        10: [{ name: 'Inured to Undeath', desc: 'Resistance to necrotic damage. Your HP maximum can\'t be reduced.' }],
-        14: [{ name: 'Command Undead', desc: 'Action: target one undead within 60 ft. It must Cha save (intelligent undead with advantage) or fall under your control for 24 hours. Save DC = your spell save DC.' }]
+        6: [{ name: 'Risen Servants', desc: 'Animate Dead joins your spellbook. When you cast it, raise one extra corpse; your undead gain extra HP equal to your wizard level and add your proficiency bonus to weapon damage.' }],
+        10: [{ name: 'Deathproof', desc: 'You resist necrotic damage, and your HP maximum can\'t be lowered.' }],
+        14: [{ name: 'Bend the Dead', desc: 'As an action, an undead within 60 ft makes a Charisma save against your spell DC (with advantage if it is clever) or obeys you for 24 hours.' }]
       }
     },
     illusion: {
-      name: 'School of Illusion',
-      desc: 'Reality is a suggestion. Illusionists make stronger ones.',
+      name: 'School of Glamour',
+      desc: 'Wizards who know reality can be persuaded, and who argue for it very well.',
       levelFeatures: {
         2: [
-          { name: 'Illusion Savant', desc: 'Time and gold cost to copy illusion spells into your spellbook is halved.' },
-          { name: 'Improved Minor Illusion', desc: 'Learn the Minor Illusion cantrip (in addition to your normal cantrips known). It can produce a sound and an image with a single casting.' }
+          { name: 'Glamour Scholar', desc: 'Copying illusion spells into your spellbook takes half the time and gold.' },
+          { name: 'Sharpened Illusion', desc: 'You learn Minor Illusion as a bonus cantrip, and one casting can make both a sound and an image.' }
         ],
-        6: [{ name: 'Malleable Illusions', desc: 'When you cast an illusion spell of 1st level or higher with a duration of 1 minute or longer, action: change the nature of the illusion (still subject to the spell\'s normal limits).' }],
-        10: [{ name: 'Illusory Self', desc: 'Reaction when a creature makes an attack roll against you: interpose an illusory duplicate. The attack misses automatically. Recharges on a short or long rest.' }],
-        14: [{ name: 'Illusory Reality', desc: 'When you cast an illusion spell of 1st level or higher, bonus action: choose one inanimate object the illusion contains. Make it real for 1 minute. It can\'t deal damage or be otherwise used directly to harm.' }]
+        6: [{ name: 'Shifting Glamour', desc: 'When you cast a 1st-level or higher illusion lasting 1 minute or more, you can use your action to reshape it within the spell\'s limits.' }],
+        10: [{ name: 'Decoy Self', desc: 'Once per short or long rest, when a creature attacks you, use your reaction to throw up a false double; the attack misses.' }],
+        14: [{ name: 'Solid Glamour', desc: 'When you cast a 1st-level or higher illusion spell, use a bonus action to make one non-living object in it real for 1 minute. It can\'t be used to deal damage.' }]
       }
     }
   }
