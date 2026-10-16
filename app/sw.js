@@ -13,7 +13,7 @@
 // Bump CACHE_VERSION whenever you ship a new build (keep it in step with
 // CACHE_VERSION in /sw.js).
 
-const CACHE_VERSION = 'hearth-v1.5.1';
+const CACHE_VERSION = 'hearth-v1.6.0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -33,6 +33,11 @@ const APP_SHELL = [
   './painted/packs/water.js',
   './painted/packs/hazard.js',
   './painted/thumbs.webp',
+  // v1.6.0 — animated dice (three.js r158 + cannon-es 0.20.0, MIT, vendored) and the physics worker.
+  './dice/three.min.js',
+  './dice/cannon-es.js',
+  './dice/hearth-dice.js',
+  './dice/dice-worker.js',
 ];
 const OCR_CACHE = 'hearth-ocr-5.1.1'; // kept across app updates (only the version changes it)
 const SHELL_URL = new URL('./', self.registration ? self.registration.scope : self.location.href).href;

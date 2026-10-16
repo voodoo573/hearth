@@ -7915,6 +7915,30 @@ body.hearth-wide .app {
 .link-acct-verified { color: #8fd18f; }
 .link-acct-unverified { color: #e8b04a; }
 
+
+/* v1.6.0 — dice settings + DM roll log */
+.dice-swatch { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; font:bold 10px Georgia,serif; vertical-align:middle; margin-right:4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.35); }
+.dice-colour-grid .settings-size-name { font-size: 13px; }
+.hearth-rolllog-wrap { z-index: 1200; }
+.hearth-rolllog { width: min(720px, 96vw); max-height: 88vh; display:flex; flex-direction:column; }
+.hearth-rolllog .rl-tools { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin: 8px 0; }
+.hearth-rolllog .rl-tools select { min-height: 40px; margin-left: 4px; }
+.hearth-rolllog .rl-help { font-size: 12px; opacity: .85; margin-bottom: 6px; }
+.hearth-rolllog .rl-list { overflow:auto; flex:1; min-height: 120px; }
+.hearth-rolllog .rl-row { display:grid; grid-template-columns: 78px 1fr 1.6fr auto; grid-template-areas: "time who label total" "time dice dice total"; gap: 2px 8px; padding: 7px 8px; border-bottom: 1px solid var(--rs-line, rgba(127,127,127,.25)); align-items:center; font-size: 13px; }
+.hearth-rolllog .rl-time { grid-area: time; font-family: ui-monospace, monospace; font-size: 11px; opacity: .8; }
+.hearth-rolllog .rl-who { grid-area: who; font-weight: 700; }
+.hearth-rolllog .rl-label { grid-area: label; }
+.hearth-rolllog .rl-dice { grid-area: dice; font-family: ui-monospace, monospace; font-size: 12px; opacity: .85; }
+.hearth-rolllog .rl-total { grid-area: total; font-size: 20px; font-weight: 700; text-align:right; }
+.hearth-rolllog .rl-row.nat20 { background: rgba(212,160,40,.18); box-shadow: inset 4px 0 0 #d4a028; }
+.hearth-rolllog .rl-row.nat1 { background: rgba(200,40,30,.16); box-shadow: inset 4px 0 0 #c8281e; }
+.hearth-rolllog .rl-nat { font-size: 11px; padding: 1px 6px; border-radius: 999px; background: currentColor; }
+.hearth-rolllog .rl-row.nat20 .rl-nat { background:#d4a028; color:#1a1208; }
+.hearth-rolllog .rl-row.nat1 .rl-nat { background:#c8281e; color:#fff; }
+.hearth-rolllog .rl-manual { font-size: 11px; padding: 1px 6px; border-radius: 999px; border: 1px dashed currentColor; opacity: .9; white-space: nowrap; }
+.hearth-rolllog .rl-empty { padding: 20px; text-align:center; opacity:.8; }
+@media (max-width: 520px) { .hearth-rolllog .rl-row { grid-template-columns: 62px 1fr auto; grid-template-areas: "time who total" "label label total" "dice dice total"; } }
 </style>
 
 <style id="forgeV120">
@@ -10982,7 +11006,7 @@ html[data-texture]:not([data-palette]):not([data-theme="dark"]):not([data-textur
 // should match. Patch bumps for fixes, minor for new content/UX,
 // major for big architecture changes.
 // ============================================================
-const HEARTH_VERSION = '1.5.1';
+const HEARTH_VERSION = '1.6.0';
 // v1.4.0 — automatic local backup before each app update. Captured here, at
 // the very start, before anything can migrate stored data; written to
 // IndexedDB later (hearthProcessPreUpdate) and the last 3 are kept.
@@ -25383,10 +25407,15 @@ function dmResyncCharacter(cbId) {
 // Roll initiative (d20 + Dex/Alert) for every character-linked player at once.
 function dmRollPartyInit() {
   const enc = loadEncounter();
+  const initDice = [];
   enc.combatants.filter(c => c.kind === 'player' && c.initBonus != null).forEach(c => {
-    c.init = 1 + Math.floor(Math.random() * 20) + (c.initBonus || 0);
+    const d = 1 + Math.floor(Math.random() * 20);
+    initDice.push({ n: c.name, v: d });
+    c.init = d + (c.initBonus || 0);
   });
   saveEncounter(enc);
+  if (initDice.length) hearthDiceRoll({ who: 'DM', label: 'Party initiative', groups: [{ sides: 20, values: initDice.map(x => x.v) }],
+    total: initDice.length === 1 ? initDice[0].v : 'Rolled', big: false, crit: null, breakdown: initDice.map(x => x.n + ' ' + x.v).join(' · ') });
   return enc;
 }
 // Character picker overlay markup (mirrors the Games dialog).
@@ -28883,6 +28912,13 @@ function shouldShowRollToast(label, total, detail, opts = {}) {
 }
 
 function logRoll(label, total, detail, opts = {}) {
+  // v1.6.0 — animated dice + roll feed. opts.dice = explicit [{sides, values}];
+  // opts.dice === false = already animated (roll dialog commit); otherwise the
+  // dice written in the detail ("1d10 [7]") are animated.
+  try {
+    if (opts && Array.isArray(opts.dice)) hearthDiceRoll(Object.assign({ label, total, breakdown: detail }, opts.diceSpec || {}, { groups: opts.dice }));
+    else if (!opts || opts.dice !== false) hearthDiceFromDetail(label, total, detail);
+  } catch (e) { console.warn('dice', e); }
   state.ui.rollLog.unshift({
     id: Date.now() + Math.random(),
     label, total, detail, ts: Date.now()
@@ -28935,6 +28971,398 @@ function renderRollToast() {
     </div>
   `;
 }
+// ============================================================
+// v1.6.0 — animated dice (Jenny's HearthDice v0.5, vendored in ./dice/)
+// and the shared roll feed behind the DM's roll log.
+// Every real app roll calls hearthDiceRoll(spec) with the dice it ACTUALLY
+// rolled; HearthDice only animates those values (it never decides a result).
+//   spec: { label, groups:[{sides, values:[..]}], total, crit:'nat20'|'nat1',
+//           deathSave, boss, manual, who, breakdown }
+// The scripts (three.js r158 + cannon-es 0.20.0, both MIT) load lazily on the
+// first animated roll, from the app's own folder (precached by /app/sw.js),
+// so nothing is fetched from the network and the dice work offline.
+// ============================================================
+const HEARTH_DICE_FILES = ['dice/three.min.js', 'dice/cannon-es.js', 'dice/hearth-dice.js'];
+const HEARTH_DICE_SIDES = { 4: 1, 6: 1, 8: 1, 10: 1, 12: 1, 20: 1, 100: 1 };
+const HEARTH_DICE_MAX_ANIMATED = 24; // bigger pools show the number only
+// Dice colour sets (ids = HearthDice.themes keys, listed here so Settings can
+// draw them before the 3D scripts have loaded).
+const HEARTH_DICE_SETS = [
+  { id: 'tavern', name: 'Tavern Night', body: '#5a2e14', ink: '#f3c96b' },
+  { id: 'oldmap', name: 'Old Map', body: '#e8d3a2', ink: '#3a2410' },
+  { id: 'forest', name: 'Elven Forest', body: '#1f5a32', ink: '#e6f2c8' },
+  { id: 'arcane', name: 'Arcane Tower', body: '#3b2a8a', ink: '#d8c8ff' },
+  { id: 'infernal', name: 'Infernal', body: '#8a1414', ink: '#ffb35a' },
+  { id: 'frost', name: 'Frost', body: '#cfe6f5', ink: '#0f2a4a' },
+  { id: 'hoard', name: 'Dragon Hoard', body: '#c99a2a', ink: '#2a1400' },
+  { id: 'scott-ultramarine', name: "Scott's Ultramarine", body: '#16249a', ink: '#eef1f6' },
+  { id: 'scott-marine', name: "Scott's Royal Marine", body: '#0c2b4b', ink: '#f5c518' },
+];
+// "Follow my theme": each colour theme picks the closest dice set.
+const HEARTH_DICE_FOR_PALETTE = {
+  tavern: 'tavern', forest: 'forest', forge: 'infernal', arcane: 'arcane', frost: 'frost', infernal: 'infernal',
+  contrast: 'hoard', oldmap: 'oldmap', hoard: 'hoard', dawn: 'hoard', shade: 'forest', wildwood: 'forest',
+  moonsilver: 'frost', pact: 'arcane', surge: 'arcane', encore: 'infernal', warpaint: 'oldmap', mountain: 'oldmap',
+  banner: 'infernal', clockwork: 'hoard', scales: 'hoard', hollow: 'oldmap',
+  'scott-ultramarine': 'scott-ultramarine', 'scott-marine': 'scott-marine',
+};
+function hearthDicePrefs() {
+  const p = (typeof state !== 'undefined' && state && state.prefs) || loadPrefs();
+  return {
+    anim: p.diceAnim === 'off' ? 'off' : 'on',
+    colour: p.diceColour || 'auto',
+    size: p.diceSize === 'compact' ? 'compact' : 'full',
+    projector: ['ask', 'important'].includes(p.diceProjector) ? p.diceProjector : 'off', // opt-in only
+    palette: p.palette || '', theme: p.theme || 'light',
+  };
+}
+function hearthDiceThemeId(dp) {
+  dp = dp || hearthDicePrefs();
+  if (dp.colour !== 'auto' && HEARTH_DICE_SETS.some(s => s.id === dp.colour)) return dp.colour;
+  if (dp.palette && HEARTH_DICE_FOR_PALETTE[dp.palette]) return HEARTH_DICE_FOR_PALETTE[dp.palette];
+  return dp.theme === 'dark' ? 'tavern' : 'oldmap';
+}
+let _hearthDiceLoading = null;
+function hearthDiceLoad() {
+  if (window.HearthDice && typeof window.HearthDice.roll === 'function') { hearthDiceConfigure(); return Promise.resolve(window.HearthDice); }
+  if (_hearthDiceLoading) return _hearthDiceLoading;
+  _hearthDiceLoading = HEARTH_DICE_FILES.reduce((p, src) => p.then(() => new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.async = false;
+    s.onload = () => res(); s.onerror = () => rej(new Error('Could not load ' + src));
+    document.head.appendChild(s);
+  })), Promise.resolve()).then(() => { hearthDiceConfigure(); return window.HearthDice; })
+    .catch((e) => { _hearthDiceLoading = null; throw e; });
+  return _hearthDiceLoading;
+}
+function hearthDiceConfigure() {
+  const HD = window.HearthDice; if (!HD) return;
+  const dp = hearthDicePrefs();
+  try {
+    if (!HD.workerUrl) HD.workerUrl = new URL('dice/dice-worker.js', location.href).href;
+    HD.setEnabled(dp.anim === 'on');
+    HD.setTheme(hearthDiceThemeId(dp));
+    HD.setMode(dp.size);
+    HD.setProjectorMode(dp.projector);
+    HD.onProjector(hearthDiceOnProjector);
+  } catch (e) { console.warn('HearthDice configure', e); }
+}
+
+// ---- big screen (opt-in) ----
+// Destinations: this device's projector window (DM), or — for a linked
+// player — the DM's projector, relayed over the live game link. The DM's own
+// big-screen setting must also be on before a player's roll is shown.
+function hearthProjectorOpen() { const w = window._hearthProjWin; return !!(w && !w.closed); }
+function hearthDiceProjectorTarget() {
+  if (hearthProjectorOpen()) return 'local';
+  const j = HearthLink && HearthLink.join;
+  if (j && j.status === 'linked' && j.conn) return 'link';
+  return null;
+}
+function hearthDiceProjectPayload(entry) {
+  return { type: 'hearth-dice', who: entry.who, label: entry.label, dice: entry.dice, total: entry.total, nat: entry.nat, ts: entry.ts };
+}
+function hearthDiceSendToProjector(entry) {
+  const ch = typeof getMapChannel === 'function' ? getMapChannel() : null;
+  if (!ch) return false;
+  try { ch.postMessage(hearthDiceProjectPayload(entry)); return true; } catch (e) { return false; }
+}
+let _hearthDiceCurrentEntry = null;
+function hearthDiceOnProjector() {
+  const entry = _hearthDiceCurrentEntry; if (!entry) return;
+  const tgt = hearthDiceProjectorTarget();
+  if (tgt === 'local') hearthDiceSendToProjector(entry);
+  else if (tgt === 'link') { try { HearthLink.join.conn.send({ t: 'rollproj', id: entry.id }); } catch (e) {} }
+}
+
+// ---- roll feed (local log + live link to the DM) ----
+const ROLL_FEED_KEY = 'hearth.rollFeed.v1';
+const ROLL_FEED_MAX = 300;
+function rollFeedLoad() { try { const a = JSON.parse(localStorage.getItem(ROLL_FEED_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+function rollFeedSave(list) { try { localStorage.setItem(ROLL_FEED_KEY, JSON.stringify(list.slice(0, ROLL_FEED_MAX))); } catch (e) {} }
+function rollFeedAdd(entry) {
+  const list = rollFeedLoad();
+  if (list.some(e => e.id === entry.id)) return false;
+  list.unshift(entry);
+  list.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  rollFeedSave(list);
+  hearthRollLogRefresh();
+  return true;
+}
+function rollFeedClear() { rollFeedSave([]); hearthRollLogRefresh(); }
+function hearthDiceGroupsText(groups) {
+  return (groups || []).filter(g => g && g.values && g.values.length)
+    .map(g => `${g.values.length}d${g.sides} [${g.values.join(', ')}]`).join(' + ');
+}
+function hearthRollWho() {
+  if (typeof state !== 'undefined' && state.tab === 'dm') return 'DM';
+  const ch = state && state.activeCharId && typeof getCharacter === 'function' ? getCharacter(state.activeCharId) : null;
+  return (ch && ch.name) || 'You';
+}
+function hearthRollNat(spec) {
+  if (spec.crit === 'nat20') return 20;
+  if (spec.crit === 'nat1') return 1;
+  const g = spec.groups || [];
+  if (g.length === 1 && g[0].sides === 20 && g[0].values.length === 1) {
+    const v = g[0].values[0]; return v === 20 ? 20 : (v === 1 ? 1 : null);
+  }
+  return null;
+}
+function hearthRecordRoll(spec) {
+  const entry = {
+    id: 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+    ts: Date.now(),
+    who: String(spec.who || hearthRollWho()).slice(0, 40),
+    label: String(spec.label || 'Roll').slice(0, 80),
+    dice: String(spec.diceText || hearthDiceGroupsText(spec.groups)).slice(0, 160),
+    total: String(spec.total == null ? '' : spec.total).slice(0, 40),
+    nat: hearthRollNat(spec),
+    manual: !!spec.manual,
+  };
+  rollFeedAdd(entry);
+  // A linked player's rolls go to the DM's log. While reconnecting they wait
+  // in a short queue and are sent once the DM welcomes the phone back.
+  const j = HearthLink && HearthLink.join;
+  if (j && j.token) {
+    if (j.status === 'linked' && j.conn) { try { j.conn.send({ t: 'roll', roll: entry }); } catch (e) { (j.rollQueue = j.rollQueue || []).push(entry); } }
+    else { j.rollQueue = (j.rollQueue || []).concat(entry).slice(-50); }
+  }
+  return entry;
+}
+function linkJoinFlushRolls(j) {
+  if (!j || !j.conn || !j.rollQueue || !j.rollQueue.length) return;
+  const q = j.rollQueue; j.rollQueue = [];
+  q.forEach(r => { try { j.conn.send({ t: 'roll', roll: r }); } catch (e) {} });
+}
+// DM side: clean a roll that came over the link. The name shown is the one
+// the DM accepted for that phone, never one the message claims.
+function linkCleanRoll(r, dev) {
+  if (!r || typeof r !== 'object' || !dev) return null;
+  const now = Date.now();
+  let ts = Number(r.ts); if (!Number.isFinite(ts) || ts > now + 60000 || ts < now - 86400000) ts = now;
+  const nat = r.nat === 20 || r.nat === 1 ? r.nat : null;
+  return {
+    id: 'p' + String(dev.deviceId || '').slice(0, 12) + '-' + String(r.id || '').replace(/[^a-z0-9]/gi, '').slice(0, 24),
+    ts, who: String(dev.name || 'Player').slice(0, 40),
+    label: linkCleanText(r.label, 80) || 'Roll', dice: linkCleanText(r.dice, 160) || '',
+    total: linkCleanText(String(r.total == null ? '' : r.total), 40) || '',
+    nat, manual: r.manual === true, linked: true,
+  };
+}
+function linkHostOnRoll(dev, msg) {
+  if (msg.t === 'roll') {
+    const r = linkCleanRoll(msg.roll, dev);
+    if (r) rollFeedAdd(r);
+  } else if (msg.t === 'rollproj') {
+    // A player asked for their roll on the big screen: show it only if the
+    // DM has opted in to big-screen dice and a projector window is open.
+    if (hearthDicePrefs().projector === 'off' || !hearthProjectorOpen()) return;
+    const id = 'p' + String(dev.deviceId || '').slice(0, 12) + '-' + String(msg.id || '').replace(/[^a-z0-9]/gi, '').slice(0, 24);
+    const r = rollFeedLoad().find(e => e.id === id);
+    if (r) hearthDiceSendToProjector(r);
+  }
+}
+
+// ---- the one entry point every roll goes through ----
+function hearthDiceRoll(spec) {
+  spec = spec || {};
+  const groups = (spec.groups || []).filter(g => g && g.values && g.values.length);
+  if (!groups.length && !spec.manual) return Promise.resolve(null);
+  const entry = hearthRecordRoll(Object.assign({}, spec, { groups }));
+  if (spec.manual || spec.animate === false || typeof document === 'undefined') return Promise.resolve(entry);
+  const dp = hearthDicePrefs();
+  const big = spec.big != null ? !!spec.big : !!(entry.nat || spec.deathSave || spec.boss);
+  const animatable = groups.every(g => HEARTH_DICE_SIDES[g.sides] && g.values.every(v => v >= 1 && v <= g.sides))
+    && groups.reduce((n, g) => n + g.values.length, 0) <= HEARTH_DICE_MAX_ANIMATED;
+  const projTarget = hearthDiceProjectorTarget();
+  if (dp.anim === 'off' || !animatable) {
+    // No 3D dice: the app's normal roll toast shows the number. An important
+    // roll still goes to the big screen if the user chose that.
+    if (dp.projector === 'important' && big && projTarget) { _hearthDiceCurrentEntry = entry; hearthDiceOnProjector(); }
+    return Promise.resolve(entry);
+  }
+  return hearthDiceLoad().then((HD) => {
+    _hearthDiceCurrentEntry = entry;
+    const crit = entry.nat === 20 ? 'nat20' : (entry.nat === 1 ? 'nat1' : null);
+    return HD.roll({
+      dice: groups.map(g => ({ type: 'd' + g.sides, count: g.values.length })),
+      results: [].concat(...groups.map(g => g.values)),
+      label: entry.label,
+      total: entry.total, breakdown: spec.breakdown || entry.dice,
+      crit, big, deathSave: !!spec.deathSave, boss: !!spec.boss,
+      projector: projTarget ? undefined : false,
+      reducedMotion: !!(window.hearthReducedMotion && window.hearthReducedMotion()),
+    });
+  }).then(() => entry).catch((e) => { console.warn('Dice animation skipped:', e && e.message); return entry; });
+}
+
+// Roll-dialog lines (attacks, saves, checks, initiative, damage, healing).
+function hearthDiceFromLine(line) {
+  try {
+    if (!line || line.result == null) return;
+    const label = line.label || (typeof hearthRollLineKindLabel === 'function' ? hearthRollLineKindLabel(line) : 'Roll');
+    if (line.kind === 'd20') {
+      const m = /\[([\d,\s]+)\]/.exec(String(line.rollDetail || ''));
+      const vals = m ? m[1].split(',').map(x => parseInt(x, 10)).filter(Number.isFinite) : [];
+      if (!vals.length) return;
+      const adv = line.advantage || 'normal';
+      const chosen = adv === 'adv' ? Math.max(...vals) : (adv === 'dis' ? Math.min(...vals) : vals[0]);
+      hearthDiceRoll({ label: label + (adv === 'adv' ? ' (advantage)' : adv === 'dis' ? ' (disadvantage)' : ''),
+        groups: [{ sides: 20, values: vals }], total: line.result,
+        crit: chosen === 20 ? 'nat20' : (chosen === 1 ? 'nat1' : null), breakdown: line.rollDetail });
+      return;
+    }
+    if (line.kind === 'darts') {
+      const ds = (Array.isArray(line.dice) ? line.dice[0] : line.dice) || { count: 3, sides: 4 };
+      const m = /\[([\d,\s\-]+)\]/.exec(String(line.rollDetail || ''));
+      const vals = m ? m[1].split(',').map(x => parseInt(x, 10) - (line.dartBonus || 0)) : [];
+      hearthDiceRoll({ label, groups: [{ sides: ds.sides, values: vals }], total: line.result, breakdown: line.rollDetail });
+      return;
+    }
+    const rolls = (line.rolls || []).concat(line.critRolls || []);
+    const sizes = (line.diceSizes || []);
+    if (!rolls.length || !sizes.length) return;
+    const crits = (line.critRolls || []).length;
+    const allSizes = sizes.concat(crits ? sizes.slice(0, crits) : []);
+    const by = {};
+    rolls.forEach((v, i) => { const s = allSizes[i] || sizes[sizes.length - 1]; (by[s] = by[s] || []).push(v); });
+    hearthDiceRoll({ label, groups: Object.keys(by).map(s => ({ sides: +s, values: by[s] })), total: line.result, breakdown: line.rollDetail });
+  } catch (e) { console.warn('hearthDiceFromLine', e); }
+}
+// Rolls logged with their dice in the text, e.g. "1d10 [7] + 2 = 9" or
+// "d20(adv) [4, 17] +3 = 20" (Second Wind, Wild Shape attacks, concentration…).
+function hearthDiceFromDetail(label, total, detail) {
+  const text = String(detail || '');
+  const re = /(\d*)d(\d+)(?:\((adv|dis)\))?\s*\[([\d,\s]+)\]/gi;
+  const groups = []; let m, mode = null;
+  while ((m = re.exec(text)) !== null) {
+    const sides = parseInt(m[2], 10);
+    const vals = m[4].split(',').map(x => parseInt(x, 10)).filter(Number.isFinite);
+    if (m[3]) mode = m[3];
+    if (vals.length) groups.push({ sides, values: vals });
+  }
+  if (!groups.length) return;
+  let crit = null;
+  const d20 = groups.find(g => g.sides === 20);
+  if (d20) { const c = mode === 'adv' ? Math.max(...d20.values) : (mode === 'dis' ? Math.min(...d20.values) : (d20.values.length === 1 ? d20.values[0] : null)); crit = c === 20 ? 'nat20' : (c === 1 ? 'nat1' : null); }
+  hearthDiceRoll({ label, groups, total: total === '' || total == null ? groups.reduce((s, g) => s + g.values.reduce((a, b) => a + b, 0), 0) : total, crit, breakdown: text });
+}
+
+// ---- DM roll log panel ----
+function dmRollLogButton(cls) {
+  const n = rollFeedLoad().length;
+  return `<button class="${cls || 'btn'} dm-rolllog-btn" data-roll-log-open="1" title="Rolls from this device and linked players">🎲 Roll log${n ? ' · ' + n : ''}</button>`;
+}
+function hearthRollLogTime(ts) {
+  try { return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }); } catch (e) { return ''; }
+}
+function hearthRollLogHTML() {
+  const all = rollFeedLoad();
+  const who = [...new Set(all.map(e => e.who))];
+  const f = window._hearthRollLogFilter || '';
+  const list = f ? all.filter(e => e.who === f) : all;
+  const rows = list.map(e => `
+      <div class="rl-row${e.nat === 20 ? ' nat20' : ''}${e.nat === 1 ? ' nat1' : ''}${e.manual ? ' manual' : ''}">
+        <span class="rl-time">${escape(hearthRollLogTime(e.ts))}</span>
+        <span class="rl-who">${escape(e.who)}</span>
+        <span class="rl-label">${escape(e.label)}${e.nat === 20 ? ' <b class="rl-nat">Nat 20</b>' : ''}${e.nat === 1 ? ' <b class="rl-nat">Nat 1</b>' : ''}${e.manual ? ' <span class="rl-manual" title="Typed in by hand, not rolled in the app">✍ entered by hand</span>' : ''}</span>
+        <span class="rl-dice">${escape(e.dice)}</span>
+        <span class="rl-total">${escape(e.total)}</span>
+      </div>`).join('');
+  return `
+    <div class="dialog hearth-rolllog" role="dialog" aria-modal="true" aria-labelledby="hearthRollLogTitle">
+      <div class="dialog-title" id="hearthRollLogTitle">🎲 Roll log</div>
+      <div class="rl-tools">
+        <label>Player <select data-roll-log-filter="1">
+          <option value="">Everyone (${all.length})</option>
+          ${who.map(w => `<option value="${escape(w)}" ${w === f ? 'selected' : ''}>${escape(w)} (${all.filter(e => e.who === w).length})</option>`).join('')}
+        </select></label>
+        <button class="btn" data-roll-log-clear="1" ${all.length ? '' : 'disabled'}>Clear log</button>
+        <button class="btn primary" data-roll-log-close="1">Close</button>
+      </div>
+      <div class="rl-help">Rolls made on this device, plus every roll from phones linked to your live game. Gold = natural 20, red = natural 1, ✍ = a number the player typed in.</div>
+      <div class="rl-list" id="hearthRollLogList">${rows || '<div class="rl-empty">No rolls yet.</div>'}</div>
+    </div>`;
+}
+function hearthOpenRollLog() {
+  let wrap = document.getElementById('hearthRollLog');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.id = 'hearthRollLog'; wrap.className = 'dialog-backdrop hearth-rolllog-wrap';
+    document.body.appendChild(wrap);
+  }
+  wrap.innerHTML = hearthRollLogHTML();
+  wrap.style.display = 'flex';
+}
+function hearthRollLogRefresh() {
+  const wrap = typeof document !== 'undefined' && document.getElementById('hearthRollLog');
+  if (wrap && wrap.style.display !== 'none') { const sc = wrap.querySelector('.rl-list'); const top = sc ? sc.scrollTop : 0; wrap.innerHTML = hearthRollLogHTML(); const sc2 = wrap.querySelector('.rl-list'); if (sc2) sc2.scrollTop = top; }
+  document.querySelectorAll && document.querySelectorAll('.dm-rolllog-btn').forEach(b => { const n = rollFeedLoad().length; b.textContent = '🎲 Roll log' + (n ? ' · ' + n : ''); });
+}
+function hearthCloseRollLog() { const w = document.getElementById('hearthRollLog'); if (w) w.style.display = 'none'; }
+
+// ---- Settings: dice ----
+function hearthDiceSettingsHTML() {
+  const dp = hearthDicePrefs();
+  const auto = HEARTH_DICE_SETS.find(s => s.id === hearthDiceThemeId(Object.assign({}, dp, { colour: 'auto' })));
+  const opt = (key, val, name, desc, on) => `<button class="settings-size-card ${on ? 'selected' : ''}" data-dice-pref="${key}" data-dice-val="${val}" aria-pressed="${on}"><div class="settings-size-name">${name}</div><div class="settings-size-desc">${desc}</div></button>`;
+  const sw = (s) => `<span class="dice-swatch" style="background:${s.body};color:${s.ink}">20</span>`;
+  return `
+      <div class="forge-section-label" style="margin-top: 18px;">Dice</div>
+      <div class="ai-helper">Rolls tumble as 3D dice that land on the real result. Tap to skip. If your device asks for reduced motion (or you chose it above), the dice appear already settled.</div>
+      <div class="settings-size-grid">
+        ${opt('diceAnim', 'on', 'Animated 🎲', '3D dice roll across the screen', dp.anim === 'on')}
+        ${opt('diceAnim', 'off', 'Numbers only', 'No animation, just the result', dp.anim === 'off')}
+      </div>
+      <div class="settings-size-grid" style="margin-top:8px;">
+        ${opt('diceSize', 'full', 'Full screen', 'Big, centred roll', dp.size === 'full')}
+        ${opt('diceSize', 'compact', 'Corner', 'Small card, bottom-right (big rolls still go full screen)', dp.size === 'compact')}
+      </div>
+      <div class="ai-helper" style="margin-top:10px;">Dice colours</div>
+      <div class="settings-size-grid dice-colour-grid">
+        <button class="settings-size-card ${dp.colour === 'auto' ? 'selected' : ''}" data-dice-pref="diceColour" data-dice-val="auto" aria-pressed="${dp.colour === 'auto'}"><div class="settings-size-name">${auto ? sw(auto) : ''} Match my theme</div><div class="settings-size-desc">${auto ? escape(auto.name) : ''}</div></button>
+        ${HEARTH_DICE_SETS.map(s => `<button class="settings-size-card ${dp.colour === s.id ? 'selected' : ''}" data-dice-pref="diceColour" data-dice-val="${s.id}" aria-pressed="${dp.colour === s.id}"><div class="settings-size-name">${sw(s)} ${escape(s.name)}</div></button>`).join('')}
+      </div>
+      <div class="ai-helper" style="margin-top:10px;">Big screen (projector). Off unless you turn it on. A linked player's roll only reaches the projector if the DM has also turned this on.</div>
+      <div class="settings-size-grid">
+        ${opt('diceProjector', 'off', 'Off', 'Rolls stay on this device', dp.projector === 'off')}
+        ${opt('diceProjector', 'ask', 'Ask each time', 'A “Show on big screen” button on each roll', dp.projector === 'ask')}
+        ${opt('diceProjector', 'important', 'Important rolls', 'Nat 20s, nat 1s, death saves and boss rolls go up by themselves; other rolls get the button', dp.projector === 'important')}
+      </div>
+      <div class="hearth-settings-actions">
+        <button class="btn" data-dice-test="1">Try a roll</button>
+        <button class="btn" data-roll-log-open="1">Open roll log</button>
+      </div>`;
+}
+function hearthDiceSetPref(key, val) {
+  const p = Object.assign({}, (typeof state !== 'undefined' && state.prefs) || loadPrefs(), { [key]: val });
+  if (typeof state !== 'undefined') state.prefs = p;
+  savePrefs(p);
+  hearthDiceConfigure();
+}
+if (typeof document !== 'undefined') document.addEventListener('click', (e) => {
+  const t = e.target;
+  if (!t || !t.closest) return;
+  const pref = t.closest('[data-dice-pref]');
+  if (pref) { hearthDiceSetPref(pref.dataset.dicePref, pref.dataset.diceVal); render(); return; }
+  if (t.closest('[data-dice-test]')) {
+    const v = rollDie(20);
+    hearthDiceRoll({ label: 'Test roll', groups: [{ sides: 20, values: [v] }], total: v, who: hearthRollWho() });
+    return;
+  }
+  if (t.closest('[data-roll-log-open]')) { e.preventDefault(); e.stopPropagation(); hearthOpenRollLog(); return; }
+  if (t.closest('[data-roll-log-close]')) { hearthCloseRollLog(); return; }
+  if (t.closest('[data-roll-log-clear]')) {
+    confirmDialog('Clear every roll in the roll log on this device? Players keep their own copies.', () => { window._hearthRollLogFilter = ''; rollFeedClear(); });
+    return;
+  }
+  if (t.id === 'hearthRollLog') hearthCloseRollLog();
+}, true);
+if (typeof document !== 'undefined') document.addEventListener('change', (e) => {
+  const s = e.target && e.target.closest && e.target.closest('[data-roll-log-filter]');
+  if (s) { window._hearthRollLogFilter = s.value; hearthRollLogRefresh(); }
+});
+
 // v0.20.9 — Empowered Spell helpers. The rolling line stores raw rolls
 // in line.rolls + line.critRolls; total + display are derived. This lets
 // per-die reroll chips mutate one die at a time without resetting the
@@ -29913,7 +30341,7 @@ function render() {
 
   // Capture inner scroll positions. Map key = "className:index"
   const innerScrolls = new Map();
-  const SCROLL_CONTAINERS = ['spell-list', 'browse-body', 'roll-log-body', 'dialog', 'dm-battle-track', 'dm-enc-list', 'dm-run-card', 'dm-notes-list', 'dm-maplib-scroll', 'dm-map-scroll', 'dm-link-list'];
+  const SCROLL_CONTAINERS = ['spell-list', 'browse-body', 'roll-log-body', 'dialog', 'dm-battle-track', 'dm-enc-list', 'dm-run-card', 'dm-notes-list', 'dm-maplib-scroll', 'dm-map-scroll', 'dm-link-list', 'rl-list'];
   // v0.91.1 — horizontal scroll is kept too (the battle-map viewport pans both
   // ways). The map viewport isn't restored when the board is about to auto-fit
   // (first open / encounter switch), so the fit wins.
@@ -30367,7 +30795,7 @@ function hearthOpenBugReport() {
 // SRD 5.1 / 5.2 attribution statements are Wizards' required wording; keep them verbatim.
 // Same text as /legal.html on hearthdnd.org. Links go to the website so they also work in the Android app.
 const HEARTH_SITE_URL = 'https://hearthdnd.org';
-const HEARTH_LEGAL = {"srd51": "This work includes material taken from the System Reference Document 5.1 (“SRD 5.1”) by Wizards of the Coast LLC and available at https://dnd.wizards.com/resources/systems-reference-document. The SRD 5.1 is licensed under the Creative Commons Attribution 4.0 International License available at https://creativecommons.org/licenses/by/4.0/legalcode.", "srd52": "This work includes material from the System Reference Document 5.2.1 (“SRD 5.2.1”) by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2.1 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode.", "disclaimer": "Hearth is unofficial, fan-made software. It is not affiliated with, endorsed or sponsored by Wizards of the Coast. Dungeons & Dragons and D&D are trademarks of Wizards of the Coast LLC; they are used here only to describe compatibility.", "oss": [{"name": "PeerJS", "version": "1.5.5", "licence": "MIT", "copyright": "Copyright (c) 2015 Michelle Bu and Eric Zhang, http://peerjs.com", "where": "Bundled in the app (live game link)", "url": "https://github.com/peers/peerjs"}, {"name": "jsQR", "version": "1.4.0", "licence": "Apache-2.0", "copyright": "Copyright Cosmo Wolfe and jsQR contributors", "where": "Bundled in the app (QR scanning)", "url": "https://github.com/cozmo/jsQR"}, {"name": "qrcode-generator", "version": "2.0.4", "licence": "MIT", "copyright": "Copyright (c) 2009 Kazuhiko Arase", "where": "Bundled in the app (QR codes)", "url": "https://github.com/kazuhikoarase/qrcode-generator"}, {"name": "Firebase JavaScript SDK", "version": "12.6.0", "licence": "Apache-2.0 (bundled protobuf definitions: BSD-3-Clause, Copyright 2008 Google Inc.)", "copyright": "Copyright Google LLC", "where": "Loaded from www.gstatic.com only if you use Google sign-in", "url": "https://github.com/firebase/firebase-js-sdk"}, {"name": "tesseract.js and tesseract.js-core (including Tesseract OCR and Leptonica)", "version": "", "licence": "Apache-2.0 (Leptonica: BSD-style Leptonica licence)", "copyright": "Copyright tesseract.js contributors; Tesseract OCR authors; Copyright Dan Bloomberg (Leptonica)", "where": "Loaded from cdn.jsdelivr.net only if you use Import from photo", "url": "https://github.com/naptha/tesseract.js"}, {"name": "Capacitor (@capacitor/core, android, app, browser, filesystem, share, splash-screen, status-bar)", "version": "7.x", "licence": "MIT", "copyright": "Copyright (c) 2017-present Drifty Co.", "where": "Android app only", "url": "https://github.com/ionic-team/capacitor"}, {"name": "@capacitor-firebase/authentication", "version": "7.5", "licence": "Apache-2.0", "copyright": "Copyright 2022 Robin Genz", "where": "Android app only (Google sign-in)", "url": "https://github.com/capawesome-team/capacitor-firebase"}, {"name": "AndroidX libraries, Firebase Authentication for Android, Google Play services auth", "version": "", "licence": "Apache-2.0 (Google Play services: Android Software Development Kit licence terms)", "copyright": "Copyright The Android Open Source Project / Google LLC", "where": "Android app only", "url": "https://developer.android.com/jetpack/androidx"}], "mit": "Permission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.", "apache": "                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions\n      to that Work or Derivative Works thereof, that is intentionally\n      submitted to Licensor for inclusion in the Work by the copyright owner\n      or by an individual or Legal Entity authorized to submit on behalf of\n      the copyright owner. For the purposes of this definition, \"submitted\"\n      means any form of electronic, verbal, or written communication sent\n      to the Licensor or its representatives, including but not limited to\n      communication on electronic mailing lists, source code control systems,\n      and issue tracking systems that are managed by, or on behalf of, the\n      Licensor for the purpose of discussing and improving the Work, but\n      excluding communication that is conspicuously marked or otherwise\n      designated in writing by the copyright owner as \"Not a Contribution.\"\n\n      \"Contributor\" shall mean Licensor and any individual or Legal Entity\n      on behalf of whom a Contribution has been received by Licensor and\n      subsequently incorporated within the Work.\n\n   2. Grant of Copyright License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      copyright license to reproduce, prepare Derivative Works of,\n      publicly display, publicly perform, sublicense, and distribute the\n      Work and such Derivative Works in Source or Object form.\n\n   3. Grant of Patent License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      (except as stated in this section) patent license to make, have made,\n      use, offer to sell, sell, import, and otherwise transfer the Work,\n      where such license applies only to those patent claims licensable\n      by such Contributor that are necessarily infringed by their\n      Contribution(s) alone or by combination of their Contribution(s)\n      with the Work to which such Contribution(s) was submitted. If You\n      institute patent litigation against any entity (including a\n      cross-claim or counterclaim in a lawsuit) alleging that the Work\n      or a Contribution incorporated within the Work constitutes direct\n      or contributory patent infringement, then any patent licenses\n      granted to You under this License for that Work shall terminate\n      as of the date such litigation is filed.\n\n   4. Redistribution. You may reproduce and distribute copies of the\n      Work or Derivative Works thereof in any medium, with or without\n      modifications, and in Source or Object form, provided that You\n      meet the following conditions:\n\n      (a) You must give any other recipients of the Work or\n          Derivative Works a copy of this License; and\n\n      (b) You must cause any modified files to carry prominent notices\n          stating that You changed the files; and\n\n      (c) You must retain, in the Source form of any Derivative Works\n          that You distribute, all copyright, patent, trademark, and\n          attribution notices from the Source form of the Work,\n          excluding those notices that do not pertain to any part of\n          the Derivative Works; and\n\n      (d) If the Work includes a \"NOTICE\" text file as part of its\n          distribution, then any Derivative Works that You distribute must\n          include a readable copy of the attribution notices contained\n          within such NOTICE file, excluding those notices that do not\n          pertain to any part of the Derivative Works, in at least one\n          of the following places: within a NOTICE text file distributed\n          as part of the Derivative Works; within the Source form or\n          documentation, if provided along with the Derivative Works; or,\n          within a display generated by the Derivative Works, if and\n          wherever such third-party notices normally appear. The contents\n          of the NOTICE file are for informational purposes only and\n          do not modify the License. You may add Your own attribution\n          notices within Derivative Works that You distribute, alongside\n          or as an addendum to the NOTICE text from the Work, provided\n          that such additional attribution notices cannot be construed\n          as modifying the License.\n\n      You may add Your own copyright statement to Your modifications and\n      may provide additional or different license terms and conditions\n      for use, reproduction, or distribution of Your modifications, or\n      for any such Derivative Works as a whole, provided Your use,\n      reproduction, and distribution of the Work otherwise complies with\n      the conditions stated in this License.\n\n   5. Submission of Contributions. Unless You explicitly state otherwise,\n      any Contribution intentionally submitted for inclusion in the Work\n      by You to the Licensor shall be under the terms and conditions of\n      this License, without any additional terms or conditions.\n      Notwithstanding the above, nothing herein shall supersede or modify\n      the terms of any separate license agreement you may have executed\n      with Licensor regarding such Contributions.\n\n   6. Trademarks. This License does not grant permission to use the trade\n      names, trademarks, service marks, or product names of the Licensor,\n      except as required for reasonable and customary use in describing the\n      origin of the Work and reproducing the content of the NOTICE file.\n\n   7. Disclaimer of Warranty. Unless required by applicable law or\n      agreed to in writing, Licensor provides the Work (and each\n      Contributor provides its Contributions) on an \"AS IS\" BASIS,\n      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or\n      implied, including, without limitation, any warranties or conditions\n      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A\n      PARTICULAR PURPOSE. You are solely responsible for determining the\n      appropriateness of using or redistributing the Work and assume any\n      risks associated with Your exercise of permissions under this License.\n\n   8. Limitation of Liability. In no event and under no legal theory,\n      whether in tort (including negligence), contract, or otherwise,\n      unless required by applicable law (such as deliberate and grossly\n      negligent acts) or agreed to in writing, shall any Contributor be\n      liable to You for damages, including any direct, indirect, special,\n      incidental, or consequential damages of any character arising as a\n      result of this License or out of the use or inability to use the\n      Work (including but not limited to damages for loss of goodwill,\n      work stoppage, computer failure or malfunction, or any and all\n      other commercial damages or losses), even if such Contributor\n      has been advised of the possibility of such damages.\n\n   9. Accepting Warranty or Additional Liability. While redistributing\n      the Work or Derivative Works thereof, You may choose to offer,\n      and charge a fee for, acceptance of support, warranty, indemnity,\n      or other liability obligations and/or rights consistent with this\n      License. However, in accepting such obligations, You may act only\n      on Your own behalf and on Your sole responsibility, not on behalf\n      of any other Contributor, and only if You agree to indemnify,\n      defend, and hold each Contributor harmless for any liability\n      incurred by, or claims asserted against, such Contributor by reason\n      of your accepting any such warranty or additional liability.\n\n   END OF TERMS AND CONDITIONS\n\n   APPENDIX: How to apply the Apache License to your work.\n\n      To apply the Apache License to your work, attach the following\n      boilerplate notice, with the fields enclosed by brackets \"[]\"\n      replaced with your own identifying information. (Don't include\n      the brackets!)  The text should be enclosed in the appropriate\n      comment syntax for the file format. We also recommend that a\n      file or class name and description of purpose be included on the\n      same \"printed page\" as the copyright notice for easier\n      identification within third-party archives.\n\n   Copyright [yyyy] [name of copyright owner]\n\n   Licensed under the Apache License, Version 2.0 (the \"License\");\n   you may not use this file except in compliance with the License.\n   You may obtain a copy of the License at\n\n       http://www.apache.org/licenses/LICENSE-2.0\n\n   Unless required by applicable law or agreed to in writing, software\n   distributed under the License is distributed on an \"AS IS\" BASIS,\n   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n   See the License for the specific language governing permissions and\n   limitations under the License."};
+const HEARTH_LEGAL = {"srd51": "This work includes material taken from the System Reference Document 5.1 (“SRD 5.1”) by Wizards of the Coast LLC and available at https://dnd.wizards.com/resources/systems-reference-document. The SRD 5.1 is licensed under the Creative Commons Attribution 4.0 International License available at https://creativecommons.org/licenses/by/4.0/legalcode.", "srd52": "This work includes material from the System Reference Document 5.2.1 (“SRD 5.2.1”) by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2.1 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode.", "disclaimer": "Hearth is unofficial, fan-made software. It is not affiliated with, endorsed or sponsored by Wizards of the Coast. Dungeons & Dragons and D&D are trademarks of Wizards of the Coast LLC; they are used here only to describe compatibility.", "oss": [{"name": "PeerJS", "version": "1.5.5", "licence": "MIT", "copyright": "Copyright (c) 2015 Michelle Bu and Eric Zhang, http://peerjs.com", "where": "Bundled in the app (live game link)", "url": "https://github.com/peers/peerjs"}, {"name": "three.js", "version": "r158", "licence": "MIT", "copyright": "Copyright (c) 2010-2023 three.js authors", "where": "Bundled in the app (animated 3D dice)", "url": "https://github.com/mrdoob/three.js"}, {"name": "cannon-es", "version": "0.20.0", "licence": "MIT", "copyright": "Copyright (c) 2015 cannon.js Authors", "where": "Bundled in the app (dice physics)", "url": "https://github.com/pmndrs/cannon-es"}, {"name": "jsQR", "version": "1.4.0", "licence": "Apache-2.0", "copyright": "Copyright Cosmo Wolfe and jsQR contributors", "where": "Bundled in the app (QR scanning)", "url": "https://github.com/cozmo/jsQR"}, {"name": "qrcode-generator", "version": "2.0.4", "licence": "MIT", "copyright": "Copyright (c) 2009 Kazuhiko Arase", "where": "Bundled in the app (QR codes)", "url": "https://github.com/kazuhikoarase/qrcode-generator"}, {"name": "Firebase JavaScript SDK", "version": "12.6.0", "licence": "Apache-2.0 (bundled protobuf definitions: BSD-3-Clause, Copyright 2008 Google Inc.)", "copyright": "Copyright Google LLC", "where": "Loaded from www.gstatic.com only if you use Google sign-in", "url": "https://github.com/firebase/firebase-js-sdk"}, {"name": "tesseract.js and tesseract.js-core (including Tesseract OCR and Leptonica)", "version": "", "licence": "Apache-2.0 (Leptonica: BSD-style Leptonica licence)", "copyright": "Copyright tesseract.js contributors; Tesseract OCR authors; Copyright Dan Bloomberg (Leptonica)", "where": "Loaded from cdn.jsdelivr.net only if you use Import from photo", "url": "https://github.com/naptha/tesseract.js"}, {"name": "Capacitor (@capacitor/core, android, app, browser, filesystem, share, splash-screen, status-bar)", "version": "7.x", "licence": "MIT", "copyright": "Copyright (c) 2017-present Drifty Co.", "where": "Android app only", "url": "https://github.com/ionic-team/capacitor"}, {"name": "@capacitor-firebase/authentication", "version": "7.5", "licence": "Apache-2.0", "copyright": "Copyright 2022 Robin Genz", "where": "Android app only (Google sign-in)", "url": "https://github.com/capawesome-team/capacitor-firebase"}, {"name": "AndroidX libraries, Firebase Authentication for Android, Google Play services auth", "version": "", "licence": "Apache-2.0 (Google Play services: Android Software Development Kit licence terms)", "copyright": "Copyright The Android Open Source Project / Google LLC", "where": "Android app only", "url": "https://developer.android.com/jetpack/androidx"}], "mit": "Permission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.", "apache": "                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions\n      to that Work or Derivative Works thereof, that is intentionally\n      submitted to Licensor for inclusion in the Work by the copyright owner\n      or by an individual or Legal Entity authorized to submit on behalf of\n      the copyright owner. For the purposes of this definition, \"submitted\"\n      means any form of electronic, verbal, or written communication sent\n      to the Licensor or its representatives, including but not limited to\n      communication on electronic mailing lists, source code control systems,\n      and issue tracking systems that are managed by, or on behalf of, the\n      Licensor for the purpose of discussing and improving the Work, but\n      excluding communication that is conspicuously marked or otherwise\n      designated in writing by the copyright owner as \"Not a Contribution.\"\n\n      \"Contributor\" shall mean Licensor and any individual or Legal Entity\n      on behalf of whom a Contribution has been received by Licensor and\n      subsequently incorporated within the Work.\n\n   2. Grant of Copyright License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      copyright license to reproduce, prepare Derivative Works of,\n      publicly display, publicly perform, sublicense, and distribute the\n      Work and such Derivative Works in Source or Object form.\n\n   3. Grant of Patent License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      (except as stated in this section) patent license to make, have made,\n      use, offer to sell, sell, import, and otherwise transfer the Work,\n      where such license applies only to those patent claims licensable\n      by such Contributor that are necessarily infringed by their\n      Contribution(s) alone or by combination of their Contribution(s)\n      with the Work to which such Contribution(s) was submitted. If You\n      institute patent litigation against any entity (including a\n      cross-claim or counterclaim in a lawsuit) alleging that the Work\n      or a Contribution incorporated within the Work constitutes direct\n      or contributory patent infringement, then any patent licenses\n      granted to You under this License for that Work shall terminate\n      as of the date such litigation is filed.\n\n   4. Redistribution. You may reproduce and distribute copies of the\n      Work or Derivative Works thereof in any medium, with or without\n      modifications, and in Source or Object form, provided that You\n      meet the following conditions:\n\n      (a) You must give any other recipients of the Work or\n          Derivative Works a copy of this License; and\n\n      (b) You must cause any modified files to carry prominent notices\n          stating that You changed the files; and\n\n      (c) You must retain, in the Source form of any Derivative Works\n          that You distribute, all copyright, patent, trademark, and\n          attribution notices from the Source form of the Work,\n          excluding those notices that do not pertain to any part of\n          the Derivative Works; and\n\n      (d) If the Work includes a \"NOTICE\" text file as part of its\n          distribution, then any Derivative Works that You distribute must\n          include a readable copy of the attribution notices contained\n          within such NOTICE file, excluding those notices that do not\n          pertain to any part of the Derivative Works, in at least one\n          of the following places: within a NOTICE text file distributed\n          as part of the Derivative Works; within the Source form or\n          documentation, if provided along with the Derivative Works; or,\n          within a display generated by the Derivative Works, if and\n          wherever such third-party notices normally appear. The contents\n          of the NOTICE file are for informational purposes only and\n          do not modify the License. You may add Your own attribution\n          notices within Derivative Works that You distribute, alongside\n          or as an addendum to the NOTICE text from the Work, provided\n          that such additional attribution notices cannot be construed\n          as modifying the License.\n\n      You may add Your own copyright statement to Your modifications and\n      may provide additional or different license terms and conditions\n      for use, reproduction, or distribution of Your modifications, or\n      for any such Derivative Works as a whole, provided Your use,\n      reproduction, and distribution of the Work otherwise complies with\n      the conditions stated in this License.\n\n   5. Submission of Contributions. Unless You explicitly state otherwise,\n      any Contribution intentionally submitted for inclusion in the Work\n      by You to the Licensor shall be under the terms and conditions of\n      this License, without any additional terms or conditions.\n      Notwithstanding the above, nothing herein shall supersede or modify\n      the terms of any separate license agreement you may have executed\n      with Licensor regarding such Contributions.\n\n   6. Trademarks. This License does not grant permission to use the trade\n      names, trademarks, service marks, or product names of the Licensor,\n      except as required for reasonable and customary use in describing the\n      origin of the Work and reproducing the content of the NOTICE file.\n\n   7. Disclaimer of Warranty. Unless required by applicable law or\n      agreed to in writing, Licensor provides the Work (and each\n      Contributor provides its Contributions) on an \"AS IS\" BASIS,\n      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or\n      implied, including, without limitation, any warranties or conditions\n      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A\n      PARTICULAR PURPOSE. You are solely responsible for determining the\n      appropriateness of using or redistributing the Work and assume any\n      risks associated with Your exercise of permissions under this License.\n\n   8. Limitation of Liability. In no event and under no legal theory,\n      whether in tort (including negligence), contract, or otherwise,\n      unless required by applicable law (such as deliberate and grossly\n      negligent acts) or agreed to in writing, shall any Contributor be\n      liable to You for damages, including any direct, indirect, special,\n      incidental, or consequential damages of any character arising as a\n      result of this License or out of the use or inability to use the\n      Work (including but not limited to damages for loss of goodwill,\n      work stoppage, computer failure or malfunction, or any and all\n      other commercial damages or losses), even if such Contributor\n      has been advised of the possibility of such damages.\n\n   9. Accepting Warranty or Additional Liability. While redistributing\n      the Work or Derivative Works thereof, You may choose to offer,\n      and charge a fee for, acceptance of support, warranty, indemnity,\n      or other liability obligations and/or rights consistent with this\n      License. However, in accepting such obligations, You may act only\n      on Your own behalf and on Your sole responsibility, not on behalf\n      of any other Contributor, and only if You agree to indemnify,\n      defend, and hold each Contributor harmless for any liability\n      incurred by, or claims asserted against, such Contributor by reason\n      of your accepting any such warranty or additional liability.\n\n   END OF TERMS AND CONDITIONS\n\n   APPENDIX: How to apply the Apache License to your work.\n\n      To apply the Apache License to your work, attach the following\n      boilerplate notice, with the fields enclosed by brackets \"[]\"\n      replaced with your own identifying information. (Don't include\n      the brackets!)  The text should be enclosed in the appropriate\n      comment syntax for the file format. We also recommend that a\n      file or class name and description of purpose be included on the\n      same \"printed page\" as the copyright notice for easier\n      identification within third-party archives.\n\n   Copyright [yyyy] [name of copyright owner]\n\n   Licensed under the Apache License, Version 2.0 (the \"License\");\n   you may not use this file except in compliance with the License.\n   You may obtain a copy of the License at\n\n       http://www.apache.org/licenses/LICENSE-2.0\n\n   Unless required by applicable law or agreed to in writing, software\n   distributed under the License is distributed on an \"AS IS\" BASIS,\n   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n   See the License for the specific language governing permissions and\n   limitations under the License."};
 function hearthLegalLinkify(t) {
   return escape(t).replace(/(https:\/\/[^\s<]+?)(\.?)(?=\s|$)/g, (m, u, dot) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>${dot}`);
 }
@@ -33818,10 +34246,12 @@ function wireDMEncounter() {
     b.addEventListener('click', () => {
       const enc = loadEncounter();
       let rolledAny = false;
+      const initDice = []; // v1.6.0 — animate the d20s actually rolled
       enc.combatants.forEach(c => {
         if (c.kind !== 'monster') return;
         if (c.init != null) return; // already has an initiative — skip
         const roll = 1 + Math.floor(Math.random() * 20);
+        initDice.push({ n: c.name, v: roll });
         let dexMod = 0;
         if (c.monsterId) {
           const m = findMonster(c.monsterId);
@@ -33833,6 +34263,8 @@ function wireDMEncounter() {
         rolledAny = true;
       });
       if (rolledAny) saveEncounter(enc);
+      if (initDice.length) hearthDiceRoll({ who: 'DM', label: 'Monster initiative', groups: [{ sides: 20, values: initDice.map(x => x.v) }],
+        total: initDice.length === 1 ? initDice[0].v : 'Rolled', big: false, crit: null, breakdown: initDice.map(x => x.n + ' ' + x.v).join(' · ') });
       render();
     });
   });
@@ -33916,9 +34348,11 @@ function hearthRollAttack(btn) {
   const dmgStr = btn.dataset.atkDmg || '';
   const hasHit = hitStr !== '';
   let crit = false, line = '';
+  const atkDice = []; let atkNat = null, atkHitTotal = null, atkDmgSum = null; // v1.6.0 — dice shown = dice rolled
   if (hasHit) {
     const toHit = parseInt(hitStr, 10);
     const d20 = 1 + Math.floor(Math.random() * 20);
+    atkDice.push({ sides: 20, values: [d20] }); atkNat = d20 === 20 ? 'nat20' : (d20 === 1 ? 'nat1' : null); atkHitTotal = d20 + toHit;
     crit = d20 === 20;
     const tag = crit ? ' <span class="atk-crit">CRIT!</span>' : (d20 === 1 ? ' <span class="atk-crit">nat 1</span>' : '');
     line = '<b>' + escape(name) + '</b> \u2014 to hit <b>' + (d20 + toHit) + '</b> (' + d20 + (toHit >= 0 ? '+' : '') + toHit + ')' + tag;
@@ -33932,11 +34366,15 @@ function hearthRollAttack(btn) {
       const seg = g.split(',');
       let count = parseInt(seg[0], 10); const sides = parseInt(seg[1], 10); const bonus = parseInt(seg[2], 10); const ty = seg[3] || '';
       if (crit) count *= 2;
-      const roll = hearthRollN(count, sides) + bonus;
+      const rr = rollDice(count, sides); if (rr.length) atkDice.push({ sides, values: rr });
+      const roll = rr.reduce((a, b) => a + b, 0) + bonus;
       sum += roll; parts.push(roll + ' ' + ty);
     });
     line += ' \u2192 <b>' + sum + '</b> dmg (' + parts.join(' + ') + ')';
+    atkDmgSum = sum;
   }
+  hearthDiceRoll({ who: 'DM', label: name || 'Attack', groups: atkDice, crit: atkNat,
+    total: [atkHitTotal != null ? atkHitTotal + ' to hit' : '', atkDmgSum != null ? atkDmgSum + ' dmg' : ''].filter(Boolean).join(' · ') });
   state.ui.dmRollLog = [{ html: line, ts: Date.now() }].concat(state.ui.dmRollLog || []).slice(0, 10);
 }
 function dmRollLogHTML() {
@@ -34374,6 +34812,7 @@ function wireDMConcDialog() {
       const die = rollDie(20);
       const total = die + (dmConcSaveBonus(c) || 0);
       d.rolled = { die, total };
+      hearthDiceRoll({ who: 'DM', label: ((c && c.name) || 'Monster') + ' concentration', groups: [{ sides: 20, values: [die] }], total, boss: !!(c && c.boss) });
       if (total < d.dc) {
         const e = loadEncounter();
         const cc = e.combatants.find(x => x.id === d.id);
@@ -34463,7 +34902,7 @@ function homePanelDM() {
         <button class="btn primary" data-dm-add-char="1">+ Character</button>
         <button class="btn primary" data-dm-enemy-open="1">+ Enemy</button>
         <button class="btn dm-random-btn" data-dm-random="1">🎲 Random</button>
-        ${dmLinkStatusChip()}
+        ${dmLinkStatusChip()}${dmRollLogButton()}
       </div>
       <div class="dm-enc-toolbar dm-enc-manage">
         <button class="btn dm-manage-btn" data-dm-reset-enc="1">↺ Reset encounter</button>
@@ -35218,6 +35657,7 @@ function homePanelSettings() {
       <div class="forge-section-label" style="margin-top: 18px;">Theme</div>
       <div class="ai-helper">Light is the original leather-bound look and Dark its night version. The other themes recolour the whole app; Places are moods for the table, Classes &amp; Races are styled after your hero.</div>
       ${hearthLookSettingsHTML(prefs)}
+      ${hearthDiceSettingsHTML()}
 
       <div class="forge-section-label" style="margin-top: 18px;">Screen layout</div>
       <div class="ai-helper">On a laptop or desktop the app can widen to use more of the screen. <strong>Auto</strong> widens automatically on big screens and stays phone-shaped on mobile.</div>
@@ -39073,7 +39513,7 @@ function hearthCommitRollDialogIfNeeded(ch) {
   if (d.logOnCommit) {
     const total = d.logOnCommit.totalFn ? d.logOnCommit.totalFn(d) : '—';
     const detail = d.logOnCommit.detailFn ? d.logOnCommit.detailFn(d) : '';
-    logRoll(d.logOnCommit.label, total, detail);
+    logRoll(d.logOnCommit.label, total, detail, { dice: false });
   }
   saveCharacter(ch);
 }
@@ -46641,7 +47081,7 @@ function wirePlay(ch) {
       const roll = parseInt(b.dataset.wildSurgePick, 10);
       const entry = WILD_MAGIC_SURGES.find(e => e.roll === roll);
       if (!entry) return;
-      logRoll('Chaos Flare', `d100 = ${roll}`, entry.desc);
+      logRoll('Chaos Flare', `d100 = ${roll}`, entry.desc, { dice: [{ sides: 100, values: [roll] }], diceSpec: { total: roll, manual: true } });
       state.ui.wildSurgeDialog = null;
       render();
     });
@@ -48566,6 +49006,7 @@ function wirePlay(ch) {
         return;
       }
       executeRollLine(line);
+      hearthDiceFromLine(line);
       d.suspended = true;
       state.ui.rollOutcome = hearthMakeRollOutcome(d, line, idx);
       render();
@@ -48580,6 +49021,7 @@ function wirePlay(ch) {
     const line = d.lines[o.nextLineIdx];
     if (!line) return;
     executeRollLine(line);
+    hearthDiceFromLine(line);
     d.suspended = true;
     state.ui.rollOutcome = hearthMakeRollOutcome(d, line, o.nextLineIdx);
     render();
@@ -48635,7 +49077,7 @@ function wirePlay(ch) {
       if (d.logOnCommit) {
         const total = d.logOnCommit.totalFn ? d.logOnCommit.totalFn(d) : '—';
         const detail = d.logOnCommit.detailFn ? d.logOnCommit.detailFn(d) : '';
-        logRoll(d.logOnCommit.label, total, detail);
+        logRoll(d.logOnCommit.label, total, detail, { dice: false });
       }
       saveCharacter(ch);
     }
@@ -49139,7 +49581,7 @@ function wirePlay(ch) {
       syncLegacyHitDiceSpent(ch);
       ch.currentHp = Math.min(maxHp(ch), (ch.currentHp || 0) + healed);
       if (ch.currentHp > 0) { state.ui.deathSaves = null; state.ui.deathOutcome = null; } // v0.27.0
-      logRoll(`${pool.name} Hit Dice`, `${spend}d${hitDie}${conMod >= 0 ? '+' : ''}${conMod * spend}`, `Rolled [${rolls.join(', ')}]${songNote} · healed ${healed} HP`);
+      logRoll(`${pool.name} Hit Dice`, `${spend}d${hitDie}${conMod >= 0 ? '+' : ''}${conMod * spend}`, `Rolled [${rolls.join(', ')}]${songNote} · healed ${healed} HP`, { dice: [{ sides: hitDie, values: rolls }], diceSpec: { total: `+${healed} HP` } });
       saveCharacter(ch);
       render();
     });
@@ -49224,7 +49666,7 @@ function wirePlay(ch) {
     // v0.91.2 — waking at full HP: the dying/down conditions go too.
     if (Array.isArray(ch.conditions)) ch.conditions = ch.conditions.filter(c => !['death_saves', 'unconscious', 'prone'].includes(c));
     logRoll('Long Rest', '', 'HP, slots, hit dice, and all abilities restored');
-    if (portentRolls) logRoll('Omen Dice', portentRolls.join(', '), `${portentRolls.length}d20 · long rest`);
+    if (portentRolls) logRoll('Omen Dice', portentRolls.join(', '), `${portentRolls.length}d20 · long rest`, { dice: [{ sides: 20, values: portentRolls }], diceSpec: { big: false } });
     state.ui.longRestDialog = false; state.ui.fightingStyleDialog = false; state.ui.cdChooserDialog = null;
     saveCharacter(ch);
     render();
@@ -49559,13 +50001,18 @@ function wirePlay(ch) {
   // so there can be two Roll buttons; wire every one, not just the first id.
   document.querySelectorAll('.death-save-roll-btn').forEach(dsRoll => {
     dsRoll.addEventListener('click', () => {
-      applyDeathSaveRoll(ch, rollDie(20));
+      const dsN = rollDie(20);
+      applyDeathSaveRoll(ch, dsN);
+      hearthDiceRoll({ label: 'Death Save', groups: [{ sides: 20, values: [dsN] }], total: dsN, deathSave: true });
       render();
     });
   });
   document.querySelectorAll('[data-ds-roll-value]').forEach(b => {
     b.addEventListener('click', () => {
       applyDeathSaveRoll(ch, b.dataset.dsRollValue);
+      // v1.6.0 — a number tapped in from real dice: logged, flagged as manual, not animated.
+      const dsV = Math.max(1, Math.min(20, parseInt(b.dataset.dsRollValue, 10) || 1));
+      hearthDiceRoll({ label: 'Death Save', groups: [{ sides: 20, values: [dsV] }], total: dsV, deathSave: true, manual: true });
       render();
     });
   });
@@ -49971,6 +50418,11 @@ const DEFAULT_PREFS = {
   // v0.21.26 — Wide-screen mode for laptops/desktops. 'auto' widens
   // automatically on big viewports; 'on'/'off' force it.
   wideScreen: 'auto', // 'auto' | 'on' | 'off'
+  // v1.6.0 — animated dice. Big-screen projection is opt-in (off by default).
+  diceAnim: 'on',        // 'on' | 'off'
+  diceColour: 'auto',    // 'auto' (match the theme) | a HearthDice theme id
+  diceSize: 'full',      // 'full' | 'compact'
+  diceProjector: 'off',  // 'off' | 'ask' | 'important'
 };
 
 function loadPrefs() {
@@ -55081,7 +55533,7 @@ function renderDMMap() {
         <div class="dm-map-title">Battle Map</div>
         <div style="display:flex;gap:8px;align-items:center;">
           ${mapEncs.length > 1 ? `<select class="dm-map-enc-select" id="dmMapEncSelect" title="Switch encounter" style="max-width:38vw;padding:7px 9px;border-radius:8px;border:1px solid var(--parchment-darker);background:var(--parchment);color:var(--ink);font-size:13px;">${mapEncs.map(e => `<option value="${e.id}"${e.id === enc.id ? ' selected' : ''}>${escape(e.name)}</option>`).join('')}</select>` : ''}
-          ${dmLinkStatusChip().replace('class="btn dm-link-btn', 'class="dm-map-tool dm-link-btn')}
+          ${dmLinkStatusChip().replace('class="btn dm-link-btn', 'class="dm-map-tool dm-link-btn')}${dmRollLogButton('dm-map-tool')}
           <button class="dm-map-tool" data-dm-notes-open="1" title="Campaign notes">📓 Notes</button>
           <button class="dm-map-project" id="dmMapProject">⧉ Open projector</button>
         </div>
@@ -56164,6 +56616,7 @@ function dmProjectorHelpDialogHTML() {
 
 function openProjectorWindow(enc) {
   const w = window.open('', 'hearthProjector', 'width=1280,height=800');
+  window._hearthProjWin = w; // v1.6.0 — dice know when a big screen is open
   if (!w) { showToast('Projector window was blocked. Allow pop-ups for this site, then try again.'); return; }
   const html = projectorDocumentHTML();
   w.document.open(); w.document.write(html); w.document.close();
@@ -56251,6 +56704,21 @@ function projectorDocumentHTML() {
   ${PAINTED_OVERLAY_CSS}
   .grid > .pm-ov { z-index:1; }
   ${projectorLookCSS()}
+  /* v1.6.0 — big-screen dice */
+  .pj-dice { position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center; pointer-events:none; background:rgba(0,0,0,0); opacity:0; transition:opacity .35s, background .35s; }
+  .pj-dice.on { opacity:1; background:rgba(0,0,0,0.55); }
+  .pj-dice-card { text-align:center; padding:4vmin 7vmin; border-radius:3vmin; background:rgba(21,17,12,0.92); border:3px solid #b8893d; box-shadow:0 0 60px rgba(0,0,0,.7); transform:scale(.6); transition:transform .45s cubic-bezier(.2,1.4,.4,1); }
+  .pj-dice.on .pj-dice-card { transform:scale(1); }
+  .pj-dice-die { font-size:12vmin; line-height:1; color:#b8893d; animation:pjspin 1.2s cubic-bezier(.2,.8,.3,1); }
+  @keyframes pjspin { from { transform:rotate(-540deg) scale(.4); } to { transform:rotate(0) scale(1); } }
+  .pj-dice-who { font-size:4vmin; margin-top:1vmin; opacity:.9; }
+  .pj-dice-num { font-size:22vmin; font-weight:bold; line-height:1.05; color:#fff; text-shadow:0 0 20px #000; }
+  .pj-dice-nat { font-size:5vmin; font-weight:bold; min-height:1em; }
+  .pj-dice-bd { font-size:3vmin; opacity:.8; font-family: ui-monospace, monospace; }
+  .pj-dice.n20 .pj-dice-card { border-color:#ffd55a; box-shadow:0 0 90px rgba(255,190,40,.8); }
+  .pj-dice.n20 .pj-dice-num, .pj-dice.n20 .pj-dice-nat { color:#ffd55a; }
+  .pj-dice.n1 .pj-dice-card { border-color:#e04030; box-shadow:0 0 90px rgba(200,20,10,.8); }
+  .pj-dice.n1 .pj-dice-num, .pj-dice.n1 .pj-dice-nat { color:#ff6a5a; }
 </style></head>
 <body>
   <button class="fsbtn" id="fsBtn" title="Fill this screen for the players">⛶ Fullscreen</button>
@@ -56478,6 +56946,23 @@ function projectorDocumentHTML() {
     }
     function tokById(id){ return ((last && last.tokens) || []).filter(function(t){ return t.id === id; })[0]; }
     function hideAoeMenu(){ var m = document.getElementById('aoeMenu'); if (m) m.style.display = 'none'; }
+    // v1.6.0 — a roll sent to the big screen (opt-in on the DM's device).
+    var diceTimer = null;
+    function showDice(d){
+      var el = document.getElementById('pjDice');
+      if (!el) { el = document.createElement('div'); el.id = 'pjDice'; document.body.appendChild(el); }
+      el.className = 'pj-dice' + (d.nat === 20 ? ' n20' : d.nat === 1 ? ' n1' : '');
+      el.innerHTML = '';
+      var card = document.createElement('div'); card.className = 'pj-dice-card';
+      var die = document.createElement('div'); die.className = 'pj-dice-die'; die.textContent = '\u2B22';
+      var who = document.createElement('div'); who.className = 'pj-dice-who'; who.textContent = String(d.who || '') + (d.label ? ' \u00b7 ' + String(d.label) : '');
+      var num = document.createElement('div'); num.className = 'pj-dice-num'; num.textContent = String(d.total == null ? '' : d.total);
+      var nat = document.createElement('div'); nat.className = 'pj-dice-nat'; nat.textContent = d.nat === 20 ? 'Natural 20!' : d.nat === 1 ? 'Natural 1' : '';
+      var bd = document.createElement('div'); bd.className = 'pj-dice-bd'; bd.textContent = String(d.dice || '');
+      card.appendChild(die); card.appendChild(who); card.appendChild(num); card.appendChild(nat); card.appendChild(bd); el.appendChild(card);
+      void el.offsetWidth; el.classList.add('on');
+      clearTimeout(diceTimer); diceTimer = setTimeout(function(){ el.classList.remove('on'); }, 5000);
+    }
     function showPointer(d){
       var el = document.getElementById('dmPointer'); if (!el) return;
       if (d.hide || !last) { el.style.display = 'none'; return; }
@@ -56573,7 +57058,7 @@ function projectorDocumentHTML() {
     });
     try {
       ch = new BroadcastChannel('${MAP_CHANNEL_NAME}');
-      ch.onmessage = function(ev){ if(!ev.data) return; if(ev.data.type==='hearth-map') draw(ev.data); else if(ev.data.type==='hearth-pointer') showPointer(ev.data); };
+      ch.onmessage = function(ev){ if(!ev.data) return; if(ev.data.type==='hearth-map') draw(ev.data); else if(ev.data.type==='hearth-pointer') showPointer(ev.data); else if(ev.data.type==='hearth-dice') showDice(ev.data); };
     } catch(e){ idle.textContent = 'BroadcastChannel unsupported in this browser.'; }
     window.addEventListener('resize', function(){ if(last) draw(last); });
   })();
@@ -58303,6 +58788,8 @@ function linkHostOnConnection(conn) {
       if (!snap || snap.id !== dev.charId) return;
       dev.snap = snap; dev.name = snap.name;
       dmLinkIngest(dev, snap, linkInt(msg.ack, 0, 1e9) || 0);
+    } else if (msg.t === 'roll' || msg.t === 'rollproj') {
+      linkHostOnRoll(dev, msg); // v1.6.0 — DM roll log
     } else if (msg.t === 'bye') {
       dev.accepted = false; dev.token = null; dev.online = false; dev.conn = null;
       linkHostPersist();
@@ -58700,6 +59187,7 @@ function linkJoinOnMessage(j, raw) {
     if (first) { linkOpenSheet(j.charId); render(); }
     linkRefreshPlayer();
     linkJoinPushState(true);
+    linkJoinFlushRolls(j); // v1.6.0 — rolls made while reconnecting
     if (typeof showToast === 'function') showToast(first ? `Linked to the DM's game (${j.code}).` : 'Reconnected to the live game.');
     return;
   }
@@ -59162,6 +59650,7 @@ function wireDMLinkDialogs() {
     const p = dmSaveParts(c, ab, enc);
     const die = rollDie(20);
     state.ui.dmSaveResult = { id: c.id, ab, text: dmSaveRollText(p, die), total: die + (p ? p.total : 0) };
+    hearthDiceRoll({ who: 'DM', label: (c.name || 'Monster') + ' ' + String(ab).toUpperCase() + ' save', groups: [{ sides: 20, values: [die] }], total: die + (p ? p.total : 0), boss: !!c.boss });
     render();
   }));
   document.querySelectorAll('[data-dm-save-close]').forEach(b => b.addEventListener('click', () => { state.ui.dmSaveFor = null; state.ui.dmSaveResult = null; render(); }));
@@ -59717,7 +60206,7 @@ try { linkBoot(); } catch (e) { console.warn('Hearth live game boot failed:', e)
 // control the page reloads once by itself unless you are mid-edit (typing, a
 // popup open, or the character builder), in which case the toast stays up.
 (function () {
-  const APP_VERSION = 'v1.5.1';
+  const APP_VERSION = 'v1.6.0';
   window.HEARTH_VERSION = APP_VERSION;
 
   function hearthHasUnsavedEdits() {
