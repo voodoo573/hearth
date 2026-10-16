@@ -11091,7 +11091,7 @@ const RACES = {
         ]
       },
       astral: {
-        name: 'Astral Elf',
+        name: 'Starward Elf',
         bonuses: { wis: 1 },
         // v0.91.3 — Spelljammer: flexible +2/+1 (or +1/+1/+1) instead of the
         // elf DEX +2 and this WIS +1. Chosen in the builder; characters made
@@ -11106,18 +11106,18 @@ const RACES = {
         racialAbilities: [
           {
             id: 'starlight_step',
-            name: 'Starlight Step',
+            name: 'Star Blink',
             action: 'bonus',
             usesPerLongRest: 'prof',
             recovery: 'long',
-            desc: 'Bonus action: teleport up to 30 ft to an unoccupied space you can see. Wisps of starlight curl off you for a heartbeat.'
+            desc: 'As a bonus action, teleport up to 30 ft to a free space you can see, trailing a flicker of starlight.'
           }
         ],
         traits: [
-          { name: 'Astral Fire', desc: 'You know the light cantrip. At 3rd level, you can cast dancing lights once per long rest. At 5th level, you can cast see invisibility once per long rest. Wisdom is the spellcasting ability for these spells (or you may use Intelligence or Charisma if your DM agrees).' },
-          { name: 'Astral Trance', desc: 'You don\'t need to sleep; instead, you meditate deeply for 4 hours. While trancing, you can mentally choose two skills, two simple weapons, two martial weapons, or one of each — gaining proficiency in them until your next trance, drawing on memories from past lives among the stars.' },
-          { name: 'Starlight Step', desc: 'Bonus action: teleport up to 30 feet to an unoccupied space you can see. You can use this feature a number of times equal to your proficiency bonus, regaining all expended uses on a long rest.' },
-          { name: 'Lineage of the Stars', desc: 'You don\'t age in the way mortals do, and many Astral Elves remember fragments of past existences in the Astral Plane.' }
+          { name: 'Starfire Gift', desc: 'You know the light cantrip; from 3rd level you can cast dancing lights, and from 5th see invisibility, each once per long rest. Use Wisdom (or Intelligence or Charisma, if your DM agrees).' },
+          { name: 'Sky Trance', desc: 'Instead of sleeping you meditate for 4 hours. During the trance, choose two skills or weapon proficiencies (any mix of simple and martial); you have them until your next trance, recalled from lives long past.' },
+          { name: 'Star Blink', desc: 'As a bonus action, teleport up to 30 ft to a free space you can see. Uses equal your proficiency bonus, refreshed on a long rest.' },
+          { name: 'Ageless Light', desc: 'You age far more slowly than other folk, and you sometimes recall scraps of earlier lives among the stars.' }
         ]
       }
     }
@@ -11141,14 +11141,14 @@ const RACES = {
         ]
       },
       mountain: {
-        name: 'Mountain Dwarf',
+        name: 'Stonepeak Dwarf',
         bonuses: { str: 2 },
         traits: [
-          { name: 'Dwarven Armor Training', desc: 'Proficiency with light and medium armor.' }
+          { name: 'Peak Armour Drill', desc: 'You are proficient with light and medium armour.' }
         ]
       },
       duergar: {
-        name: 'Duergar (Gray Dwarf)',
+        name: 'Ashen Dwarf',
         bonuses: { str: 1 },
         spellAbility: 'con',
         racialSpells: [
@@ -11156,10 +11156,10 @@ const RACES = {
           { spell: 'Invisibility', level: 2, atLevel: 5, freePerLongRest: 1 }
         ],
         traits: [
-          { name: 'Superior Darkvision', desc: 'Darkvision range is 120 feet.' },
-          { name: 'Duergar Resilience', desc: 'Advantage on saves against illusions and against being charmed or paralyzed.' },
-          { name: 'Duergar Magic', desc: 'At 3rd level, cast enlarge (Enlarge/Reduce) on yourself once per long rest. At 5th, invisibility on yourself once per long rest. No materials needed.' },
-          { name: 'Sunlight Sensitivity', desc: 'Disadvantage on attack rolls and Wisdom (Perception) checks relying on sight in direct sunlight.' }
+          { name: 'Deep Sight', desc: 'You can see in darkness out to 120 ft.' },
+          { name: 'Ashen Will', desc: 'You have advantage on saves against illusions and against being charmed or paralysed.' },
+          { name: 'Ashen Magic', desc: 'From 3rd level you can cast Enlarge/Reduce (enlarge only, on yourself) once per long rest, and from 5th Invisibility on yourself once per long rest, with no materials.' },
+          { name: 'Sun Blinded', desc: 'In direct sunlight you have disadvantage on attacks and on sight-based Perception checks.' }
         ]
       }
     }
@@ -11182,10 +11182,10 @@ const RACES = {
         ]
       },
       stout: {
-        name: 'Stout Halfling',
+        name: 'Hardy Halfling',
         bonuses: { con: 1 },
         traits: [
-          { name: 'Stout Resilience', desc: 'Advantage on saves against poison; resistance to poison damage.' }
+          { name: 'Hardy Gut', desc: 'You have advantage on saves against poison and resist poison damage.' }
         ]
       }
     }
@@ -11366,7 +11366,7 @@ const RACES = {
         ]
       },
       mephistopheles: {
-        name: 'Mephistophelean',
+        name: 'Cinderblood',
         racialSpells: [
           { spell: 'Mage Hand', level: 0 },
           { spell: 'Burning Hands', level: 1, atLevel: 3, freePerLongRest: 1 },
@@ -11374,12 +11374,12 @@ const RACES = {
         ],
         spellAbility: 'cha',
         traits: [
-          { name: 'Legacy of Cania', desc: 'You know mage hand. At 3rd level, cast burning hands once per long rest. At 5th level, cast flame blade once per long rest. Charisma is your spellcasting ability.' }
+          { name: 'Cinder Legacy', desc: 'You know mage hand; from 3rd level you can cast burning hands, and from 5th flame blade, each once per long rest, using Charisma.' }
         ]
       },
       levistus: {
         bonuses: { con: 1 }, replaceRaceBonuses: ['int'], // v0.91.2 — MToF: replaces the base +1 INT
-        name: 'Levistan',
+        name: 'Frostblood',
         racialSpells: [
           { spell: 'Ray of Frost', level: 0 },
           { spell: 'Armor of Agathys', level: 1, atLevel: 3, freePerLongRest: 1 },
@@ -11387,12 +11387,12 @@ const RACES = {
         ],
         spellAbility: 'cha',
         traits: [
-          { name: 'Legacy of Stygia', desc: 'You know ray of frost. At 3rd level, cast armor of agathys once per long rest. At 5th level, cast darkness once per long rest. Charisma is your spellcasting ability.' }
+          { name: 'Frost Legacy', desc: 'You know ray of frost; from 3rd level you can cast armor of agathys, and from 5th darkness, each once per long rest, using Charisma.' }
         ]
       },
       glasya: {
         bonuses: { dex: 1 }, replaceRaceBonuses: ['int'], // v0.91.2 — MToF: replaces the base +1 INT
-        name: 'Glasyan',
+        name: 'Veilblood',
         racialSpells: [
           { spell: 'Minor Illusion', level: 0 },
           { spell: 'Disguise Self', level: 1, atLevel: 3, freePerLongRest: 1 },
@@ -11400,11 +11400,11 @@ const RACES = {
         ],
         spellAbility: 'cha',
         traits: [
-          { name: 'Legacy of Malbolge', desc: 'You know minor illusion. At 3rd level, cast disguise self once per long rest. At 5th level, cast invisibility once per long rest. Charisma is your spellcasting ability.' }
+          { name: 'Veil Legacy', desc: 'You know minor illusion; from 3rd level you can cast disguise self, and from 5th invisibility, each once per long rest, using Charisma.' }
         ]
       },
       zariel: {
-        name: 'Zariel',
+        name: 'Warblood',
         bonuses: { str: 1 }, replaceRaceBonuses: ['int'], // v0.91.2 — MToF: replaces the base +1 INT
         racialSpells: [
           { spell: 'Thaumaturgy', level: 0 },
@@ -11413,11 +11413,11 @@ const RACES = {
         ],
         spellAbility: 'cha',
         traits: [
-          { name: 'Legacy of Avernus', desc: 'You know thaumaturgy. At 3rd level, cast searing smite once per long rest. At 5th level, cast branding smite once per long rest. Charisma is your spellcasting ability.' }
+          { name: 'War Legacy', desc: 'You know thaumaturgy; from 3rd level you can cast searing smite, and from 5th branding smite, each once per long rest, using Charisma.' }
         ]
       },
       baalzebul: {
-        name: 'Baalzebul',
+        name: 'Rotblood',
         racialSpells: [
           { spell: 'Thaumaturgy', level: 0 },
           { spell: 'Ray of Sickness', level: 1, atLevel: 3, freePerLongRest: 1 },
@@ -11425,12 +11425,12 @@ const RACES = {
         ],
         spellAbility: 'cha',
         traits: [
-          { name: 'Legacy of Maladomini', desc: 'You know thaumaturgy. At 3rd level, cast ray of sickness once per long rest. At 5th level, cast crown of madness once per long rest. Charisma is your spellcasting ability.' }
+          { name: 'Rot Legacy', desc: 'You know thaumaturgy; from 3rd level you can cast ray of sickness, and from 5th crown of madness, each once per long rest, using Charisma.' }
         ]
       },
       dispater: {
         bonuses: { dex: 1 }, replaceRaceBonuses: ['int'], // v0.91.2 — MToF: replaces the base +1 INT
-        name: 'Dispater',
+        name: 'Ironblood',
         racialSpells: [
           { spell: 'Thaumaturgy', level: 0 },
           { spell: 'Disguise Self', level: 1, atLevel: 3, freePerLongRest: 1 },
@@ -11438,12 +11438,12 @@ const RACES = {
         ],
         spellAbility: 'cha',
         traits: [
-          { name: 'Legacy of Dis', desc: 'You know thaumaturgy. At 3rd level, cast disguise self once per long rest. At 5th level, cast detect thoughts once per long rest. Charisma is your spellcasting ability.' }
+          { name: 'Iron Legacy', desc: 'You know thaumaturgy; from 3rd level you can cast disguise self, and from 5th detect thoughts, each once per long rest, using Charisma.' }
         ]
       },
       fierna: {
         bonuses: { wis: 1 }, replaceRaceBonuses: ['int'], // v0.91.2 — MToF: replaces the base +1 INT
-        name: 'Fierna',
+        name: 'Silverblood',
         racialSpells: [
           { spell: 'Friends', level: 0 },
           { spell: 'Charm Person', level: 1, atLevel: 3, freePerLongRest: 1 },
@@ -11451,11 +11451,11 @@ const RACES = {
         ],
         spellAbility: 'cha',
         traits: [
-          { name: 'Legacy of Phlegethos', desc: 'You know friends. At 3rd level, cast charm person once per long rest. At 5th level, cast suggestion once per long rest. Charisma is your spellcasting ability.' }
+          { name: 'Silver-Tongue Legacy', desc: 'You know friends; from 3rd level you can cast charm person, and from 5th suggestion, each once per long rest, using Charisma.' }
         ]
       },
       mammon: {
-        name: 'Mammon',
+        name: 'Goldblood',
         racialSpells: [
           { spell: 'Mage Hand', level: 0 },
           { spell: 'Tenser\'s Floating Disk', level: 1, atLevel: 3, freePerLongRest: 1 },
@@ -11463,13 +11463,13 @@ const RACES = {
         ],
         spellAbility: 'cha',
         traits: [
-          { name: 'Legacy of Minauros', desc: 'You know mage hand. At 3rd level, cast Tenser\'s floating disk once per long rest. At 5th level, cast arcane lock once per long rest. Charisma is your spellcasting ability.' }
+          { name: 'Gold Legacy', desc: 'You know mage hand; from 3rd level you can cast floating disk, and from 5th arcane lock, each once per long rest, using Charisma.' }
         ]
       }
     }
   },
   aasimar: {
-    name: 'Aasimar', speed: 30, size: 'Medium',
+    name: 'Dawnborn', speed: 30, size: 'Medium',
     bonuses: { cha: 2, wis: 1 },
     languages: ['Common', 'Celestial'],
     spellAbility: 'cha',
@@ -11479,11 +11479,11 @@ const RACES = {
     racialAbilities: [
       {
         id: 'healing_hands',
-        name: 'Healing Hands',
+        name: 'Mending Touch',
         action: 'action',
         usesPerLongRest: 1,
         recovery: 'long',
-        desc: 'Action: touch a creature and heal HP equal to your character level. Soft golden light traces the path of your touch.',
+        desc: 'As an action, touch a creature to restore HP equal to your character level. Warm light lingers where your hand passed.',
         heal: { fromLevel: true } // heal = ch.level
       },
       // v0.20.53 — Celestial Revelation (Aasimar L3+). 1/LR bonus action
@@ -11492,20 +11492,20 @@ const RACES = {
       // table; the tracker just records the daily use.
       {
         id: 'celestial_revelation',
-        name: 'Celestial Revelation',
+        name: 'Dawn Unveiled',
         action: 'bonus',
         usesPerLongRest: 1,
         recovery: 'long',
         minLevel: 3,
-        desc: 'Bonus action: transform for 1 minute (Radiant Soul, Radiant Consumption, or Necrotic Shroud — your chosen form). 1 use per long rest.'
+        desc: 'As a bonus action, unveil your inner nature for 1 minute: Bright Wings, Blazing Halo or Dusk Mantle (your chosen form). Once per long rest.'
       }
     ],
     traits: [
       { name: 'Darkvision', desc: 'See in dim light within 60 feet.' },
-      { name: 'Celestial Resistance', desc: 'Resistance to necrotic and radiant damage.' },
-      { name: 'Healing Hands', desc: 'Action: touch a creature and heal HP equal to your level. Once per long rest.' },
-      { name: 'Light Bearer', desc: 'You know the light cantrip. Charisma is the spellcasting ability for it.' },
-      { name: 'Celestial Revelation (L3)', desc: 'At level 3, choose a transformation: Radiant Soul (fly speed equal to walking, +radiant damage on attacks), Radiant Consumption (radiant aura), or Necrotic Shroud (frighten + necrotic damage). 1 min, once per long rest.' }
+      { name: 'Twilight Resistance', desc: 'You resist necrotic and radiant damage.' },
+      { name: 'Mending Touch', desc: 'As an action, touch a creature to restore HP equal to your level. Once per long rest.' },
+      { name: 'Inner Lantern', desc: 'You know the light cantrip and use Charisma to cast it.' },
+      { name: 'Dawn Unveiled (L3)', desc: 'From level 3, pick a form to take for 1 minute once per long rest: Bright Wings (fly at walking speed, extra radiant damage on hits), Blazing Halo (a burning aura of light) or Dusk Mantle (nearby foes are frightened and take necrotic damage).' }
     ]
   },
   goliath: {
@@ -11530,25 +11530,25 @@ const RACES = {
     ]
   },
   tabaxi: {
-    name: 'Tabaxi', speed: 30, size: 'Medium',
+    name: 'Prowlkin', speed: 30, size: 'Medium',
     bonuses: { dex: 2, cha: 1 },
     languages: ['Common', 'one of choice'],
     proficiencies: { skills: ['perception', 'stealth'] },
     racialAbilities: [
       {
         id: 'feline_agility',
-        name: 'Feline Agility',
+        name: 'Pounce Sprint',
         action: 'free',
         usesPerLongRest: 1,
         recovery: 'turn',
-        desc: 'When you move on your turn, double your speed for that turn. Once used, you must end a turn without moving before using it again. Tap "Refresh" after a turn of standing still.'
+        desc: 'When you move on your turn you can double your speed for that turn. After using it, you must spend a turn without moving before you can use it again. Tap "Refresh" after a turn of standing still.'
       }
     ],
     traits: [
       { name: 'Darkvision', desc: 'See in dim light within 60 feet.' },
-      { name: 'Feline Agility', desc: 'When you move on your turn, you can double your speed for that turn. Once you do, you must end a turn without moving before doing it again.' },
-      { name: 'Cat\'s Claws', desc: 'Climbing speed 20 ft. Unarmed strikes deal 1d4 slashing damage instead of bludgeoning.' },
-      { name: 'Cat\'s Talent', desc: 'Proficiency in Perception and Stealth.' }
+      { name: 'Pounce Sprint', desc: 'When you move on your turn you can double your speed until the turn ends. You must then spend a whole turn without moving before doing it again.' },
+      { name: 'Hooked Claws', desc: 'You climb at 20 ft, and your unarmed strikes deal 1d4 slashing instead of bludgeoning.' },
+      { name: 'Keen Hunter', desc: 'You are proficient in Perception and Stealth.' }
     ]
   },
   lion: {
@@ -11596,7 +11596,7 @@ const RACES = {
     ]
   },
   firbolg: {
-    name: 'Firbolg', speed: 30, size: 'Medium',
+    name: 'Mossgiant', speed: 30, size: 'Medium',
     bonuses: { wis: 2, str: 1 },
     languages: ['Common', 'Elvish', 'Giant'],
     spellAbility: 'wis',
@@ -11607,67 +11607,67 @@ const RACES = {
     racialAbilities: [
       {
         id: 'hidden_step',
-        name: 'Hidden Step',
+        name: 'Fade into the Wood',
         action: 'bonus',
         usesPerLongRest: 1,
         recovery: 'short',
-        desc: 'Bonus action: turn invisible until the start of your next turn or until you attack, deal damage, or force a save. The mist of the deep wood curls around you.'
+        desc: 'As a bonus action, become invisible until the start of your next turn, or until you attack, deal damage or force a save. A haze of forest mist hides you.'
       }
     ],
     traits: [
-      { name: 'Firbolg Magic', desc: 'You can cast detect magic and disguise self with this trait, twice between long rests. Wisdom is your spellcasting ability.' },
-      { name: 'Hidden Step', desc: 'Bonus action: turn invisible until the start of your next turn or until you attack, deal damage, or force a save. Once per short or long rest.' },
-      { name: 'Powerful Build', desc: 'Count as one size larger for carrying capacity, push, drag, and lift.' },
-      { name: 'Speech of Beast and Leaf', desc: 'You can speak with beasts and plants, though they only respond with simple ideas through gestures and sounds.' }
+      { name: 'Woodland Magic', desc: 'Twice per long rest you can cast detect magic and disguise self using this trait, with Wisdom as your casting ability.' },
+      { name: 'Fade into the Wood', desc: 'As a bonus action, become invisible until the start of your next turn, or until you attack, deal damage or force a save. Once per short or long rest.' },
+      { name: 'Broad Frame', desc: 'You count as one size larger when working out what you can carry, push, drag or lift.' },
+      { name: 'Voice of the Green', desc: 'You can talk with beasts and plants; they answer in simple ideas through sounds and movement.' }
     ]
   },
   tortle: {
-    name: 'Tortle', speed: 30, size: 'Medium',
+    name: 'Shellback', speed: 30, size: 'Medium',
     bonuses: { str: 2, wis: 1 },
     languages: ['Common', 'Aquan'],
     proficiencies: { skills: ['survival'] },
     traits: [
-      { name: 'Claws', desc: 'Unarmed strikes deal 1d4 slashing damage.' },
-      { name: 'Hold Breath', desc: 'You can hold your breath for up to 1 hour.' },
-      { name: 'Natural Armor', desc: 'Your shell gives you AC 17 (Dex modifier doesn\'t apply). You can\'t wear other armor, but a shield works normally.' },
-      { name: 'Shell Defense', desc: 'Action: withdraw into your shell. AC becomes 20, advantage on Str/Con saves; speed 0, no reactions, disadvantage on Dex saves, can\'t take actions other than emerging.' },
-      { name: 'Survival Instinct', desc: 'Proficiency in Survival.' }
+      { name: 'Hard Claws', desc: 'Your unarmed strikes deal 1d4 slashing damage.' },
+      { name: 'Deep Lungs', desc: 'You can hold your breath for up to an hour.' },
+      { name: 'Living Shell', desc: 'Your shell gives you a base AC of 17 that ignores Dexterity. You can\'t wear armour, though shields work as normal.' },
+      { name: 'Tuck In', desc: 'As an action, pull into your shell: AC 20 and advantage on Strength and Constitution saves, but speed 0, no reactions, disadvantage on Dex saves, and your only action can be coming back out.' },
+      { name: 'Wayfinder', desc: 'You are proficient in Survival.' }
     ]
   },
   genasi: {
-    name: 'Genasi', speed: 30, size: 'Medium',
+    name: 'Elemental-Touched', speed: 30, size: 'Medium',
     bonuses: { con: 2 },
     languages: ['Common', 'Primordial'],
     traits: [
-      { name: 'Elemental Heritage', desc: 'You are descended from a creature of one of the four elemental planes. Pick an elemental subrace below to determine your ability bonus and elemental traits.' }
+      { name: 'Elemental Bloodline', desc: 'An ancestor of yours came from one of the four elemental realms. Pick a bloodline below for your ability bonus and elemental gifts.' }
     ],
     subraces: {
       air: {
-        name: 'Air Genasi',
+        name: 'Windtouched',
         bonuses: { dex: 1 },
         racialSpells: [
           { spell: 'Levitate', level: 2, atLevel: 5, freePerLongRest: 1 }
         ],
         spellAbility: 'con',
         traits: [
-          { name: 'Unending Breath', desc: 'You can hold your breath indefinitely while you are not incapacitated.' },
-          { name: 'Mingle with the Wind', desc: 'At 5th level you can cast Levitate once per long rest, with no need for material components. Constitution is your spellcasting ability for it.' }
+          { name: 'Endless Breath', desc: 'You can hold your breath for as long as you like while you aren\'t incapacitated.' },
+          { name: 'Ride the Breeze', desc: 'From 5th level you can cast Levitate once per long rest without material components, using Constitution.' }
         ]
       },
       earth: {
-        name: 'Earth Genasi',
+        name: 'Stonetouched',
         bonuses: { str: 1 },
         racialSpells: [
           { spell: 'Pass Without Trace', level: 2, atLevel: 5, freePerLongRest: 1 }
         ],
         spellAbility: 'con',
         traits: [
-          { name: 'Earth Walk', desc: 'Difficult terrain made of earth or stone does not cost you extra movement.' },
-          { name: 'Merge with Stone', desc: 'At 5th level you can cast Pass Without Trace once per long rest, with no need for material components. Constitution is your spellcasting ability for it.' }
+          { name: 'Sure Footing', desc: 'Difficult terrain of earth or stone costs you no extra movement.' },
+          { name: 'Stone Silence', desc: 'From 5th level you can cast Pass Without Trace once per long rest without material components, using Constitution.' }
         ]
       },
       fire: {
-        name: 'Fire Genasi',
+        name: 'Flametouched',
         bonuses: { int: 1 },
         racialSpells: [
           { spell: 'Produce Flame', level: 0 },
@@ -11675,13 +11675,13 @@ const RACES = {
         ],
         spellAbility: 'con',
         traits: [
-          { name: 'Darkvision', desc: 'You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can\'t discern colour in darkness, only shades of grey.' },
-          { name: 'Fire Resistance', desc: 'You have resistance to fire damage.' },
-          { name: 'Reach to the Blaze', desc: 'You know the Produce Flame cantrip. At 3rd level you can cast Burning Hands once per long rest. Constitution is your spellcasting ability for these spells.' }
+          { name: 'Darkvision', desc: 'You see in dim light within 60 ft as if it were bright, and in darkness as if it were dim, though only in shades of grey.' },
+          { name: 'Flame Resistance', desc: 'You resist fire damage.' },
+          { name: 'Ember Gift', desc: 'You know the Produce Flame cantrip, and from 3rd level can cast Burning Hands once per long rest, using Constitution.' }
         ]
       },
       water: {
-        name: 'Water Genasi',
+        name: 'Wavetouched',
         speed: 30, swimSpeed: 30,
         bonuses: { wis: 1 },
         racialSpells: [
@@ -11690,10 +11690,10 @@ const RACES = {
         ],
         spellAbility: 'con',
         traits: [
-          { name: 'Acid Resistance', desc: 'You have resistance to acid damage.' },
-          { name: 'Amphibious', desc: 'You can breathe air and water.' },
-          { name: 'Swim', desc: 'You have a swimming speed of 30 feet.' },
-          { name: 'Call to the Wave', desc: 'You know the Shape Water cantrip. At 3rd level you can cast Create or Destroy Water once per long rest. Constitution is your spellcasting ability for these spells.' }
+          { name: 'Acid Resistance', desc: 'You resist acid damage.' },
+          { name: 'Two Breaths', desc: 'You breathe both air and water.' },
+          { name: 'Swimmer', desc: 'You swim at 30 ft.' },
+          { name: 'Tide Gift', desc: 'You know the Shape Water cantrip, and from 3rd level can cast Create or Destroy Water once per long rest, using Constitution.' }
         ]
       }
     }
@@ -11701,14 +11701,14 @@ const RACES = {
 
   // ===== v0.21.70 — additional SRD-safe race =====
   kenku: {
-    name: 'Kenku', speed: 30, size: 'Medium',
+    name: 'Corvid', speed: 30, size: 'Medium',
     bonuses: { dex: 2, wis: 1 },
     languages: ['Common', 'Auran'],
     proficiencies: { skills: ['choose-two-kenku'] },
     traits: [
-      { name: 'Expert Forgery', desc: 'You can duplicate other creatures\' handwriting and craftwork; you have advantage on checks made to produce a forgery or duplicate an existing object.' },
-      { name: 'Kenku Training', desc: 'You are proficient in two of: Acrobatics, Deception, Stealth, and Sleight of Hand.' },
-      { name: 'Mimicry', desc: 'You can mimic sounds you have heard, including voices. A creature that hears them can tell they are imitations with a successful Wisdom (Insight) check opposed by your Deception check.' }
+      { name: 'Copycat Craft', desc: 'You can copy handwriting and handiwork, and have advantage on checks to forge a document or reproduce an object.' },
+      { name: 'Rooftop Upbringing', desc: 'Choose two of Acrobatics, Deception, Stealth and Sleight of Hand; you are proficient in them.' },
+      { name: 'Echo Voice', desc: 'You can repeat sounds you\'ve heard, voices included. A listener sees through it with an Insight check against your Deception.' }
     ]
   }
 };
@@ -11886,14 +11886,14 @@ const SPECIES_55 = {
     }
   },
   aasimar: {
-    name: 'Aasimar', speed: 30, size: 'Medium (or Small)',
+    name: 'Dawnborn', speed: 30, size: 'Medium (or Small)',
     languages: ['Common', '+1 of choice'],
     traits: [
       { name: 'Darkvision', desc: 'See in dim light within 60 feet.' },
-      { name: 'Celestial Resistance', desc: 'Resistance to Necrotic and Radiant damage.' },
-      { name: 'Healing Hands', desc: 'As a Magic action, touch a creature to heal d4s equal to your proficiency bonus. Once per Long Rest.' },
-      { name: 'Light Bearer', desc: 'You know the Light cantrip (Charisma as your ability).' },
-      { name: 'Celestial Revelation', desc: 'At level 3, as a Bonus Action transform for 1 minute — choose Heavenly Wings (fly), Inner Radiance (radiant light + damage), or Necrotic Shroud (frighten). Choose which each time. Once per Long Rest.' }
+      { name: 'Twilight Resistance', desc: 'You resist Necrotic and Radiant damage.' },
+      { name: 'Mending Touch', desc: 'As a Magic action, touch a creature and restore a number of d4s equal to your proficiency bonus. Once per Long Rest.' },
+      { name: 'Inner Lantern', desc: 'You know the Light cantrip, using Charisma.' },
+      { name: 'Dawn Unveiled', desc: 'From level 3, as a Bonus Action, unveil a form for 1 minute, choosing each time: Bright Wings (flight), Blazing Halo (light and radiant damage) or Dusk Mantle (frighten). Once per Long Rest.' }
     ]
   },
   goliath: {
@@ -11939,21 +11939,21 @@ const SPECIES_55 = {
 // ============================================================
 const BACKGROUNDS_55 = {
   acolyte:     { name: 'Acolyte',     abilities: ['int','wis','cha'], feat: 'Magic Initiate (Cleric)', skills: ['insight','religion'], tool: "Calligrapher's Supplies" },
-  artisan:     { name: 'Artisan',     abilities: ['str','dex','int'], feat: 'Crafter',                 skills: ['investigation','persuasion'], tool: "Artisan's Tools (one)" },
+  artisan:     { name: 'Artisan',     abilities: ['str','dex','int'], feat: 'Handy Maker',                 skills: ['investigation','persuasion'], tool: "Artisan's Tools (one)" },
   charlatan:   { name: 'Charlatan',   abilities: ['dex','con','cha'], feat: 'Skilled',                 skills: ['deception','sleight_of_hand'], tool: 'Forgery Kit' },
   criminal:    { name: 'Criminal',    abilities: ['dex','con','int'], feat: 'Alert',                   skills: ['sleight_of_hand','stealth'], tool: "Thieves' Tools" },
-  entertainer: { name: 'Entertainer', abilities: ['str','dex','cha'], feat: 'Musician',                skills: ['acrobatics','performance'], tool: 'Musical Instrument (one)' },
-  farmer:      { name: 'Farmer',      abilities: ['str','con','wis'], feat: 'Tough',                   skills: ['animal_handling','nature'], tool: "Carpenter's Tools" },
+  entertainer: { name: 'Entertainer', abilities: ['str','dex','cha'], feat: 'Minstrel',                skills: ['acrobatics','performance'], tool: 'Musical Instrument (one)' },
+  farmer:      { name: 'Farmer',      abilities: ['str','con','wis'], feat: 'Hardy',                   skills: ['animal_handling','nature'], tool: "Carpenter's Tools" },
   guard:       { name: 'Guard',       abilities: ['str','int','wis'], feat: 'Alert',                   skills: ['athletics','perception'], tool: 'Gaming Set (one)' },
   guide:       { name: 'Guide',       abilities: ['dex','con','wis'], feat: 'Magic Initiate (Druid)',  skills: ['stealth','survival'], tool: "Cartographer's Tools" },
-  hermit:      { name: 'Hermit',      abilities: ['con','wis','cha'], feat: 'Healer',                  skills: ['medicine','religion'], tool: 'Herbalism Kit' },
-  merchant:    { name: 'Merchant',    abilities: ['con','int','cha'], feat: 'Lucky',                   skills: ['animal_handling','persuasion'], tool: "Navigator's Tools" },
+  hermit:      { name: 'Hermit',      abilities: ['con','wis','cha'], feat: 'Field Medic',                 skills: ['medicine','religion'], tool: 'Herbalism Kit' },
+  merchant:    { name: 'Merchant',    abilities: ['con','int','cha'], feat: "Fortune's Favour",                 skills: ['animal_handling','persuasion'], tool: "Navigator's Tools" },
   noble:       { name: 'Noble',       abilities: ['str','int','cha'], feat: 'Skilled',                 skills: ['history','persuasion'], tool: 'Gaming Set (one)' },
   sage:        { name: 'Sage',        abilities: ['con','int','wis'], feat: 'Magic Initiate (Wizard)', skills: ['arcana','history'], tool: "Calligrapher's Supplies" },
-  sailor:      { name: 'Sailor',      abilities: ['str','dex','con'], feat: 'Tavern Brawler',          skills: ['acrobatics','perception'], tool: "Navigator's Tools" },
+  sailor:      { name: 'Sailor',      abilities: ['str','dex','con'], feat: 'Barroom Scrapper',          skills: ['acrobatics','perception'], tool: "Navigator's Tools" },
   scribe:      { name: 'Scribe',      abilities: ['dex','int','wis'], feat: 'Skilled',                 skills: ['investigation','perception'], tool: "Calligrapher's Supplies" },
   soldier:     { name: 'Soldier',     abilities: ['str','dex','con'], feat: 'Savage Attacker',         skills: ['athletics','intimidation'], tool: 'Gaming Set (one)' },
-  wayfarer:    { name: 'Wayfarer',    abilities: ['dex','wis','cha'], feat: 'Lucky',                   skills: ['insight','stealth'], tool: "Thieves' Tools" }
+  wayfarer:    { name: 'Wayfarer',    abilities: ['dex','wis','cha'], feat: "Fortune's Favour",                 skills: ['insight','stealth'], tool: "Thieves' Tools" }
 };
 
 // ============================================================
@@ -24097,7 +24097,7 @@ const BACKGROUNDS = {
     skills: ['deception', 'sleight_of_hand'],
     gold: 15,
     equipment: ['Fine clothes', 'Disguise kit', 'Con tools', 'Signet ring or fake papers'],
-    feature: { name: 'False Identity', desc: 'You have a second identity with documents, acquaintances, and disguises that support it.' }
+    feature: { name: 'Second Face', desc: 'You keep a spare identity, complete with papers, a few people who will vouch for it and the clothes to match.' }
   },
   criminal: {
     name: 'Criminal',
@@ -24105,7 +24105,7 @@ const BACKGROUNDS = {
     skills: ['deception', 'stealth'],
     gold: 15,
     equipment: ['Crowbar', 'Dark common clothes with hood'],
-    feature: { name: 'Criminal Contact', desc: 'You know how to get messages to and from a reliable underworld contact.' }
+    feature: { name: 'Underworld Line', desc: 'You have a trusted go-between in the criminal world and know how to pass word to and from them.' }
   },
   entertainer: {
     name: 'Entertainer',
@@ -24113,15 +24113,15 @@ const BACKGROUNDS = {
     skills: ['acrobatics', 'performance'],
     gold: 15,
     equipment: ['Musical instrument', 'Costume', 'Admirer\'s favour'],
-    feature: { name: 'By Popular Demand', desc: 'You can usually find a place to perform, earning modest lodging and food.' }
+    feature: { name: 'Always a Stage', desc: 'Wherever there\'s a crowd you can usually find somewhere to perform in exchange for a bed and a meal.' }
   },
   folk_hero: {
-    name: 'Folk Hero',
+    name: 'People\'s Champion',
     tools: ['Vehicles (land)'], toolChoice: { count: 1, from: ['artisan'] }, // v0.93.1
     skills: ['animal_handling', 'survival'],
     gold: 10,
     equipment: ['Artisan tools', 'Shovel', 'Iron pot', 'Common clothes'],
-    feature: { name: 'Rustic Hospitality', desc: 'Common folk will usually shelter you and hide you from danger, within reason.' }
+    feature: { name: 'Friend of the Village', desc: 'Ordinary folk will take you in and keep you hidden from trouble, as long as it doesn\'t put them at risk.' }
   },
   guild_artisan: {
     name: 'Guild Artisan',
@@ -24129,7 +24129,7 @@ const BACKGROUNDS = {
     skills: ['insight', 'persuasion'],
     gold: 15,
     equipment: ['Artisan tools', 'Letter of introduction', 'Traveler\'s clothes'],
-    feature: { name: 'Guild Membership', desc: 'Your guild can provide lodging, contacts, political support, and work opportunities.' }
+    feature: { name: 'Guild Ties', desc: 'Your guild can offer a room, introductions, a word in the right ear and the odd paid job.' }
   },
   hermit: {
     name: 'Hermit',
@@ -24137,7 +24137,7 @@ const BACKGROUNDS = {
     skills: ['medicine', 'religion'],
     gold: 5,
     equipment: ['Herbalism kit', 'Scroll case of notes', 'Winter blanket', 'Common clothes'],
-    feature: { name: 'Discovery', desc: 'Your seclusion revealed a powerful truth, secret, or omen agreed with the DM.' }
+    feature: { name: 'Hidden Truth', desc: 'Your years alone uncovered a great secret, revelation or sign. Agree what it is with your DM.' }
   },
   noble: {
     name: 'Noble',
@@ -24145,7 +24145,7 @@ const BACKGROUNDS = {
     skills: ['history', 'persuasion'],
     gold: 25,
     equipment: ['Fine clothes', 'Signet ring', 'Scroll of pedigree'],
-    feature: { name: 'Position of Privilege', desc: 'People are inclined to think the best of you, and commoners often defer to your status.' }
+    feature: { name: 'Born to Rank', desc: 'Folk tend to give you the benefit of the doubt, and commoners often step aside for someone of your station.' }
   },
   outlander: {
     name: 'Outlander',
@@ -24153,7 +24153,7 @@ const BACKGROUNDS = {
     skills: ['athletics', 'survival'],
     gold: 10,
     equipment: ['Staff', 'Hunting trap', 'Traveler\'s clothes', 'Trophy from an animal'],
-    feature: { name: 'Wanderer', desc: 'You have an excellent memory for maps and geography, and can usually find food and water.' }
+    feature: { name: 'Trailwise', desc: 'You never forget a landscape or a map, and in the wild you can usually find food and fresh water for a small group.' }
   },
   sage: {
     name: 'Sage',
@@ -24161,7 +24161,7 @@ const BACKGROUNDS = {
     skills: ['arcana', 'history'],
     gold: 10,
     equipment: ['Bottle of black ink', 'Quill', 'Small knife', 'Letter from a dead colleague', 'Common clothes'],
-    feature: { name: 'Researcher', desc: 'When you do not know lore, you often know where and from whom it can be obtained.' }
+    feature: { name: 'Know Where to Look', desc: 'If you don\'t know something, you usually know which library, scholar or archive will.' }
   },
   sailor: {
     name: 'Sailor',
@@ -24169,7 +24169,7 @@ const BACKGROUNDS = {
     skills: ['athletics', 'perception'],
     gold: 10,
     equipment: ['Belaying pin', 'Silk rope (50 ft)', 'Lucky charm', 'Common clothes'],
-    feature: { name: 'Ship\'s Passage', desc: 'You can secure free passage on sailing ships for yourself and companions when available.' }
+    feature: { name: 'Working Passage', desc: 'You can usually arrange free passage on a ship for yourself and your companions, working your way across.' }
   },
   soldier: {
     name: 'Soldier',
@@ -24177,7 +24177,7 @@ const BACKGROUNDS = {
     skills: ['athletics', 'intimidation'],
     gold: 10,
     equipment: ['Insignia of rank', 'Trophy from a fallen enemy', 'Gaming set', 'Common clothes'],
-    feature: { name: 'Military Rank', desc: 'Soldiers loyal to your former organisation recognise your authority and influence.' }
+    feature: { name: 'Old Ranks', desc: 'Soldiers from your old company still recognise your rank and will listen to you.' }
   },
   urchin: {
     name: 'Urchin',
@@ -24185,15 +24185,15 @@ const BACKGROUNDS = {
     skills: ['sleight_of_hand', 'stealth'],
     gold: 10,
     equipment: ['Small knife', 'City map', 'Pet mouse', 'Token from your parents', 'Common clothes'],
-    feature: { name: 'City Secrets', desc: 'You can move through cities quickly by using alleys, shortcuts, and hidden routes.' }
+    feature: { name: 'Back Alleys', desc: 'You know a city\'s alleys, rooftops and shortcuts, and can cross it far faster than most.' }
   },
   far_traveler: {
-    name: 'Far Traveler',
+    name: 'Far Wanderer',
     toolChoice: { count: 1, from: ['instrument', 'gaming'] }, languageChoice: 1, // v0.93.1
     skills: ['insight', 'perception'],
     gold: 5,
     equipment: ['Traveller\'s clothes from your homeland', 'Small memento of home', 'Map fragment of a distant region', 'Pouch with foreign coins'],
-    feature: { name: 'All Eyes on You', desc: 'You are obviously a stranger here. Locals are curious about your origins and often offer you food and lodging in exchange for stories of your homeland. People of standing are typically willing to grant you an audience.' }
+    feature: { name: 'Stranger in Town', desc: 'You are plainly not from here. Locals want to hear about your homeland and often swap a meal or a room for your stories, and important people are usually curious enough to see you.' }
   }
 };
 function backgroundSkillNames(bg) {
@@ -24442,18 +24442,18 @@ const WIZARD_STEPS = ['name', 'race', 'class', 'subclass', 'style', 'background'
 
 const FEATS = [
   { id: 'alert', name: 'Alert', desc: '+5 to initiative. You cannot be surprised while conscious, and hidden attackers do not gain advantage from being unseen.' },
-  { id: 'athlete', name: 'Athlete', desc: 'Athletic recovery and climbing/jumping perks. If you use it as a half-feat at your table, adjust the ability score manually.' },
-  { id: 'durable', name: 'Durable', desc: 'Hardier short rests. If you use it as a half-feat at your table, adjust CON manually.' },
-  { id: 'great_weapon_master', name: 'Great Weapon Master', desc: 'Heavy weapon power attacks and bonus attacks after crits or dropping a creature.' },
-  { id: 'healer', name: 'Healer', desc: 'Use healer kits to restore HP and stabilise allies more effectively.' },
-  { id: 'lucky', name: 'Lucky', desc: 'Gain 3 luck points per long rest to reroll attacks, checks, saves, or enemy attacks.' },
+  { id: 'athlete', name: 'Nimble Body', desc: 'Climbing and jumping come easier and you recover your feet quickly. If your table uses it as a half-feat, adjust the ability score yourself.' },
+  { id: 'durable', name: 'Enduring', desc: 'You get more out of short rests. If your table uses it as a half-feat, adjust CON yourself.' },
+  { id: 'great_weapon_master', name: 'Heavy Hitter', desc: 'Trade accuracy for crushing damage with heavy weapons, and gain a bonus swing after a critical hit or a kill.' },
+  { id: 'healer', name: 'Field Medic', desc: 'Get more out of a healer\'s kit: patch up HP and steady the dying more reliably.' },
+  { id: 'lucky', name: 'Fortune\'s Favour', desc: 'You hold 3 luck points each long rest to reroll your attacks, checks or saves, or to make a foe reroll an attack against you.' },
   { id: 'magic_initiate', name: 'Magic Initiate', desc: 'Learn two cantrips and one 1st-level spell from a chosen class list.' },
-  { id: 'mobile', name: 'Mobile', desc: '+10 ft speed, easier dashing through difficult terrain, and safer hit-and-run melee movement.' },
-  { id: 'resilient', name: 'Resilient', desc: 'Gain proficiency in one saving throw. If you use it as a half-feat, adjust that ability score manually.' },
-  { id: 'sentinel', name: 'Sentinel', desc: 'Lock enemies down with opportunity attacks and protect nearby allies.' },
-  { id: 'sharpshooter', name: 'Sharpshooter', desc: 'Ignore many ranged-cover penalties and use high-risk, high-damage ranged attacks.' },
-  { id: 'tough', name: 'Tough', desc: '+2 max HP per character level.', hpPerLevel: 2 },
-  { id: 'war_caster', name: 'War Caster', desc: 'Advantage on concentration saves from damage, cast somatic spells with occupied hands, and use some spells for opportunity attacks.' }
+  { id: 'mobile', name: 'Fleet', desc: '+10 ft speed, Dash ignores difficult terrain, and you can strike and step away without drawing opportunity attacks from that foe.' },
+  { id: 'resilient', name: 'Steadfast', desc: 'You gain proficiency in one saving throw. If your table uses it as a half-feat, adjust that ability score yourself.' },
+  { id: 'sentinel', name: 'Watchful Guard', desc: 'Your opportunity attacks stop foes in their tracks, and you punish enemies who attack your nearby friends.' },
+  { id: 'sharpshooter', name: 'Deadeye', desc: 'Ranged shots ignore much cover and long-range penalties, and you can trade accuracy for heavy ranged damage.' },
+  { id: 'tough', name: 'Hardy', desc: '+2 max HP per character level.', hpPerLevel: 2 },
+  { id: 'war_caster', name: 'Battle Mage', desc: 'Advantage on Concentration saves when damaged, somatic casting with full hands, and some spells can stand in for opportunity attacks.' }
 ];
 function characterFeats(ch) {
   if (!ch) return [];
