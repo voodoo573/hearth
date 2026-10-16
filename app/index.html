@@ -11068,10 +11068,15 @@ const RACES = {
         name: 'Wood Elf',
         bonuses: { wis: 1 },
         speed: 35,
+        spellAbility: 'wis',
+        racialSpells: [
+          { spell: 'Druidcraft', level: 0 },
+          { spell: 'Longstrider', level: 1, atLevel: 3, freePerLongRest: 1 },
+          { spell: 'Pass without Trace', level: 2, atLevel: 5, freePerLongRest: 1 }
+        ],
         traits: [
-          { name: 'Elf Weapon Training', desc: 'Proficiency with longsword, shortsword, shortbow, and longbow.' },
-          { name: 'Fleet of Foot', desc: 'Walking speed increases to 35 feet.' },
-          { name: 'Mask of the Wild', desc: 'You can attempt to hide even when only lightly obscured by foliage, rain, snow, mist, or other natural phenomena.' }
+          { name: 'Swift Stride', desc: 'Your base walking speed is 35 feet.' },
+          { name: 'Woodland Lineage', desc: 'You know the druidcraft cantrip. From 3rd level you can cast longstrider, and from 5th level pass without trace, each once per long rest without a slot. Wisdom is your spellcasting ability for these.' }
         ]
       },
       drow: {
@@ -11084,10 +11089,8 @@ const RACES = {
           { spell: 'Darkness', level: 2, atLevel: 5, freePerLongRest: 1 }
         ],
         traits: [
-          { name: 'Superior Darkvision', desc: 'Your darkvision range is 120 feet (replaces the standard elf 60 ft).' },
-          { name: 'Sunlight Sensitivity', desc: 'Disadvantage on attack rolls and Wisdom (Perception) checks relying on sight in direct sunlight.' },
-          { name: 'Drow Magic', desc: 'You know the dancing lights cantrip. At 3rd level, faerie fire 1/day. At 5th, darkness 1/day. Charisma is the spellcasting ability.' },
-          { name: 'Drow Weapon Training', desc: 'Proficiency with rapiers, shortswords, and hand crossbows.' }
+          { name: 'Deep Sight', desc: 'Your darkvision reaches 120 feet instead of 60.' },
+          { name: 'Underdark Lineage', desc: 'You know the dancing lights cantrip. From 3rd level you can cast faerie fire, and from 5th level darkness, each once per long rest without a slot. Charisma is your spellcasting ability for these.' }
         ]
       },
       astral: {
@@ -11306,11 +11309,11 @@ const RACES = {
         bonuses: { dex: 1 },
         spellAbility: 'int',
         racialSpells: [
-          { spell: 'Minor Illusion', level: 0 }
+          { spell: 'Minor Illusion', level: 0 },
+          { spell: 'Speak with Animals', level: 1, atLevel: 1, freePerLongRest: 1 }
         ],
         traits: [
-          { name: 'Natural Illusionist', desc: 'You know the minor illusion cantrip. Intelligence is your spellcasting ability for it.' },
-          { name: 'Speak with Small Beasts', desc: 'You can communicate simple ideas with Small or smaller beasts through sounds and gestures.' }
+          { name: 'Woodland Gnome Lineage', desc: 'You know the minor illusion cantrip, and you always have speak with animals ready: cast it once per long rest without a slot. Intelligence is your spellcasting ability for these.' }
         ]
       },
       rock: {
@@ -11354,7 +11357,7 @@ const RACES = {
     ],
     subraces: {
       asmodeus: {
-        name: 'Asmodean (default)',
+        name: 'Infernal Legacy (default)',
         racialSpells: [
           { spell: 'Thaumaturgy', level: 0 },
           { spell: 'Hellish Rebuke', level: 1, atLevel: 3, freePerLongRest: 1 },
@@ -11526,7 +11529,7 @@ const RACES = {
     traits: [
       { name: 'Stone\'s Endurance', desc: 'Reaction when you take damage: reduce that damage by 1d12 + Con mod. Once per short or long rest.' },
       { name: 'Powerful Build', desc: 'Count as one size larger for carrying capacity, push, drag, and lift.' },
-      { name: 'Mountain Born', desc: 'Acclimated to high altitude (any elevation up to 20,000 ft). Resistance to cold damage.' }
+      { name: 'Highland Hardiness', desc: 'You are at home in thin mountain air and bitter weather: you resist cold damage.' }
     ]
   },
   tabaxi: {
@@ -11552,49 +11555,51 @@ const RACES = {
     ]
   },
   lion: {
-    name: 'Lion', speed: 35, size: 'Medium',
-    bonuses: { str: 2, con: 1 },
+    name: 'Sunmane', speed: 30, size: 'Medium',
+    bonuses: { str: 2, cha: 1 },
     languages: ['Common', 'one of choice'],
-    proficiencies: { skills: ['perception', 'athletics'] },
+    proficiencies: { skills: ['athletics', 'persuasion'] },
     racialAbilities: [
       {
         id: 'daunting_roar',
-        name: 'Daunting Roar',
+        name: 'Rallying Roar',
         action: 'bonus',
         usesPerLongRest: 'prof',
-        desc: 'As a bonus action, you let out a menacing roar. Each creature within 10 feet of you that can hear you must succeed on a Constitution saving throw (DC 8 + your proficiency bonus + your Constitution modifier) or be frightened of you until the end of your next turn. Uses equal to your proficiency bonus, all regained on a long rest.'
+        desc: 'As a bonus action you roar a challenge that steadies your friends: each ally of your choice within 30 feet that can hear you gains temporary HP equal to your proficiency bonus. Uses equal your proficiency bonus, regained on a long rest.'
       }
     ],
     traits: [
-      { name: 'Darkvision', desc: 'See in dim light within 60 feet as if it were bright light, and in darkness as if it were dim light.' },
+      { name: 'Darkvision', desc: 'You can see in dim light within 60 feet as if it were bright light, and in darkness as if it were dim light.' },
       { name: 'Claws', desc: 'Your unarmed strikes deal 1d4 slashing damage instead of bludgeoning.' },
-      { name: 'Keen Smell', desc: 'You have advantage on Perception, Survival, and Investigation checks that rely on smell.' },
-      { name: 'Daunting Roar', desc: 'As a bonus action, roar to frighten foes within 10 feet (Constitution save). Uses equal to your proficiency bonus per long rest.' },
-      { name: 'Pride Hunter', desc: 'You have proficiency in the Perception and Athletics skills.' }
+      { name: 'Sun-Warmed', desc: 'You have advantage on saving throws against exhaustion caused by heat, and you resist fire damage.' },
+      { name: 'Rallying Roar', desc: 'As a bonus action, allies of your choice within 30 feet who hear you gain temporary HP equal to your proficiency bonus. Proficiency-bonus uses per long rest.' },
+      { name: 'Mane of Command', desc: 'You are proficient in Athletics and Persuasion.' }
     ]
   },
+
   pridefolk: {
-    name: 'Pridefolk', speed: 35, size: 'Medium',
-    bonuses: { dex: 1, wis: 2 },
+    name: 'Grassrunner', speed: 35, size: 'Medium',
+    bonuses: { dex: 2, wis: 1 },
     languages: ['Common', 'one of choice'],
-    proficiencies: { skills: ['intimidation', 'survival'] },
+    proficiencies: { skills: ['stealth', 'survival'] },
     racialAbilities: [
       {
         id: 'prides_bellow',
-        name: "Pride's Bellow",
-        action: 'bonus',
+        name: 'Patient Strike',
+        action: 'free',
         usesPerLongRest: 'prof',
-        desc: "As a bonus action, you loose a shattering bellow. Each creature of your choice within 10 feet of you that can hear you must succeed on a Wisdom saving throw (DC 8 + your proficiency bonus + your Wisdom modifier) or become frightened of you until the end of your next turn. You can use this a number of times equal to your proficiency bonus, and regain all expended uses when you finish a long rest."
+        desc: "When you attack a creature that hasn't noticed you yet, you can make the attack with advantage. Uses equal your proficiency bonus, regained on a long rest."
       }
     ],
     traits: [
-      { name: 'Feline Sight', desc: "You have darkvision out to 60 feet. Within that range you see in dim light as if it were bright light, and in darkness as if it were dim light (shades of grey only)." },
-      { name: 'Rending Claws', desc: "Your claws are natural weapons. Your unarmed strikes deal 1d4 slashing damage instead of the bludgeoning damage normal for an unarmed strike, and you can use Dexterity or Strength for their attack and damage rolls." },
-      { name: 'Scent of the Hunt', desc: "You have advantage on Wisdom (Perception), Wisdom (Survival), and Intelligence (Investigation) checks that rely on smell." },
-      { name: "Pride's Bellow", desc: "As a bonus action, roar to frighten creatures within 10 feet that can hear you (Wisdom save, DC 8 + proficiency bonus + Wisdom modifier). Uses equal to your proficiency bonus, regained on a long rest." },
-      { name: 'Savanna-Born', desc: "You have proficiency in the Intimidation and Survival skills." }
+      { name: 'Twilight Eyes', desc: "You can see in dim light within 60 feet as if it were bright light, and in darkness as if it were dim light (shades of grey only)." },
+      { name: 'Rending Claws', desc: "Your unarmed strikes deal 1d4 slashing damage, and you can use Dexterity or Strength for them." },
+      { name: 'Long Stride', desc: "You can make a running long or high jump after moving only 5 feet, and your jump distance increases by 5 feet." },
+      { name: 'Patient Strike', desc: "Advantage on an attack against a creature that hasn't noticed you. Proficiency-bonus uses per long rest." },
+      { name: 'Plains-Born', desc: "You are proficient in Stealth and Survival." }
     ]
   },
+
   firbolg: {
     name: 'Mossgiant', speed: 30, size: 'Medium',
     bonuses: { wis: 2, str: 1 },
@@ -11734,27 +11739,29 @@ const SPECIES_55 = {
     ]
   },
   lion: {
-    name: 'Lion', speed: 35, size: 'Medium',
+    name: 'Sunmane', speed: 30, size: 'Medium',
     languages: ['Common', 'one of choice'],
     traits: [
-      { name: 'Darkvision', desc: 'See in dim light within 60 feet as if bright light, and darkness as dim light.' },
-      { name: 'Claws', desc: 'You have a Climb Speed of 20 feet, and your Unarmed Strikes can deal 1d6 Slashing damage (using Strength) instead of the normal damage.' },
-      { name: 'Keen Smell', desc: 'You have Advantage on Wisdom (Perception), Wisdom (Survival), and Intelligence (Investigation) checks that rely on smell.' },
-      { name: 'Daunting Roar', desc: 'As a Bonus Action, you emit a roar. Each creature within 10 feet of you that can hear you must succeed on a Constitution saving throw (DC 8 + Proficiency Bonus + Constitution modifier) or have the Frightened condition until the end of your next turn. Uses equal to your Proficiency Bonus, all regained on a Long Rest.' },
-      { name: 'Hunter\'s Instinct', desc: 'You have proficiency in one skill of your choice: Athletics, Perception, or Survival.' }
+      { name: 'Darkvision', desc: 'You have Darkvision with a range of 60 feet.' },
+      { name: 'Claws', desc: 'Your Unarmed Strikes can deal 1d6 Slashing damage (using Strength) instead of the normal damage.' },
+      { name: 'Sun-Warmed', desc: 'You have Resistance to Fire damage and Advantage on saves against heat-caused Exhaustion.' },
+      { name: 'Rallying Roar', desc: 'As a Bonus Action, allies of your choice within 30 feet who can hear you gain Temporary HP equal to your Proficiency Bonus. You can do this a number of times equal to your Proficiency Bonus, regaining all uses on a Long Rest.' },
+      { name: 'Mane of Command', desc: 'You gain proficiency in one skill of your choice: Athletics, Persuasion, or Performance.' }
     ]
   },
+
   pridefolk: {
-    name: 'Pridefolk', speed: 35, size: 'Medium',
+    name: 'Grassrunner', speed: 35, size: 'Medium',
     languages: ['Common', 'one of choice'],
     traits: [
-      { name: 'Feline Sight', desc: "You have Darkvision with a range of 60 feet." },
-      { name: 'Rending Claws', desc: "You have a Climb Speed of 20 feet, and your Unarmed Strikes can deal 1d6 Slashing damage instead of the normal damage, using Dexterity or Strength for the attack and damage rolls." },
-      { name: 'Scent of the Hunt', desc: "You have Advantage on Wisdom (Perception), Wisdom (Survival), and Intelligence (Investigation) checks that rely on smell." },
-      { name: "Pride's Bellow", desc: "As a Bonus Action, you loose a bellow. Each creature of your choice within 10 feet of you that can hear you must succeed on a Wisdom saving throw (DC 8 + your Proficiency Bonus + your Wisdom modifier) or have the Frightened condition until the end of your next turn. You can use this a number of times equal to your Proficiency Bonus, and regain all expended uses when you finish a Long Rest." },
-      { name: 'Savanna-Born', desc: "You gain proficiency in one skill of your choice from Athletics, Intimidation, Perception, or Survival." }
+      { name: 'Twilight Eyes', desc: "You have Darkvision with a range of 60 feet." },
+      { name: 'Rending Claws', desc: "Your Unarmed Strikes can deal 1d6 Slashing damage instead of the normal damage, using Dexterity or Strength." },
+      { name: 'Long Stride', desc: "You can make a running jump after moving only 5 feet, and your jump distance increases by 5 feet." },
+      { name: 'Patient Strike', desc: "When you attack a creature that hasn't noticed you, you can give the attack Advantage. Uses equal your Proficiency Bonus, regained on a Long Rest." },
+      { name: 'Plains-Born', desc: "You gain proficiency in one skill of your choice: Stealth, Survival, or Perception." }
     ]
   },
+
   dwarf: {
     name: 'Dwarf', speed: 30, size: 'Medium',
     languages: ['Common', 'Dwarvish'],
@@ -11790,7 +11797,7 @@ const SPECIES_55 = {
         name: 'Wood Elf', speed: 35,
         lineageSpells: { 3: 'Longstrider', 5: 'Pass without Trace' },
         traits: [
-          { name: 'Fleet of Foot', desc: 'Your walking speed is 35 feet.' },
+          { name: 'Swift Stride', desc: 'Your walking speed is 35 feet, and you know the Druidcraft cantrip.' },
           { name: 'Lineage Spells', desc: 'Longstrider at level 3, Pass without Trace at level 5 — once per Long Rest each (or with slots).' }
         ]
       },
@@ -11798,7 +11805,7 @@ const SPECIES_55 = {
         name: 'Drow',
         lineageSpells: { 3: 'Faerie Fire', 5: 'Darkness' },
         traits: [
-          { name: 'Superior Darkvision', desc: 'Your Darkvision has a range of 120 feet.' },
+          { name: 'Deep Sight', desc: 'Your Darkvision reaches 120 feet, and you know the Dancing Lights cantrip.' },
           { name: 'Lineage Spells', desc: 'Faerie Fire at level 3, Darkness at level 5 — once per Long Rest each (or with slots).' }
         ]
       }
@@ -13383,26 +13390,26 @@ const SUBCLASSES_55 = {
 
 // Tactician maneuvers (2024). Each is selectable; the count known scales with level.
 const MANEUVERS_55 = {
-  ambush: { name: 'Ambush', desc: 'Add a Tactic Die to a Dexterity (Stealth) check or an initiative roll (unless Incapacitated).' },
-  'bait-and-switch': { name: 'Bait and Switch', desc: 'Expend a die to switch places with a willing creature within 5 ft (no Opportunity Attacks); you or it gains AC bonus = die roll until your next turn.' },
-  'commanders-strike': { name: "Commander's Strike", desc: 'Replace one attack to let a willing creature use its Reaction to attack, adding the die to its damage.' },
-  'commanding-presence': { name: 'Commanding Presence', desc: 'Add a die to a Charisma (Intimidation, Performance, or Persuasion) check.' },
-  'disarming-attack': { name: 'Disarming Attack', desc: 'On a hit, add the die to damage; target makes a Strength save or drops one held object.' },
-  'distracting-strike': { name: 'Distracting Strike', desc: 'On a hit, add the die to damage; the next attack against the target by someone else has Advantage.' },
-  'evasive-footwork': { name: 'Evasive Footwork', desc: 'As a Bonus Action, Disengage and add the die to your AC until your next turn.' },
-  'feinting-attack': { name: 'Feinting Attack', desc: 'As a Bonus Action, gain Advantage on your next attack vs a creature within 5 ft; on a hit add the die to damage.' },
-  'goading-attack': { name: 'Goading Attack', desc: 'On a hit, add the die to damage; target makes a Wisdom save or has Disadvantage attacking anyone but you until end of your next turn.' },
-  'lunging-attack': { name: 'Lunging Attack', desc: 'As a Bonus Action, Dash; if you moved 5+ ft in a straight line before a melee hit, add the die to damage.' },
-  'maneuvering-attack': { name: 'Maneuvering Attack', desc: 'On a hit, add the die to damage; a willing ally can use its Reaction to move half its Speed without provoking the target.' },
-  'menacing-attack': { name: 'Menacing Attack', desc: 'On a hit, add the die to damage; target makes a Wisdom save or is Frightened until end of your next turn.' },
-  parry: { name: 'Parry', desc: 'As a Reaction when a melee attack damages you, reduce the damage by the die roll + your Str or Dex modifier.' },
-  'precision-attack': { name: 'Precision Attack', desc: 'When you miss, expend a die and add it to the attack roll, potentially turning it into a hit.' },
-  'pushing-attack': { name: 'Pushing Attack', desc: 'On a hit, add the die to damage; a Large-or-smaller target makes a Strength save or is pushed up to 15 ft away.' },
-  rally: { name: 'Rally', desc: 'As a Bonus Action, a chosen ally within 30 ft gains Temporary HP = die roll + half your Fighter level.' },
-  riposte: { name: 'Riposte', desc: 'As a Reaction when a creature misses you with a melee attack, make a melee attack against it; on a hit add the die to damage.' },
-  'sweeping-attack': { name: 'Sweeping Attack', desc: 'On a melee hit, a second creature within 5 ft of the target takes die-roll damage of the same type if the roll would also hit it.' },
-  'tactical-assessment': { name: 'Tactical Assessment', desc: 'Add a die to an Intelligence (History or Investigation) or Wisdom (Insight) check.' },
-  'trip-attack': { name: 'Trip Attack', desc: 'On a hit, add the die to damage; a Large-or-smaller target makes a Strength save or is knocked Prone.' },
+  ambush: { name: 'Lie in Wait', desc: 'Add a tactic die to a Stealth check or an initiative roll, as long as you aren\'t Incapacitated.' },
+  'bait-and-switch': { name: 'Swap Places', desc: 'Spend a die to trade places with a willing creature within 5 ft without provoking; you or it adds the roll to AC until your next turn.' },
+  'commanders-strike': { name: 'Call the Shot', desc: 'Give up one attack so a willing ally can use its Reaction to attack, adding the die to its damage.' },
+  'commanding-presence': { name: 'Voice of Command', desc: 'Add a die to an Intimidation, Performance or Persuasion check.' },
+  'disarming-attack': { name: 'Knock Loose', desc: 'On a hit, add the die to damage; the target makes a Strength save or drops one held object.' },
+  'distracting-strike': { name: 'Opening Blow', desc: 'On a hit, add the die to damage; the next attack on the target by someone else has Advantage.' },
+  'evasive-footwork': { name: 'Slippery Steps', desc: 'As a Bonus Action, Disengage and add the die to your AC until your next turn.' },
+  'feinting-attack': { name: 'False Opening', desc: 'As a Bonus Action, gain Advantage on your next attack against a creature within 5 ft; on a hit add the die to damage.' },
+  'goading-attack': { name: 'Taunting Strike', desc: 'On a hit, add the die to damage; the target makes a Wisdom save or has Disadvantage on attacks against anyone but you until the end of your next turn.' },
+  'lunging-attack': { name: 'Charging Thrust', desc: 'As a Bonus Action, Dash; if you moved at least 5 ft straight toward the target before a melee hit, add the die to damage.' },
+  'maneuvering-attack': { name: 'Cover the Advance', desc: 'On a hit, add the die to damage; a willing ally can use its Reaction to move half its Speed without provoking the target.' },
+  'menacing-attack': { name: 'Fearsome Blow', desc: 'On a hit, add the die to damage; the target makes a Wisdom save or is Frightened until the end of your next turn.' },
+  parry: { name: 'Turn the Blade', desc: 'As a Reaction when a melee attack damages you, cut the damage by the die roll + your Str or Dex modifier.' },
+  'precision-attack': { name: 'Steady Aim', desc: 'When you miss, spend a die and add it to the attack roll; it may now hit.' },
+  'pushing-attack': { name: 'Driving Blow', desc: 'On a hit, add the die to damage; a Large or smaller target makes a Strength save or is shoved up to 15 ft.' },
+  rally: { name: 'Second Breath', desc: 'As a Bonus Action, an ally within 30 ft gains Temporary HP equal to the die roll + half your Fighter level.' },
+  riposte: { name: 'Counterstroke', desc: 'As a Reaction when a creature misses you in melee, strike back; on a hit add the die to damage.' },
+  'sweeping-attack': { name: 'Cleaving Arc', desc: 'After a melee hit, a second creature within 5 ft of the target takes the die roll in damage of the same type, if your roll would also hit it.' },
+  'tactical-assessment': { name: 'Read the Field', desc: 'Add a die to a History, Investigation or Insight check.' },
+  'trip-attack': { name: 'Leg Sweep', desc: 'On a hit, add the die to damage; a Large or smaller target makes a Strength save or falls Prone.' },
 };
 
 
@@ -13673,7 +13680,7 @@ const SUBCLASS_RESOURCES = {
       maxFn: (lvl) => lvl >= 14 ? 3 : 2,
       desc: 'After a long rest, roll d20s and record the numbers. Once per turn, replace an attack roll, save, or check made by you or any creature you can see with one of your stored dice. Each die can be used once before the next long rest.' }
   ],
-  // v0.20.0 — Tactician Fighter. Superiority dice are the
+  // v0.20.0 — Tactician Fighter. Tactic dice are the
   // resource that powers maneuvers. The pool starts at 4 dice and
   // bumps to 5 at L7, 6 at L15. Recovers on a short or long rest.
   // Die size (d8 → d10 → d12) is queried separately via
@@ -13683,7 +13690,7 @@ const SUBCLASS_RESOURCES = {
     { id: 'superiority_dice', name: 'Tactic Dice', minLevel: 3, recovers: 'short',
       kind: 'superiority',
       maxFn: (lvl) => lvl >= 15 ? 6 : lvl >= 7 ? 5 : 4,
-      desc: 'Tactician maneuvers cost one superiority die each. Die size: d8 (L3–6) → d10 (L7–17) → d12 (L18+). Recovers on a short or long rest.' }
+      desc: 'Tactician maneuvers cost one tactic die each. Die size: d8 (L3–6) → d10 (L7–17) → d12 (L18+). Recovers on a short or long rest.' }
   ],
   // v0.20.4 — War Cleric. When the cleric takes the Attack action,
   // they can spend a charge to make one extra weapon attack as a
@@ -14000,47 +14007,47 @@ const SUBCLASS_RESOURCES = {
 // v0.20.0 — Tactician Maneuvers (SRD subset).
 // Each maneuver has a `damage` flag indicating whether it's a
 // damage-rider maneuver (gets a layered option on weapon attacks
-// that adds the superiority die to damage) or a non-damage one
+// that adds the tactic die to damage) or a non-damage one
 // (purely descriptive on the Features tab — players narrate the
-// trigger at the table, like Commander's Strike or Rally).
+// trigger at the table, like Call the Shot or Second Breath).
 //
 // `trigger` is for the Features-tab description and tells the
 // player when to spend the die. `save` is the saving throw
 // imposed (if any) — Tactician DC = 8 + prof + max(Str, Dex).
 // ============================================================
 const MANEUVERS = [
-  { id: 'commanders_strike', name: "Commander's Strike", trigger: 'When you take the Attack action, forgo one attack and use your bonus action.', save: null, damage: false,
-    desc: 'Choose an ally that can see/hear you. They use their reaction to make a weapon attack, adding the superiority die to the damage.' },
-  { id: 'disarming_attack', name: 'Disarming Attack', trigger: 'When you hit a creature with a weapon attack.', save: 'str', damage: true,
-    desc: 'Add the superiority die to damage. The target makes a Strength save; on a fail, it drops one item of your choice that it is holding.' },
-  { id: 'distracting_strike', name: 'Distracting Strike', trigger: 'When you hit a creature with a weapon attack.', save: null, damage: true,
-    desc: 'Add the superiority die to damage. The next attack roll against the target by an attacker other than you has advantage if the attack is made before your next turn.' },
-  { id: 'evasive_footwork', name: 'Evasive Footwork', trigger: 'When you move.', save: null, damage: false,
-    desc: 'Roll the superiority die and add it to your AC until you stop moving.' },
-  { id: 'feinting_attack', name: 'Feinting Attack', trigger: 'Bonus action, before a weapon attack on your turn.', save: null, damage: true,
-    desc: 'Feint at a creature within 5 ft. You have advantage on your next attack against it this turn. If that attack hits, add the superiority die to damage.' },
-  { id: 'goading_attack', name: 'Goading Attack', trigger: 'When you hit a creature with a weapon attack.', save: 'wis', damage: true,
-    desc: 'Add the superiority die to damage. The target makes a Wisdom save; on a fail, it has disadvantage on attacks against anyone other than you until the end of your next turn.' },
-  { id: 'lunging_attack', name: 'Lunging Attack', trigger: 'When you make a melee weapon attack.', save: null, damage: true,
-    desc: 'Reach is increased by 5 ft for that attack. If it hits, add the superiority die to damage.' },
-  { id: 'maneuvering_attack', name: 'Maneuvering Attack', trigger: 'When you hit a creature with a weapon attack.', save: null, damage: true,
-    desc: 'Add the superiority die to damage. Choose an ally that can see/hear you; they can use their reaction to move up to half their speed without provoking an opportunity attack from the target.' },
-  { id: 'menacing_attack', name: 'Menacing Attack', trigger: 'When you hit a creature with a weapon attack.', save: 'wis', damage: true,
-    desc: 'Add the superiority die to damage. The target makes a Wisdom save; on a fail, it is frightened of you until the end of your next turn.' },
-  { id: 'parry', name: 'Parry', trigger: 'When another creature damages you with a melee attack.', save: null, damage: false,
-    desc: 'Use your reaction and roll the superiority die. Reduce the damage to you by the die + your Dex modifier.' },
-  { id: 'precision_attack', name: 'Precision Attack', trigger: 'When you make a weapon attack roll against a creature.', save: null, damage: false,
-    desc: 'Add the superiority die to the attack roll. You can use this before or after the d20, but before any effects. Cannot be used on a roll with disadvantage.' },
-  { id: 'pushing_attack', name: 'Pushing Attack', trigger: 'When you hit a creature with a weapon attack (Large or smaller, within 5 ft).', save: 'str', damage: true,
-    desc: 'Add the superiority die to damage. Target makes a Strength save; on a fail, push it up to 15 ft away.' },
-  { id: 'rally', name: 'Rally', trigger: 'Bonus action.', save: null, damage: false,
-    desc: 'Choose a willing creature within 30 ft. It gains temp HP equal to the superiority die + your Charisma modifier.' },
-  { id: 'riposte', name: 'Riposte', trigger: 'When a creature misses you with a melee attack.', save: null, damage: true,
-    desc: 'Use your reaction to make a melee weapon attack against it. If the attack hits, add the superiority die to damage.' },
-  { id: 'sweeping_attack', name: 'Sweeping Attack', trigger: 'When you hit a creature with a melee weapon attack.', save: null, damage: false,
-    desc: 'Choose another creature within 5 ft of the original target and within reach. If the original attack roll would hit the second creature, it takes damage equal to the superiority die (same type as the original weapon).' },
-  { id: 'trip_attack', name: 'Trip Attack', trigger: 'When you hit a creature with a weapon attack (Large or smaller).', save: 'str', damage: true,
-    desc: 'Add the superiority die to damage. Target makes a Strength save; on a fail, it is knocked prone.' },
+  { id: 'commanders_strike', name: 'Call the Shot', trigger: 'When you take the Attack action, forgo one attack and use your bonus action.', save: null, damage: false,
+    desc: 'Give up one of your attacks and spend your bonus action: an ally who can see or hear you uses its reaction to make one weapon attack, adding your tactic die to its damage.' },
+  { id: 'disarming_attack', name: 'Knock Loose', trigger: 'When you hit a creature with a weapon attack.', save: 'str', damage: true,
+    desc: 'Add the tactic die to damage. The target makes a Strength save or lets go of one held item you choose; it lands at its feet.' },
+  { id: 'distracting_strike', name: 'Opening Blow', trigger: 'When you hit a creature with a weapon attack.', save: null, damage: true,
+    desc: 'Add the tactic die to damage. Before your next turn, the next attack against the target by anyone but you has advantage.' },
+  { id: 'evasive_footwork', name: 'Slippery Steps', trigger: 'When you move.', save: null, damage: false,
+    desc: 'As you move, roll the tactic die and add it to your AC until you stop moving.' },
+  { id: 'feinting_attack', name: 'False Opening', trigger: 'Bonus action, before a weapon attack on your turn.', save: null, damage: true,
+    desc: 'Spend your bonus action to fake out a creature within 5 ft: your next attack on it this turn has advantage, and adds the tactic die to damage if it hits.' },
+  { id: 'goading_attack', name: 'Taunting Strike', trigger: 'When you hit a creature with a weapon attack.', save: 'wis', damage: true,
+    desc: 'Add the tactic die to damage. The target makes a Wisdom save or has disadvantage on attacks against anyone but you until the end of your next turn.' },
+  { id: 'lunging_attack', name: 'Long Reach', trigger: 'When you make a melee weapon attack.', save: null, damage: true,
+    desc: 'This melee attack reaches 5 ft further; on a hit, add the tactic die to damage.' },
+  { id: 'maneuvering_attack', name: 'Cover the Advance', trigger: 'When you hit a creature with a weapon attack.', save: null, damage: true,
+    desc: 'Add the tactic die to damage. An ally who can see or hear you can use its reaction to move up to half its speed without provoking the target.' },
+  { id: 'menacing_attack', name: 'Fearsome Blow', trigger: 'When you hit a creature with a weapon attack.', save: 'wis', damage: true,
+    desc: 'Add the tactic die to damage. The target makes a Wisdom save or is frightened of you until the end of your next turn.' },
+  { id: 'parry', name: 'Turn the Blade', trigger: 'When another creature damages you with a melee attack.', save: null, damage: false,
+    desc: 'When a melee attack damages you, use your reaction to roll the tactic die and cut the damage by that roll + your Dex modifier.' },
+  { id: 'precision_attack', name: 'Steady Aim', trigger: 'When you make a weapon attack roll against a creature.', save: null, damage: false,
+    desc: 'Add the tactic die to a weapon attack roll, before or after rolling but before the result is known. Not on a roll with disadvantage.' },
+  { id: 'pushing_attack', name: 'Driving Blow', trigger: 'When you hit a creature with a weapon attack (Large or smaller, within 5 ft).', save: 'str', damage: true,
+    desc: 'Add the tactic die to damage. A Large or smaller target makes a Strength save or is shoved up to 15 ft away.' },
+  { id: 'rally', name: 'Second Breath', trigger: 'Bonus action.', save: null, damage: false,
+    desc: 'As a bonus action, a willing creature within 30 ft gains temporary HP equal to the tactic die + your Charisma modifier.' },
+  { id: 'riposte', name: 'Counterstroke', trigger: 'When a creature misses you with a melee attack.', save: null, damage: true,
+    desc: 'When a creature misses you in melee, use your reaction to strike back with a melee weapon; on a hit add the tactic die to damage.' },
+  { id: 'sweeping_attack', name: 'Cleaving Arc', trigger: 'When you hit a creature with a melee weapon attack.', save: null, damage: false,
+    desc: 'After a melee hit, pick another creature within 5 ft of the target and your reach. If your attack roll would also hit it, it takes the tactic die in damage of the same type.' },
+  { id: 'trip_attack', name: 'Leg Sweep', trigger: 'When you hit a creature with a weapon attack (Large or smaller).', save: 'str', damage: true,
+    desc: 'Add the tactic die to damage. A Large or smaller target makes a Strength save or falls prone.' },
 ];
 const MANEUVERS_BY_ID = Object.fromEntries(MANEUVERS.map(m => [m.id, m]));
 
@@ -16272,7 +16279,7 @@ function isHexWarriorWeapon(ch, weaponInvId) {
 // from:
 //   - Race traits (Dwarven/Stout Resilience, Elemental-Touched heritage, Tiefling
 //     Hellish Resistance, Dawnborn resistance, Draconic Ancestry, Goliath
-//     Mountain Born, etc.)
+//     Highland Hardiness, etc.)
 //   - Active rage (Barbarian resistance to bludgeoning, piercing, slashing)
 //   - Heavy Armor Master (feat: 3 less BPS damage; reported here too)
 //   - Bear Totem (resistance to all damage except psychic while raging)
@@ -16291,7 +16298,7 @@ function characterDamageResistances(ch) {
   if (race === 'tiefling') add('fire', 'Hellish Resistance');
   if (race === 'aasimar') add('necrotic', 'Celestial Resistance');
   if (race === 'aasimar') add('radiant', 'Celestial Resistance');
-  if (race === 'goliath') add('cold', 'Mountain Born');
+  if (race === 'goliath') add('cold', 'Highland Hardiness');
 
   // Draconic Ancestry damage type (from Dragonborn or Draconic Sorcerer
   // tagged via ch.draconicAncestry)
@@ -17357,8 +17364,8 @@ function hasThirdEye(ch) {
 // The four mode options for The Third Eye.
 const THIRD_EYE_MODES = [
   { id: 'darkvision', name: 'Darkvision', desc: 'Darkvision 60 ft.' },
-  { id: 'ethereal_sight', name: 'Ethereal Sight', desc: 'See into the Ethereal Plane within 60 ft.' },
-  { id: 'greater_comp', name: 'Greater Comprehension', desc: 'Read any language at sight, even script you don\'t know.' },
+  { id: 'ethereal_sight', name: 'Veil Sight', desc: 'Peer through to the ghostly Ethereal Plane out to 60 ft.' },
+  { id: 'greater_comp', name: 'Tongue-Reader', desc: 'Read any writing you see, in any language or script.' },
   { id: 'see_invisible', name: 'See Invisibility', desc: 'See invisible creatures and objects within 10 ft.' },
 ];
 
@@ -18175,19 +18182,19 @@ function hasWolfTotem(ch) {
 // has its own flavor text (L3 spirit, L6 aspect, L14 attunement);
 // the same three animals appear at each tier per RAW.
 const TOTEM_SPIRIT_OPTIONS = [
-  { id: 'bear', name: 'Spirit of the Bear', desc: 'While raging, resistance to all damage except psychic. You can carry, push, drag, or lift twice as much weight.' },
-  { id: 'eagle', name: 'Spirit of the Eagle', desc: 'While raging and not wearing heavy armor, hostile creatures provoke opportunity attacks if they try to attack any other creature than you. You can take the Dash action as a bonus action.' },
-  { id: 'wolf', name: 'Spirit of the Wolf', desc: 'While raging, your friends have advantage on melee attack rolls against any creature within 5 ft of you that is hostile to you.' },
+  { id: 'bear', name: 'Bear Guardian', desc: 'While raging you resist every damage type except psychic, and you can haul, push or lift twice your normal load.' },
+  { id: 'eagle', name: 'Eagle Guardian', desc: 'While raging in anything lighter than heavy armour, foes provoke opportunity attacks from you when they attack someone else, and you can Dash as a bonus action.' },
+  { id: 'wolf', name: 'Wolf Guardian', desc: 'While raging, your allies have advantage on melee attacks against hostile creatures within 5 ft of you.' },
 ];
 const TOTEM_ASPECT_OPTIONS = [
-  { id: 'bear', name: 'Aspect of the Bear', desc: 'You gain the might of the bear: your carrying capacity (including maximum load and maximum lift) doubles, and you have advantage on Strength checks made to push, pull, lift, or break objects.' },
-  { id: 'eagle', name: 'Aspect of the Eagle', desc: 'You gain the eyesight of an eagle: you can see up to 1 mile away with no difficulty, and dim light doesn\'t impose disadvantage on Wisdom (Perception) checks.' },
-  { id: 'wolf', name: 'Aspect of the Wolf', desc: 'You gain the hunting sensibilities of a wolf: you can track other creatures while travelling at a fast pace, and you can move stealthily while travelling at a normal pace.' },
+  { id: 'bear', name: 'Bear Gift', desc: 'Your carrying capacity doubles and you have advantage on Strength checks to push, pull, lift or break things.' },
+  { id: 'eagle', name: 'Eagle Gift', desc: 'You see clearly for up to a mile, and dim light doesn\'t hinder your Perception checks.' },
+  { id: 'wolf', name: 'Wolf Gift', desc: 'You can track at a fast travel pace and sneak at a normal pace.' },
 ];
 const TOTEM_ATTUNEMENT_OPTIONS = [
-  { id: 'bear', name: 'Bear Attunement', desc: 'While raging, any creature within 5 ft that is hostile to you has disadvantage on attack rolls against targets other than you (or another character with this feature). They\'re drawn to you like nails to a magnet.' },
-  { id: 'eagle', name: 'Eagle Attunement', desc: 'While raging, you have a flying speed equal to your current walking speed. This benefit works only in short bursts; you fall at the end of your turn if you are still aloft and nothing else is holding you up.' },
-  { id: 'wolf', name: 'Wolf Attunement', desc: 'While raging, you can use a bonus action on your turn to knock a Large or smaller creature prone when you hit it with a melee weapon attack.' },
+  { id: 'bear', name: 'Bear Communion', desc: 'While raging, hostile creatures within 5 ft have disadvantage on attacks against anyone but you (or another character with this feature).' },
+  { id: 'eagle', name: 'Eagle Communion', desc: 'While raging you fly at your walking speed, but only in bursts: if nothing holds you up at the end of your turn, you fall.' },
+  { id: 'wolf', name: 'Wolf Communion', desc: 'While raging, when you hit a Large or smaller creature with a melee weapon you can use a bonus action to knock it prone.' },
 ];
 
 function hasArcaneRage(ch) {
@@ -18504,56 +18511,56 @@ function applyReliableTalent(ch, d20Result, isProficient) {
 // Chaos Flare table — d100 entries. Sourced from SRD 5.1.
 // Each entry: { roll: number, desc: string }. `roll` is the d100 result.
 const WILD_MAGIC_SURGES = [
-  { roll: 1, desc: 'Roll on this table at the start of each of your turns for the next minute, ignoring this result on subsequent rolls.' },
-  { roll: 2, desc: 'For the next minute, you can see any invisible creature if it has line of sight to you.' },
-  { roll: 3, desc: 'A modron chosen and controlled by the DM appears in an unoccupied space within 5 ft of you, then disappears 1 minute later.' },
-  { roll: 4, desc: 'Cast Fireball as a 3rd-level spell centered on yourself.' },
-  { roll: 5, desc: 'Cast Magic Missile as a 5th-level spell.' },
-  { roll: 6, desc: 'Roll a d10. Your height changes by a number of inches equal to the roll. If the roll is odd, you shrink. If even, you grow.' },
-  { roll: 7, desc: 'You cast Confusion centered on yourself.' },
-  { roll: 8, desc: 'For the next minute, you regain 5 HP at the start of each of your turns.' },
-  { roll: 9, desc: 'You grow a long beard made of feathers that remains until you sneeze, at which point the feathers explode out from your face.' },
-  { roll: 10, desc: 'You cast Grease centered on yourself.' },
-  { roll: 11, desc: 'Creatures have disadvantage on saving throws against the next spell you cast in the next minute that involves a saving throw.' },
-  { roll: 12, desc: 'Your skin turns a vivid shade of blue. A Remove Curse spell can end this effect.' },
-  { roll: 13, desc: 'An eye appears on your forehead for the next minute. During that time, you have advantage on Wisdom (Perception) checks that rely on sight.' },
-  { roll: 14, desc: 'For the next minute, all your spells with a casting time of 1 action have a casting time of 1 bonus action.' },
-  { roll: 15, desc: 'You teleport up to 60 ft to an unoccupied space of your choice that you can see.' },
-  { roll: 16, desc: 'You are transported to the Astral Plane until the end of your next turn, after which you return to the space you previously occupied or the nearest unoccupied space if that space is occupied.' },
-  { roll: 17, desc: 'Maximize the damage of the next damaging spell you cast within the next minute.' },
-  { roll: 18, desc: 'Roll a d10. Your age changes by a number of years equal to the roll. If the roll is odd, you get younger (minimum 1 year old). If the roll is even, you get older.' },
-  { roll: 19, desc: '1d6 flumphs controlled by the DM appear in unoccupied spaces within 60 ft of you and are frightened of you. They vanish after 1 minute.' },
-  { roll: 20, desc: 'You regain 2d10 HP.' },
-  { roll: 21, desc: 'You turn into a potted plant until the start of your next turn. While a plant, you are incapacitated and have vulnerability to all damage. If you drop to 0 HP, your pot breaks, and your form reverts.' },
-  { roll: 22, desc: 'For the next minute, you can teleport up to 20 ft as a bonus action on each of your turns.' },
-  { roll: 23, desc: 'You cast Levitate on yourself.' },
-  { roll: 24, desc: 'A unicorn controlled by the DM appears in a space within 5 ft of you, then disappears 1 minute later.' },
-  { roll: 25, desc: 'You can\'t speak for the next minute. Whenever you try, pink bubbles float out of your mouth.' },
-  { roll: 26, desc: 'A spectral shield hovers near you for the next minute, granting you a +2 bonus to AC and immunity to Magic Missile.' },
-  { roll: 27, desc: 'You are immune to being intoxicated by alcohol for the next 5d6 days.' },
-  { roll: 28, desc: 'Your hair falls out but grows back within 24 hours.' },
-  { roll: 29, desc: 'For the next minute, any flammable object you touch that isn\'t being worn or carried by another creature bursts into flame.' },
-  { roll: 30, desc: 'You regain your lowest-level expended spell slot.' },
-  { roll: 31, desc: 'For the next minute, you must shout when you speak.' },
-  { roll: 32, desc: 'You cast Fog Cloud centered on yourself.' },
-  { roll: 33, desc: 'Up to three creatures you choose within 30 ft of you take 4d10 lightning damage.' },
-  { roll: 34, desc: 'You are frightened by the nearest creature until the end of your next turn.' },
-  { roll: 35, desc: 'Each creature within 30 ft of you becomes invisible for the next minute. The invisibility ends on a creature when it attacks or casts a spell.' },
-  { roll: 36, desc: 'You gain resistance to all damage for the next minute.' },
-  { roll: 37, desc: 'A random creature within 60 ft of you becomes poisoned for 1d4 hours.' },
-  { roll: 38, desc: 'You glow with bright light in a 30-ft radius for the next minute. Any creature that ends its turn within 5 ft of you is blinded until the end of its next turn.' },
-  { roll: 39, desc: 'You cast Polymorph on yourself. If you fail the saving throw, you turn into a sheep for the spell\'s duration.' },
-  { roll: 40, desc: 'Illusory butterflies and flower petals flutter in the air within 10 ft of you for the next minute.' },
-  { roll: 41, desc: 'You can take one additional action immediately.' },
-  { roll: 42, desc: 'Each creature within 30 ft of you takes 1d10 necrotic damage. You regain HP equal to the sum of the necrotic damage dealt.' },
+  { roll: 1, desc: 'For the next minute, roll on this table again at the start of each of your turns (reroll this result if it comes up).' },
+  { roll: 2, desc: 'For 1 minute you can see invisible creatures that have line of sight to you.' },
+  { roll: 3, desc: 'A small clockwork creature (the DM controls it) clatters into being within 5 ft of you and winds down after 1 minute.' },
+  { roll: 4, desc: 'A ball of fire bursts around you: you cast Fireball at 3rd level, centred on yourself.' },
+  { roll: 5, desc: 'Five glowing darts streak out: you cast Magic Missile at 5th level.' },
+  { roll: 6, desc: 'Roll a d10: you grow (even) or shrink (odd) by that many inches.' },
+  { roll: 7, desc: 'You cast Confusion centred on yourself.' },
+  { roll: 8, desc: 'For 1 minute you regain 5 HP at the start of each of your turns.' },
+  { roll: 9, desc: 'A tuft of brightly coloured feathers sprouts from your chin; it scatters the next time you sneeze.' },
+  { roll: 10, desc: 'The ground around you turns slick: you cast Grease centred on yourself.' },
+  { roll: 11, desc: 'The next spell you cast within 1 minute that calls for a save is made with disadvantage.' },
+  { roll: 12, desc: 'Your skin turns a bright copper colour until a Remove Curse ends it.' },
+  { roll: 13, desc: 'A third eye opens on your brow for 1 minute, giving advantage on sight-based Perception checks.' },
+  { roll: 14, desc: 'For 1 minute, your 1-action spells can be cast as a bonus action.' },
+  { roll: 15, desc: 'You blink up to 60 ft to a free space you can see.' },
+  { roll: 16, desc: 'You flicker out of the world until the end of your next turn, then reappear where you were (or the nearest free space).' },
+  { roll: 17, desc: 'The next damaging spell you cast within 1 minute deals maximum damage.' },
+  { roll: 18, desc: 'Roll a d10: you age (even) or grow younger (odd, minimum 1 year) by that many years.' },
+  { roll: 19, desc: '1d6 harmless floating jellyfish-like creatures (the DM controls them) appear within 60 ft, cower from you and vanish after 1 minute.' },
+  { roll: 20, desc: 'Warmth floods you: regain 2d10 HP.' },
+  { roll: 21, desc: 'You become a potted fern until the start of your next turn: incapacitated and vulnerable to all damage. At 0 HP the pot shatters and you return to normal.' },
+  { roll: 22, desc: 'For 1 minute you can teleport up to 20 ft as a bonus action each turn.' },
+  { roll: 23, desc: 'You float gently upward: you cast Levitate on yourself.' },
+  { roll: 24, desc: 'A white stag (the DM controls it) appears within 5 ft of you and bounds away into nothing after 1 minute.' },
+  { roll: 25, desc: 'For 1 minute you can\'t talk; trying to speak releases soap bubbles.' },
+  { roll: 26, desc: 'A ghostly buckler circles you for 1 minute: +2 AC, and Magic Missile can\'t harm you.' },
+  { roll: 27, desc: 'For the next 5d6 days, alcohol has no effect on you.' },
+  { roll: 28, desc: 'All your hair falls out, then grows back over the next day.' },
+  { roll: 29, desc: 'For 1 minute, loose flammable things you touch (not worn or carried by others) catch fire.' },
+  { roll: 30, desc: 'Regain your lowest-level spent spell slot.' },
+  { roll: 31, desc: 'For 1 minute you can only speak at a bellow.' },
+  { roll: 32, desc: 'Mist pours from you: you cast Fog Cloud centred on yourself.' },
+  { roll: 33, desc: 'Lightning leaps from you: up to three creatures of your choice within 30 ft take 4d10 lightning damage.' },
+  { roll: 34, desc: 'You are frightened of the nearest creature until the end of your next turn.' },
+  { roll: 35, desc: 'Every creature within 30 ft turns invisible for 1 minute, or until it attacks or casts a spell.' },
+  { roll: 36, desc: 'For 1 minute you resist all damage.' },
+  { roll: 37, desc: 'A random creature within 60 ft is poisoned for 1d4 hours.' },
+  { roll: 38, desc: 'You blaze with light (30-ft radius) for 1 minute; a creature that ends its turn within 5 ft of you is blinded until the end of its next turn.' },
+  { roll: 39, desc: 'You cast Polymorph on yourself; if you fail the save you become a goat for the duration.' },
+  { roll: 40, desc: 'Drifting moths and falling blossoms fill the air within 10 ft of you for 1 minute (an illusion).' },
+  { roll: 41, desc: 'You may take one extra action right now.' },
+  { roll: 42, desc: 'Every creature within 30 ft takes 1d10 necrotic damage, and you regain HP equal to the total.' },
   { roll: 43, desc: 'You cast Mirror Image.' },
-  { roll: 44, desc: 'You cast Fly on a random creature within 60 ft of you.' },
-  { roll: 45, desc: 'You become invisible for the next minute. During that time, other creatures can\'t hear you. The invisibility ends if you attack or cast a spell.' },
-  { roll: 46, desc: 'If you die within the next minute, you immediately come back to life as if by the Reincarnate spell.' },
-  { roll: 47, desc: 'Your size increases by one category — from Medium to Large, for example. If there isn\'t enough room for you to increase your size, you attain the largest size possible in the available space.' },
-  { roll: 48, desc: 'You and all creatures within 30 ft of you gain vulnerability to piercing damage for the next minute.' },
-  { roll: 49, desc: 'You are surrounded by faint, ethereal music for the next minute.' },
-  { roll: 50, desc: 'You regain all expended sorcery points.' },
+  { roll: 44, desc: 'A random creature within 60 ft is granted flight: you cast Fly on it.' },
+  { roll: 45, desc: 'You turn invisible and utterly silent for 1 minute, or until you attack or cast a spell.' },
+  { roll: 46, desc: 'If you die within 1 minute, you return to life in a new body, as the Reincarnate spell.' },
+  { roll: 47, desc: 'You grow one size larger for 1 minute, if there\'s room.' },
+  { roll: 48, desc: 'You and every creature within 30 ft become vulnerable to piercing damage for 1 minute.' },
+  { roll: 49, desc: 'Soft, distant music follows you for 1 minute.' },
+  { roll: 50, desc: 'Regain all your spent sorcery points.' },
   { roll: 51, desc: 'For the next minute, all your spells with a casting time of 1 action have a casting time of 1 reaction in response to being damaged.' },
   { roll: 52, desc: 'A nonhostile unicorn under the DM\'s control appears in a space within 5 ft of you, then disappears 1 minute later.' },
   { roll: 53, desc: 'For the next minute, you can\'t cast spells.' },
@@ -18562,7 +18569,7 @@ const WILD_MAGIC_SURGES = [
   { roll: 56, desc: 'You and one random creature within 60 ft swap positions.' },
   { roll: 57, desc: 'You exude a strong smell of lavender for the next 1d4 days. Any creature within 5 ft can smell you, even with a blocked nose.' },
   { roll: 58, desc: 'Your spell deals one additional damage type at random (DM\'s choice).' },
-  { roll: 59, desc: 'You hear a soft, ghostly whisper of advice from a long-dead sorcerer at the start of each of your turns for the next minute.' },
+  { roll: 59, desc: 'You hear a soft, ghostly whisper of advice at the start of each of your turns for the next minute.' },
   { roll: 60, desc: 'You and all creatures within 30 ft of you gain the ability to speak and understand a random language for the next hour.' },
   { roll: 61, desc: 'You are surrounded by a faint, glowing aura that makes you visible in darkness for the next minute.' },
   { roll: 62, desc: 'For the next minute, you can see through solid objects up to 30 ft thick.' },
@@ -18676,8 +18683,8 @@ const WARLOCK_INVOCATIONS = [
   { id:'agonizing_blast', name:'Agonizing Blast', prereqSpell:'Eldritch Blast', desc:'When you cast Eldritch Blast, add your Charisma modifier to the damage it deals on a hit.' },
   { id:'eldritch_spear', name:'Eldritch Spear', prereqSpell:'Eldritch Blast', desc:'Eldritch Blast range becomes 300 ft.' },
   { id:'repelling_blast', name:'Repelling Blast', prereqSpell:'Eldritch Blast', desc:'When you hit a creature with Eldritch Blast, you can push it up to 10 ft away.' },
-  { id:'grasp_of_hadar', name:'Grasp of the Void', prereqSpell:'Eldritch Blast', oncePerTurn:true, desc:'Once on each of your turns when you hit with Eldritch Blast, pull that creature up to 10 ft closer.' },
-  { id:'lance_of_lethargy', name:'Lance of Lethargy', prereqSpell:'Eldritch Blast', oncePerTurn:true, desc:'Once on each of your turns when you hit with Eldritch Blast, reduce that creature’s speed by 10 ft until the end of your next turn.' },
+  { id:'grasp_of_hadar', name:'Grasp of the Void', prereqSpell:'Eldritch Blast', oncePerTurn:true, desc:'Once per turn, when Eldritch Blast hits a creature, a tug of empty space can drag it up to 10 ft straight toward you.' },
+  { id:'lance_of_lethargy', name:'Leaden Bolt', prereqSpell:'Eldritch Blast', oncePerTurn:true, desc:'Once per turn, when Eldritch Blast hits a creature, its limbs grow heavy: its speed drops by 10 ft until the end of your next turn.' },
   { id:'armor_of_shadows', name:'Armor of Shadows', desc:'Cast Mage Armor on yourself at will, without expending a spell slot or material components.' },
   { id:'beast_speech', name:'Beast Speech', desc:'Cast Speak with Animals at will, without expending a spell slot.' },
   { id:'beguiling_influence', name:'Beguiling Influence', desc:'Gain proficiency in Deception and Persuasion.' },
@@ -18693,7 +18700,7 @@ const WARLOCK_INVOCATIONS = [
   { id:'misty_visions', name:'Misty Visions', desc:'Cast Silent Image at will, without expending a spell slot or material components.' },
   { id:'ascendant_step', name:'Ascendant Step', minLevel:9, desc:'Cast Levitate on yourself at will, without expending a spell slot or material components.' },
   { id:'lifedrinker', name:'Lifedrinker', minLevel:12, desc:'When you hit with your pact weapon, deal extra necrotic damage equal to your Charisma modifier.' },
-  { id:'improved_pact_weapon', name:'Improved Pact Weapon', prereqBoon:'blade', desc:'Your pact weapon gains a +1 bonus to attack and damage rolls (unless it is a magic weapon that already has a bonus), can serve as a spellcasting focus, and may be a shortbow, longbow, light or heavy crossbow.' },
+  { id:'improved_pact_weapon', name:'Honed Pact Weapon', prereqBoon:'blade', desc:'Your pact weapon gains +1 to attack and damage if it isn\'t already magical, can serve as your spellcasting focus, and may be a shortbow, longbow or crossbow.' },
   { id:'pact_of_the_blade', name:'Pact of the Blade', edition55:true, desc:'As a Bonus Action, conjure a pact weapon in your hand \u2014 any Simple or Martial Melee weapon \u2014 or bond a magic weapon you are holding. You are proficient with it, can use your Charisma modifier for its attack and damage rolls, and can have it deal Force damage instead of its normal type.' },
   { id:'visions_distant_realms', name:'Visions of Distant Realms', minLevel:15, desc:'Cast Arcane Eye at will, without expending a spell slot.' },
   { id:'witch_sight', name:'Witch Sight', minLevel:15, desc:'See the true form of shapechangers or illusion-disguised creatures within 30 ft.' },
@@ -19345,7 +19352,7 @@ function cleanInvalidInvocations(ch) {
 // ============================================================
 // Pact of the Blade — pact weapon designation + Improved Pact Weapon.
 // A blade-pact warlock bonds one inventory weapon as the pact weapon
-// (or conjures a fresh one). Improved Pact Weapon grants +1 to a pact
+// (or conjures a fresh one). Honed Pact Weapon grants +1 to a pact
 // weapon that isn't already magical; the granted +1 reuses the standard
 // magicBonus pipeline so it flows into both the displayed and rolled
 // to-hit/damage. For a Bound Blade, the pact weapon also becomes the Hex
@@ -29545,7 +29552,7 @@ function openCastRollDialog(ch, spell, slotLevel, freeCast = false, freeCastInfo
     if (hasInvocation(ch, 'agonizing_blast')) notes.push(`Agonizing Blast: +${Math.max(0, spellMod(ch) || 0)} damage on each hit.`);
     if (hasInvocation(ch, 'repelling_blast')) notes.push('Repelling Blast: push up to 10 ft on each hit.');
     if (hasInvocation(ch, 'grasp_of_hadar')) notes.push('Grasp of the Void: once/turn pull up to 10 ft.');
-    if (hasInvocation(ch, 'lance_of_lethargy')) notes.push('Lance of Lethargy: once/turn -10 ft speed.');
+    if (hasInvocation(ch, 'lance_of_lethargy')) notes.push('Leaden Bolt: once/turn -10 ft speed.');
     if (notes.length) invNotes = `<div class="roll-meta-desc"><strong>Invocations:</strong> ${escape(notes.join(' '))}</div>`;
   }
   const meta = `<div class="roll-meta-line"><strong>${escape(displayRange)}</strong> · ${escape(spell.duration)} · ${escape(spell.components)}</div><div class="roll-meta-desc">${escape(spell.desc)}</div>${invNotes}`;
@@ -45422,7 +45429,7 @@ function renderBattleMasterPanel(ch) {
         <div class="feature-name">Battle Tactics</div>
         <div class="bc-counter${dieEmptyClass}">${remaining}/${total} · d${dieSize}</div>
       </div>
-      <div class="feature-desc">Superiority dice fuel your maneuvers. Recover on a short or long rest. Maneuver save DC = <strong>${dc}</strong> (8 + prof + Str/Dex). Spend dice from the Resources panel; pick maneuvers below.</div>
+      <div class="feature-desc">Tactic dice fuel your maneuvers. Recover on a short or long rest. Maneuver save DC = <strong>${dc}</strong> (8 + prof + Str/Dex). Spend dice from the Resources panel; pick maneuvers below.</div>
     </div>
 
     <div class="feature subclass-feature bc-panel">
@@ -45486,7 +45493,7 @@ function renderPactWeaponPanel(ch) {
   const improved = hasInvocation(ch, 'improved_pact_weapon');
   const isHex = subclassIdFor(ch, 'warlock') === 'hexblade';
   const noteBits = [];
-  if (improved) noteBits.push('Improved Pact Weapon grants +1 to a non-magical pact weapon.');
+  if (improved) noteBits.push('Honed Pact Weapon grants +1 to a non-magical pact weapon.');
   if (isHex) noteBits.push('As a Bound Blade, your pact weapon also uses Charisma (Blade Pact Training).');
   return `
     <div class="feature subclass-feature bc-panel">
@@ -47978,7 +47985,7 @@ function wirePlay(ch) {
         });
       }
 
-      // v0.20.0 — Tactician maneuvers that add the superiority die to damage.
+      // v0.20.0 — Tactician maneuvers that add the tactic die to damage.
       // Only the damage-rider maneuvers the player has actually picked appear
       // here. Non-damage maneuvers (Parry, Rally, Evasive Footwork, etc.) live
       // on the Features tab — the player narrates the trigger and we just track
@@ -48253,7 +48260,7 @@ function wirePlay(ch) {
               const cd = (CLASS_RESOURCES.paladin || []).find(r => r.id === 'channel_divinity_pal');
               if (cd) spendResource(charac, cd, 1);
             }
-            // v0.20.0 — Tactician maneuver: spend one superiority die
+            // v0.20.0 — Tactician maneuver: spend one tactic die
             if (opt && opt.kind === 'maneuver') {
               const sup = (SUBCLASS_RESOURCES['fighter:battle_master'] || []).find(r => r.id === 'superiority_dice');
               if (sup) spendResource(charac, sup, 1);
@@ -56642,7 +56649,7 @@ function renderDMCombatRunner() {
       <div class="dm-run-strip" id="dmRunStrip">${stripHTML}</div>
       <div class="dm-run-card" id="dmRunCard">${cardHTML}</div>
       <div class="dm-run-toolbar">
-        <button class="dm-run-tool" data-run-wildmagic="1">✦ Wild Magic</button>
+        <button class="dm-run-tool" data-run-wildmagic="1">✦ Chaos Flare</button>
         <button class="dm-run-tool" data-run-status="${viewing.id}">⚑ Status</button>
         <button class="dm-run-tool primary" data-run-next="1">Next ▸</button>
       </div>
@@ -56920,7 +56927,7 @@ function wireDMCombatRunner(enc, order, turnId) {
     });
   });
 
-  // Wild Magic table.
+  // Chaos Flare table (DM tool).
   document.querySelectorAll('[data-run-wildmagic]').forEach(b => {
     b.addEventListener('click', () => { state.ui.wildSurgeDialog = { stage: 'table' }; render(); });
   });

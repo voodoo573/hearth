@@ -16,7 +16,7 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'app', 'index.html'), 'u
 const BANNED = ['Beholder', 'Vecna', 'Orcus', 'Kwalish', 'Tabaxi', 'Firbolg', 'Tortle', 'Genasi', 'Aasimar', 'Kenku', 'Duergar', 'Hexblade',
   'Mordenkainen', 'Leomund', 'Bigby', 'Tasha', 'Otiluke', 'Tenser', 'Evard', 'Rary', 'Melf', 'Hadar', 'Agathys', 'Mephistoph', 'Zariel', 'Baalzebul',
   'Dispater', 'Fierna', 'Levistus', 'Glasya', 'Mammon', 'Yggdrasil', 'Mechanus', 'Shadowfell', 'Feywild', 'Xanathar', 'Echo Knight', 'Soulknife', 'Battle Master',
-  'Demilich', 'Death Knight', 'Flameskull', 'Efreeti Chain', 'Dwarvish Lords', 'Vile Darkness', 'Exalted Deeds', 'Orb of Dragonkind'];
+  'Demilich', 'Death Knight', 'Leonin', 'Daunting Roar', "Pride's Bellow", 'Mask of the Wild', 'Drow Magic', 'Mountain Born', 'Asmodean', 'modron', 'flumph', 'Lance of Lethargy', 'Superiority', 'superiority die', "Commander's Strike", 'Totem Spirit', 'Spirit of the Bear', 'Flameskull', 'Efreeti Chain', 'Dwarvish Lords', 'Vile Darkness', 'Exalted Deeds', 'Orb of Dragonkind'];
 // Ids/identifiers are lowercase or camelCase (e.g. 'hexblade', isHexbladeChar); only user-visible capitalised words count.
 const found = BANNED.filter(w => new RegExp('(?<![A-Za-z_.])' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![A-Za-z_(])').test(html));
 check('no WotC-only names in app/index.html', found.length === 0, found);
@@ -48,6 +48,14 @@ check('no WotC-only names in app/index.html', found.length === 0, found);
   check('no old non-SRD spell names in SPELLS', cat.guardHits.length === 0, cat.guardHits);
   check('27 spells tagged hearth-original', cat.originals === 27, cat.originals);
   check('no duplicate spell names', cat.dupes === 0, cat.dupes);
+  const opt = await p.evaluate(() => ({
+    m5: MANEUVERS.map(m => m.name), m55: Object.values(MANEUVERS_55).map(m => m.name),
+    inv: WARLOCK_INVOCATIONS.filter(i => ['grasp_of_hadar','lance_of_lethargy','improved_pact_weapon'].includes(i.id)).map(i => i.name),
+    surges: WILD_MAGIC_SURGES.length, totem: TOTEM_SPIRIT_OPTIONS.map(o => o.name),
+    lion: [RACES.lion.name, RACES.pridefolk.name, SPECIES_55.lion.name, SPECIES_55.pridefolk.name] }));
+  check('option tables kept and renamed (16 + 20 manoeuvres, 3 invocations, 100 surges, spirit options)',
+    opt.m5.length === 16 && opt.m55.length === 20 && opt.inv.join() === 'Grasp of the Void,Leaden Bolt,Honed Pact Weapon' && opt.surges === 100 && opt.totem[0] === 'Bear Guardian', opt);
+  check('Lion/Pridefolk rebuilt as Sunmane/Grassrunner', opt.lion.join() === 'Sunmane,Grassrunner,Sunmane,Grassrunner', opt.lion);
   // 3. Every subclass and race renders on the sheet without errors, in both rulesets.
   const before = errs.length;
   const r = await p.evaluate(async () => {
