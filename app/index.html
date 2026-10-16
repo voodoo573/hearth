@@ -13,6 +13,8 @@
    data-theme stays the base tone (light|dark) so every html[data-theme="dark"] rule keeps working;
    data-palette picks one of Jenny's palettes (themes/palettes.js -> themes/build.js writes the line below). */
 /* @palettes */window.HEARTH_PALETTES = {"tavern":{"name":"Tavern Night","tone":"dark","color":"#140c07","texture":"leather","group":"places","blurb":"Deep smoky brown, candle-amber highlights and brass trim.","sw":["#1d130c","#2d1d11","#f7e4c0","#f2b65c","#43291a","#ee826c"]},"forest":{"name":"Elven Forest","tone":"light","color":"#24361f","texture":"parchment","group":"places","blurb":"Pale birch-bark pages, deep moss ink, lichen-gold accents and a silvered moss banner.","sw":["#e5e8da","#eef1e4","#18251a","#4d5c16","#3c5534","#8f2a22"]},"forge":{"name":"Dwarven Forge","tone":"dark","color":"#111214","texture":"stone","group":"places","blurb":"Charcoal and cold iron with molten-orange accents and a stone-block background.","sw":["#18191b","#25282c","#edebe7","#ff8c40","#34383d","#fa8472"]},"arcane":{"name":"Arcane Tower","tone":"dark","color":"#0d0e26","texture":"none","group":"places","blurb":"Midnight indigo with violet panels and starlight-gold lettering.","sw":["#131532","#1f2149","#eeedff","#f4d47e","#2e2468","#ff7d8c"]},"frost":{"name":"Frost (Icewind)","tone":"light","color":"#1f2e3e","texture":"none","group":"places","blurb":"Pale ice-blue and snow-white with steel-grey ink and a steel banner.","sw":["#e3ecf2","#f4f8fb","#122238","#6c4f0a","#405870","#a3242c"]},"infernal":{"name":"Infernal","tone":"dark","color":"#100605","texture":"leather","group":"places","blurb":"Blackened red with glowing ember accents and bone-white text.","sw":["#170a09","#28130f","#f1e6d2","#ff8e4e","#461610","#ff6e5e"]},"contrast":{"name":"High Contrast","tone":"dark","color":"#000000","texture":"none","group":"classic","font":"clean","cards":"framed","blurb":"Pure black, white text, bright yellow accents and solid outlines.","sw":["#000000","#0f0f0f","#ffffff","#ffd83d","#000000","#ff7676"]},"oldmap":{"name":"Old Map","tone":"light","color":"#2c2216","texture":"parchment","group":"places","optional":true,"blurb":"Faded sepia chart paper, iron-gall ink and a faint navigator’s grid.","sw":["#ebe0c6","#f3ead6","#241a10","#6a4310","#5a4632","#8c2418"]},"hoard":{"name":"Dragon Hoard","tone":"dark","color":"#07110c","texture":"none","group":"places","optional":true,"blurb":"Deep emerald with heaped-gold lettering, gold-framed cards and a gold button.","sw":["#0c1813","#14281f","#f7eecb","#f5c94c","#21432f","#ff7b6b"]},"dawn":{"name":"Sacred Dawn","tone":"light","color":"#2a2416","texture":"parchment","group":"classes","from":"paladin · cleric","blurb":"Sunlit white marble and temple stone, warm sun-gold accents and a pale gold header.","sw":["#f6f2e8","#fffdf7","#2a2416","#7d5800","#f0dfae","#a3261e"]},"shade":{"name":"Nightshade","tone":"dark","color":"#070707","texture":"leather","group":"classes","from":"rogue","blurb":"Soot-black leather and smoke-grey text with a thin trickle of poison green.","sw":["#0c0c0d","#18181b","#e6e6e4","#9fe36e","#25252a","#ff7d72"]},"wildwood":{"name":"Wildwood","tone":"dark","color":"#0b1206","texture":"leather","group":"classes","from":"ranger · druid","blurb":"Dark bark and olive moss with ash-wood text and a fletching-red accent.","sw":["#111a0b","#1b2812","#ece6cc","#ff8f6a","#34521c","#ff8a8a"]},"moonsilver":{"name":"Moonsilver","tone":"dark","color":"#0e131a","texture":"stars","group":"classes","from":"wizard · elf","blurb":"Deep sea-night blue, moonlit silver text and seafoam accents, with faint drifting motes.","sw":["#141a22","#1f2733","#edf1f6","#8fe8d2","#4a5a70","#ff8a96"]},"pact":{"name":"Eldritch Deep","tone":"dark","color":"#07040c","texture":"stars","group":"classes","from":"warlock · drow / Underdark","blurb":"Lightless violet-black with faelight-lilac accents, sickly green lettering and glowing spores.","sw":["#0c0814","#191026","#ece6f6","#d9a6ff","#2c1645","#ff8090"]},"surge":{"name":"Chaos Burst","tone":"dark","color":"#5a0f6e","texture":"none","group":"classes","from":"sorcerer","blurb":"A raw-magic gradient from magenta through violet to ember orange, with hot-pink accents.","sw":["#1c0a26","#2a1036","#fbeef8","#ff8ad8","#c2410c","#ff8a7a"]},"encore":{"name":"Velvet Encore","tone":"dark","color":"#22030e","texture":"weave","group":"classes","from":"bard","blurb":"Plush wine-red velvet, gilt lettering and gold-trimmed cards like a theatre box.","sw":["#2c0514","#420a1e","#fbeedd","#f2c65a","#7a1234","#ff8c8c"]},"warpaint":{"name":"Warpaint","tone":"light","color":"#121110","texture":"parchment","group":"classes","from":"barbarian","blurb":"Bleached bone pages, a charcoal fur header and slashes of ochre-red war paint.","sw":["#e3e1dc","#f3f2ee","#1c1916","#9a310e","#38322c","#7e0f1e"]},"mountain":{"name":"Still Mountain","tone":"light","color":"#2a3038","texture":"weave","group":"classes","from":"monk","blurb":"Pale bamboo paper on a woven-mat texture, a saffron-robe header with slate lettering, saffron accents.","sw":["#ebe9cf","#fbfaee","#232629","#994400","#f4a640","#a01e2a"]},"banner":{"name":"Banner & Blade","tone":"light","color":"#5e0c16","texture":"none","group":"classes","from":"fighter","blurb":"Polished steel-grey pages under a heraldic scarlet banner with gold charges.","sw":["#cfd3d8","#e9ecef","#13161b","#644b00","#a8172a","#a3121f"]},"clockwork":{"name":"Clockwork","tone":"dark","color":"#3a2a10","texture":"stone","group":"classes","from":"artificer · gnome","blurb":"Oxidised verdigris-teal panels, brass plating and copper accents.","sw":["#082226","#0f3238","#e8f4f2","#f2a06a","#7a5a20","#ff8a80"]},"scales":{"name":"Dragonscale","tone":"dark","color":"#2a1e08","texture":"scales","group":"classes","from":"dragonborn","blurb":"Burnished olive-bronze scales, a molten bronze header and dragonfire-red accents.","sw":["#191708","#28250f","#f6eed4","#ff7448","#e0aa50","#ff8a9a"]},"hollow":{"name":"Honeyed Hollow","tone":"light","color":"#1e3a14","texture":"parchment","group":"classes","from":"halfling","blurb":"Golden honey pages, a leafy green door of a header and amber accents.","sw":["#f5d986","#fff3c8","#2a1f0a","#834600","#3f6a26","#a01c1c"]},"scott-ultramarine":{"name":"Scott's Ultramarine","tone":"dark","color":"#0b0c5a","texture":"brushed","group":"friends","from":"custom · for Scott","blurb":"Saturated true-ultramarine panels, polished-silver lettering and borders under a brushed-silver header band.","sw":["#0b0c5a","#16249a","#f2f5fa","#cfdcff","#eef1f6","#ff9aa4"]},"scott-marine":{"name":"Scott's Royal Marine","tone":"dark","color":"#081426","texture":"none","group":"friends","from":"custom · for Scott · Royal Marines colours","blurb":"Deep navy with gold lettering and brass buttons, edged with thin red and green regimental stripes like a stable belt.","sw":["#05162a","#0c2b4b","#f4efdf","#f5c518","#0e3258","#ff7671"]}};/* @palettes-end */
+/* v1.6.0 — Jenny's signature "Hearth" look, first in the picker and the default. */
+window.HEARTH_PALETTES = Object.assign({ hearth: {"name":"Hearth (signature)","tone":"dark","color":"#110e0c","texture":"none","group":"signature","blurb":"Tooled leather, brass rims and ember glow on charcoal, with parchment reading strips.","sw":["#110e0c","#2a1c12","#f3e6c8","#efc774","#5a3a1e","#ff8a5a"]} }, window.HEARTH_PALETTES);
 window.HEARTH_LOOK_DEFAULT_COLOR = '#1a1814';
 window.hearthReducedMotion = function () {
   try {
@@ -32,7 +34,18 @@ window.hearthApplyLook = function (prefs) {
   var m = document.querySelector('meta[name="theme-color"]'); if (m && m.getAttribute('content') !== color) m.setAttribute('content', color);
   return theme;
 };
-try { window.hearthApplyLook(JSON.parse(localStorage.getItem('hearth.prefs.v1') || '{}')); } catch (e) {}
+try {
+  /* v1.6.0 — one-time switch of every user to the Hearth look (dark + 'hearth'); new installs start on it.
+     The flag lives in its own key so restoring an old backup does not switch anyone back again. */
+  var __hp = JSON.parse(localStorage.getItem('hearth.prefs.v1') || '{}');
+  if (!localStorage.getItem('hearth.reskin160')) {
+    var __had = !!(localStorage.getItem('hearth.prefs.v1') || localStorage.getItem('hearth.welcomeSeen') || localStorage.getItem('hearth.characters.v2'));
+    __hp.theme = 'dark'; __hp.palette = 'hearth';
+    localStorage.setItem('hearth.prefs.v1', JSON.stringify(__hp));
+    localStorage.setItem('hearth.reskin160', __had ? 'note' : 'done');
+  }
+  window.hearthApplyLook(__hp);
+} catch (e) {}
 </script>
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -7917,6 +7930,9 @@ body.hearth-wide .app {
 
 
 /* v1.6.0 — dice settings + DM roll log */
+body.hd-rolling #rollOutcomeBackdrop, body.hd-rolling .hearth-roll-toast, body.hd-rolling .death-outcome-backdrop { opacity: 0 !important; transition: none !important; }
+#rollOutcomeBackdrop, .death-outcome-backdrop { transition: opacity .25s; }
+.hearth-rolllog .rl-row, .hearth-rolllog .rl-help { text-align: left; }
 .dice-swatch { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; font:bold 10px Georgia,serif; vertical-align:middle; margin-right:4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.35); }
 .dice-colour-grid .settings-size-name { font-size: 13px; }
 .hearth-rolllog-wrap { z-index: 1200; }
@@ -10970,6 +10986,201 @@ html[data-palette="scott-ultramarine"][data-texture]:not([data-texture="brushed"
 html[data-palette="scott-marine"][data-texture]:not([data-texture="none"]) { --tex-grain: rgba(255, 235, 210, .04); --tex-shade: rgba(0, 0, 0, .2); }
 html[data-texture]:not([data-palette]):not([data-theme="dark"]):not([data-texture="parchment"]) { --tex-wash: rgba(227, 207, 159, .78); }
 </style>
+<style id="hearth-reskin">/* @reskin */
+/* Hearth 1.6.0 — Jenny's "Hearth" signature reskin (built against v1.4.1; 1.5.x class names added:
+   .vital-stat, .ability, .stat-cell-score, .section-label; red .danger buttons (End Rage) and pips in the parchment strips keep their colours). */
+/* =====================================================================
+   Hearth signature reskin — palette "hearth"             (Jenny, art)
+   Generated by build.js from src.css + tex/*.webp. Edit src.css.
+   Usage: <html data-theme="dark" data-palette="hearth">
+   Load AFTER the app styles AND after themes.css / themes-2.css.
+   Everything is scoped to [data-palette="hearth"]: other palettes are
+   untouched. No layout/padding on .app/.header top -> safe-area fix kept.
+   ===================================================================== */
+html[data-palette="hearth"] {
+  --palette-tone: dark;
+  --hx-leather: url("data:image/webp;base64,UklGRjAFAABXRUJQVlA4ICQFAACQIQCdASoAAQABPp1CnU2lo6MmIjD6yMATiWlsYvdtQPeojnVViXVVEYBq5jhsWd1MfP9++j7380Ee0prmP/YA876fsAoo08UBqUSoMmJFWJPizM6TKypvZlH//VqM7GIiP92hw6zQwAwkEk3dVdKistWpikLeqaVjNBVBneg5Mz5mAXS5kc1ymeDpAWYDMqIG6lm9n6h0YG8iUGOpKzpf9Ksb9chghCiIdkX+gOY+qAjAVSL2bhZpdL+7MunAKY+l+BcZ4bbI8HDbjfgfQIXLRhFyLwDC4+eVcMQCfaeoXVQP9Ax4sah8BsU3ecyY1iT24SZkaV9snj6tVq1ExRi3G1Jh/4rVeRX86m7tHOCtAVMS6q0AAP7wnNQc9733r+D+BLQU/Ps5rEZl1QYAwRA1p3kvQ7NDyyGqfzTeXjvu+WeARJmvDFKWfYRn44NPwEQyjESHE+LoSrz3nooK5B+jI0WN3OLWzNWWAnKaY5K3JLqXj7FkgtQtJjFAYhmN73Taw0Ntsdq7X1sornqedW/nxR6q/lCnhM3OCSRqo1WbrL0ObuiPRXAW9+qAZeidEs8cElXWtdjDwPJnm7qZqm8dfIJ7VQT8HU3ujY3fRiMbpHpzDn+5zcAT0Ohd5THLeV6xtanX54uKHhbvxdFM09g8UyWOlDaYMDG4bAFM7iV1sVmA4GY9A6Cwp/nJfcUH0+q5l+n+QGpjrsFYi5nCUfkPJnLacnRs4Fzcd8M/XR4OrU4nPlJWx+FVeqa+/KX+LZ9jHJlXanmQNvI4tQJR2do11k3ioDic3j/K3ZrtTUeka5ZzY5XfHnxki1AFh0uJbN9Zz0+foypSmLoo7QoivQhfDLX0vUp7z5lCSQN05hfmC0acDOUdKGGbf+0/kYclfgq0No2zr9zFI36TQKNItkGUqxgx17a62HA4mpQ8y0VA3Px/eVJXzSiap5CWOjQtNSgZQI2zLp2aRpcT53nItkiSnnYU8eeqIk99Pi6kZzWbTnRLpdJJIZqXTbKtcsvncusIr/KRty95SHw5ld3b/OJAJIHwmca0Fsd4uZxGd+UIxe1PK9zIJ8AT6IhKA4YB1PYFFK8LJ3oklzjboceKjk7gHF63fEsMmDS1LOhPru/9sCHsgtx3TojSA3f4aWfX49vPCOxb8yMONImYZs8pGQCGb8xaJVKNWRAkiKznC2RJ/uoeKnkp/gAaUNGHLrRtGJtEfuz2ib4D+UIUvDGiL6ORbfmdeV//xKZ20nwLqxmnc2qg8V7ZcmJxCWrmGBPJYgzD0roBlvDFaR286iF7f1RJZqaT3PmqBUF0T8coqcIGnZksfm5U+fFKtiHtbsarMSUuGorDmTnTM0lHUpxsOokzWYoA2YtUapayfWJAtuxboCH6oamChuV5UFlY96jmrYWI2siimbdayALEYP6CneZXKQa9/JfRHosOujGAT/2mjg2LrtXYMTyFL/P/aUECsQVsAw6RH2acIlPYO7M8BGM+HZ5IdAoX6c9jyt/ePfQXcteazebhUjyxTUr0FfSkkNoSk9vgcvxU9CWtOumQQl+4+L+fnLwHDhratPnJxoMvyqfvKetPsgpCO5KP6QjC4La6Endg4vqZDkpNsQB8AaxGUuq9nQFLd/UvCNqcTh1gMNSZBWAH7zNcMS/a/ADJrwEfYBYaR5QLW91cYVZnzRGNMZN+Jvm3E7k/UC4S32PvfyuPflq60rwGcU2qCRjhF4i2OoILnuUwpUrVKC+lXgpwIF2QAA==");
+  --hx-charcoal: url("data:image/webp;base64,UklGRioBAABXRUJQVlA4IB4BAACwFQCdASoAAQABPp1Onk4lpCMjICkwsBOJaW7ggy2Qq3EvIAVqsqybU2pteRbfsqdOks7N2TTAICUy6OzGGNlfbe9Ew7WSd9z7s2GcpsbY2xtja+s8tUkAhpNgxVDVJ7roE3ZuzeqgtcihpSaMqXm32FLmNyEIE3qsLGYe/dqyqKkYV8pCwb+s3ntFAreUlA/heVdR+40OsBo8oGAss/caWJexEUcZdnTArD5mlOOr9ADz5hDYAAD+9ebT7BMJtygJO+5cT2g36OB5Au0b46Btx7/7GNASFFSq0XeYvlfAEheSRA1D6UpAWekkSUA3oUXO+WASWT9IsCyVueMCQ/yStuGhCPU31CKtwMWqV6sMK3cAuEdCNZaxBVmzAAAA");
+  --hx-parch: url("data:image/webp;base64,UklGRsgBAABXRUJQVlA4ILwBAAAwFQCdASoAAQABPqVSpU8mJKOmoCgA0BSJaW7g+ZiVMx0+0uQAT2AxR2AP/YQXaWvhgOISPggsidjIWQt7atjFpUMK7SxQwQKpkNUmiK8f/PK7xBa0pKcT9CnAAqCwCjxlLaD8MPaxB+nZnBNszaYSYXEM4Q8IBFIa2Lr555ZFdf3GPViBINRW3URHmWsQwf2esVMjC9E6ScFZrGxBo4cEn//3EpJtlgd3V1CDCRnPWv4AAP7O8ifwb3N82bvC0mFtr3zO2LoDMUNL6dGJTREJqW3B/vIUYUmlSRpIDpFATIb0582IfuxD2zwe4Li8xg/OKQM6mYcf4wpnY4jx920J+E1pzadfCLn/V1YQTTYoIOAHAhafDx5OrNCP0tRxJeemq3ImxUMZ0trVKMaj1nG8AmE2bM+tU7HuHkvuyFRvZvZDiCkjsOYJ2B12I4eQtLqx/2nSH5pNmWSU06Y6ThJzq7cyniUKpcNMFdqhvuFf3hpxy9V0OgqllsafITzr/rfVUROHrbNg8d6PCo+GzB+Uas8grKnKO2mgoijDsESXvpVVN+5ixw1VtGCJlU2KAAyMdJBREoQRp4USQAA=");
+  /* brass */
+  --hx-brass-hi: #f3d58a; --hx-brass: #c9993f; --hx-brass-lo: #7a5420; --hx-brass-dk: #4a3112;
+  --hx-brass-grad: linear-gradient(180deg, #f0d083 0%, #c9993f 45%, #9a6d2a 100%);
+  --hx-rim: linear-gradient(180deg, rgba(243,213,138,.85), rgba(122,84,32,.9));
+  --hx-ember: #ff8a3d; --hx-ember-deep: #c2410c; --hx-flame: #ffb347;
+  --hx-ink-on-parch: #2a1a0e; --hx-ink2-on-parch: #5a3d22;
+  /* app tokens (dark base, warm) */
+  --page: #141110; --page-deep: #1b140f; --page-edge: #2a1f17;
+  --page-stain-dark: rgba(255,140,60,.05); --page-stain: rgba(255,140,60,.03);
+  --ink: #f4e6cc; --ink-soft: #e2cba3; --ink-faded: #c4a77a; --ink-ghost: #6e573c;
+  --leather: #6b3f20; --leather-deep: #3d2312; --leather-soft: #8f5a2e;
+  --crimson: #f08a6e; --oxblood: #e0644c; --crimson-soft: #f08a6e;
+  --gold: #e9bd62; --gold-deep: #c9993f; --moss: #a9c47e; --temp-hp: #7cb9c6; --indigo: #9aa8dc;
+  --rule: #4a3520; --rule-soft: rgba(201,153,63,.28);
+  --page-grad-top: #1a1512; --page-grad-bottom: #0a0807;
+  --card-surface: #221a14; --card-border: rgba(201,153,63,.34); --card-shadow: rgba(0,0,0,.55);
+  --hp-fill-start: #e0644c; --hp-fill-end: #ffb347;
+  --rs-label-ink: #d6b884;
+  --rs-card: linear-gradient(180deg, rgba(255,200,130,.06), rgba(255,200,130,.0) 60%), var(--hx-leather) 0 0/256px, #2a1c12;
+  --rs-card-sunk: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.18)), var(--hx-leather) 0 0/256px, #1c130c;
+  --rs-card-border: rgba(201,153,63,.42);
+  --rs-gold-line: rgba(233,189,98,.7); --rs-gold-soft: rgba(233,189,98,.16);
+  --rs-shadow-1: 0 1px 2px rgba(0,0,0,.5), 0 3px 10px rgba(0,0,0,.35);
+  --rs-shadow-2: 0 2px 4px rgba(0,0,0,.5), 0 10px 26px rgba(0,0,0,.45);
+  --rs-shadow-3: 0 4px 10px rgba(0,0,0,.6), 0 24px 60px rgba(0,0,0,.65);
+  --rs-inset: inset 0 1px 0 rgba(255,220,160,.10);
+  --rs-btn: var(--hx-brass-grad); --rs-btn-hover: linear-gradient(180deg,#f7dc98,#d4a54b 50%,#a8772f);
+  --rs-btn-ink: #2a1a0b; --rs-btn2: linear-gradient(180deg, rgba(255,200,130,.07), rgba(0,0,0,.1)), var(--hx-leather) 0 0/256px, #2a1c12;
+  --rs-focus: #ffc66c; --rs-backdrop: rgba(5,4,3,.78);
+  --header-a: #120d09; --header-b: #3a2414; --header-ink: #f0c873; --header-sub: #d8b880;
+  --plate-ink: #2a1a0b; --tex-grain: rgba(255,200,140,.04); --tex-shade: rgba(0,0,0,.5);
+  --control-fill: rgba(0,0,0,.28); --control-fill-hover: rgba(0,0,0,.4);
+  --page-texture: var(--hx-charcoal) 0 0/256px;
+  /* rivet: tiny domed brass stud */
+  --hx-rivet: radial-gradient(circle at 35% 35%, #fbe7b0 0 1px, #c9993f 1.6px, #6b4718 3px, rgba(0,0,0,.55) 3.6px, transparent 4.4px);
+}
+/* ---- base: dark charcoal with a hearth glow from below ---- */
+html[data-palette="hearth"] body {
+  background:
+    radial-gradient(120% 60% at 50% 115%, rgba(255,120,40,.10), transparent 60%),
+    radial-gradient(90% 50% at 50% -10%, rgba(255,190,110,.05), transparent 60%),
+    var(--hx-charcoal) 0 0/256px, #110e0c !important;
+  color: var(--ink);
+}
+/* ---- banner / header: leather plate, brass rim, rivets, shield in a brass bezel ---- */
+html:root[data-palette="hearth"] .header-compact {
+  background:
+    var(--hx-rivet) 10px 10px/8px 8px no-repeat, var(--hx-rivet) calc(100% - 10px) 10px/8px 8px no-repeat,
+    var(--hx-rivet) 10px calc(100% - 10px)/8px 8px no-repeat, var(--hx-rivet) calc(100% - 10px) calc(100% - 10px)/8px 8px no-repeat,
+    radial-gradient(80% 140% at 18% 50%, rgba(255,140,50,.16), transparent 55%),
+    linear-gradient(180deg, rgba(255,210,150,.07), rgba(0,0,0,.25)),
+    var(--hx-leather) 0 0/256px, #2b1a0f !important;
+  border: 1px solid #0a0705 !important;
+  box-shadow: inset 0 0 0 1px rgba(243,213,138,.55), inset 0 0 0 3px #1a110a, inset 0 0 0 4px rgba(201,153,63,.35),
+              inset 0 10px 18px rgba(255,200,140,.05), inset 0 -12px 20px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.55) !important;
+}
+html:root[data-palette="hearth"] .header-compact h1 {
+  color: var(--hx-brass-hi) !important;
+  background: linear-gradient(180deg, #fbe3a2 10%, #e2b25a 55%, #b07f33 95%); -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; text-shadow: none !important;
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,.8)) drop-shadow(0 0 10px rgba(255,140,50,.18));
+  letter-spacing: .02em;
+}
+html:root[data-palette="hearth"] .header-compact .hearth-edition-badge { -webkit-text-fill-color: var(--hx-flame); color: var(--hx-flame) !important; }
+html:root[data-palette="hearth"] .header-compact .subtitle { color: #dcc08d !important; letter-spacing: .14em; }
+html:root[data-palette="hearth"] .home-brand-icon {
+  border-radius: 14px;
+  box-shadow: 0 0 0 1.5px #f0d083, 0 0 0 3px #4a3112, 0 0 0 4px rgba(201,153,63,.6), 0 0 18px rgba(255,130,40,.30), 0 4px 10px rgba(0,0,0,.6) !important;
+  background-color: #000 !important;
+}
+/* ---- tab bar: leather strap, brass stitched edge, ember underline ---- */
+html:root[data-palette="hearth"] .tabs {
+  background: linear-gradient(180deg, rgba(255,210,150,.05), rgba(0,0,0,.3)), var(--hx-leather) 0 0/256px, #24170e !important;
+  border: 1px solid #0a0705 !important;
+  box-shadow: inset 0 0 0 1px rgba(201,153,63,.45), inset 0 2px 0 rgba(255,220,160,.06), 0 4px 14px rgba(0,0,0,.45) !important;
+  outline: 1px dashed rgba(233,189,98,.22); outline-offset: -5px;
+}
+html:root[data-palette="hearth"] .tab { color: #d9c19a !important; }
+html:root[data-palette="hearth"] .tab.active {
+  color: #fff1d6 !important;
+  background: radial-gradient(70% 90% at 50% 100%, rgba(255,138,61,.30), transparent 70%) !important;
+  text-shadow: 0 0 10px rgba(255,150,60,.45);
+}
+html:root[data-palette="hearth"] .tab.active::after { background: linear-gradient(90deg, transparent, var(--hx-flame), var(--hx-ember), var(--hx-flame), transparent) !important; height: 2px !important; }
+/* ---- cards / tiles / panels: tooled leather with brass hairline ---- */
+html:root[data-palette="hearth"][data-palette] body :is(.home-tile, .card, .panel, .section-card, .feature, .stat-card, .vital-stat, .ability-card, .ability, .dm-tile, .vellum-box) {
+  background: var(--rs-card) !important;
+  border: 1px solid #0b0806 !important;
+  box-shadow: inset 0 0 0 1px rgba(201,153,63,.40), var(--rs-inset), var(--rs-shadow-1) !important;
+  color: var(--ink);
+}
+html:root[data-palette="hearth"][data-palette] body .home-tile-lg {
+  background: var(--hx-rivet) 9px 9px/8px 8px no-repeat, var(--hx-rivet) calc(100% - 9px) 9px/8px 8px no-repeat,
+    radial-gradient(90% 120% at 50% 120%, rgba(255,130,40,.14), transparent 60%), var(--rs-card) !important;
+  box-shadow: inset 0 0 0 1px rgba(243,213,138,.55), inset 0 0 0 3px rgba(0,0,0,.45), inset 0 0 0 4px rgba(201,153,63,.25), var(--rs-shadow-2) !important;
+}
+html:root[data-palette="hearth"] body .home-tile:hover { box-shadow: inset 0 0 0 1px rgba(243,213,138,.75), 0 0 18px rgba(255,130,40,.18), var(--rs-shadow-2) !important; }
+html:root[data-palette="hearth"] body .home-tile-name { color: #f6dfa8 !important; }
+html:root[data-palette="hearth"] body .home-tile-meta { color: #cdb38a !important; }
+/* parchment cards: reading surfaces (feature text, notes, descriptions) */
+html:root[data-palette="hearth"][data-palette] body :is(.vellum-box, .feature-desc, .hearth-tour, .parchment) {
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(120,70,20,.10)), var(--hx-parch) 0 0/256px, #e6cf9c !important;
+  color: var(--hx-ink-on-parch) !important;
+  box-shadow: inset 0 0 0 1px rgba(122,84,32,.55), inset 0 0 24px rgba(120,70,20,.25), var(--rs-shadow-1) !important;
+}
+html:root[data-palette="hearth"][data-palette] body :is(.vellum-box, .feature-desc, .hearth-tour, .parchment) :is(p, li, span, div, em, strong, h2, h3, h4) { color: inherit !important; }
+/* ---- buttons: primary = brass plate, secondary = leather with brass edge ---- */
+html:root[data-palette="hearth"][data-palette] body :is(.btn.primary, button.btn.primary, .dm-map-project, .dm-battle-next) {
+  background: var(--hx-brass-grad) !important; color: #24160a !important; -webkit-text-fill-color: #24160a;
+  border: 1px solid #5a3c14 !important; text-shadow: 0 1px 0 rgba(255,235,190,.55) !important;
+  box-shadow: inset 0 1px 0 rgba(255,245,210,.85), inset 0 -2px 0 rgba(90,60,20,.45), 0 2px 0 #2e1e0b, 0 4px 10px rgba(0,0,0,.5) !important;
+  font-weight: 700;
+}
+html:root[data-palette="hearth"][data-palette] body :is(.btn.primary, .dm-map-project, .dm-battle-next):hover { background: var(--rs-btn-hover) !important; }
+html:root[data-palette="hearth"][data-palette] body :is(.btn.primary, .dm-map-project, .dm-battle-next):active { transform: translateY(1px); box-shadow: inset 0 1px 0 rgba(255,245,210,.6), 0 1px 0 #2e1e0b !important; }
+html:root[data-palette="hearth"][data-palette] body :is(.btn:not(.primary), .dm-map-tool, .dm-manage-btn, .dm-tile-mini, .hp-btn.more, .action-tab-card, .action-tab) {
+  background: linear-gradient(180deg, rgba(255,210,150,.08), rgba(0,0,0,.18)), var(--hx-leather) 0 0/256px, #2e1e12 !important;
+  color: #f1dcb4 !important; border: 1px solid #0b0806 !important;
+  box-shadow: inset 0 0 0 1px rgba(201,153,63,.45), inset 0 1px 0 rgba(255,220,160,.12), 0 2px 5px rgba(0,0,0,.4) !important;
+}
+html:root[data-palette="hearth"][data-palette] body .action-tab-card.active { box-shadow: inset 0 0 0 1.5px var(--hx-brass-hi), 0 0 14px rgba(255,130,40,.25) !important; }
+/* ---- inputs: inset leather well, brass focus ring ---- */
+html:root[data-palette="hearth"] body :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]), select, textarea, .hp-input) {
+  background: linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,.2)), var(--hx-leather) 0 0/256px, #1e140d !important;
+  color: #f6e7c8 !important; border: 1px solid #090604 !important;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,.6), inset 0 0 0 1px rgba(0,0,0,.4), 0 1px 0 rgba(233,189,98,.28) !important;
+}
+html:root[data-palette="hearth"] body :is(input, select, textarea)::placeholder { color: #a88e68 !important; }
+html:root[data-palette="hearth"] body :is(input, select, textarea, button, .tab, .home-tile):focus-visible { outline: 2px solid var(--rs-focus) !important; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(255,138,61,.25) !important; }
+/* ---- dividers: brass rule with a centre ember ---- */
+html:root[data-palette="hearth"] body hr, html:root[data-palette="hearth"] body .divider {
+  border: 0 !important; height: 9px !important;
+  background: radial-gradient(circle, var(--hx-flame) 0 1.5px, var(--hx-ember-deep) 2.5px, transparent 3.5px) center/9px 9px no-repeat,
+              linear-gradient(90deg, transparent, rgba(201,153,63,.75) 20%, rgba(243,213,138,.9) 50%, rgba(201,153,63,.75) 80%, transparent) center/100% 1px no-repeat !important;
+}
+html:root[data-palette="hearth"] body :is(h2, h3).section-title, html:root[data-palette="hearth"] body .section > h2, html:root[data-palette="hearth"] body .section-label { color: #efc774 !important; }
+/* ---- stats bar ---- */
+html:root[data-palette="hearth"][data-palette] body .stats-bar .stat-cell {
+  background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.15)), var(--hx-leather) 0 0/256px, #22160d !important;
+  box-shadow: inset 0 0 0 1px rgba(201,153,63,.42), inset 0 2px 6px rgba(0,0,0,.5) !important; border: 1px solid #0b0806 !important;
+}
+html:root[data-palette="hearth"] .stats-bar :is(.stat-cell-mod, .stat-cell-val, .stat-cell-score) { color: #f7dc98 !important; }
+/* HP buttons keep semantic colours but on leather */
+html:root[data-palette="hearth"][data-palette] body :is(.hp-btn.damage, .dm-hp-btn) { border: 1px solid #0b0806 !important; }
+/* ---- dialogs / sheets: parchment page in a leather & brass frame ---- */
+html:root[data-palette="hearth"][data-palette] body .dialog {
+  background: linear-gradient(180deg, rgba(255,210,150,.06), rgba(0,0,0,.2)), var(--hx-leather) 0 0/256px, #22160d !important;
+  color: var(--ink) !important; border: 1px solid #0a0705 !important;
+  box-shadow: inset 0 0 0 1px rgba(243,213,138,.6), inset 0 0 0 4px rgba(0,0,0,.4), inset 0 0 0 5px rgba(201,153,63,.3), 0 20px 60px rgba(0,0,0,.75) !important;
+}
+html:root[data-palette="hearth"][data-palette] body .dialog :is(h1,h2,h3) { color: #f3cf7e !important; }
+html:root[data-palette="hearth"] body :is(.toast, .hearth-toast) { background: #1d140d !important; color: #f6e7c8 !important; box-shadow: inset 0 0 0 1px rgba(233,189,98,.55), 0 8px 24px rgba(0,0,0,.6) !important; }
+/* ---- links & selection ---- */
+html:root[data-palette="hearth"] body a { color: #ffbe6e; }
+html:root[data-palette="hearth"] ::selection { background: rgba(255,138,61,.4); color: #fff; }
+/* ---- reduced motion: nothing here animates; hover lift disabled ---- */
+@media (prefers-reduced-motion: reduce) { html[data-palette="hearth"] * { transition: none !important; } }
+/* ---- selected / pressed options: ember-lit brass ring, full-strength text ---- */
+html:root[data-palette="hearth"][data-palette] body :is([class*="-card"].selected, .dialog-option.selected, [class*="-opt"].active, [class*="-opt"].on, [aria-pressed="true"]) {
+  background: radial-gradient(90% 120% at 50% 110%, rgba(255,138,61,.22), transparent 65%), var(--rs-card) !important;
+  box-shadow: inset 0 0 0 1.5px var(--hx-brass-hi), 0 0 0 1px #0b0806, 0 0 16px rgba(255,130,40,.22) !important;
+  opacity: 1 !important; filter: none !important;
+}
+html:root[data-palette="hearth"][data-palette] body :is([class*="-card"].selected, .dialog-option.selected) * { color: #fff1d6 !important; opacity: 1 !important; }
+html:root[data-palette="hearth"][data-palette] body .settings-size-card :is(.settings-size-desc, .dialog-option-meta) { color: #d9bf93 !important; }
+/* ---- parchment reading strips on the sheet (boosts, resources) ---- */
+html:root[data-palette="hearth"][data-palette] body :is(.boosts-strip, .resources-strip) {
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(120,70,20,.10)), var(--hx-parch) 0 0/256px, #e6cf9c !important;
+  border: 1px solid #3a2410 !important; border-left: 3px solid var(--hx-ember-deep) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,240,200,.35), inset 0 0 22px rgba(120,70,20,.28), var(--rs-shadow-1) !important;
+  color: var(--hx-ink-on-parch) !important;
+}
+html:root[data-palette="hearth"][data-palette] body :is(.boosts-strip, .resources-strip) *:not(.defense-chip):not(.defense-chip *):not(.danger):not(.danger *):not(.res-pip) { color: var(--hx-ink-on-parch) !important; -webkit-text-fill-color: currentColor; }
+html:root[data-palette="hearth"][data-palette] body :is(.boosts-strip, .resources-strip) :is(.boosts-label, .resources-label) { color: #8a2f12 !important; }
+html:root[data-palette="hearth"][data-palette] body :is(.boosts-strip, .resources-strip) :is(button, .btn, input):not(.defense-chip *):not(.danger) {
+  background: rgba(60,35,15,.10) !important; box-shadow: inset 0 0 0 1px rgba(90,55,20,.55) !important; color: var(--hx-ink-on-parch) !important; border: 0 !important;
+}
+
+/* @reskin-end */</style>
 </head>
 <body>
 <div class="app">
@@ -29000,7 +29211,7 @@ const HEARTH_DICE_SETS = [
 ];
 // "Follow my theme": each colour theme picks the closest dice set.
 const HEARTH_DICE_FOR_PALETTE = {
-  tavern: 'tavern', forest: 'forest', forge: 'infernal', arcane: 'arcane', frost: 'frost', infernal: 'infernal',
+  hearth: 'tavern', tavern: 'tavern', forest: 'forest', forge: 'infernal', arcane: 'arcane', frost: 'frost', infernal: 'infernal',
   contrast: 'hoard', oldmap: 'oldmap', hoard: 'hoard', dawn: 'hoard', shade: 'forest', wildwood: 'forest',
   moonsilver: 'frost', pact: 'arcane', surge: 'arcane', encore: 'infernal', warpaint: 'oldmap', mountain: 'oldmap',
   banner: 'infernal', clockwork: 'hoard', scales: 'hoard', hollow: 'oldmap',
@@ -29181,8 +29392,12 @@ function hearthDiceRoll(spec) {
     if (dp.projector === 'important' && big && projTarget) { _hearthDiceCurrentEntry = entry; hearthDiceOnProjector(); }
     return Promise.resolve(entry);
   }
+  const hideUnder = dp.size === 'full' || big; // full-screen dice: the result cards wait until the dice land
+  const seq = (hearthDiceRoll._seq = (hearthDiceRoll._seq || 0) + 1);
+  const unhide = () => { if (hearthDiceRoll._seq === seq) document.body.classList.remove('hd-rolling'); };
   return hearthDiceLoad().then((HD) => {
     _hearthDiceCurrentEntry = entry;
+    if (hideUnder) document.body.classList.add('hd-rolling');
     const crit = entry.nat === 20 ? 'nat20' : (entry.nat === 1 ? 'nat1' : null);
     return HD.roll({
       dice: groups.map(g => ({ type: 'd' + g.sides, count: g.values.length })),
@@ -29193,7 +29408,7 @@ function hearthDiceRoll(spec) {
       projector: projTarget ? undefined : false,
       reducedMotion: !!(window.hearthReducedMotion && window.hearthReducedMotion()),
     });
-  }).then(() => entry).catch((e) => { console.warn('Dice animation skipped:', e && e.message); return entry; });
+  }).then(() => { unhide(); return entry; }).catch((e) => { unhide(); console.warn('Dice animation skipped:', e && e.message); return entry; });
 }
 
 // Roll-dialog lines (attacks, saves, checks, initiative, damage, healing).
@@ -29300,6 +29515,15 @@ function hearthRollLogRefresh() {
   document.querySelectorAll && document.querySelectorAll('.dm-rolllog-btn').forEach(b => { const n = rollFeedLoad().length; b.textContent = '🎲 Roll log' + (n ? ' · ' + n : ''); });
 }
 function hearthCloseRollLog() { const w = document.getElementById('hearthRollLog'); if (w) w.style.display = 'none'; }
+
+// v1.6.0 — after the one-time switch to the Hearth look, tell upgrading users once.
+if (typeof window !== 'undefined') window.addEventListener('load', () => setTimeout(() => {
+  try {
+    if (localStorage.getItem('hearth.reskin160') !== 'note') return;
+    localStorage.setItem('hearth.reskin160', 'done');
+    showToast('Hearth has a new look. You can switch back any time in Settings → Theme.', 9000);
+  } catch (e) {}
+}, 1500));
 
 // ---- Settings: dice ----
 function hearthDiceSettingsHTML() {
@@ -30822,6 +31046,15 @@ function hearthOpenLegal() {
         <p>Items you add from the Community Content Library show their own credit and licence (CC BY 4.0 or OGL 1.0a) on their cards.</p>
         <div class="forge-section-label">Open-source software</div>
         <ul class="hearth-legal-oss">${oss}</ul>
+        <p><strong>Art &amp; design credits</strong> (Jenny, art director)</p>
+        <ul class="hearth-legal-oss hearth-legal-art">
+          <li>App icon (leather flaming shield): AI-generated with Grok Bot image generation, cropped and edited by Jenny.</li>
+          <li>Painted map textures and prop sprites: AI-generated; procedural renderer and assembly by Jenny. No third-party images.</li>
+          <li>Map animations: procedural code, original.</li>
+          <li>Colour themes and textures (leather, stone, parchment, scales, weave, stars): original CSS.</li>
+          <li>“Hearth” signature look and its leather, parchment and charcoal textures: original procedural work by Jenny. No third-party images or fonts. The banner shield is the app icon above.</li>
+          <li>Animated 3D dice: designed by Jenny, built on three.js and cannon-es (MIT, listed above).</li>
+        </ul>
         <details class="hearth-legal-licence"><summary>MIT License (full text)</summary><pre>${escape(L.mit)}</pre></details>
         <details class="hearth-legal-licence"><summary>Apache License 2.0 (full text)</summary><pre>${escape(L.apache)}</pre></details>
         <div class="forge-section-label">Terms, privacy and takedowns</div>
@@ -50408,9 +50641,9 @@ const DEFAULT_PREFS = {
   textSize: 'm', // 's' | 'm' | 'l' | 'xl'
   // v0.20.64 — Visual theme. 'light' is the original parchment look;
   // 'dark' is the Wyrdbound-inspired night palette.
-  theme: 'light', // 'light' | 'dark'
+  theme: 'dark', // 'light' | 'dark' (v1.6.0: dark + the 'hearth' palette is the default)
   // v1.5.0 — colour theme (Jenny's palettes; '' = classic Light/Dark above) and visual options.
-  palette: '',  // '' | 'tavern' | 'forest' | 'forge' | 'arcane' | 'frost' | 'infernal' | 'contrast' | 'oldmap' | 'hoard'
+  palette: 'hearth',  // v1.6.0 default; '' = classic Light/Dark | 'tavern' | 'forest' | 'forge' | 'arcane' | 'frost' | 'infernal' | 'contrast' | 'oldmap' | 'hoard'
   texture: '',  // '' (theme default) | 'parchment' | 'leather' | 'stone' | 'none'
   font: '',     // '' (theme default: classic serif) | 'classic' | 'clean'
   cards: '',    // '' (theme default: raised) | 'raised' | 'flat' | 'framed'
@@ -50510,7 +50743,7 @@ function hearthLookSettingsHTML(prefs) {
   return `
       <div class="settings-theme-picker" id="settingsPaletteGrid" tabindex="0" role="region" aria-label="Themes (${n})">
         <div class="settings-theme-group">Classic</div>
-        <div class="settings-size-grid settings-palette-grid" id="settingsThemeGrid">${classic('light')}${classic('dark')}${group('classic')}
+        <div class="settings-size-grid settings-palette-grid" id="settingsThemeGrid">${P.hearth ? card('hearth', P.hearth) : ''}${classic('light')}${classic('dark')}${group('classic')}
         </div>
         <div class="settings-theme-group">Places</div>
         <div class="settings-size-grid settings-palette-grid">${group('places')}
