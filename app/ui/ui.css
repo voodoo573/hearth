@@ -83,10 +83,10 @@ html[data-palette="hearth"] {
 .u2 .u-btn.u-block{display:flex;width:100%}
 .u2 .u-ibtn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;color:var(--ink-soft);background:var(--well);border:1px solid var(--hair);flex:none}
 .u2 .u-ibtn.u-plain{background:transparent;border-color:transparent}
-.u2 .u-ph .u-btn{height:44px}
-.u2 .u-ph .u-btn.u-sm{height:36px}
-.u2 .u-ph .u-btn.u-lg{height:52px}
-.u2 .u-ph .u-ibtn{width:44px;height:44px}
+.u2.u-phone .u-btn{height:44px}
+.u2.u-phone .u-btn.u-sm{height:36px}
+.u2.u-phone .u-btn.u-lg{height:52px}
+.u2.u-phone .u-ibtn{width:44px;height:44px}
 .u2 .u-field{display:flex;align-items:center;gap:var(--s2);height:44px;padding:0 var(--s3);border-radius:10px;background:var(--well);border:1px solid var(--rim);box-shadow:inset 0 1px 3px rgba(0,0,0,.55);color:var(--ink-faded);font-size:14px}
 .u2 .u-field span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .u2 .u-field kbd{font:600 11px var(--sans);padding:2px 6px;border-radius:5px;border:1px solid var(--hair);color:var(--ink-faded)}
@@ -98,7 +98,7 @@ html[data-palette="hearth"] {
 .u2 .u-chip b{font-weight:600;color:var(--ink-faded);font-size:12px}
 .u2 .u-chip.u-on{background:var(--brass-grad);color:var(--on-gold);border-color:var(--gold-deep)}
 .u2 .u-chip.u-on b{color:var(--on-gold);opacity:.75}
-.u2 .u-ph .u-chip{height:36px}
+.u2.u-phone .u-chip{height:36px}
 .u2 .u-seg{display:flex;padding:4px;gap:4px;border-radius:var(--r-pill);background:var(--well);border:1px solid var(--hair)}
 .u2 .u-seg>*{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:34px;border-radius:var(--r-pill);font:600 13px var(--sans);color:var(--ink-faded);white-space:nowrap}
 .u2 .u-seg .u-on{background:var(--tex),var(--u-surface);color:var(--gold);box-shadow:inset 0 0 0 1px var(--rim-strong),0 2px 4px rgba(0,0,0,.4)}
@@ -281,6 +281,7 @@ body.u2 { font: 400 14px/1.45 var(--sans); color: var(--ink); background: var(--
 .u2 .hearth-toast .toast-icon { display: inline-flex; color: var(--gold); font-size: 0 !important; }
 .u2 .hearth-toast .toast-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 /* resets: the app styles bare buttons and inputs; the design system draws its own */
+.u2 .u-ibtn { flex: none; }
 .u2 .u-seg > button { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 12px !important; margin: 0 !important; min-height: 0 !important; height: 34px !important; font: 600 13px var(--sans) !important; color: var(--ink-faded) !important; cursor: pointer; text-transform: none !important; letter-spacing: normal !important; width: auto; flex: 1; border-radius: var(--r-pill) !important; }
 .u2 .u-seg > button.u-on { background: var(--tex), var(--u-surface) !important; color: var(--gold) !important; box-shadow: inset 0 0 0 1px var(--rim-strong), 0 2px 4px rgba(0,0,0,.4) !important; }
 .u2.u-phone .u-seg > button { height: 36px !important; }
@@ -288,3 +289,13 @@ body.u2 { font: 400 14px/1.45 var(--sans); color: var(--ink); background: var(--
 .u2 .u-field input, .u2 .u-field select { flex: 1; min-width: 0; background: transparent !important; border: 0 !important; outline: 0 !important; box-shadow: none !important; color: var(--ink) !important; font: 14px var(--sans) !important; padding: 0 !important; margin: 0 !important; height: 100% !important; min-height: 0 !important; border-radius: 0 !important; width: auto !important; }
 .u2 .u-field input::-webkit-search-cancel-button { filter: grayscale(1); }
 html:root body.u2.u2.u2 .u-field.u-field input:is([type], :not([type])), html:root body.u2.u2.u2 .u-field.u-field select:is([id], :not([id])) { background: transparent !important; background-image: none !important; border: 0 !important; box-shadow: none !important; outline: 0 !important; padding: 0 !important; margin: 0 !important; min-height: 0 !important; height: 100% !important; border-radius: 0 !important; color: var(--ink) !important; }
+/* overlays (HearthUI.modal) */
+.u2 .u-layer { position: fixed; inset: 0; z-index: 400; }
+.u2 .u-layer > .u-scrim { position: absolute; inset: 0; z-index: 0; }
+.u2 .u-layer > .u-scrim.u-light { background: rgba(0,0,0,.42); backdrop-filter: none; }
+.u2.u-desk .u-layer > .u-dialog { position: absolute; z-index: 1; left: calc(272px + (100% - 272px) / 2); top: 50%; transform: translate(-50%, -50%); max-height: calc(100vh - 64px); overflow: auto; width: 560px; max-width: calc(100vw - 272px - 48px); }
+.u2.u-phone .u-layer > .u-sheet { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; max-height: calc(100vh - 24px); overflow: auto; padding-top: 28px; transition: transform .18s ease; }
+.u2.u-phone .u-layer > .u-sheet:before { display: none; }
+.u2 .u-layer .u-grab { position: absolute; left: 50%; top: 10px; width: 40px; height: 5px; margin-left: -20px; border-radius: 3px; background: var(--rim-strong); }
+.u2 .u-layer :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+body.u2.u-modal-open { overflow: hidden; }

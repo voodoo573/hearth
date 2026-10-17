@@ -46,7 +46,8 @@ const look = (p) => p.evaluate(() => ({ theme: document.documentElement.getAttri
     check(`${tag}: 1.5.x classes (.vital-stat, .stat-cell-score) get the reskin`, /url|gradient/.test(renamed.vital) && renamed.score === 'rgb(247, 220, 152)', renamed);
     await p.evaluate(() => { setActiveTab('character'); state.ui.homePanel = 'settings'; render(); }); await p.waitForTimeout(400);
     await p.screenshot({ path: SHOTS + `reskin-${tag}-settings.png` });
-    check(`${tag}: Hearth (signature) first and selected in the theme picker`, await p.evaluate(() => { const f = document.querySelector('#settingsThemeGrid .settings-palette-card'); return f && f.dataset.palettePref === 'hearth' && f.classList.contains('selected'); }));
+    // UI polish: the inline grid became the theme pop-up (Settings > Appearance > Theme > Change)
+    check(`${tag}: Hearth (signature) first and selected in the theme picker`, await p.evaluate(() => { document.querySelector('[data-u-act="themes"]').click(); const f = document.querySelector('.u-layer [data-tk]'); const ok = f && f.dataset.tk === 'hearth' && f.getAttribute('aria-checked') === 'true'; document.querySelector('.u-layer [data-u-close="cancel"]').click(); return ok; }));
     await p.evaluate(() => { state.ui.homePanel = null; localStorage.setItem('hearth.dmSettings.v1', JSON.stringify({ dmMode: true, projectorHelpDismissed: true })); setActiveTab('dm'); render(); dmEncounterAddCustomMonster('Goblin', 7, 15, 2, ''); render(); }); await p.waitForTimeout(400);
     await p.screenshot({ path: SHOTS + `reskin-${tag}-dm.png` });
     await p.evaluate(() => hearthOpenLegal()); await p.waitForTimeout(300);

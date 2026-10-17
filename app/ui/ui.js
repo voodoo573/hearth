@@ -201,9 +201,9 @@
       e.preventDefault(); e.stopPropagation();
       var g = t.dataset.uGo;
       if (g === 'sheet') { var ch = current(); if (ch) { state.activeCharId = ch.id; go('sheet'); } else go('characters'); return; }
-      go(g); return;
+      W.HearthUI.go(g); return;
     }
-    if (t.dataset.uBack) { e.preventDefault(); e.stopPropagation(); go(t.dataset.uBack); return; }
+    if (t.dataset.uBack) { e.preventDefault(); e.stopPropagation(); W.HearthUI.go(t.dataset.uBack); return; }
     if (t.dataset.uAct && actions[t.dataset.uAct]) { e.preventDefault(); e.stopPropagation(); actions[t.dataset.uAct](t, e); }
   }
   function onKey(e) {
@@ -270,7 +270,50 @@
     if (!f || typeof W[f] !== 'function' || typeof W.homeModalWrap !== 'function') return '';
     try { return raw(W.homeModalWrap(p === 'aicore' ? W[f](current()) : W[f]())); } catch (e) { return ''; }
   }
-  W.HearthUI = { homeModals: homeModals, raw: raw, screens: screens, px: px, pxCss: pxCss, addCss: addCss, ic: ic, btn: btn, ibtn: ibtn, tag: tag, sec: sec, hpbar: hpbar, pips: pips, esc: esc,
+  // ---------- overlays ----------
+  // Desktop: a centred .dialog over a .scrim, centred in the main column. Phone: a bottom .sheet with a grab
+  // handle (swipe down closes). Escape and the scrim close too; focus is trapped and handed back on close.
+  var FOCUSABLE = 'button:not([disabled]),[href],input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
+  function modal(o) {
+    var desk = isDesk(), back = D.activeElement, layer = D.createElement('div');
+    layer.className = 'u-layer'; layer.setAttribute('data-u-modal', o.id || '');
+    var box = desk ? 'dialog' : 'sheet';
+    layer.innerHTML = px('<div class="scrim' + (o.light ? ' light' : '') + '" data-u-scrim></div><div class="' + box + ' ' + (o.cls || '') + '" role="' + (o.role || 'dialog') + '" aria-modal="true"' + (o.label ? ' aria-label="' + esc(o.label) + '"' : '') + ' tabindex="-1">' + (desk ? '' : '<span class="grab" aria-hidden="true"></span>') + o.html() + '</div>');
+    D.body.appendChild(layer); D.body.classList.add('u-modal-open');
+    var panel = layer.lastElementChild, closed = false;
+    if (o.width && desk) panel.style.width = o.width + 'px';
+    function close(reason) {
+      if (closed) return; closed = true;
+      D.removeEventListener('keydown', key, true);
+      layer.remove(); if (!D.querySelector('.u-layer')) D.body.classList.remove('u-modal-open');
+      try { if (o.onClose) o.onClose(reason || 'close'); } catch (e) { console.warn(e); }
+      var to = (o.returnFocus && D.querySelector(o.returnFocus)) || back; try { if (to && to.focus && D.body.contains(to)) to.focus(); } catch (e) {}
+    }
+    function key(e) {
+      if (!D.body.contains(layer) || layer !== [].slice.call(D.querySelectorAll('.u-layer')).pop()) return;
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close('escape'); return; }
+      if (e.key === 'Tab') {
+        var f = [].slice.call(panel.querySelectorAll(FOCUSABLE)).filter(function (x) { return x.offsetParent !== null || x === D.activeElement; });
+        if (!f.length) { e.preventDefault(); panel.focus(); return; }
+        var i = f.indexOf(D.activeElement);
+        if (e.shiftKey && (i <= 0)) { e.preventDefault(); f[f.length - 1].focus(); }
+        else if (!e.shiftKey && (i === f.length - 1 || i < 0)) { e.preventDefault(); f[0].focus(); }
+      }
+      if (o.onKey) o.onKey(e);
+    }
+    D.addEventListener('keydown', key, true);
+    layer.querySelector('[data-u-scrim]').addEventListener('click', function () { close('scrim'); });
+    layer.addEventListener('click', function (e) { var c = e.target.closest && e.target.closest('[data-u-close]'); if (c && layer.contains(c)) { e.preventDefault(); close(c.getAttribute('data-u-close') || 'close'); } });
+    if (!desk) { // swipe down on the sheet's header area
+      var y0 = null, dy = 0;
+      panel.addEventListener('touchstart', function (e) { var t = e.target; var sc = t.closest && t.closest('[data-u-scroll]'); if (sc && sc.scrollTop > 0) { y0 = null; return; } y0 = e.touches[0].clientY; dy = 0; }, { passive: true });
+      panel.addEventListener('touchmove', function (e) { if (y0 == null) return; dy = e.touches[0].clientY - y0; if (dy > 0) { panel.style.transform = 'translateY(' + dy + 'px)'; } }, { passive: true });
+      panel.addEventListener('touchend', function () { if (y0 == null) return; y0 = null; if (dy > 90) close('swipe'); else panel.style.transform = ''; });
+    }
+    setTimeout(function () { var f = (o.focus && panel.querySelector(o.focus)) || panel.querySelector(FOCUSABLE) || panel; try { f.focus({ preventScroll: true }); } catch (e) {} }, 0);
+    return { layer: layer, panel: panel, close: close, refresh: function () { var keep = panel.querySelector('[data-u-scroll]'), st = keep ? keep.scrollTop : 0; panel.innerHTML = px((desk ? '' : '<span class="grab" aria-hidden="true"></span>') + o.html()); var k2 = panel.querySelector('[data-u-scroll]'); if (k2) k2.scrollTop = st; } };
+  }
+  W.HearthUI = { modal: modal, homeModals: homeModals, raw: raw, screens: screens, px: px, pxCss: pxCss, addCss: addCss, ic: ic, btn: btn, ibtn: ibtn, tag: tag, sec: sec, hpbar: hpbar, pips: pips, esc: esc,
     chars: chars, current: current, hpOf: hpOf, acOf: acOf, classLine: classLine, subLine: subLine, raceName: raceName, avatar: avatar, slotInfo: slotInfo,
     route: route, go: go, isDesk: isDesk, actions: actions, withMarkup: withMarkup, storeOn: storeOn, boot: boot };
 })();
