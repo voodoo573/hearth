@@ -167,7 +167,8 @@ const flat = (landed) => [].concat(...(landed || []).map(x => Array.isArray(x) ?
   // Settings screenshot
   await p.evaluate(() => { setActiveTab('character'); state.ui.homePanel = 'settings'; render(); });
   await p.waitForTimeout(400);
-  await p.evaluate(() => { const l = [...document.querySelectorAll('.forge-section-label')].find(x => x.textContent.trim() === 'Dice'); l && l.scrollIntoView(); });
+  // UI polish: the new Settings shows one section at a time on desktop; open its Dice section (old layout: scroll to it)
+  await p.evaluate(() => { const s = document.querySelector('[data-u-act="set-sec"][data-v="dice"]'); if (s) s.click(); const l = [...document.querySelectorAll('.forge-section-label')].find(x => x.textContent.trim() === 'Dice'); l && l.scrollIntoView(); });
   await p.waitForTimeout(200);
   await p.screenshot({ path: SHOTS + '03-settings-dice.png' });
   check('Settings shows Dice section with big-screen Off selected', await p.evaluate(() => !!document.querySelector('[data-dice-pref="diceProjector"][data-dice-val="off"].selected') && document.querySelectorAll('[data-dice-pref="diceColour"]').length === 10));
