@@ -141,7 +141,7 @@
     return '<div class="ttl"><h1 class="t-h1">' + m.title + '</h1>' + (m.meta ? '<div class="t-meta">' + m.meta + '</div>' : '') + '</div>' + (m.extra || '') + s + (m.actions || '');
   }
   function abarHTML(m) {
-    var left = m.back ? ibtn('left', 'data-u-back="' + esc(m.back) + '" style="margin-left:-8px"', true, 'Back') : '<span class="logo !home-brand-icon" aria-hidden="true"></span>';
+    var left = m.back ? ibtn('left', 'data-u-back="' + esc(m.back) + '" style="margin-left:-8px"', true, 'Back') : m.pleft ? m.pleft : '<span class="logo !home-brand-icon" aria-hidden="true"></span>';
     var title = m.ptitle || m.title;
     return left + '<div class="ttl">' + title + (m.psub ? '<small>' + m.psub + '</small>' : '') + '</div>' + (m.pright || '');
   }
