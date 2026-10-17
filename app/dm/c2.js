@@ -560,7 +560,7 @@
   function install() {
     if (installed) return; installed = true;
     document.addEventListener('click', onClick);
-    document.addEventListener('pointerdown', function (ev) { if (ui() && ui().c2Fan && document.querySelector('.c2')) { var t = ev.target; if (!(t.closest && t.closest('.c2-fan, [data-c2-fab]'))) { ui().c2Fan = false; var f = document.querySelector('.c2-fan'), fb = document.querySelector('.c2-fab'); if (f) f.classList.remove('open'); if (fb) { fb.classList.remove('open'); fb.textContent = '\u2726'; } } } }, true);
+    document.addEventListener('pointerdown', function (ev) { if (ui() && ui().c2Fan && document.querySelector('.c2')) { var t = ev.target; if (!(t.closest && t.closest('.c2-fan, [data-c2-fab]'))) { ui().c2Fan = false; var f = document.querySelector('.c2-fan'), fb = document.querySelector('.c2-fab'); if (f) f.classList.remove('open'); if (fb) { fb.classList.remove('open'); fb.textContent = '\u2726'; }  if (W.HearthMI && HearthMI._clearCaps) HearthMI._clearCaps(); } } }, true);
     document.addEventListener('click', onPick, true);
     document.addEventListener('click', onOutside, true);
     document.addEventListener('keydown', function (ev) { if (ev.key !== 'Escape' || !document.querySelector('.c2')) return; var u = ui(); if (u.c2Fan || u.c2More || u.c2Fly || u.c2Help) { u.c2Fan = u.c2More = u.c2Help = false; u.c2Fly = null; render(); } });

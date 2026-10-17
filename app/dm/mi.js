@@ -317,18 +317,62 @@
     X.grid.querySelectorAll('[data-map-token]').forEach(function (te) { te.classList.toggle('mi-hit', !!hitSet[te.dataset.mapToken]); });
     offHits();
     stackPview();
+    clearCaps();
+  }
+  // v1.7.1 — a creature's name caption keeps clear of the screen furniture in the bottom corners: the tool fan
+  // (quarter circle on the corner), the template fan, the round button, the pills and the help line. A covered
+  // caption goes above its token, then beside it on the left; if every spot is covered it goes above.
+  function furniture() {
+    var o = [];
+    [].forEach.call(document.querySelectorAll('.c2 .c2-fan.open, .c2 .mi-afan'), function (f) {
+      var r = f.getBoundingClientRect(), S = 0;
+      if (f.classList.contains('mi-afan')) S = parseFloat(f.style.getPropertyValue('--afS')) || 0;
+      else { var w = f.querySelector('.c2-fan-wrap'); S = w ? parseFloat(w.style.width) || 0 : 0; }
+      if (S) o.push({ cx: r.right, cy: r.bottom, r: S + 4 });
+    });
+    [].forEach.call(document.querySelectorAll('.c2 .c2-fab, .c2 .mi-aftogs, .c2 .mi-hint'), function (n) { var r = n.getBoundingClientRect(); if (r.width && getComputedStyle(n).display !== 'none') o.push({ l: r.left - 4, t: r.top - 4, r2: r.right + 4, b: r.bottom + 4 }); });
+    return o;
+  }
+  function hitsFurniture(r, o) {
+    return o.some(function (q) {
+      if (q.cx != null) { var nx = Math.max(r.left, Math.min(q.cx, r.right)), ny = Math.max(r.top, Math.min(q.cy, r.bottom)); return Math.hypot(nx - q.cx, ny - q.cy) < q.r; }
+      return r.left < q.r2 && r.right > q.l && r.top < q.b && r.bottom > q.t;
+    });
+  }
+  function clearCaps() {
+    if (!X || !X.grid) return;
+    var o = furniture(), caps = X.grid.querySelectorAll('.map-token-caption');
+    [].forEach.call(caps, function (cp) { cp.classList.remove('mi-cap-up', 'mi-cap-l'); });
+    if (!o.length) return;
+    [].forEach.call(caps, function (cp) {
+      if (!hitsFurniture(cp.getBoundingClientRect(), o)) return;
+      var ok = ['mi-cap-up', 'mi-cap-l'].some(function (k) { cp.classList.add(k); if (!hitsFurniture(cp.getBoundingClientRect(), o)) return true; cp.classList.remove(k); return false; });
+      if (!ok) cp.classList.add('mi-cap-up'); // above still beats under the corner fan, which is the larger and opaque cover
+    });
   }
   // Phone: creatures caught by the selected template but off screen get an edge marker at their row.
   function offHits() {
     var box = el('miOff'); if (!box) return;
     var a = A(), t = selAoe(); if (!a || !t || wide() || !X.scroll) { box.innerHTML = ''; return; }
     var sr = X.scroll.getBoundingClientRect(), br = box.getBoundingClientRect(), h = '';
+    // v1.7.1 — a marker keeps clear of the template labels, the pills and the other markers: it slides up or down off its
+    // creature's row (at most a few rows) to the nearest clear spot, and stays inside the map
+    var MH = 30, taken = [].map.call(document.querySelectorAll('#miTpl .mi-chip, .c2 .mi-aftogs'), function (n) { var q = n.getBoundingClientRect(); return [q.left - 4, q.top - br.top - 4, q.right + 4, q.bottom - br.top + 4]; });
+    var clearY = function (cy, x0, x1) {
+      var lo = sr.top - br.top + MH / 2 + 2, hi = sr.bottom - br.top - MH / 2 - 2;
+      var free = function (y) { return y >= lo && y <= hi && !taken.some(function (q) { return x0 < q[2] && x1 > q[0] && y - MH / 2 < q[3] && y + MH / 2 > q[1]; }); };
+      for (var d = 0; d <= 4 * MH; d += 4) { if (free(cy + d)) return cy + d; if (free(cy - d)) return cy - d; }
+      return cy;
+    };
     hits(t, X.enc).forEach(function (c) {
       var te = X.grid.querySelector('[data-map-token="' + c.id + '"]'); if (!te) return;
       var r = te.getBoundingClientRect(), cy = r.top + r.height / 2 - br.top;
-      var word = t.kind === 'circle' ? 'circle' : t.kind === 'square' ? 'cube' : t.kind;
-      if (r.right < sr.left + 4) h += '<div class="mi-offhit l" style="top:' + cy.toFixed(0) + 'px">\u25C2 <b>' + E(c.name) + '</b> in ' + word + '</div>';
-      else if (r.left > sr.right - 4) h += '<div class="mi-offhit r" style="top:' + cy.toFixed(0) + 'px"><b>' + E(c.name) + '</b> in ' + word + ' \u25B8</div>';
+      var word = t.kind === 'circle' ? 'circle' : t.kind === 'square' ? 'cube' : t.kind, mw = (c.name.length + word.length + 6) * 7 + 22;
+      var left = r.right < sr.left + 4, right = !left && r.left > sr.right - 4; if (!left && !right) return;
+      var x0 = left ? sr.left - br.left : sr.right - br.left - mw, y = clearY(cy, x0, x0 + mw);
+      taken.push([x0, y - MH / 2, x0 + mw, y + MH / 2]);
+      if (left) h += '<div class="mi-offhit l" style="top:' + y.toFixed(0) + 'px">\u25C2 <b>' + E(c.name) + '</b> in ' + word + '</div>';
+      else h += '<div class="mi-offhit r" style="top:' + y.toFixed(0) + 'px"><b>' + E(c.name) + '</b> in ' + word + ' \u25B8</div>';
     });
     box.innerHTML = h;
   }
@@ -1253,6 +1297,7 @@
         else closeAoe(false);
       }, true);
       sc.addEventListener('scroll', function () { if (A()) { cancelAnimationFrame(ghostRaf); ghostRaf = requestAnimationFrame(offHits); } }, { passive: true });
+      var capRaf = 0; sc.addEventListener('scroll', function () { cancelAnimationFrame(capRaf); capRaf = requestAnimationFrame(clearCaps); }, { passive: true });
       var lblRaf = 0; sc.addEventListener('scroll', function () { if (hdrag || !aoes().length) return; cancelAnimationFrame(lblRaf); lblRaf = requestAnimationFrame(refresh); }, { passive: true }); // keep labels inside the visible map
     }
     refresh(); fxRefresh();
@@ -1369,6 +1414,6 @@
     tokenDown: tokenHook, ownsPointer: ownsPointer, fanHTML: fanHTML, stageHTML: stageHTML, openAoe: openAoe, openFog: openFog, closeAoe: closeAoe,
     placeFromCard: placeFromCard, _fogTone: _fogTone, _fog: function () { return X && X.fog; }, _lum: function () { return lumCache; }, placing: placing, projLabel: projLabel, historyHTML: historyHTML, undoMove: undoMove,
     aoeOpen: function () { return !!A(); }, fogOpen: function () { return !!Fg(); },
-    _hits: hits, _inside: insideG, _geo: geo, _label: labelPlain, _stamp: stampSeg, _derived: derived, _walk: walk, _speed: speedOf, _terrain: terrainFor, _hist: H, _persist: persistNow, _moves: function () { return moveUndo; }, _x: function () { return X; }
+    _hits: hits, _inside: insideG, _geo: geo, _label: labelPlain, _stamp: stampSeg, _derived: derived, _walk: walk, _speed: speedOf, _terrain: terrainFor, _hist: H, _persist: persistNow, _clearCaps: clearCaps, _moves: function () { return moveUndo; }, _x: function () { return X; }
   };
 })();

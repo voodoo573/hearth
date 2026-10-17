@@ -123,7 +123,7 @@ body:has(.c2) { overflow: hidden; }
   transform: translate(var(--fx), var(--fy)) scale(.4); opacity: 0; transition: transform .2s cubic-bezier(.2,.9,.3,1.2), opacity .15s; transition-delay: calc(var(--i) * 18ms); pointer-events: none; }
 .c2 .c2-fan.open .c2-fan-i { transform: none; opacity: 1; pointer-events: auto; }
 .c2 .c2-fan-i svg { width: 22px; height: 22px; }
-.c2 .c2-fan-i small { position: absolute; top: 100%; margin-top: 3px; font-size: 10.5px; color: var(--ink); text-shadow: 0 1px 2px #000, 0 0 4px #000; white-space: nowrap; }
+.c2 .c2-fan-i small { position: absolute; top: 100%; margin-top: 3px; font-size: 10.5px; color: var(--mi-plate-ink, var(--ink)); text-shadow: 0 1px 2px #000, 0 0 4px #000; white-space: nowrap; }
 .c2 .c2-fan-i.on { background: var(--c2-brass); color: var(--c2-on-gold); box-shadow: 0 0 0 2px var(--page), 0 0 14px color-mix(in srgb, var(--gold) 50%, transparent); }
 @media (prefers-reduced-motion: reduce) { .c2 .c2-fan-i, .c2 .c2-fan-wrap { transition: none; } }
 /* flyouts */
