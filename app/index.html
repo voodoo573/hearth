@@ -11030,6 +11030,8 @@ html[data-texture]:not([data-palette]):not([data-theme="dark"]):not([data-textur
 <link rel="stylesheet" href="dm/mi.css">
 <script src="dm/mi-fog.js"></script>
 <script src="dm/mi.js"></script>
+<link rel="stylesheet" href="dm/atmo.css">
+<script src="dm/atmo.js"></script>
 <style id="hearth-reskin">/* @reskin */
 /* Hearth 1.6.0 — Jenny's "Hearth" signature reskin (built against v1.4.1; 1.5.x class names added:
    .vital-stat, .ability, .stat-cell-score, .section-label; red .danger buttons (End Rage) and pips in the parchment strips keep their colours). */
@@ -25136,6 +25138,7 @@ function loadEncounter() {
     // v0.21.96 — AoE templates were never loaded here, so any saveEncounter()
     // wiped them — placed shapes vanished the instant they saved. Load them.
     aoes: Array.isArray(enc.aoes) ? enc.aoes : [],
+    atmo: enc.atmo || null, // v1.7.0 — weather & light (dm/atmo.js)
   };
 }
 // Persist a runtime encounter: players' identity goes to the game
@@ -25188,6 +25191,8 @@ function saveEncounter(runtime) {
     // added them, this writes them back). Falls back to whatever's stored so a
     // save that doesn't touch AoEs doesn't wipe them.
     aoes: Array.isArray(runtime.aoes) ? runtime.aoes : (g.encounters[ti].aoes || []),
+    // v1.7.0 — weather & light (Atmosphere v2); same fall-back rule as the templates.
+    atmo: runtime.atmo !== undefined ? runtime.atmo : (g.encounters[ti].atmo || null),
   };
   saveGames(coll);
   // v1.1.0 — tell linked players about DM-side changes (no-op unless hosting).
@@ -54362,7 +54367,20 @@ function buildMapState(enc) {
       kind: c.kind, isBoss: !!c.isBoss, isTurn: c.id === activeTurnId,
     })),
     round: enc.round || 1,
+    // v1.7.0 — weather & light. Lights carried by hidden, dead or fogged creatures never reach the players.
+    atmo: (function () {
+      const a = (typeof window !== 'undefined' && window.HearthAtmo) ? HearthAtmo.mapState(enc, true) : null;
+      if (a) a.lights = a.lights.filter(l => { const c = (enc.combatants || []).find(x => x.id === l.id); return c && !(c.kind !== 'player' && _underFog(c)); });
+      return a;
+    })(),
   };
+}
+// v1.7.0 — the painted map's own metadata (light sources, lava) once its bitmap is in memory; null for uploaded maps.
+function paintedMetaFor(enc) {
+  const pid = encPaintedId(enc);
+  if (!pid) return null;
+  const v = _paintedMem.get(paintedKey(pid, enc.mapCols || 20, enc.mapRows || 15));
+  return v ? (v.meta || null) : null;
 }
 function fogLayerSVG(enc, cols, rows, cell) {
   const fog = enc.fog;
@@ -55910,6 +55928,7 @@ function paintedHydrateFetch(id, cols, rows, key) {
     const badge = document.getElementById('dmPaintingBadge');
     if (badge) badge.remove();
     broadcastMap(loadEncounter());
+    if (window.HearthAtmo) HearthAtmo.wire(loadEncounter()); // map light sources + embers need the painted map's metadata
   }).catch(err => {
     const badge = document.getElementById('dmPaintingBadge');
     if (badge) badge.textContent = 'Painted map unavailable \u2014 showing the simple version';
@@ -57164,6 +57183,8 @@ function wireDMMap(enc, cell, cols, rows) {
   }
   // v1.7.0 — Jenny's map interactions: templates with live labels, token paths, soft fog.
   if (dmMapInteractions()) HearthMI.wire({ enc, cell, cols, rows, getZoom, setZoom, fitZoom, onTap: (id) => HearthC2.openCard(id, true) });
+  // v1.7.0 — Jenny's Atmosphere v2: weather, light and sound (C2 only; it tears itself down on the classic layout).
+  if (window.HearthAtmo) HearthAtmo.wire(enc);
 }
 
 // Open (or focus) the projector window and push the current map to it.
@@ -57292,6 +57313,12 @@ function projectorDocumentHTML() {
   body.cursor-hidden { cursor:none; }
   ${PAINTED_OVERLAY_CSS}
   .grid > .pm-ov { z-index:1; }
+  /* v1.7.0 — Atmosphere v2: weather under the tokens, light above them and under the fog; labels stay readable */
+  .grid > .hatm-light > canvas { z-index:6; }
+  .grid.atm-on .plbl { z-index:6; }
+  .pj-snd { position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:12; display:flex; align-items:center; gap:10px; padding:14px 22px; border-radius:999px; cursor:pointer;
+    font:600 20px Georgia,'Times New Roman',serif; color:#1a1208; background:linear-gradient(#f0c873,#c8963e); border:2px solid #f6dc9c; box-shadow:0 6px 24px rgba(0,0,0,.6), 0 0 0 6px rgba(212,160,75,.18); }
+  .pj-snd[hidden] { display:none; }
   ${projectorLookCSS()}
   /* v1.6.0 — big-screen dice */
   .pj-dice { position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center; pointer-events:none; background:rgba(0,0,0,0); opacity:0; transition:opacity .35s, background .35s; }
@@ -57384,6 +57411,7 @@ function projectorDocumentHTML() {
       if (_pm.url) { try { URL.revokeObjectURL(_pm.url); } catch(x){} }
       _pm.url = URL.createObjectURL(rec.blob);
       var m = rec.meta || {};
+      _pm.meta = m;
       window.__pmSource = rec.__src || 'cache';
       if (last) draw(last);
       // v1.2.0 — v6 canvas overlay (same renderer as the DM screen).
@@ -57428,6 +57456,19 @@ function projectorDocumentHTML() {
         _pf.seq = fx.seq; _pf.enc = f.mask;
       }
       return _pf.cv;
+    }
+    // v1.7.0 — Atmosphere v2 (weather & light). Loaded only when the DM turns it on.
+    var ATMO_BASE = ${JSON.stringify(paintedAbsUrl('dm/'))}, _atmoLoad = null;
+    function atmoDraw(state, base){
+      grid.classList.toggle('atm-on', !!state.atmo);
+      if (!state.atmo && !window.HearthAtmo) return;
+      if (!window.HearthAtmo) {
+        if (!_atmoLoad) _atmoLoad = new Promise(function(res, rej){ var s = document.createElement('script'); s.src = ATMO_BASE + 'atmo.js'; s.onload = res; s.onerror = function(){ _atmoLoad = null; rej(); }; document.head.appendChild(s); });
+        _atmoLoad.then(function(){ if (last) draw(last); }, function(){});
+        return;
+      }
+      HearthAtmo.projectorDraw(state, grid, { base: ATMO_BASE, after: base || null, channel: ch, meta: (state.painted && _pm.key === state.painted.key) ? _pm.meta : null,
+        reduced: ${projectorReducedMotion() ? 'true' : 'false'}, redraw: function(){ if (last) draw(last); } });
     }
     function draw(state){
       last = state;
@@ -57546,6 +57587,7 @@ function projectorDocumentHTML() {
           }
         }
       } else { removeProjVideo(); }
+      atmoDraw(state, pmImg && _pm.node && _pm.node.parentNode === grid ? _pm.node : (_gov || (_projVidEl && _projVidEl.parentNode === grid ? _projVidEl : null)));
       var initEl = document.getElementById('initpanel');
       if (initEl) {
         if (state.initiative && state.initiative.length) {

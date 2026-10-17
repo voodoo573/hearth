@@ -109,6 +109,7 @@
     group: '<svg viewBox="0 0 24 24"><circle cx="8.5" cy="9" r="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="9" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 19c.8-3 3-4.5 5.5-4.5S13.2 16 14 19M11.5 15.2c1.2-.5 2.8-.7 4.5-.7 2.5 0 4.7 1.5 5.5 4.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
     grid: '<svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M9 4v16M15 4v16" stroke="currentColor" stroke-width="2"/></svg>',
     map: '<svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z M9 4v14M15 6v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+    weather: '<svg viewBox="0 0 24 24"><path d="M7 15.5h9.5a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.6 1A3 3 0 0 0 7 15.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 18.5l-1 2M12.5 18.5l-1 2M16.5 18.5l-1 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
     view: '<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l5.5 5.5M8 10.5h5M10.5 8v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
   };
   function fanItem(key, label, attrs, on) {
@@ -127,6 +128,7 @@
       fanItem('group', 'Group', 'data-group-tool="1"', !!u.dmGroupMode),
       fanItem('grid', 'Grid', 'data-c2-fly="grid"', u.c2Fly === 'grid'),
       fanItem('map', 'Map', 'data-c2-fly="map"', u.c2Fly === 'map'),
+      fanItem('weather', 'Weather', 'data-c2-fly="weather"', u.c2Fly === 'weather' || !!(W.HearthAtmo && HearthAtmo.isActive(HearthAtmo.cfg(enc)))),
       fanItem('view', 'View', 'data-c2-fly="view"', u.c2Fly === 'view'),
     ];
     function place(list, r, a0, a1) {
@@ -159,7 +161,8 @@
     var map = '<div class="c2-row">' + b('id="dmMapAdd"', hasMap ? '\uD83D\uDDFA Replace map' : '\uD83D\uDDFA Add map') + b('id="dmMapLibrary"', '\uD83D\uDCDA Map library') + (hasMap ? b('id="dmMapRemove"', 'Remove map') : '') + '</div>' +
       '<input type="file" id="dmMapFile" accept="image/*,video/mp4,video/webm,video/ogg" style="display:none;" />';
     var view = '<div class="c2-row">' + b('data-map-zoom="out"', '\u2212 Zoom') + b('data-map-zoom="in"', '+ Zoom') + b('data-map-zoom="fit"', '\u2922 Fit board') + '<span class="c2-dim" id="dmMapZoomPct">100%</span></div>';
-    return panel('aoe', 'Area templates', aoe) + panel('fog', 'Fog of war', fog) + panel('grid', 'Grid', grid) + panel('map', 'Map', map) + panel('view', 'View', view);
+    var weather = f === 'weather' ? (W.HearthAtmo ? HearthAtmo.panelHTML(enc) : '<div class="c2-note">Weather is still loading\u2026</div>') : '';
+    return panel('aoe', 'Area templates', aoe) + panel('fog', 'Fog of war', fog) + panel('grid', 'Grid', grid) + panel('map', 'Map', map) + panel('weather', 'Weather & light', weather) + panel('view', 'View', view);
   }
   function modeChip() {
     var u = ui(), t = null;

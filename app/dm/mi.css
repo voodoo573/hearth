@@ -5,7 +5,7 @@
 /* ---------- layers on the board ---------- */
 .c2 .mi-fog { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; }
 .c2 .mi-path { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; overflow: visible; }
-.c2 .mi-ov { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.c2 .mi-ov { position: absolute; inset: 0; z-index: 7; pointer-events: none; } /* above the atmosphere light layer (6), so handles and labels never dim at night */
 .c2 .mi-ov > div { position: absolute; inset: 0; }
 .c2 #dmMapGrid { --mi-inv: 1; }
 /* templates */

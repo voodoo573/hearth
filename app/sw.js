@@ -45,6 +45,11 @@ const APP_SHELL = [
   './dm/mi.css', // v1.7.0 — map interactions (Jenny): templates, token paths, soft fog
   './dm/mi.js',
   './dm/mi-fog.js',
+  './dm/atmo.css', // v1.7.0 — Atmosphere v2 (Jenny): weather, light, wall shadows, sound
+  './dm/atmo.js',
+  './dm/atmo/hearth-atmosphere.js',
+  './dm/atmo/hearth-walls.js',
+  './dm/atmo/hearth-atmosphere-audio.js',
   './dm/srd51-statblocks.js', // v1.7.0 — SRD 5.1 stat blocks (CC-BY-4.0)
   './tokens/lib/bandit.webp',
   './tokens/lib/bear.webp',

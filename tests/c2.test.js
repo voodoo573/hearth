@@ -92,7 +92,7 @@ async function open(b, w, h, opts) {
   check('card HP stepper (\u221210) applies to the dragon', hp === 202, hp);
   // fan
   const fan = await p.evaluate(() => { document.querySelector('[data-c2-fab]').click(); const open = document.querySelector('.c2-fan.open') != null; const items = [...document.querySelectorAll('.c2-fan-i small')].map(x => x.textContent); document.querySelector('.c2-fan [data-ruler-tool]').click(); return { open, items, ruler: !!state.ui.dmRulerTool, closed: !document.querySelector('.c2-fan.open'), chip: !!document.querySelector('.c2-mode') }; });
-  check('brass \u2726 fan opens from the map with AoE, Measure, Point, Fog, Group, Grid, Map, View', fan.open && fan.items.join() === 'AoE,Measure,Point,Fog,Group,Grid,Map,View', fan);
+  check('brass \u2726 fan opens from the map with AoE, Measure, Point, Fog, Group, Grid, Map, Weather, View', fan.open && fan.items.join() === 'AoE,Measure,Point,Fog,Group,Grid,Map,Weather,View', fan);
   check('picking Measure closes the fan, arms the ruler and shows a Done chip', fan.ruler && fan.closed && fan.chip, fan);
   await p.evaluate(() => { document.querySelector('.c2-mode button').click(); });
   check('Done chip disarms the ruler', await p.evaluate(() => !state.ui.dmRulerTool && !document.querySelector('.c2-mode')));

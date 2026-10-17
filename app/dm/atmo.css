@@ -1,0 +1,31 @@
+/* Hearth v1.7.0 — Atmosphere v2 on the C2 DM screen (glue for Jenny's HearthAtmosphere; see dm/atmo.js). */
+/* light (multiply + bloom) above the tokens, below handles/labels (.mi-ov, z 7); the wrapper stays z-auto so the blend reaches the map */
+.dm-map-grid > .hatm-light > canvas { z-index: 6; }
+/* Weather & light flyout */
+.c2 .atmo .c2-lbl { margin: 4px 0 6px; }
+.c2 .atmo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+.c2 .atmo-grid .c2-btn, .c2 .atmo-seg .c2-btn { text-align: center; justify-content: center; }
+.c2 .atmo-seg { flex-wrap: nowrap; }
+.c2 .atmo-seg .c2-btn { flex: 1; padding: 6px 4px; }
+.c2 .atmo-slide { flex-wrap: nowrap; gap: 10px; }
+.c2 .atmo-slide > span, .c2 .atmo-wind > span { min-width: 64px; flex: none; font-size: 12.5px; color: var(--ink-soft, var(--ink)); }
+.c2 .atmo-slide input[type=range] { flex: 1; min-width: 0; accent-color: var(--gold); height: 22px; margin: 0; }
+.c2 .atmo-slide output { min-width: 38px; text-align: right; font-size: 12px; color: var(--gold); font-variant-numeric: tabular-nums; }
+.c2 .atmo-slide.off, .c2 .atmo-wind.off { opacity: .45; }
+.c2 .atmo-wind { flex-wrap: nowrap; gap: 3px; }
+.c2 .atmo-wind > span { min-width: 0; margin-right: 6px; }
+.c2 .atmo .atmo-dir { width: 27px; height: 27px; min-width: 0; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1; flex: none; }
+.c2 .atmo-lights { display: flex; flex-direction: column; gap: 5px; max-height: 176px; overflow: auto; margin-bottom: 8px; padding-right: 2px; }
+.c2 .atmo-lt { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); padding: 3px 4px 3px 8px; border-radius: 8px; border: 1px solid transparent; }
+.c2 .atmo-lt.on { border-color: color-mix(in srgb, var(--gold) 45%, transparent); background: color-mix(in srgb, #ff9a45 10%, transparent); }
+.c2 .atmo-lt > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c2 .atmo-lt small { color: var(--ink-faded); font-size: 11px; }
+.c2 .atmo .atmo-lt select { flex: none; width: 122px; height: 30px; min-height: 0; margin: 0; padding: 2px 8px; font-size: 12.5px; line-height: 1.2; color: var(--ink); background-color: var(--c2-surface); border: 1px solid var(--c2-rim); border-radius: 7px; box-shadow: none; }
+.c2 .atmo-note { font-size: 11.5px; line-height: 1.35; margin: -2px 0 9px; }
+.c2 .atmo-end { margin-top: 4px; }
+@media (max-width: 899px) {
+  .c2 .atmo .atmo-dir { width: 33px; height: 33px; }
+  .c2 .atmo .atmo-lt select { width: 136px; height: 34px; }
+}
+/* the Weather & light flyout is the tallest one: its title and close button stay put while it scrolls */
+.c2 [data-c2-panel="weather"] > .c2-fly-h { position: sticky; top: -10px; z-index: 2; margin: -10px -12px 8px; padding: 10px 12px 7px; background: var(--c2-surface); border-bottom: 1px solid color-mix(in srgb, var(--gold-deep) 45%, transparent); }

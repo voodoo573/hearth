@@ -108,7 +108,7 @@ body:has(.c2) { overflow: hidden; }
   background: radial-gradient(circle closest-side, color-mix(in srgb, var(--page) 90%, transparent) 0 70%, color-mix(in srgb, var(--page) 55%, transparent) 84%, transparent 100%); }
 .c2 .c2-fan.open .c2-fan-glow { opacity: 1; }
 .c2 .c2-fan-ring { position: absolute; left: 30px; top: 30px; }
-.c2 .c2-fan-r1 { --r: 96px; } .c2 .c2-fan-r2 { --r: 172px; }
+.c2 .c2-fan-r1 { --r: 96px; } .c2 .c2-fan-r2 { --r: 210px; } /* six tools on the outer ring since Weather joined (same spacing as the old five) */
 .c2 .c2-fan-i { position: absolute; left: 0; top: 0; width: 50px; height: 50px; margin: -25px 0 0 -25px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center;
   background: var(--c2-surface); border: 1px solid var(--gold-deep); color: var(--gold); box-shadow: 0 3px 8px rgba(0,0,0,.6); min-height: 0;
   transform: translate(0, 0) scale(.4); opacity: 0; transition: transform .2s cubic-bezier(.2,.9,.3,1.2), opacity .15s; pointer-events: none; }
@@ -253,7 +253,7 @@ body:has(.c2) { overflow: hidden; }
   .c2 .c2-fab { right: 14px; bottom: 14px; width: 54px; height: 54px; font-size: 21px; }
   .c2 .c2-fan { right: 14px; bottom: 14px; width: 54px; height: 54px; }
   .c2 .c2-fan-ring { left: 27px; top: 27px; }
-  .c2 .c2-fan-r1 { --r: 86px; } .c2 .c2-fan-r2 { --r: 152px; }
+  .c2 .c2-fan-r1 { --r: 86px; } .c2 .c2-fan-r2 { --r: 184px; }
   .c2 .c2-fan-glow { right: -222px; bottom: -222px; width: 498px; height: 498px; }
   .c2 .c2-fan-i { width: 46px; height: 46px; margin: -23px 0 0 -23px; }
   .c2 .c2-fan-i small { font-size: 9.5px; }
