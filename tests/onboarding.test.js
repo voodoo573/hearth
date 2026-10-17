@@ -9,7 +9,10 @@ const EMOJI = () => { const re = /(?:(?![\u00A9\u00AE\u203C\u2049\u2122\u2139\u2
 async function fresh(b, desk, prep) {
   const ctx = await b.newContext({ viewport: desk ? { width: 1920, height: 1080 } : { width: 412, height: 892 }, deviceScaleFactor: desk ? 1 : 2, serviceWorkers: 'block', hasTouch: !desk });
   const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message));
-  await p.goto(URL); await p.evaluate((prep) => { localStorage.clear(); if (prep) new Function(prep)(); }, prep || ''); await p.reload(); await p.waitForTimeout(1200);
+  // let the first load finish (it opens the tour and saves the seen flag ~80ms in) before wiping storage, so the
+  // flag can't be written back after the clear
+  await p.goto(URL); await p.waitForTimeout(600); await p.evaluate((prep) => { localStorage.clear(); if (prep) new Function(prep)(); }, prep || ''); await p.reload(); await p.waitForTimeout(1200);
+  if (!prep) await p.waitForSelector('#hearthTour', { timeout: 6000 }).catch(() => {}); // a fresh install opens it by itself (slower on a busy box)
   return { ctx, p };
 }
 const tour = (p) => p.evaluate(() => { const t = document.getElementById('hearthTour'); if (!t) return null; return { label: (t.querySelector('.u-t-label') || {}).textContent, title: (t.querySelector('#hearthTourTitle') || {}).textContent, dots: t.querySelectorAll('.u-dots i').length, on: [...t.querySelectorAll('.u-dots i')].findIndex(i => i.classList.contains('u-on')), cards: t.querySelectorAll('.u-of .u-card, .u-pill3 .u-pill').length, txt: t.textContent, old: !!t.querySelector('.hearth-tour') }; });
