@@ -84,7 +84,7 @@ html[data-palette="hearth"] {
 .u2 .u-ibtn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;color:var(--ink-soft);background:var(--well);border:1px solid var(--hair);flex:none}
 .u2 .u-ibtn.u-plain{background:transparent;border-color:transparent}
 .u2.u-phone .u-btn{height:44px}
-.u2.u-phone .u-btn.u-sm{height:36px}
+.u2.u-phone .u-btn.u-sm{height:44px} /* Jenny's ui.css has 36px; hard rule 5 (44px touch targets) wins */
 .u2.u-phone .u-btn.u-lg{height:52px}
 .u2.u-phone .u-ibtn{width:44px;height:44px}
 .u2 .u-field{display:flex;align-items:center;gap:var(--s2);height:44px;padding:0 var(--s3);border-radius:10px;background:var(--well);border:1px solid var(--rim);box-shadow:inset 0 1px 3px rgba(0,0,0,.55);color:var(--ink-faded);font-size:14px}
