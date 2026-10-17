@@ -95,9 +95,20 @@ const noToast = p => p.evaluate(() => document.querySelectorAll('.toast, #toast,
     await p.evaluate((tag) => { { const g = document.getElementById('dmMapGrid'); g && g.scrollIntoView({ block: 'center' }); } }, tag);
     await p.waitForTimeout(900); await noToast(p);
     await p.screenshot({ path: OUT + `map-badges-aoe-${tag}.png` });
-    await p.evaluate(() => { state.ui.dmMapMode = false; render(); const t = document.querySelector('.dm-status-pill'); if (t) { const r = t.getBoundingClientRect(); window.scrollBy(0, r.top - 120); } });
+    await p.evaluate(() => { state.ui.dmMapMode = false; render(); });
     await p.waitForTimeout(500); await noToast(p);
-    await p.screenshot({ path: OUT + `initiative-badges-${tag}.png` });
+    // Clip from the round bar ("Not started") to the bottom of the last combatant tile.
+    const clip = await p.evaluate(() => {
+      const tileOf = (e) => { while (e.parentElement && e.getBoundingClientRect().height < 120) e = e.parentElement; return e; };
+      const pills = [...document.querySelectorAll('.dm-status-pill')];
+      const ns = [...document.querySelectorAll('div,span,strong,b')].find(e => e.children.length === 0 && /^Not started$/.test(e.textContent.trim()));
+      const rollBtn = [...document.querySelectorAll('button')].find(b => /Roll monsters/.test(b.textContent));
+      const tops = [ns, rollBtn].filter(Boolean).map(e => e.getBoundingClientRect().top);
+      const top = (tops.length ? Math.min(...tops) : tileOf(pills[0]).getBoundingClientRect().top) + window.scrollY - 2;
+      const bottom = tileOf(pills[pills.length - 1]).getBoundingClientRect().bottom + window.scrollY + 12;
+      return { top, h: bottom - top };
+    });
+    await p.screenshot({ path: OUT + `initiative-badges-${tag}.png`, fullPage: true, clip: { x: 0, y: clip.top, width: w, height: Math.min(clip.h, 1600) } });
     await ctx.close();
   }
   // 9-10: framed tokens with Jenny's portrait library (desktop + phone)
