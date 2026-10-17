@@ -37,6 +37,7 @@
     image: '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="9.5" r="1.8"/><path d="M4 17.5l5-5 4 4 2.5-2.5 4.5 4.5"/>',
     brush: '<path d="M14.5 4.5l5 5-7.8 7.8-5-5z"/><path d="M6.7 12.3c-2 .3-3.2 1.8-3.2 4.2 0 1.2-.4 2.2-1 3 3.3.3 6.6-.6 7.7-2.7"/>',
     speaker: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
+    gear: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.85 1.85M16.65 16.65l1.85 1.85M5.5 18.5l1.85-1.85M16.65 7.35l1.85-1.85"/><circle cx="12" cy="12" r="6.6"/>',
     spark: '<path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>',
   };
   function icon(k, cls) { return ICONS[k] ? '<svg class="hi ' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + ICONS[k] + '</svg>' : ''; }
@@ -108,10 +109,15 @@
     var next = ctx.order.length ? (enc.started ? '<button class="c2-btn c2-brass c2-narrow-only" data-dm-turn="next">Next \u25B8</button>' : '<button class="c2-btn c2-brass c2-narrow-only" data-dm-turn="start">\u2694 Start</button>') : '';
     return '<div class="dm-map-top c2-top"><button class="c2-back" id="dmMapExit">\u2039 <span class="c2-wide-only">Build</span></button>' +
       '<div class="dm-map-title c2-title">Battle Map</div><div class="c2-round">' + info + '</div><span class="c2-sp"></span>' +
-      chip + next + '<button class="c2-btn c2-brass c2-proj" id="dmMapProject" title="Open the projector window">' + PROJ_ICO + '<span class="c2-wide-only"> Projector</span></button>' +
+      chip + aoeBtn() + next + '<button class="c2-btn c2-brass c2-proj" id="dmMapProject" title="Open the projector window">' + PROJ_ICO + '<span class="c2-wide-only"> Projector</span></button>' +
       '<button class="c2-btn c2-more-btn ' + (ui().c2More ? 'on' : '') + '" data-c2-more="1" aria-expanded="' + (ui().c2More ? 'true' : 'false') + '" title="More">\u22EF<span class="c2-wide-only"> More</span></button></div>';
   }
   function MI() { return W.HearthMI || null; }
+  // v1.7.1 — area templates get their own header button on every layout (phone, tablet, desktop), not only the
+  // tools fan in the corner, which can sit under a nav bar or taskbar and is easy to miss.
+  function aoeAttrs() { return MI() ? 'data-mi-aoe-open="1"' : 'data-c2-miwait="1" aria-disabled="true"'; }
+  function aoeBtn() { var on = !!(MI() && MI().aoeOpen());
+    return '<button class="c2-btn c2-aoe-btn' + (on ? ' on' : '') + '" ' + aoeAttrs() + ' aria-pressed="' + (on ? 'true' : 'false') + '" title="Area templates (AoE)" aria-label="Area templates (AoE)">' + ICO.aoe + '<span class="c2-aoe-l">AoE</span></button>'; }
   function projOn() { return typeof hearthDicePrefs === 'function' && hearthDicePrefs().projector !== 'off'; }
   function moreHTML(ctx) {
     var enc = ctx.enc, mapEncs = ctx.mapEncs || [];
@@ -120,6 +126,7 @@
     return '<div class="c2-more ' + (ui().c2More ? 'open' : '') + '" role="menu" aria-label="More">' +
       (mapEncs.length > 1 ? '<label class="c2-mi c2-mi-sel"><span>Encounter</span><select id="dmMapEncSelect" title="Switch encounter">' + mapEncs.map(function (e) { return '<option value="' + E(e.id) + '"' + (e.id === enc.id ? ' selected' : '') + '>' + E(e.name) + '</option>'; }).join('') + '</select></label>' : '') +
       chip + (typeof dmRollLogButton === 'function' ? dmRollLogButton('c2-mi').replace('\uD83C\uDFB2', icon('dice')) : '') +
+      '<button class="c2-mi" ' + aoeAttrs() + '>' + ICO.aoe + ' Area templates (AoE)</button>' +
       '<button class="c2-mi" data-dm-notes-open="1">' + icon('notes') + ' Campaign notes</button>' +
       (ctx.needsRollMonsters ? '<button class="c2-mi" data-dm-roll-monsters="1">' + icon('dice') + ' Roll monster initiative</button>' : '') +
       '<button class="c2-mi' + (W.HearthAtmo && HearthAtmo.isActive(HearthAtmo.cfg(enc)) ? ' on' : '') + '" data-c2-fly="weather">' + ICO.weather + ' Weather &amp; light</button>' +
@@ -127,7 +134,8 @@
       '<button class="c2-mi c2-mi-tog ' + (projOn() ? 'on' : '') + '" data-c2-proj-dice="1" role="menuitemcheckbox" aria-checked="' + (projOn() ? 'true' : 'false') + '"><span>Show dice rolls on projector</span><i class="c2-switch"></i></button>' +
       (hidden.length ? '<div class="c2-mi c2-mi-hid"><span>Sitting out</span>' + hidden.map(function (h) { return '<button class="c2-chip" data-dm-unhide="' + E(h.id) + '">' + E(h.name || 'Player') + ' + back</button>'; }).join('') + '</div>' : '') +
       (MI() ? '<button class="c2-mi c2-mi-tog ' + (ui().miRH ? 'on' : '') + '" data-mi-rh="1" aria-expanded="' + (ui().miRH ? 'true' : 'false') + '">' + icon('scroll') + ' Round history</button>' + (ui().miRH ? MI().historyHTML(enc) : '') : '') +
-      '<button class="c2-mi" data-c2-layout="classic">\u25A4 Classic layout</button></div>';
+      '<button class="c2-mi" data-c2-layout="classic">\u25A4 Classic layout</button>' +
+      '<button class="c2-mi" data-c2-settings="1">' + icon('gear') + ' Settings</button></div>';
   }
 
   // ---------- fan + flyouts ----------
@@ -486,6 +494,7 @@
     var t = ev.target && ev.target.closest ? ev.target : null;
     if (!t) return;
     var u = ui();
+    if (t.closest('[data-c2-settings]')) { ev.preventDefault(); u.c2More = false; u.dmMapMode = false; if (W.HearthUI && HearthUI.go) HearthUI.go('settings'); else render(); return; }
     var lay = t.closest('[data-c2-layout]');
     if (lay) { ev.preventDefault(); u.c2More = false; dmSetLayout(lay.getAttribute('data-c2-layout')); render(); return; }
     if (!t.closest('.c2')) return;

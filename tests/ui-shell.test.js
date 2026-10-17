@@ -62,7 +62,7 @@ const EMOJI = () => { const re = /(?:(?![\u00A9\u00AE\u203C\u2049\u2122\u2139\u2
   // ---------- phone ----------
   ({ ctx, p } = await open(b, false));
   const ph = await p.evaluate(() => ({ ab: Math.round(document.querySelector('.u-abar').getBoundingClientRect().height), tb: Math.round(document.querySelector('.u-tabbar').getBoundingClientRect().height), tabs: [...document.querySelectorAll('.u-tabbar button')].map(x => x.textContent.trim()), side: document.querySelector('.u-side').getBoundingClientRect().width }));
-  check('phone shell: 56px app bar, 84px tab bar with the five tabs, no sidebar', ph.ab === 56 && ph.tb === 84 && ph.tabs.join() === 'Home,Play,Gear,Forge,Reference' && ph.side === 0, ph);
+  check('phone shell: 56px app bar, 84px tab bar with the five tabs (Settings in Play\u2019s place), no sidebar', ph.ab === 56 && ph.tb === 84 && ph.tabs.join() === 'Home,Settings,Gear,Forge,Reference' && ph.side === 0, ph);
   for (const r of ROUTES) {
     await go(p, r);
     const small = await p.evaluate(() => [...document.querySelectorAll('#content.u-screen button, .u-abar button, .u-tabbar button')].filter(b => { const r = b.getBoundingClientRect(); if (!r.width || !r.height) return false; if (b.closest('.u-chips, .u-chip, .u-seg, .u-sec-h, .u-legal')) return false; return r.height < 43.5 || r.width < 43.5; }).map(b => (b.getAttribute('aria-label') || b.textContent.trim()).slice(0, 24) + ' ' + Math.round(b.getBoundingClientRect().width) + 'x' + Math.round(b.getBoundingClientRect().height)));

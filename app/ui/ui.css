@@ -313,3 +313,14 @@ body.u2.u-modal-open { overflow: hidden; }
 html:root body.u2.u2.u2 .u-chip.u-chip:is(.u-on, [aria-pressed="true"]) { background: var(--brass-grad) !important; color: var(--on-gold) !important; border-color: transparent !important; box-shadow: none !important; }
 html:root body.u2.u2.u2 .u-rrow.u-rrow[aria-pressed] { background: transparent !important; box-shadow: none !important; }
 html:root body.u2.u2.u2 .u-rrow.u-rrow.u-on[aria-pressed] { background: color-mix(in srgb, var(--gold) 9%, transparent) !important; }
+/* v1.7.1 — edge-to-edge safe areas (Chrome on Android 15 with viewport-fit=cover, and the Android app, which
+   is always edge-to-edge and writes --hearth-native-*). The shell keeps its bars clear of the status bar,
+   the gesture/3-button nav bar, the Fold's taskbar and side cutouts. In a desktop browser every inset is 0. */
+.u2.u-phone .u-abar { top: 0; height: calc(56px + var(--hearth-safe-top)); padding-top: var(--hearth-safe-top); padding-left: calc(var(--s4) + var(--hearth-safe-left)); padding-right: calc(var(--s2) + var(--hearth-safe-right)); }
+.u2.u-phone .u-tabbar { height: max(84px, calc(76px + var(--hearth-safe-bottom))); min-height: 84px; padding-bottom: var(--hearth-safe-bottom); padding-left: calc(6px + var(--hearth-safe-left)); padding-right: calc(6px + var(--hearth-safe-right)); }
+.u2.u-phone #content { padding-bottom: calc(84px + var(--s4) + var(--hearth-safe-bottom)); padding-left: calc(var(--s4) + var(--hearth-safe-left)); padding-right: calc(var(--s4) + var(--hearth-safe-right)); }
+.u2.u-notabs.u-phone #content { padding-bottom: calc(var(--s4) + var(--hearth-safe-bottom)); }
+.u2.u-desk .u-top { top: 0; height: calc(88px + var(--hearth-safe-top)); padding-top: var(--hearth-safe-top); padding-right: calc(var(--s6) + var(--hearth-safe-right)); }
+.u2.u-desk .u-side { padding: calc(var(--s5) + var(--hearth-safe-top)) var(--s4) calc(var(--s5) + var(--hearth-safe-bottom)) calc(var(--s4) + var(--hearth-safe-left)); }
+.u2.u-desk #content { padding-bottom: calc(var(--s6) + var(--hearth-safe-bottom)); padding-right: calc(var(--s6) + var(--hearth-safe-right)); }
+.u2.u-phone .u-layer > .u-sheet { padding-bottom: var(--hearth-safe-bottom); max-height: calc(100vh - 24px - var(--hearth-safe-top)); }

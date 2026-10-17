@@ -206,7 +206,7 @@ html[data-theme="light"] .c2 .mi-chip b { color: color-mix(in srgb, var(--gold) 
 .c2 .mi-roomhi .o { fill: none; stroke: var(--gold); stroke-width: 2.2; stroke-dasharray: 6 4; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--gold) 60%, transparent)); }
 .c2 .dm-map-grid.mi-fogtool, .c2 .mi-fog-on .dm-map-grid { cursor: crosshair; }
 /* phone fog bar (bottom) */
-.c2 .mi-fbar.phone { position: fixed; left: 0; right: 0; top: auto; bottom: 0; transform: none; border-radius: 0; justify-content: space-between; padding: 10px 10px calc(12px + env(safe-area-inset-bottom, 0px)); border: 0; border-top: 2px solid var(--gold-deep); z-index: 70; }
+.c2 .mi-fbar.phone { position: fixed; left: 0; right: 0; top: auto; bottom: 0; transform: none; border-radius: 0; justify-content: space-between; padding: 10px 10px 12px; border: 0; border-top: 2px solid var(--gold-deep); z-index: 70; }
 .c2 .mi-fbar.phone .mi-seg button { padding: 8px 10px; font-size: 17px; }
 .c2 .mi-fbar.phone .mi-ic { padding: 8px 10px; font-size: 16px; }
 .c2 .mi-fbar.phone .mi-done { padding: 9px 13px; font-size: 16px; }
@@ -272,3 +272,8 @@ html:root[data-palette][data-palette] body .c2 .mi-ic[aria-pressed="true"] { bac
    token, or beside it on the left (mi.js clearCaps) */
 .c2 .map-token .map-token-caption.mi-cap-up { top: auto; bottom: 100%; margin: 0 0 3px; }
 .c2 .map-token .map-token-caption.mi-cap-l { top: 50%; left: auto; right: 100%; transform: translateY(-50%); margin: 0 4px 0 0; }
+/* v1.7.1 — fixed map-tool bars stay clear of the nav bar / Fold taskbar and the status bar (edge-to-edge) */
+.c2 .mi-fbar.phone, .c2 .mi-cancel { bottom: var(--hearth-safe-bottom, 0px); }
+.c2 .mi-aftogs.left { bottom: calc(14px + var(--hearth-safe-bottom, 0px)); left: calc(12px + var(--hearth-safe-left, 0px)); }
+.c2 .mi-fmore { bottom: calc(74px + var(--hearth-safe-bottom, 0px)); right: calc(10px + var(--hearth-safe-right, 0px)); }
+.mi-toast { top: calc(118px + var(--hearth-safe-top, 0px)); }

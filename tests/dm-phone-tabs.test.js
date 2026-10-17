@@ -14,6 +14,18 @@ const TB = () => { const t = document.querySelector('.u-tabbar'); const r = t &&
     await p.evaluate(() => HearthUI.go('dm')); await p.waitForTimeout(300);
     const m = await p.evaluate(TB);
     check('DM dashboard: tab bar shown with Home lit (only Home)', m.shown && m.on.length === 1 && m.on[0] === 'Home', m);
+    const labels = await p.evaluate(() => [...document.querySelectorAll('.u-tabbar button')].map(b => b.textContent.trim()).join());
+    check('phone tabs: Home, Settings, Gear, Forge, Reference (no Play)', labels === 'Home,Settings,Gear,Forge,Reference', labels);
+    for (const r of ['sheet', 'characters', 'home']) {
+      await p.evaluate((r) => { if (r === 'sheet') { state.activeCharId = loadCharacters()[0].id; } HearthUI.go(r); }, r); await p.waitForTimeout(300);
+      const t = await p.evaluate(TB);
+      check(`${r}: Home lit (only Home)`, t.shown && t.on.length === 1 && t.on[0] === 'Home', t);
+    }
+    const gb = await p.evaluate(() => { const b = [...document.querySelectorAll('.u-tabbar button')].find(x => x.textContent.trim() === 'Settings'); const r = b.getBoundingClientRect(); return { h: r.height, gear: !!b.querySelector('svg'), aria: b.getAttribute('aria-label') }; });
+    check('Settings tab: gear icon, 44px, aria-label', gb.gear && gb.h >= 44 && gb.aria === 'Settings', gb);
+    await p.click('.u-tabbar [data-u-go="settings"]'); await p.waitForTimeout(300);
+    const st = await p.evaluate(TB);
+    check('tapping Settings opens Settings and lights it', st.route === 'settings' && st.on.length === 1 && st.on[0] === 'Settings', st);
     await ctx.close(); }
   { const ctx = await b.newContext({ viewport: { width: 412, height: 880 }, deviceScaleFactor: 2, serviceWorkers: 'block', hasTouch: true });
     const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message));

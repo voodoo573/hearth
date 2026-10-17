@@ -132,9 +132,14 @@
       '<div class="side-foot">' + me + '<nav class="nav"><button type="button" class="nav-a' + (r === 'settings' ? ' on' : '') + '" data-u-go="settings">' + ic('gear') + '<span>Settings</span></button></nav>' +
       '<div class="legal">Hearth v' + ver + ' · SRD 5.1 &amp; 5.2 (CC-BY-4.0)<br>Unofficial · not affiliated with WotC · <button type="button" class="legal-link" data-legal-open="1">About &amp; legal</button></div></div>';
   }
+  // v1.7.1 — phone tab bar (Tom): Settings takes Play's place; the sheet and character screens light Home,
+  // as the DM dashboard does. The desk sidebar keeps Play.
+  var PNAV = [['character', 'Home', 'home'], ['settings', 'Settings', 'gear'], ['gear', 'Gear', 'pack'], ['forge', 'Forge', 'anvil'], ['reference', 'Reference', 'book']];
   function tabbarHTML(r) {
-    var nk = navKey(r);
-    return NAV.map(function (n) { return '<button type="button" class="' + (n[0] === nk ? 'on' : '') + '" data-tab="' + n[0] + '">' + ic(n[2], 'lg') + '<span>' + n[1] + '</span></button>'; }).join('');
+    var nk = r === 'settings' ? 'settings' : navKey(r); if (nk === 'play') nk = 'character';
+    return PNAV.map(function (n) { var on = n[0] === nk ? 'on' : '';
+      if (n[0] === 'settings') return '<button type="button" class="' + on + '" data-u-go="settings" aria-label="Settings">' + ic(n[2], 'lg') + '<span>' + n[1] + '</span></button>';
+      return '<button type="button" class="' + on + '" data-tab="' + n[0] + '">' + ic(n[2], 'lg') + '<span>' + n[1] + '</span></button>'; }).join('');
   }
   function topHTML(m) {
     var s = m.search ? '<label class="field search">' + ic('search', 'sm') + '<input type="search" data-u-search placeholder="' + esc(m.search) + '" aria-label="Search">' + '<kbd>/</kbd></label>' : '';
@@ -143,7 +148,11 @@
   function abarHTML(m) {
     var left = m.back ? ibtn('left', 'data-u-back="' + esc(m.back) + '" style="margin-left:-8px"', true, 'Back') : m.pleft ? m.pleft : '<span class="logo !home-brand-icon" aria-hidden="true"></span>';
     var title = m.ptitle || m.title;
-    return left + '<div class="ttl">' + title + (m.psub ? '<small>' + m.psub + '</small>' : '') + '</div>' + (m.pright || '');
+    // v1.7.1 — Settings is reachable from every phone screen (the desk has it in the sidebar)
+    // the tab bar carries Settings; screens without it (builder, etc.) get a gear in the app bar instead
+    var pr = m.pright || '', gear = (route() === 'settings' || !m.noTabs || /data-u-go="settings"/.test(pr)) ? '' : ibtn('gear', 'data-u-go="settings"', true, 'Settings');
+    if (gear) { var sm = pr.match(/<button[^>]*data-u-go="reference"[^>]*>[\s\S]*?<\/button>/); if (sm) { pr = pr.replace(sm[0], sm[0] + gear); gear = ''; } }
+    return left + '<div class="ttl">' + title + (m.psub ? '<small>' + m.psub + '</small>' : '') + '</div>' + pr + gear;
   }
   function legacyMeta(r) {
     var T = { builder: ['New character', 'Build a hero step by step'], encounter: ['Encounter', 'Battle forge'], rules: ['Hearth', ''], map: ['Battle map', ''] };

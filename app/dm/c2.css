@@ -281,3 +281,21 @@ body:has(.c2) { overflow: hidden; }
 /* arcane: its pale gold needs dark ink (AC numbers, turn badge, brass buttons) */
 html[data-palette="arcane"] .c2 { --c2-on-gold: #1d1633; }
 .c2 .c2-mi > svg:not(.hi) { width: 18px; height: 18px; flex: none; color: var(--gold); } /* the Weather & light item reuses the fan glyph */
+/* v1.7.1 — edge-to-edge safe areas: the battle screen sits inside the status bar, nav bar / Fold taskbar and
+   cutouts (Chrome on Android 15 with viewport-fit=cover, and the Android app), so the header, the tools button
+   and the bottom sheet are never drawn under them. The page colour still fills the bands behind the bars. */
+.c2 { top: var(--hearth-safe-top, 0px); right: var(--hearth-safe-right, 0px); bottom: var(--hearth-safe-bottom, 0px); left: var(--hearth-safe-left, 0px);
+  min-height: 0; height: auto; box-shadow: 0 0 0 100vmax var(--page); }
+/* v1.7.1 — AoE (area templates) button in the header */
+.c2 .c2-top .c2-aoe-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; justify-content: center; }
+.c2 .c2-aoe-btn svg { width: 18px; height: 18px; color: var(--gold); flex: none; }
+.c2 .c2-aoe-btn.on { box-shadow: 0 0 0 2px var(--gold); }
+.c2 .c2-mi svg:not(.hi) { width: 18px; height: 18px; color: var(--gold); flex: none; }
+@media (max-width: 899px) { .c2 .c2-top .c2-btn, .c2 .c2-top .c2-more-btn { min-height: 44px; } }
+@media (max-width: 339px) { .c2 .c2-aoe-l { display: none; } }
+@media (max-width: 419px) { .c2 .c2-round { font-size: 12px; } }
+@media (max-width: 419px) { .c2 .c2-top { gap: 5px; padding: 0 8px; } .c2 .c2-title { font-size: 16px; white-space: nowrap; } .c2 .c2-back { padding: 0 2px; }
+  .c2 .c2-top .c2-btn { padding: 6px 9px; } .c2 .c2-more-btn { padding: 3px 9px !important; } .c2 .c2-round { white-space: nowrap; } }
+@media (max-width: 399px) { .c2 .c2-top .c2-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
+.c2 .c2-top { flex-wrap: nowrap; }
+@media (max-width: 899px) { .c2 .c2-top { height: 56px; } .c2 .c2-top .c2-btn:not(.c2-wide-only) { display: inline-flex; align-items: center; justify-content: center; } .c2 .c2-more { top: 60px; } }

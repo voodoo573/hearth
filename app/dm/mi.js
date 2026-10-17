@@ -415,7 +415,7 @@
     o = o || {};
     var u = U(), last = u.dmAoeLastSize || {}, kind = o.kind || (u.miAoeKind || 'circle');
     u.miAoe = { kind: kind, ft: o.ft || last[kind] || DEF_FT[kind], sel: o.sel || null, armed: !o.sel, snap: u.miSnap !== false, show: false, from: o.from || null, ghost: null };
-    u.miFanIn = true; u.c2Fan = false; u.c2Fly = null; u.miFog = null; dmDragToolsOff('aoe');
+    u.miFanIn = true; u.c2Fan = false; u.c2Fly = null; u.c2More = false; u.miFog = null; dmDragToolsOff('aoe');
     if (!wide()) u.c2Help = false;
     render();
     setTimeout(function () { U().miFanIn = false; var f = document.querySelector('.mi-afan'); if (f) f.classList.remove('in'); }, 400);
