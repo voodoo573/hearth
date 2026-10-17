@@ -6,8 +6,14 @@
   'use strict';
   var W = window, D = document;
   var I = W.HEARTH_ICONS || {};
-  var DESK = 1280;
-  function isDesk() { return (W.innerWidth || D.documentElement.clientWidth) >= DESK; }
+  // v1.7.3 (Tom): landscape = laptop layout, portrait = phone layout. 1280+ wide is always a laptop; below that a
+  // landscape screen at least 900 x 560 (unfolded Galaxy Fold on its side, tablets) gets the laptop layout.
+  // Portrait screens, and phones turned sideways (too short), keep the phone layout. Folding/unfolding fires resize, which re-paints the shell (see the resize listener).
+  var DESK = 1280, DESK_MIN_W = 900, DESK_MIN_H = 560;
+  function isDesk() {
+    var w = W.innerWidth || D.documentElement.clientWidth, h = W.innerHeight || D.documentElement.clientHeight;
+    return w >= DESK || (w > h && w >= DESK_MIN_W && h >= DESK_MIN_H);
+  }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   // class prefixer: class="btn primary !tab" -> class="u-btn u-primary tab"
   // \u0001...\u0002 marks raw app markup that must keep its own class names (see raw())
@@ -46,6 +52,32 @@
     }
     return out;
   }
+  var NARROW_CSS = [
+    '@media (max-width:1279px){',
+    '.u-desk .hero .hstack,.u-desk .hero .row{flex-wrap:wrap}',
+    '.u-desk .top .ttl{flex:1 1 100%}.u-desk .top .field{flex:1 1 200px}',
+    '.u-desk .home-g{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:none!important;min-height:0!important}',
+    '.u-desk .home-g>*{grid-column:1/-1!important}.u-desk .home-g>.qt{grid-column:auto!important}',
+    '.u-desk .hero{grid-template-columns:150px minmax(0,1fr)!important;gap:18px!important;padding:18px!important}.u-desk .hero .por{width:150px!important;min-height:200px!important}',
+    '.u-desk .vit{grid-template-columns:repeat(2,minmax(0,1fr))!important}',
+    '.u-desk .cs-g{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:none!important}',
+    '.u-desk .cs-l,.u-desk .cs-c,.u-desk .cs-r{grid-area:auto!important}',
+    '.u-desk .cs-r{display:flex!important;flex-direction:column!important}.u-desk .cs-r>*{grid-column:auto!important;grid-row:auto!important}',
+    '.u-desk .gear-g{grid-template-columns:minmax(0,1fr)!important;height:auto!important}',
+    '.u-desk .dmg,.u-desk .gtop,.u-desk .gbot{grid-template-columns:minmax(0,1fr)!important;min-height:0!important}',
+    '.u-desk .ftools{grid-template-columns:repeat(2,minmax(0,1fr))!important}.u-desk .fmain{grid-template-columns:minmax(0,1fr)!important}',
+    '.u-desk .libc,.u-desk .chars-g{grid-template-columns:minmax(0,1fr)!important}',
+    '.u-desk .ref-g{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)!important;height:auto!important;align-items:start!important}',
+    '.u-desk .ref-g>.rrail{grid-column:1/-1;flex-direction:row!important;flex-wrap:wrap;gap:6px!important;padding:10px!important}.u-desk .ref-g>.rrail .nav-a{width:auto!important}.u-desk .ref-g>.rrail .nav-l,.u-desk .ref-g>.rrail .t-label,.u-desk .ref-g>.rrail .sep,.u-desk .ref-g>.rrail hr{display:none}',
+    '.u-desk .ref-g>.rlist{height:calc(100vh - 220px);min-height:420px}.u-desk .ref-g>.rright{position:sticky;top:100px;max-height:calc(100vh - 120px);overflow:auto}',
+    '.u-desk .rside{grid-template-columns:minmax(0,1fr)!important}',
+    '.u-desk .setg{grid-template-columns:200px minmax(0,1fr)!important}.u-desk .opt{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}',
+    '.u-desk .tp .cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}',
+    '.u-desk .bgrid{grid-template-columns:minmax(0,1fr)!important;min-height:0!important}',
+    '}',
+    // 1280-1599 (Chromebook 1366): the Reference detail column ran off the right edge
+    '@media (min-width:1280px) and (max-width:1599px){.u-desk .ref-g{grid-template-columns:220px minmax(280px,0.8fr) minmax(0,1.2fr)!important}.u-desk .rside{grid-template-columns:minmax(0,1fr)!important}}'
+  ].join('');
   function addCss(id, css) { var s = D.getElementById(id); if (!s) { s = D.createElement('style'); s.id = id; D.head.appendChild(s); } s.textContent = pxCss(css); }
   function ic(name, cls) { return '<svg class="i' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + (I[name] || '') + '</svg>'; }
   function btn(label, kind, icon, extra, trail) {
@@ -117,10 +149,10 @@
   var shell, sideEl, topEl, abarEl, tabbarEl, lastMode = null;
   function sideHTML(r) {
     var nk = /^(dm|encounter|library|store|settings)$/.test(r) ? null : navKey(r);
-    var nav = NAV.map(function (n) { return '<button type="button" class="nav-a' + (n[0] === nk ? ' on' : '') + '" data-tab="' + n[0] + '">' + ic(n[2]) + '<span>' + n[1] + '</span></button>'; }).join('');
+    var nav = NAV.map(function (n) { return '<button type="button" class="nav-a' + (n[0] === nk ? ' on' : '') + '" data-tab="' + n[0] + '" title="' + n[1] + '">' + ic(n[2]) + '<span>' + n[1] + '</span></button>'; }).join('');
     var tbl = [['dm', 'Dungeon Master', 'crown', r === 'dm' || r === 'encounter'], ['library', 'Library', 'map', r === 'library']];
     if (storeOn()) tbl.push(['store', 'Hearth Maps', 'bag', r === 'store', true]);
-    var tab = tbl.map(function (n) { return '<button type="button" class="nav-a' + (n[3] ? ' on' : '') + '" data-u-go="' + n[0] + '">' + ic(n[2]) + '<span>' + n[1] + '</span>' + (n[4] ? tag('New') : '') + '</button>'; }).join('');
+    var tab = tbl.map(function (n) { return '<button type="button" class="nav-a' + (n[3] ? ' on' : '') + '" data-u-go="' + n[0] + '" title="' + n[1] + '">' + ic(n[2]) + '<span>' + n[1] + '</span>' + (n[4] ? tag('New') : '') + '</button>'; }).join('');
     var ch = current(), me = '';
     if (ch) {
       var hp = hpOf(ch);
@@ -129,7 +161,7 @@
     var ver = esc(String(W.HEARTH_VERSION || '').replace(/^v/, ''));
     return '<div class="brand"><span class="brand-ic !home-brand-icon" aria-hidden="true"></span><div><b>Hearth<sup>' + (state.ruleset === '5.5e' ? '5.5e' : '5e') + '</sup></b><small>A COMPANION FOR THE TABLE</small></div></div>' +
       '<nav class="nav" aria-label="Main">' + nav + '</nav><div class="t-label nav-l">At the table</div><nav class="nav" aria-label="At the table">' + tab + '</nav>' +
-      '<div class="side-foot">' + me + '<nav class="nav"><button type="button" class="nav-a' + (r === 'settings' ? ' on' : '') + '" data-u-go="settings">' + ic('gear') + '<span>Settings</span></button></nav>' +
+      '<div class="side-foot">' + me + '<nav class="nav"><button type="button" class="nav-a' + (r === 'settings' ? ' on' : '') + '" data-u-go="settings" title="Settings">' + ic('gear') + '<span>Settings</span></button></nav>' +
       '<div class="legal">Hearth v' + ver + ' · SRD 5.1 &amp; 5.2 (CC-BY-4.0)<br>Unofficial · not affiliated with WotC · <button type="button" class="legal-link" data-legal-open="1">About &amp; legal</button></div></div>';
   }
   // v1.7.1 — phone tab bar (Tom): Settings takes Play's place; the sheet and character screens light Home,
@@ -322,6 +354,9 @@
     ['renderCharacter', 'renderPlay', 'renderGear', 'renderForge', 'renderReference', 'renderBuild'].forEach(function (n) { hook(n); });
     var st = D.createElement('style'); st.id = 'u2-screen-css'; D.head.appendChild(st);
     Object.keys(screens).forEach(function (k) { if (screens[k].css) addCss('u2-css-' + k, screens[k].css); });
+    // v1.7.3 — laptop layout on narrower screens (unfolded Galaxy Fold ~773 px, small tablets): the screens'
+    // desk grids were drawn for 1280+, so under 1024 they reflow to one or two columns. Added last so it wins.
+    addCss('u2-css-narrow', NARROW_CSS);
     render();
   }
   // the Home overlays the app draws inside its Home markup (One-shot, Export/Import, Ruleset, AI Core).
