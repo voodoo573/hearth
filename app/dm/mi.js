@@ -414,7 +414,7 @@
   function openAoe(o) {
     o = o || {};
     var u = U(), last = u.dmAoeLastSize || {}, kind = o.kind || (u.miAoeKind || 'circle');
-    u.miAoe = { kind: kind, ft: o.ft || last[kind] || DEF_FT[kind], sel: o.sel || null, armed: !o.sel, snap: u.miSnap !== false, show: false, from: o.from || null, ghost: null };
+    u.miAoe = { kind: kind, ft: o.ft || last[kind] || DEF_FT[kind], sel: o.sel || null, armed: !o.sel, snap: u.miSnap !== false, show: true, from: o.from || null, ghost: null };
     u.miFanIn = true; u.c2Fan = false; u.c2Fly = null; u.c2More = false; u.miFog = null; dmDragToolsOff('aoe');
     if (!wide()) u.c2Help = false;
     render();
@@ -466,7 +466,7 @@
     var best = null, bd = Infinity; foes.forEach(function (q) { var p = originOf(q), dd = Math.hypot(p.x - o.x, p.y - o.y); if (dd < bd) { bd = dd; best = q; } });
     var bp = best ? originOf(best) : null;
     var EL = { fire: '#e8552d', cold: '#4aa3df', lightning: '#f6d743', acid: '#7ac74f', poison: '#8e44ad', radiant: '#f5c542', necrotic: '#5b2c6f', force: '#c56cf0', thunder: '#95a5a6', psychic: '#e84393' };
-    var t = { id: 'aoe_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), kind: kind, len: Math.max(1, Math.round(ft / 5)), angle: bp ? Math.atan2(bp.y - o.y, bp.x - o.x) : Math.PI, color: EL[type] || FIRE, element: type || 'fire', pinned: false, label: label, dc: dc || null };
+    var t = { id: 'aoe_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), pinned: true, kind: kind, len: Math.max(1, Math.round(ft / 5)), angle: bp ? Math.atan2(bp.y - o.y, bp.x - o.x) : Math.PI, color: EL[type] || FIRE, element: type || 'fire', pinned: false, label: label, dc: dc || null };
     if (kind === 'cone' || kind === 'line') { t.x = o.x; t.y = o.y; t.from = c.id; }
     else if (kind === 'circle') { var p = bp || o; t.x = Math.round(p.x); t.y = Math.round(p.y); }
     else { var q = bp || o; t.x = Math.round(q.x - t.len / 2); t.y = Math.round(q.y - t.len / 2); }
