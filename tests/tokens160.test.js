@@ -49,7 +49,7 @@ function check(name, ok, info) { results.push({ ok: !!ok }); console.log((ok ? '
     ];
     saveEncounter(e2); render();
     const toks = [...document.querySelectorAll('[data-map-token]')].map(t => t.getBoundingClientRect());
-    return [...document.querySelectorAll('.dm-aoe-label')].map(l => { const r = l.getBoundingClientRect(); return { t: l.textContent, hits: toks.filter(k => r.left < k.right && r.right > k.left && r.top < k.bottom && r.bottom > k.top).length }; });
+    return [...document.querySelectorAll('.dm-aoe-label, .mi-chip')].map(l => { const r = l.getBoundingClientRect(); return { t: l.textContent, hits: toks.filter(k => r.left < k.right && r.right > k.left && r.top < k.bottom && r.bottom > k.top).length }; });
   });
   check('AoE size labels sit clear of every token', lab.length === 3 && lab.every(l => l.hits === 0), lab);
   // Laptop: the initiative sidebar sticks below the sticky map header instead of sliding under it.

@@ -20,7 +20,7 @@ module.exports.STAGE = (opts) => {
   e.started = true; e.round = 2;
   const order = sortedCombatants(e);
   e.turnIdx = Math.max(0, order.findIndex(c => c.name === (opts.turn || 'Adult Red Dragon')));
-  e.aoes = [{ id: 'aoe_fb', kind: 'circle', x: 11.5, y: 5.5, len: 3, angle: 0, color: '#e8552d', element: 'fire', pinned: true }];
+  e.aoes = [{ id: 'aoe_fb', kind: 'circle', x: 12, y: 5, len: 3, angle: 0, color: '#e8552d', element: 'fire', pinned: true }];
   saveEncounter(e);
   state.ui.dmMapMode = true; state.ui.dmMapZoomInit = false; render();
 };

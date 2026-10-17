@@ -644,7 +644,7 @@
     if (f && f.tool === 'brush' && ring) {
       var D = (f.size / 5) * cell;
       h += '<div class="mi-ring' + (ring.on ? ' on' : '') + (modeNow() === 'cover' ? ' cover' : '') + '" style="left:' + (ring.x * cell).toFixed(1) + 'px;top:' + (ring.y * cell).toFixed(1) + 'px;width:' + D.toFixed(1) + 'px;height:' + D.toFixed(1) + 'px"><span>' + f.size + ' ft</span></div>';
-      if (ring.on) h += '<div class="mi-fchip" style="left:' + (ring.x * cell).toFixed(1) + 'px;top:' + ((ring.y * cell) + D / 2 + 22 / zoom()).toFixed(1) + 'px">' + (stroke && stroke.mode === 'cover' ? 'Covering\u2026' : 'Clearing\u2026') + ' <small>release to commit \u00b7 Esc cancels stroke</small></div>';
+      if (ring.on) h += '<div class="mi-fchip" style="left:' + (ring.x * cell).toFixed(1) + 'px;top:' + ((ring.y * cell) + D / 2 + 22 / zoom()).toFixed(1) + 'px">' + (stroke && stroke.mode === 'cover' ? 'Covering\u2026' : 'Clearing\u2026') + ' <small>release to commit' + (wide() ? ' \u00b7 Esc cancels stroke' : '') + '</small></div>';
     }
     if (rect) {
       var x0 = Math.min(rect.x0, rect.x1), x1 = Math.max(rect.x0, rect.x1), y0 = Math.min(rect.y0, rect.y1), y1 = Math.max(rect.y0, rect.y1);
@@ -783,7 +783,8 @@
     var g = el('miPathG'); if (!g || !mv) return;
     var cell = X.cell, s = mv.span, pc = pathCost(mv), h = '', d = mv.d, t = mv.terrain;
     mv.cost = pc;
-    mv.reach.forEach(function (q) { h += '<rect class="mi-reach" x="' + q[0] * cell + '" y="' + q[1] * cell + '" width="' + s * cell + '" height="' + s * cell + '"/>'; });
+    if (!mv.reachCells) { var rc = {}; mv.reach.concat([[mv.x0, mv.y0]]).forEach(function (q) { for (var j = 0; j < s; j++) for (var i = 0; i < s; i++) rc[(q[0] + i) + ',' + (q[1] + j)] = 1; }); mv.reachCells = Object.keys(rc).map(function (k) { return k.split(',').map(Number); }); }
+    mv.reachCells.forEach(function (q) { h += '<rect class="mi-reach" x="' + q[0] * cell + '" y="' + q[1] * cell + '" width="' + cell + '" height="' + cell + '"/>'; }); // each square once: a big creature's reach doesn't stack
     if (t && t.water) for (var i = 0; i < t.water.length; i++) if (t.water[i]) h += '<rect class="mi-diffzone" x="' + (i % d.cols) * cell + '" y="' + Math.floor(i / d.cols) * cell + '" width="' + cell + '" height="' + cell + '"/>';
     if (!mv.free) pc.cells.forEach(function (q) { h += '<rect class="mi-pcell' + (q[2] ? ' diff' : '') + '" x="' + q[0] * cell + '" y="' + q[1] * cell + '" width="' + s * cell + '" height="' + s * cell + '"/>'; });
     var pts = mv.way.concat([mv.cur]).map(function (q) { return ((q[0] + s / 2) * cell).toFixed(1) + ',' + ((q[1] + s / 2) * cell).toFixed(1); });
@@ -794,7 +795,7 @@
     g.innerHTML = h;
     // distance chip under the destination; "×2" on the first difficult square of the path
     var ft = mv.free && mv.fp ? Math.round(Math.hypot(mv.fp.x - (mv.x0 + s / 2), mv.fp.y - (mv.y0 + s / 2)) * 5) : pc.ft, over = ft > mv.speed;
-    var chip = '<div class="mi-mchip' + (over ? ' over' : '') + '" style="left:' + ((mv.cur[0] + s / 2) * cell).toFixed(1) + 'px;top:' + ((mv.cur[1] + s) * cell + 18 / zoom()).toFixed(1) + 'px"><b>' + ft + ' ft</b> <small>of ' + mv.speed + '</small>' + (pc.extra && !mv.free ? ' \u00b7 <span class="mi-dt">difficult +' + pc.extra + '</span>' : '') + (over ? ' \u00b7 <span class="mi-ov2">over speed</span>' : '') + '</div>';
+    var chip = '<div class="mi-mchip' + (over ? ' over' : '') + '" style="left:' + ((mv.cur[0] + s / 2) * cell).toFixed(1) + 'px;top:' + ((mv.cur[1] + s) * cell + 24 / zoom()).toFixed(1) + 'px"><b>' + ft + ' ft</b> <small>of ' + mv.speed + '</small>' + (pc.extra && !mv.free ? ' \u00b7 <span class="mi-dt">difficult +' + pc.extra + '</span>' : '') + (over ? ' \u00b7 <span class="mi-ov2">over speed</span>' : '') + '</div>';
     var fd = pc.cells.filter(function (q) { return q[2]; })[0];
     if (fd && !mv.free) chip += '<div class="mi-x2" style="left:' + ((fd[0] + 0.5) * cell).toFixed(1) + 'px;top:' + ((fd[1] - 0.15) * cell).toFixed(1) + 'px">\u00d72</div>';
     var box = el('miMv'); if (box) box.innerHTML = chip;
@@ -922,7 +923,7 @@
     var prev = X;
     X = { enc: ctx.enc, cell: ctx.cell, cols: ctx.cols, rows: ctx.rows, grid: el('dmMapGrid'), scroll: el('dmMapScroll'), getZoom: ctx.getZoom, setZoom: ctx.setZoom, fitZoom: ctx.fitZoom, onTap: ctx.onTap };
     if (!X.grid) { X = null; return; }
-    if (X.scroll) X.scroll.style.setProperty('--mi-fanpad', A() && wide() ? (fanZoneR() + 20) + 'px' : '0px');
+    if (X.scroll) X.scroll.style.setProperty('--mi-fanpad', A() ? (wide() ? fanZoneR() + 20 : Math.round(fanZoneR() * 0.9)) + 'px' : '0px');
     var ov = el('miOv'); if (ov) ov.innerHTML = '<div id="miTpl"></div><div id="miFx"></div><div id="miMv"></div>';
     X.grid.style.setProperty('--mi-inv', (1 / zoom()).toFixed(4));
     X.grid.classList.toggle('mi-phone', !wide());
@@ -939,14 +940,21 @@
     if (!terrWaiters.length) terrWaiters.push(function () { if (Fg()) syncFogBar(); });
     // gestures on the board (capture: they run before the pan and the classic tools)
     var g = X.grid, sc = X.scroll;
+    var tp = {}, tpan = null, mid = function () { var k = Object.keys(tp), x = 0, y = 0; k.forEach(function (i) { x += tp[i].x; y += tp[i].y; }); return { x: x / k.length, y: y / k.length }; };
     g.addEventListener('pointerdown', function (ev) {
       var t = ev.target;
+      if (Fg() && ev.pointerType === 'touch') {
+        tp[ev.pointerId] = { x: ev.clientX, y: ev.clientY };
+        if (Object.keys(tp).length >= 2) { cancelStroke(); var m0 = mid(); tpan = { x: m0.x, y: m0.y, l: sc.scrollLeft, t: sc.scrollTop }; ev.preventDefault(); ev.stopPropagation(); return; } // two fingers pan
+        if (tpan) return;
+      }
       if (Fg()) { fogDown(ev); return; }
       var h = t.closest && t.closest('[data-mi-h]');
       if (h && A()) { startHandle(ev, h.getAttribute('data-mi-id'), h.getAttribute('data-mi-h')); return; }
       if (t.closest && t.closest('.mi-chip')) { ev.stopPropagation(); return; }
     }, true);
     g.addEventListener('pointermove', function (ev) {
+      if (tp[ev.pointerId]) { tp[ev.pointerId] = { x: ev.clientX, y: ev.clientY }; if (tpan && sc) { var m1 = mid(); sc.scrollLeft = tpan.l - (m1.x - tpan.x); sc.scrollTop = tpan.t - (m1.y - tpan.y); return; } }
       if (hdrag) { moveHandle(ev); return; }
       if (Fg()) { fogMove(ev); return; }
       var a = A();
@@ -956,8 +964,9 @@
       }
     });
     g.addEventListener('pointerleave', function () { var a = A(); if (a && a.ghost) { a.ghost = null; refresh(); } if (Fg() && ring && !stroke) { ring = null; fxRefresh(); } if (Fg() && hoverRoom) { hoverRoom = null; fxRefresh(); } });
-    var up = function (ev) { if (hdrag) { endHandle(ev); return; } if (Fg() && (stroke || rect)) fogUp(ev); };
-    g.addEventListener('pointerup', up); g.addEventListener('pointercancel', function (ev) { if (hdrag) endHandle(ev); else if (stroke || rect) { cancelStroke(); } });
+    var untouch = function (ev) { if (tp[ev.pointerId]) { delete tp[ev.pointerId]; if (tpan) { if (!Object.keys(tp).length) tpan = null; return true; } } return false; };
+    var up = function (ev) { if (untouch(ev)) return; if (hdrag) { endHandle(ev); return; } if (Fg() && (stroke || rect)) fogUp(ev); };
+    g.addEventListener('pointerup', up); g.addEventListener('pointercancel', function (ev) { untouch(ev); if (hdrag) endHandle(ev); else if (stroke || rect) { cancelStroke(); } });
     if (sc) {
       sc.addEventListener('pointerdown', function (ev) { tapDown = A() && ev.button === 0 ? { x: ev.clientX, y: ev.clientY, t: Date.now(), on: !(ev.target.closest && ev.target.closest('.mi-hdl, .mi-chip')) } : null; }, true);
       sc.addEventListener('pointerup', function (ev) {

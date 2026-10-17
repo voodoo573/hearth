@@ -102,7 +102,8 @@
 .c2 .map-token.mi-lift { z-index: 9 !important; transform: translateY(-6px) scale(1.12); transition: transform .12s ease-out; cursor: grabbing; opacity: 1; filter: drop-shadow(0 14px 12px rgba(0,0,0,.8)); }
 .c2 .map-token.mi-lift .map-token-caption, .c2 .map-token.mi-lift .map-token-num { opacity: 0; }
 .c2 .map-token.mi-ghost { opacity: .35; filter: grayscale(.6); pointer-events: none; z-index: 1 !important; }
-.c2 .mi-reach { fill: color-mix(in srgb, var(--gold) 10%, transparent); }
+.c2 .mi-reach { fill: color-mix(in srgb, var(--gold) 7%, transparent); }
+.c2 .mi-moving .mi-ov { z-index: 12; } /* the feet chip stays above the lifted token */
 .c2 .mi-diffzone { fill: url(#miHatch); opacity: .55; }
 .c2 .mi-pcell { fill: color-mix(in srgb, var(--gold) 26%, transparent); stroke: var(--gold); stroke-width: 1.2; animation: mi-fade .08s ease-out both; }
 .c2 .mi-pcell.diff { fill: url(#miHatch); stroke: var(--mi-ember-hot); }
@@ -235,3 +236,9 @@ html:root[data-palette][data-palette] body .c2 .mi-af[aria-pressed="true"] small
 html:root[data-palette][data-palette] body .c2 .mi-ic[aria-pressed="true"] { background: var(--c2-surface) !important; box-shadow: 0 0 0 2px var(--gold) !important; }
 /* desktop: room to slide the map left, clear of the fan */
 .c2-desk.mi-aoe-on .dm-map-scroll { padding-right: var(--mi-fanpad, 0px); }
+/* phone: the board can slide up and left of the fan instead of staying centred under it */
+.c2.c2-phone.mi-aoe-on .c2-stage .dm-map-scroll { align-items: flex-start; justify-content: flex-start; padding-bottom: var(--mi-fanpad, 0px); padding-right: var(--mi-fanpad, 0px); }
+/* while a token is lifted the tool button and help step aside (the phone cancel zone sits there) */
+.c2:has(.mi-moving) :is(.c2-fab, .c2-help, .c2-helpbox) { opacity: 0; pointer-events: none; transition: opacity .12s; }
+/* fog tools: one finger paints, two fingers pan the board */
+.c2.mi-fog-on .c2-stage .dm-map-scroll, .c2.mi-fog-on #dmMapGrid { touch-action: none; }
