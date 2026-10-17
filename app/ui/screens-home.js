@@ -298,6 +298,40 @@
   // The bar sits under any open dialog (roll dialog, roll result, pickers, polish modals) so it never covers
   // their buttons; it comes back when the dialog closes. Raw CSS: :has() on body can't go through pxCss.
   (function () { var st = document.createElement('style'); st.id = 'u-ui-linkbar-raw';
-    st.textContent = 'body:has(.dialog-backdrop, .skills-dialog-backdrop, .skill-choice-backdrop, .death-outcome-backdrop, .roll-outcome-dialog, .u-layer) #hearthLinkBar{display:none!important}';
+    st.textContent = 'body:has(.dialog-backdrop, .skills-dialog-backdrop, .skill-choice-backdrop, .death-outcome-backdrop, .roll-outcome-dialog, .u-layer) #hearthLinkBar:not(.u-lb-dock){display:none!important}' +
+      '#hearthLinkBar.u-lb-dock{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;top:auto!important;transform:none!important;width:auto!important;max-width:none!important;z-index:1!important;margin:0!important}';
     document.head.appendChild(st); })();
+  // On the character sheet the bar is docked into the page instead of floating: first in the left column on the
+  // desk, at the top of the phone/tablet sheet. The sheet makes room for it, so it never covers a card at any
+  // width or scroll position. Everywhere else it floats as before. The same element moves (its listeners stay).
+  function dockLinkBar() {
+    var bar = document.getElementById('hearthLinkBar');
+    if (!bar) { // a re-render of #content took the docked bar with it: let the app draw it again
+      var j = (typeof HearthLink !== 'undefined') && HearthLink.join;
+      if (!j || !(j.status === 'linked' || j.status === 'reconnecting') || !window.linkRefreshPlayer || !window.linkRefreshPlayer._orig || dockLinkBar._busy) return;
+      dockLinkBar._busy = true; try { window.linkRefreshPlayer._orig(); } finally { dockLinkBar._busy = false; }
+      bar = document.getElementById('hearthLinkBar'); if (!bar) return;
+    }
+    var host = window.HearthUI && HearthUI.route && HearthUI.route() === 'sheet' ? document.querySelector('#content .u-cs-l, #content .u-cs-p') : null;
+    if (host) {
+      if (bar.parentNode !== host || host.firstChild !== bar) host.insertBefore(bar, host.firstChild);
+      bar.classList.add('u-lb-dock');
+    } else if (bar.classList.contains('u-lb-dock') || bar.parentNode !== document.body) {
+      bar.classList.remove('u-lb-dock'); document.body.appendChild(bar);
+    }
+  }
+  if (typeof window.linkRefreshPlayer === 'function' && !window.linkRefreshPlayer._uDock) {
+    var lrp = window.linkRefreshPlayer;
+    window.linkRefreshPlayer = function () {
+      // a docked bar lives inside #content; hand it back to the app's own lookup by id (unchanged), then re-dock
+      var r = lrp.apply(this, arguments); dockLinkBar(); return r;
+    };
+    window.linkRefreshPlayer._uDock = true; window.linkRefreshPlayer._orig = lrp;
+  }
+  (function () {
+    var c = document.getElementById('content'); if (!c || !window.MutationObserver) return;
+    new MutationObserver(function () { dockLinkBar(); }).observe(c, { childList: true, subtree: false });
+    window.addEventListener('resize', dockLinkBar);
+  })();
+  window.HearthUI.dockLinkBar = dockLinkBar;
 })();
