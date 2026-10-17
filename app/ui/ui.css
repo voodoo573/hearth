@@ -334,6 +334,8 @@ html:root body.u2.u2.u2 .u-rrow.u-rrow.u-on[aria-pressed] { background: color-mi
   .u2.u-desk .u-top .u-field { width: auto; flex: 0 1 300px; min-width: 160px; }
   .u2.u-desk #content { padding-left: var(--s5); padding-right: var(--s5); }
   .u2.u-desk .u-brand b { font-size: 22px; }
+  .u2.u-desk .u-side .u-brand small { display: none; }
+  .u2.u-desk .u-top .u-field { flex: 1 1 260px; min-width: 220px; max-width: 360px; }
 }
 @media (max-width: 1023px) {
   .u2.u-desk { --u-side-w: 76px; }
