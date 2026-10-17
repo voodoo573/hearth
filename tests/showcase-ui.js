@@ -5,7 +5,7 @@ const S = require('./ui-seed.js');
 const PORT = process.argv[2] || '8816', OUT = process.argv[3] || '/workspace/ui-polish/shots', ONLY = process.argv[4] ? new RegExp(process.argv[4]) : null;
 const URL = `http://127.0.0.1:${PORT}/app/index.html`;
 const W = (ms) => `await new Promise(r=>setTimeout(r,${ms}));`;
-const ROLL = `HearthUI.go('sheet');${W(300)}document.querySelector('.action-roll-btn').click();${W(300)}[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Roll').click();`;
+const ROLL = `HearthUI.go('sheet');${W(300)}document.querySelector('.u-cs-roll.u-hit').click();${W(300)}document.querySelector('.roll-dialog [data-roll-line="0"]').click();`;
 const BUILD = `startNewCharacterFromMenu();${W(300)}const n=document.getElementById('nameInput');n.value='Aria';n.dispatchEvent(new Event('input',{bubbles:true}));for(let i=0;i<2;i++){const b=document.getElementById('nextBtn');b&&b.click();${W(200)}const r=document.querySelector('[data-race]');if(r&&!state.draft.race){r.click();${W(200)}}};const pc=document.querySelector('[data-class=paladin]');pc&&pc.click();`;
 const THEMES = `state.ui.homePanel='settings';render();${W(200)}document.querySelector('[data-u-act=themes]').click();${W(300)}`;
 const SHOTS = [
