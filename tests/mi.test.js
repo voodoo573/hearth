@@ -180,6 +180,15 @@ async function drag(p, a, b, n, hold) { await p.mouse.move(a.x, a.y); await p.mo
         return out;
       });
       check('desktop: no template label sits inside another template (unless its own template lies inside that one), and the Circle label is just below its own circle', lb.length >= 4 && lb.every(l => l.bad === 0 && l.below), lb);
+      // framing: every template (as far as the board goes) and every token sits in view, below the turn-order strip
+      const fit = await p.evaluate(() => { const X = HearthMI._x(), enc = X.enc, gr = X.grid.getBoundingClientRect(), u = gr.width / 20, st = document.querySelector('.c2-stage').getBoundingClientRect(), top = Math.max(st.top, document.querySelector('.c2-strip').getBoundingClientRect().bottom), bad = [];
+        const inV = (x, y) => x >= st.left - 1 && x <= st.right + 1 && y >= top - 1 && y <= st.bottom + 1, cl = (v, n) => Math.max(0, Math.min(n, v));
+        enc.aoes.forEach(a => { const g = HearthMI._geo(a, enc), c = Math.cos(g.ang), s = Math.sin(g.ang), L = g.len, h = g.kind === 'cone' ? L / 2 : 0.5;
+          const ps = g.kind === 'circle' ? [[g.x - L, g.y], [g.x + L, g.y], [g.x, g.y - L], [g.x, g.y + L]] : g.kind === 'square' ? [[g.x, g.y], [g.x + L, g.y + L]] : [[g.x, g.y], [g.x + c * L - s * h, g.y + s * L + c * h], [g.x + c * L + s * h, g.y + s * L - c * h]];
+          ps.forEach(q => { const x = gr.left + cl(q[0], 20) * u, y = gr.top + cl(q[1], 15) * u; if (!inV(x, y)) bad.push([a.kind, q]); }); });
+        document.querySelectorAll('[data-map-token]').forEach(t => { const r = t.getBoundingClientRect(); if (!inV(r.left, r.top) || !inV(r.right, r.bottom)) bad.push(['token', t.dataset.mapToken]); });
+        return { bad, zoom: state.ui.dmMapZoom }; });
+      check('desktop: with templates out, the board zooms out so every template and every token is in view below the strip', fit.bad.length === 0, fit);
       // a handle that was slid off its point drags from where it sits: grabbing it doesn't jump the template
       const g0 = await p.evaluate(() => { const a = loadEncounter().aoes.find(x => x.kind === 'cone' && !x.pinned) || HearthMI._x().enc.aoes.slice(-1)[0]; return { ang: a.angle, len: a.len }; });
       const mh = await p.evaluate(() => { const h = [...document.querySelectorAll('.mi-hdl.on')].find(x => x.dataset.miH === 'aim'); const r = h.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
