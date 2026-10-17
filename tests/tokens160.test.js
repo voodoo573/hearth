@@ -33,6 +33,11 @@ function check(name, ok, info) { results.push({ ok: !!ok }); console.log((ok ? '
   const pick = await p.evaluate(() => { const id = loadEncounter().combatants[0].id; state.ui.tokenImageFor = id; render(); document.querySelector('[data-token-lib="ranger"]').click(); return loadEncounter().combatants[0].tokenImage; });
   check('token picker: Hearth library sets the portrait', pick === 'tokens/lib/ranger.webp', pick);
   check('credits list token frames + portrait library', await p.evaluate(() => { hearthOpenLegal(); return /Token portrait library/.test(document.body.innerText) && /Token frames/.test(document.body.innerText); }));
+  const mk = await p.evaluate(() => { state.ui.tokenImageFor = null; render(); const e = loadEncounter(); const gob = e.combatants[1]; const t = document.querySelector(`[data-map-token="${gob.id}"] .ht-token`); const plain = document.querySelector(`[data-map-token="${e.combatants[0].id}"] .ht-mark`); const proj = document.getElementById('dmMapProject'); return { mark: !!(t && t.querySelector('.ht-mark-goblin-archer svg')), plain: !!plain, projSvg: !!(proj && proj.querySelector('svg')), glyph: document.body.innerHTML.includes('\u29C9') }; });
+  check('goblin-archer gets a bow mark (other portraits do not); projector icon is inline SVG, no ⧉ glyph', mk.mark && !mk.plain && mk.projSvg && !mk.glyph, mk);
+  await p.setViewportSize({ width: 360, height: 800 }); await p.waitForTimeout(300);
+  const ttl = await p.evaluate(() => { const e = document.querySelector('.dm-map-title'); const cs = getComputedStyle(e); return { h: e.getBoundingClientRect().height, lh: parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.3, ws: cs.whiteSpace }; });
+  check('phone (360px): Battle Map title stays on one line', ttl.ws === 'nowrap' && ttl.h <= ttl.lh * 1.4, ttl);
   check('no page errors', errs.length === 0, errs.slice(0, 3));
   await b.close();
   const f = results.filter(x => !x.ok).length; console.log(`\n${results.length - f}/${results.length} passed`); process.exit(f ? 1 : 0);

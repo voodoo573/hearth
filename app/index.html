@@ -7938,6 +7938,19 @@ body.hearth-wide .app {
 .map-token.has-ht > .ht-token { flex:none; }
 .map-token.has-ht .map-token-num { z-index:3; top:auto !important; right:auto !important; bottom:-4px !important; left:-4px !important; }
 html:root[data-palette][data-palette] body .dm-tile-mini.dm-tile-token-btn.has-img, html body button.dm-tile-token-btn.has-img { background: var(--tok-img) center / cover no-repeat transparent !important; }
+.hi-ico { display:inline-block; vertical-align:-2px; flex:none; }
+.ht-token.ht-has-mark { position:relative; }
+.ht-mark { position:absolute; right:-3px; bottom:-3px; width:42%; height:42%; min-width:11px; min-height:11px; max-width:22px; max-height:22px; border-radius:50%; background:#1d6b52; border:1.5px solid #f3d58a; box-shadow:0 1px 2px rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; z-index:4; pointer-events:none; }
+.ht-mark svg { width:80%; height:80%; display:block; }
+.token-lib-btn { position:relative; }
+.token-lib-btn .ht-mark { right:0; bottom:0; width:22px; height:22px; }
+@media (max-width: 599px) {
+  .dm-map-top { flex-wrap: wrap; row-gap: 8px; column-gap: 10px; }
+  .dm-map-top .dm-map-title { margin-left: 10px !important; white-space: nowrap; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .dm-map-top .dm-map-exit { white-space: nowrap; }
+  .dm-map-top .dm-map-actions { flex: 1 1 100%; flex-wrap: wrap; }
+  .dm-map-top .dm-map-actions > * { flex: 1 1 auto; white-space: nowrap; }
+}
 .token-lib-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(52px, 1fr)); gap:6px; margin:6px 0 10px; }
 .token-lib-btn { padding:3px; border-radius:50%; aspect-ratio:1; background:transparent; border:2px solid transparent; cursor:pointer; }
 .token-lib-btn img { width:100%; height:100%; border-radius:50%; display:block; }
@@ -25858,7 +25871,7 @@ function tokenImageDialogHTML() {
         <button class="btn primary" data-token-img-choose="1" style="width:100%;">${hasImg ? 'Change uploaded image' : 'Upload an image'}</button>
         ${hasImg ? `<button class="btn danger" data-token-img-remove="${c.id}" style="width:100%;margin-top:6px;">Remove image</button>` : ''}
         <div class="token-icon-head">Hearth library</div>
-        <div class="token-lib-grid">${HEARTH_TOKEN_LIBRARY.map(k => `<button class="token-lib-btn ${c.tokenImage === hearthTokenLibPath(k) ? 'active' : ''}" data-token-lib="${k}" title="${k.replace(/-/g, ' ')}"><img src="${hearthTokenLibPath(k)}" alt="${k.replace(/-/g, ' ')}" loading="lazy" draggable="false"></button>`).join('')}</div>
+        <div class="token-lib-grid">${HEARTH_TOKEN_LIBRARY.map(k => `<button class="token-lib-btn ${c.tokenImage === hearthTokenLibPath(k) ? 'active' : ''}" data-token-lib="${k}" title="${k.replace(/-/g, ' ')}"><img src="${hearthTokenLibPath(k)}" alt="${k.replace(/-/g, ' ')}" loading="lazy" draggable="false">${hearthTokenMark(hearthTokenLibPath(k))}</button>`).join('')}</div>
         <div class="token-icon-head">Or pick a silhouette</div>
         <div class="token-icon-grid">${iconGrid}</div>
         <div class="dialog-actions" style="margin-top:12px;"><button class="btn" data-token-img-done="1">Done</button></div>
@@ -35005,7 +35018,7 @@ function dmEncListHTML(order, turnId) {
                   ${c.kind !== 'player' ? `<button class="dm-tile-mini dm-tile-name-btn ${c.hideName ? 'on' : ''}" data-dm-hide-name="${c.id}" title="${c.hideName ? 'Name hidden on map — tap to show' : 'Hide name on map'}">🏷</button>` : ''}
                   ${c.kind === 'player' ? `<button class="dm-tile-mini dm-tile-vision-btn ${c.vision ? 'on' : ''}" data-dm-vision="${c.id}" title="Darkvision radius (auto-reveals fog): ${c.vision ? c.vision + 'ft' : 'off'} — tap to change">${c.vision ? '🥕' + c.vision : '🥕'}</button>` : ''}
                   ${c.kind !== 'player' ? `<button class="dm-tile-mini dm-tile-disp-btn" data-dm-disposition="${c.id}" title="Team: ${c.disposition || 'enemy'} — tap to change (enemy / ally / neutral)">${c.disposition === 'ally' ? '🟢' : (c.disposition === 'neutral' ? '⚪' : '🔴')}</button>` : ''}
-                  ${c.kind === 'monster' ? `<button class="dm-tile-mini dm-tile-dup-btn" data-dm-duplicate="${c.id}" title="Duplicate this monster">⧉</button>` : ''}
+                  ${c.kind === 'monster' ? `<button class="dm-tile-mini dm-tile-dup-btn" data-dm-duplicate="${c.id}" title="Duplicate this monster" aria-label="Duplicate this monster"><svg class="hi-ico" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><rect x="5" y="5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 3.5V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>` : ''}
                   <button class="dm-tile-mini dm-tile-token-btn ${c.tokenImage ? 'has-img' : ''}" data-token-img-open="${c.id}" title="Token image"${c.tokenImage ? ` style="background-image:url('${escape(c.tokenImage)}');--tok-img:url('${escape(c.tokenImage)}');"` : ''}>${c.tokenImage ? '' : '🖼'}</button>
                   <button class="dm-tile-mini dm-tile-remove-x" data-dm-remove-ask="${c.id}" title="Remove from encounter">✕</button>
                   </div>
@@ -54746,6 +54759,16 @@ function mapTokenHTML(tk, cell, draggable) {
 // inner markup for a map token, or '' when the module is not loaded.
 const HEARTH_TOKEN_LIBRARY = ['goblin','goblin-archer','orc','hobgoblin','kobold','bandit','cultist','guard','knight','ranger','mage','priest','noble','merchant','innkeeper','villager','skeleton','zombie','ghoul','wraith','wolf','dire-wolf','bear','owlbear','giant-spider','gnoll','lizardfolk','ogre','troll','elemental-fire','mimic','young-dragon-red'];
 function hearthTokenLibPath(key) { return 'tokens/lib/' + key + '.webp'; }
+// Small corner marks so look-alike portraits stay tellable apart at map size
+// (goblin-archer vs goblin). Drawn over Jenny's frame; her art is untouched.
+const HEARTH_TOKEN_MARKS = {
+  'goblin-archer': { title: 'Archer', svg: '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 2.5c5 1.5 7.5 5.5 7.5 11" fill="none" stroke="#2a1606" stroke-width="3.2" stroke-linecap="round"/><path d="M4 2.5c5 1.5 7.5 5.5 7.5 11" fill="none" stroke="#f3d58a" stroke-width="1.7" stroke-linecap="round"/><path d="M4 2.5L11.5 13.5" stroke="#fff4d6" stroke-width="0.9"/><path d="M2.5 9.5L12.5 4.5M12.5 4.5l-3 .2M12.5 4.5l-1.3 2.6" fill="none" stroke="#2a1606" stroke-width="2.6" stroke-linecap="round"/><path d="M2.5 9.5L12.5 4.5M12.5 4.5l-3 .2M12.5 4.5l-1.3 2.6" fill="none" stroke="#9fe0ff" stroke-width="1.2" stroke-linecap="round"/></svg>' },
+};
+function hearthTokenMark(img) {
+  const m = /(?:^|\/)tokens\/lib\/([a-z0-9-]+)\.webp$/.exec(String(img || ''));
+  const k = m && HEARTH_TOKEN_MARKS[m[1]];
+  return k ? `<span class="ht-mark ht-mark-${m[1]}" title="${k.title}">${k.svg}</span>` : '';
+}
 function hearthTokenFace(tk, cell) {
   if (typeof window === 'undefined' || !window.HearthTokens) return '';
   try {
@@ -54759,6 +54782,8 @@ function hearthTokenFace(tk, cell) {
     const conds = (tk.statuses || []).concat(tk.concentrating ? ['concentrating'] : []).map(s => String(s).toLowerCase().replace(/\s+/g, ''));
     const el = HearthTokens.createToken({ img: tk.tokenImage || null, kind, size: tk.kind === 'player' ? 'medium' : String(tokenSize(tk)).toLowerCase(), state: st.filter(s => s !== 'still'), conditions: conds, cell, label: tk.name || '' });
     if (st.includes('still')) el.classList.add('ht-still');
+    const mark = hearthTokenMark(tk.tokenImage);
+    if (mark) { el.insertAdjacentHTML('beforeend', mark); el.classList.add('ht-has-mark'); }
     return el.outerHTML;
   } catch (e) { return ''; }
 }
@@ -55880,11 +55905,11 @@ function renderDMMap() {
       <div class="dm-map-top">
         <button class="dm-map-exit" id="dmMapExit">‹ Build</button>
         <div class="dm-map-title">Battle Map</div>
-        <div style="display:flex;gap:8px;align-items:center;">
+        <div class="dm-map-actions" style="display:flex;gap:8px;align-items:center;">
           ${mapEncs.length > 1 ? `<select class="dm-map-enc-select" id="dmMapEncSelect" title="Switch encounter" style="max-width:38vw;padding:7px 9px;border-radius:8px;border:1px solid var(--parchment-darker);background:var(--parchment);color:var(--ink);font-size:13px;">${mapEncs.map(e => `<option value="${e.id}"${e.id === enc.id ? ' selected' : ''}>${escape(e.name)}</option>`).join('')}</select>` : ''}
           ${dmLinkStatusChip().replace('class="btn dm-link-btn', 'class="dm-map-tool dm-link-btn')}${dmRollLogButton('dm-map-tool')}
           <button class="dm-map-tool" data-dm-notes-open="1" title="Campaign notes">📓 Notes</button>
-          <button class="dm-map-project" id="dmMapProject">⧉ Open projector</button>
+          <button class="dm-map-project" id="dmMapProject"><svg class="hi-ico" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><rect x="1.5" y="2.5" width="13" height="8.5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 14h6M8 11v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> Open projector</button>
         </div>
       </div>
       <div class="dm-battle-body">
@@ -55993,7 +56018,7 @@ function renderDMMap() {
             </div>
             </div>
           </div>
-          <div class="dm-map-hint">Tap an AoE shape above to drop it on the board. Then drag the ✛ handle to move it, the gold ↻ handle to aim cones/lines, 📍 to pin it (shows to players), ✕ to delete. Cones &amp; lines start from the active token unless Free-place is on. <strong>For players:</strong> ⧉ Open projector, set your second screen to <em>Extend</em>, drag the window to the TV, press <em>Fullscreen</em>.</div>
+          <div class="dm-map-hint">Tap an AoE shape above to drop it on the board. Then drag the ✛ handle to move it, the gold ↻ handle to aim cones/lines, 📍 to pin it (shows to players), ✕ to delete. Cones &amp; lines start from the active token unless Free-place is on. <strong>For players:</strong> <svg class="hi-ico" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><rect x="1.5" y="2.5" width="13" height="8.5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 14h6M8 11v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> Open projector, set your second screen to <em>Extend</em>, drag the window to the TV, press <em>Fullscreen</em>.</div>
         </div>
       </div>
       ${dmStatusDialogHTML(enc)}

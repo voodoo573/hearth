@@ -4,7 +4,7 @@ const { chromium } = require(process.env.PW_MODULE || 'playwright-core');
 const PORT = process.argv[2] || '8816';
 const URL = `http://127.0.0.1:${PORT}/app/index.html`;
 const OUT = process.env.SHOTS || '/workspace/dice-160/clean/';
-const errs = [];
+const errs = []; let check_mid = true;
 const SEED = () => { localStorage.clear(); localStorage.setItem('hearth.welcomeSeen', '1'); localStorage.setItem('hearth.ruleset', '5e'); localStorage.setItem('hearth.reskin160', 'done'); localStorage.setItem('hearth.dmSettings.v1', JSON.stringify({ dmMode: true, projectorHelpDismissed: true })); };
 const HERO = () => { const d = generateRandomCharacter(); Object.assign(d, { name: 'Brin Tallow', race: 'human', subrace: null, klass: 'fighter', subclass: null, level: 3, classLevels: { fighter: 3 } }); saveCharacter(d); const ch = getCharacter(d.id); ch.currentHp = maxHp(ch); saveCharacter(ch); state.activeCharId = d.id; return d.id; };
 async function page(b, w, h) { const ctx = await b.newContext({ viewport: { width: w, height: h }, serviceWorkers: 'block' }); const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message)); await p.goto(URL); await p.evaluate(SEED); await p.reload(); await p.waitForTimeout(800); return { ctx, p }; }
@@ -17,8 +17,10 @@ const noToast = p => p.evaluate(() => document.querySelectorAll('.toast, #toast,
     await p.evaluate(async () => { const r = hearthDiceRoll({ label: 'warm-up', groups: [{ sides: 20, values: [3] }], total: 3 }); await new Promise(z => setTimeout(z, 400)); HearthDice.skip(); await r; localStorage.removeItem('hearth.rollFeed.v1'); });
     await p.waitForTimeout(500); await noToast(p);
     const rp = p.evaluate(() => hearthDiceRoll({ label: 'Longsword attack', groups: [{ sides: 20, values: [17] }], total: '22 to hit' }).then(() => 1)).catch(() => 0);
-    await p.waitForSelector('.hd-ov canvas'); await p.waitForTimeout(450);
-    await p.screenshot({ path: OUT + 'dice-1-tumbling-phone.png' });
+    await p.waitForSelector('.hd-ov canvas');
+    // Grab frames until the dice have visibly moved off their spawn pose, before they settle.
+    await p.waitForTimeout(110); await p.screenshot({ path: OUT + 'dice-1-tumbling-phone.png' }); // mid-throw (the result line is not shown yet)
+    check_mid = !(await p.evaluate(() => !!document.querySelector('.hd-num.on')));
     await p.waitForFunction(() => document.querySelector('.hd-num.on'), null, { timeout: 15000 }); await p.waitForTimeout(350);
     await p.screenshot({ path: OUT + 'dice-2-landed-phone.png' });
     await p.evaluate(() => HearthDice.skip()); await rp;
@@ -93,7 +95,7 @@ const noToast = p => p.evaluate(() => document.querySelectorAll('.toast, #toast,
     await p.evaluate((tag) => { { const g = document.getElementById('dmMapGrid'); g && g.scrollIntoView({ block: 'center' }); } }, tag);
     await p.waitForTimeout(900); await noToast(p);
     await p.screenshot({ path: OUT + `map-badges-aoe-${tag}.png` });
-    await p.evaluate(() => { state.ui.dmMapMode = false; render(); const t = document.querySelector('.dm-status-pill'); t && t.scrollIntoView({ block: 'center' }); });
+    await p.evaluate(() => { state.ui.dmMapMode = false; render(); const t = document.querySelector('.dm-status-pill'); if (t) { const r = t.getBoundingClientRect(); window.scrollBy(0, r.top - 120); } });
     await p.waitForTimeout(500); await noToast(p);
     await p.screenshot({ path: OUT + `initiative-badges-${tag}.png` });
     await ctx.close();
@@ -125,6 +127,7 @@ const noToast = p => p.evaluate(() => document.querySelectorAll('.toast, #toast,
     if (tag === 'phone') { await p.evaluate(() => { state.ui.tokenImageFor = loadEncounter().combatants[1].id; render(); }); await p.waitForTimeout(800); await p.screenshot({ path: OUT + 'token-picker-library-phone.png' }); }
     await ctx.close();
   }
+  if (!check_mid) errs.push('tumbling shot was taken after the dice landed');
   console.log(errs.length ? 'PAGE ERRORS ' + JSON.stringify(errs.slice(0, 5)) : 'no page errors');
   await b.close();
 })();
