@@ -98,3 +98,67 @@ decided or changed is written down here instead.
   is charged along its cheapest route, as the reach shading assumes.
 - The build still says v1.6.0 (`APP_VERSION`, `CACHE_VERSION`) on purpose: the
   combined release sets both.
+
+### Follow-ups from the QA-170 screenshots (`tests/qa170.test.js`, "Follow-up")
+
+- The dark plates and corner fans stay dark on every theme, so their text no
+  longer uses the theme inks (`--ink`, `--ink-soft`, `--gold`), which go dark
+  on light themes. `mi.css` has `--mi-plate-ink`, `--mi-plate-soft` and
+  `--mi-plate-gold`. Dark themes map them to the theme inks, so they look as
+  before. Light themes get light inks (their own ink mixed almost all the way to
+  white), and the chosen fan button gets a
+  gold mixed toward white. They're used by the desk help line, the phone's
+  off-screen markers ("Ranger in cone"), the labels under the template fan's
+  and the tool fan's buttons, and (deepened instead) the template's name on the
+  pale light-theme chip. The worst case across all 26 palettes was 1.01–3.08:1
+  and is now 6.1:1 or better (help line 7.8, markers 14.3, fan labels 7.8,
+  template name 6.1).
+- A creature's name caption keeps clear of the bottom-corner furniture: the
+  tool fan and template fan (quarter circles on the corner), the round fan
+  button, the pills and the help line. A covered caption moves above its token,
+  then to its left, and goes back under once nothing covers it (`mi.js`
+  `clearCaps`, run after every map refresh, scroll and fan close).
+- The phone's off-screen markers slide up or down off their creature's row
+  (at most four marker-heights) to the nearest spot clear of the template
+  labels, the pills and each other. The labels themselves keep their places.
+
+### Change to Jenny's engine copy (`app/dm/atmo/hearth-atmosphere.js`), to fold into her source
+
+This is the only change to her engine in 1.7.1. It adds an opt-in `dmOnly`
+flag on a light. Lights without it behave exactly as before. The follow-ups
+above don't touch the engine. Her `atmosphere/hearth-atmosphere.js` is byte-identical to the 1.7.0
+vendored copy, and the patch applies cleanly to it (checked on a copy). To
+apply it: `patch atmosphere/hearth-atmosphere.js < engine.diff`.
+
+```diff
+--- a/app/dm/atmo/hearth-atmosphere.js
++++ b/app/dm/atmo/hearth-atmosphere.js
+@@ -150,7 +150,7 @@
+       return p;
+     }
+     var emitters = [];
+-    function fireSources() { var o2 = emitters.slice(); for (var i = 0; i < lights.length; i++) { var l = lights[i]; if (l.type === 'campfire' || l.type === 'torch') { var q = lightPos(l); o2.push({ x: q.x, y: q.y, r: l.type === 'campfire' ? 0.45 : 0.15 }); if (l.type === 'campfire') o2.push(o2[o2.length - 1], o2[o2.length - 1]); } } return o2; }
++    function fireSources() { var o2 = emitters.slice(); for (var i = 0; i < lights.length; i++) { var l = lights[i]; if (l.dmOnly) continue; if (l.type === 'campfire' || l.type === 'torch') { var q = lightPos(l); o2.push({ x: q.x, y: q.y, r: l.type === 'campfire' ? 0.45 : 0.15 }); if (l.type === 'campfire') o2.push(o2[o2.length - 1], o2[o2.length - 1]); } } return o2; }
+     function spawnSmoke(p, initial) { p.x = R() * W; p.y = R() * H; p.life = 4 + R() * 5; p.age = initial ? R() * p.life : 0; p.r = (0.7 + R() * 1.3) * sq; p.k = R() * 1000;
+       var src = fireSources(); if (src.length && R() < 0.6) { var f = src[(R() * src.length) | 0]; p.x = (f.x + (R() - 0.5) * 0.6) * sq; p.y = (f.y + (R() - 0.5) * 0.6) * sq; if (initial) p.y -= R() * sq * 3; }
+       return p; }
+@@ -175,7 +175,8 @@
+       L = L || {}; var p = LIGHTS[L.type] || LIGHTS.torch, id = L.id || ('l' + (++lid));
+       var l = { id: id, x: L.x || 0, y: L.y || 0, follow: L.follow || null, token: L.token || null,
+         radius: L.radius || p.radius, colour: parseColour(L.colour || L.color, p.colour), flicker: L.flicker != null ? L.flicker : p.flicker,
+-        speed: L.speed || p.speed, intensity: L.intensity != null ? L.intensity : 1, seed: L.seed != null ? L.seed : (hashStr(id) % 10000) / 100, type: L.type || 'torch', occlude: L.occlude !== false };
++        speed: L.speed || p.speed, intensity: L.intensity != null ? L.intensity : 1, seed: L.seed != null ? L.seed : (hashStr(id) % 10000) / 100, type: L.type || 'torch', occlude: L.occlude !== false,
++        dmOnly: !!L.dmOnly }; // Hearth 1.7.1: a DM-only light (carried by a creature the players can't see) glows on the DM's light layer only — no embers, smoke or sound
+       lights.push(l); kick(); return l.id;
+     }
+     function removeLight(id) { for (var i = lights.length - 1; i >= 0; i--) if (lights[i].id === id || id === '*') lights.splice(i, 1); kick(); }
+@@ -783,7 +784,7 @@
+       audioState: function () { var f = flashLog.splice(0, flashLog.length), t = tick * DT;
+         return { t: t, weather: st.weather, wI: st.wI, time: st.time, darkness: st.darkness, indoor: st.indoor, wet: build.wet, snow: build.snow,
+           gust: n1(t * 0.18, 3), sandGust: st.weather === 'sandstorm' ? sandGust(t) : 0, sandWhite: st.weather === 'sandstorm' ? sandWhite(t) : 0, flash: flashV,
+-          strikes: f, fires: lights.filter(function (l) { return /campfire|torch|candle|lantern/.test(l.type); }).map(function (l) { var p = lightPos(l); return { type: l.type, x: p.x / cols, i: l.intensity }; }),
++          strikes: f, fires: lights.filter(function (l) { return !l.dmOnly && /campfire|torch|candle|lantern/.test(l.type); }).map(function (l) { var p = lightPos(l); return { type: l.type, x: p.x / cols, i: l.intensity }; }),
+           lava: st.weather === 'embers' ? Math.min(1, emitters.length / 12) : 0 }; },
+       renderAt: function (t) { t0abs = clock() - t * 1000; tick = Math.max(0, Math.floor(t * HZ) - 60); reseed(); render(); },
+       stop: stop
+```

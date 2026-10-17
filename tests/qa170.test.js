@@ -10,7 +10,7 @@ function check(name, ok, info) { results.push({ ok: !!ok }); console.log((ok ? '
 let browser;
 async function boot(opts) {
   opts = opts || {};
-  const ctx = await browser.newContext({ viewport: opts.vp || { width: 1440, height: 900 }, serviceWorkers: 'block', deviceScaleFactor: 1 });
+  const ctx = await browser.newContext({ viewport: opts.vp || { width: 1440, height: 900 }, serviceWorkers: 'block', deviceScaleFactor: 1, hasTouch: !!opts.touch });
   const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message));
   await p.goto(BASE); await p.evaluate(S.SEED, opts.layout || null); await p.reload(); await p.waitForTimeout(700);
   await p.evaluate(S.STAGE, opts.stage || {}); await p.waitForTimeout(1300);
@@ -354,6 +354,74 @@ const STRIP = () => { const e = loadEncounter(); e.aoes = []; e.fog = { on: true
     const moved = await p.evaluate((id) => { const c = loadEncounter().combatants.find(x => x.id === id); return [c.mapX, c.mapY, (HearthMI._moves().slice(-1)[0] || {}).ft]; }, I['Goblin']);
     check('M-02 the move logs the same cost the chip showed', moved[0] === 12 && moved[1] === 6 && moved[2] === 25, moved);
     void cells; await ctx.close();
+  }
+
+  // ---------------- follow-ups from the QA-170 screenshots (dark plates on light themes, the corner fan, phone markers)
+  const CR = () => { // text contrast on each dark plate / fan label; semi-transparent plates are composited over black and over mid grey
+    const cv = document.createElement('canvas').getContext('2d');
+    const rgba = (c) => { cv.clearRect(0, 0, 1, 1); cv.fillStyle = 'rgba(0,0,0,0)'; cv.fillStyle = c; cv.fillRect(0, 0, 1, 1); return [...cv.getImageData(0, 0, 1, 1).data]; };
+    const L = (c) => { const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
+    const over = (t, b) => { const a = t[3] / 255; return [0, 1, 2].map(i => t[i] * a + b[i] * (1 - a)); };
+    const cr = (a, b) => { const x = L(a), y = L(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+    const out = {};
+    const one = (key, n, bgEl, fill) => { if (!n || !n.getBoundingClientRect().width) return; const b = rgba(fill ? getComputedStyle(bgEl).fill : getComputedStyle(bgEl).backgroundColor);
+      const bs = b[3] > 250 ? [b] : [over(b, [0, 0, 0]), over(b, [110, 110, 110])]; const f = rgba(getComputedStyle(n).color);
+      const r = Math.min(...bs.map(x => cr(over(f, x), x))); out[key] = Math.min(out[key] || 99, r); };
+    document.querySelectorAll('.mi-hint').forEach(n => one('help line', n, n));
+    document.querySelectorAll('.mi-offhit, .mi-offhit b').forEach(n => one('phone marker', n, n.closest('.mi-offhit')));
+    document.querySelectorAll('.mi-afan .mi-af small').forEach(n => one('template fan label', n, document.querySelector('.mi-afbg'), true));
+    document.querySelectorAll('.c2-fan.open .c2-fan-i small').forEach(n => one('tool fan label', n, document.querySelector('.c2-fan-bg'), true));
+    document.querySelectorAll('.mi-chip b').forEach(n => one('template name', n, n.closest('.mi-chip')));
+    return out;
+  };
+  {
+    const desk = await boot(), phone = await boot({ vp: { width: 412, height: 880 }, stage: { dragonAt: [14, 7] } });
+    const pals = await desk.p.evaluate(() => ['hearth'].concat(Object.keys(HEARTH_PALETTES)));
+    const low = [], seen = {};
+    const fire = () => { const fb = [...document.querySelectorAll('.c2-atk')].find(x => /^Fire Breath/.test(x.textContent)); fb.querySelector('[data-c2-place]').click(); };
+    for (const pal of pals) {
+      const note = (o) => Object.keys(o).forEach(k => { seen[k] = 1; if (!(o[k] >= 4.5)) low.push([pal, k, +o[k].toFixed(2)]); });
+      await desk.p.evaluate((pal) => { hearthApplyLook({ palette: pal }); state.ui.c2Card = null; state.ui.c2Fan = true; render(); }, pal); await desk.p.waitForTimeout(450);
+      note(await desk.p.evaluate(CR));
+      await desk.p.evaluate(() => { state.ui.c2Fan = false; render(); HearthMI.openAoe('circle'); }); await desk.p.waitForTimeout(400);
+      note(await desk.p.evaluate(CR));
+      await desk.p.evaluate(() => { HearthMI.closeAoe(false); render(); });
+      await phone.p.evaluate((pal) => { hearthApplyLook({ palette: pal }); render(); }, pal); await phone.p.evaluate(fire); await phone.p.waitForTimeout(800);
+      note(await phone.p.evaluate(CR));
+      await phone.p.evaluate(() => { HearthMI.closeAoe(false); const e = loadEncounter(); e.aoes = []; saveEncounter(e); render(); }); await phone.p.waitForTimeout(150);
+    }
+    check('Follow-up: help line, phone markers, both fans\u2019 labels and template names reach 4.5:1 on all ' + pals.length + ' palettes', low.length === 0 && Object.keys(seen).length === 5, { low: low.slice(0, 8), seen: Object.keys(seen) });
+    await desk.ctx.close(); await phone.ctx.close();
+  }
+  {
+    // the corner fan never covers a creature's name; the phone markers never sit under a template label (Lee's tmpl-phone scene)
+    const phone = await boot({ vp: { width: 412, height: 880 }, stage: { dragonAt: [14, 7] }, touch: true }), p = phone.p;
+    await p.evaluate(() => { const fb = [...document.querySelectorAll('.c2-atk')].find(x => /^Fire Breath/.test(x.textContent)); fb.querySelector('[data-c2-place]').click(); }); await p.waitForTimeout(1200);
+    const lay = await p.evaluate(() => {
+      const fe = document.querySelector('.mi-afan'), f = fe.getBoundingClientRect(), S = parseFloat(fe.style.getPropertyValue('--afS'));
+      const inFan = (r) => { const nx = Math.max(r.left, Math.min(f.right, r.right)), ny = Math.max(r.top, Math.min(f.bottom, r.bottom)); return Math.hypot(nx - f.right, ny - f.bottom) < S; };
+      const caps = [...document.querySelectorAll('#dmMapGrid .map-token-caption')].filter(c => c.getBoundingClientRect().width);
+      const sc = document.getElementById('dmMapScroll').getBoundingClientRect();
+      const onScreen = caps.filter(c => { const r = c.getBoundingClientRect(); return r.right > sc.left && r.left < sc.right && r.bottom > sc.top && r.top < sc.bottom; });
+      const ov = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      const chips = [...document.querySelectorAll('#miTpl .mi-chip')].map(n => n.getBoundingClientRect()), marks = [...document.querySelectorAll('.mi-offhit')].map(n => n.getBoundingClientRect());
+      return { under: onScreen.filter(c => inFan(c.getBoundingClientRect())).map(c => c.textContent), moved: caps.filter(c => c.classList.contains('mi-cap-up') || c.classList.contains('mi-cap-l')).map(c => c.textContent),
+        marks: marks.length, clash: marks.filter(m => chips.some(c => ov(m, c))).length, markClash: marks.filter((m, i) => marks.some((o, j) => j !== i && ov(m, o))).length };
+    });
+    check('Follow-up: with the template fan open on phone, no creature\u2019s name sits under the fan (the dragon\u2019s moves above its token)', lay.under.length === 0 && lay.moved.indexOf('Adult Red Dragon') >= 0, lay);
+    check('Follow-up: phone off-screen markers ("Ranger in cone") clear every template label and each other', lay.marks >= 2 && lay.clash === 0 && lay.markClash === 0, lay);
+    await phone.ctx.close();
+    // the tool fan on a small desk (1024x640), dragon in its corner as staged
+    const desk = await boot({ vp: { width: 1024, height: 640 } }), q = desk.p;
+    await q.evaluate(() => { state.ui.c2Card = null; render(); }); await q.click('[data-c2-fab]'); await q.waitForTimeout(500);
+    const tf = await q.evaluate(() => { const w = document.querySelector('.c2-fan.open .c2-fan-wrap'); if (!w) return null; const f = document.querySelector('.c2-fan').getBoundingClientRect(), S = parseFloat(w.style.width);
+      return [...document.querySelectorAll('#dmMapGrid .map-token-caption')].filter(c => { const r = c.getBoundingClientRect(); if (!r.width) return false; const nx = Math.max(r.left, Math.min(f.right, r.right)), ny = Math.max(r.top, Math.min(f.bottom, r.bottom)); return Math.hypot(nx - f.right, ny - f.bottom) < S; }).map(c => c.textContent); });
+    check('Follow-up: the tool fan (\u2726) doesn\u2019t cover a creature\u2019s name either (desk 1024\u00d7640, dragon in the corner)', Array.isArray(tf) && tf.length === 0, tf);
+    const up = await q.evaluate(() => [...document.querySelectorAll('#dmMapGrid .map-token-caption.mi-cap-up, #dmMapGrid .map-token-caption.mi-cap-l')].map(c => c.textContent));
+    await q.mouse.click(300, 300); await q.waitForTimeout(400); // a tap on the map closes the fan
+    const back = await q.evaluate(() => [...document.querySelectorAll('#dmMapGrid .map-token-caption.mi-cap-up, #dmMapGrid .map-token-caption.mi-cap-l')].map(c => c.textContent));
+    check('Follow-up: names go back under their tokens once nothing covers them', up.indexOf('Adult Red Dragon') >= 0 && back.length === 0 && !(await q.evaluate(() => !!document.querySelector('.c2-fan.open'))), { open: up, closed: back });
+    await desk.ctx.close();
   }
 
   console.log('\n' + results.filter(r => r.ok).length + '/' + results.length + ' passed' + (errs.length ? '  page errors: ' + JSON.stringify(errs.slice(0, 5)) : ''));

@@ -177,7 +177,6 @@
         radius: L.radius || p.radius, colour: parseColour(L.colour || L.color, p.colour), flicker: L.flicker != null ? L.flicker : p.flicker,
         speed: L.speed || p.speed, intensity: L.intensity != null ? L.intensity : 1, seed: L.seed != null ? L.seed : (hashStr(id) % 10000) / 100, type: L.type || 'torch', occlude: L.occlude !== false,
         dmOnly: !!L.dmOnly }; // Hearth 1.7.1: a DM-only light (carried by a creature the players can't see) glows on the DM's light layer only — no embers, smoke or sound
-
       lights.push(l); kick(); return l.id;
     }
     function removeLight(id) { for (var i = lights.length - 1; i >= 0; i--) if (lights[i].id === id || id === '*') lights.splice(i, 1); kick(); }
