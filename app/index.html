@@ -55539,6 +55539,11 @@ function aoeLabelPos(a, ox, oy, len, ang, enc, withControls, text, cell) {
   }
   return best;
 }
+// UI polish — a template button's icon: one of the UI's gold line icons (no emoji); the circle under it takes the tap.
+function aoeIconSVG(name, cx, cy) {
+  const I = (typeof window !== 'undefined' && window.HEARTH_ICONS) || {};
+  return `<svg class="dm-aoe-svgico" x="${cx - 8}" y="${cy - 8}" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">${I[name] || ''}</svg>`;
+}
 function aoeShapeSVG(a, cell, withControls, enc) {
   const color = a.color || AOE_COLORS[a.kind] || '#d4673a';
   // v0.21.100 — if attached to a token and enc is provided, use the token's
@@ -55604,17 +55609,17 @@ function aoeShapeSVG(a, cell, withControls, enc) {
   const isAnchored = !!a.attachedTo;
   const anchorBtn = (withControls && a.kind === 'circle')
     ? `<circle class="dm-aoe-btn dm-aoe-anchor ${isAnchored ? 'on' : ''}" data-aoe-anchor="${a.id}" cx="64" cy="0" r="13"/>
-       <text class="dm-aoe-btn-ico" data-aoe-anchor="${a.id}" x="64" y="5">⚓</text>`
+       ${aoeIconSVG('anchor', 64, 0)}`
     : '';
   return `<g class="dm-aoe-shape ${a.pinned ? 'pinned' : ''} ${isAnchored ? 'anchored' : ''}" data-aoe-id="${a.id}" style="--aoe-color:${color};">
     ${shape}
-    ${ftLabel ? (() => { const lp = aoeLabelPos(a, ox, oy, len, ang, enc, withControls, ftLabel + (isAnchored ? ' ⚓' : ''), cell); return `<text class="dm-aoe-label" x="${lp.x.toFixed(1)}" y="${lp.y.toFixed(1)}">${escape(ftLabel)}${isAnchored ? ' ⚓' : ''}</text>`; })() : ''}
+    ${ftLabel ? (() => { const lp = aoeLabelPos(a, ox, oy, len, ang, enc, withControls, ftLabel + (isAnchored ? ' \u00b7 on token' : ''), cell); return `<text class="dm-aoe-label" x="${lp.x.toFixed(1)}" y="${lp.y.toFixed(1)}">${escape(ftLabel)}${isAnchored ? ' \u00b7 on token' : ''}</text>`; })() : ''}
     ${rotHandle}
     ${moveHandle}
     ${movingOn ? `<circle class="dm-aoe-done" data-aoe-done="${a.id}" cx="${ox.toFixed(1)}" cy="${(oy + 42).toFixed(1)}" r="16"/><text class="dm-aoe-done-ico" data-aoe-done="${a.id}" x="${ox.toFixed(1)}" y="${(oy + 48).toFixed(1)}">\u2713</text>` : ''}
     ${withControls ? `<g class="dm-aoe-ctrls" transform="translate(${ox + 24},${oy + 24})">
       <circle class="dm-aoe-btn dm-aoe-pin ${a.pinned ? 'on' : ''}" data-aoe-pin="${a.id}" cx="0" cy="0" r="13"/>
-      <text class="dm-aoe-btn-ico" data-aoe-pin="${a.id}" x="0" y="5">${a.pinned ? '📌' : '📍'}</text>
+      ${aoeIconSVG('pin', 0, 0)}
       <circle class="dm-aoe-btn dm-aoe-del" data-aoe-del="${a.id}" cx="32" cy="0" r="13"/>
       <text class="dm-aoe-btn-ico" data-aoe-del="${a.id}" x="32" y="5">✕</text>
       ${anchorBtn}

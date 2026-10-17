@@ -229,26 +229,33 @@
 
   // ---------- no emoji (hard rule 4) ----------
   // The app's own markup on the screens this build doesn't redraw still carries a few emoji glyphs; swap
-  // each for the matching SVG icon (or drop it). The 1.7.0 DM map/encounter screens are left alone (Lee's
-  // team is testing them), and so is anything inside them.
-  var EMO = { '📷': 'camera', '📸': 'camera', '🖼': 'image', '📝': 'pencil', '⚔': 'sword', '🗡': 'sword', '✦': 'sparkle', '✨': 'sparkle', '⚡': 'bolt', '⛨': 'shield', '🛡': 'shield', '🎒': 'pack', '☆': 'star', '★': 'star', '⭐': 'star', '📜': 'scroll', '🎲': 'd20', '❤': 'heart', '🔥': 'flame', '🗺': 'map', '📖': 'book', '🔒': 'lock', '🔍': 'search', '⚙': 'gear', '💾': 'download', '📤': 'upload', '📥': 'download', '🏆': 'trophy', '🔔': 'bell', '✏': 'pencil', '🧪': 'potion', '💀': 'skull', '👁': 'eye', '🪄': 'wand', '🔨': 'anvil', '⚒': 'anvil', '🌙': 'moon', '☀': 'sun', '⏱': 'clock', '🕐': 'clock', '💰': 'coins', '🪙': 'coins', '🎉': 'sparkle', '✓': 'check', '✔': 'check', '✅': 'check' };
+  // each for the matching SVG icon (or drop it). On the DM map and encounter screens the icons are gold; the
+  // battle board itself (#dmMapGrid: tokens, fog, templates) is skipped (no emoji there, and it redraws a lot) -
+  // its template buttons draw SVG icons in aoeShapeSVG instead.
+  var EMO = { '📷': 'camera', '📸': 'camera', '🖼': 'image', '📝': 'pencil', '⚔': 'sword', '🗡': 'sword', '✦': 'sparkle', '✨': 'sparkle', '⚡': 'bolt', '⛨': 'shield', '🛡': 'shield', '🎒': 'pack', '☆': 'star', '★': 'star', '⭐': 'star', '📜': 'scroll', '🎲': 'd20', '❤': 'heart', '🔥': 'flame', '🗺': 'map', '📖': 'book', '🔒': 'lock', '🔍': 'search', '⚙': 'gear', '💾': 'download', '📤': 'upload', '📥': 'download', '🏆': 'trophy', '🔔': 'bell', '✏': 'pencil', '🧪': 'potion', '💀': 'skull', '👁': 'eye', '🪄': 'wand', '🔨': 'anvil', '⚒': 'anvil', '🌙': 'moon', '☀': 'sun', '⏱': 'clock', '🕐': 'clock', '💰': 'coins', '🪙': 'coins', '🎉': 'sparkle', '✓': 'check', '✔': 'check', '✅': 'check',
+    // DM map / encounter screens
+    '▶': 'play', '✎': 'pencil', '🏷': 'tag', '📓': 'book', '📚': 'map', '🔗': 'link', '🌫': 'cloud', '👆': 'hand', '👥': 'users', '📏': 'ruler',
+    '☐': 'box', '☑': 'boxcheck', '📍': 'pin', '📌': 'pin', '⚓': 'anchor', '🙈': 'eyeoff', '🥕': 'moon', '⬇': 'download',
+    '🔴': 'dot:hostile', '🟢': 'dot:ally', '⚪': 'dot:neutral' };
   // real emoji (Extended_Pictographic, minus ©, ®, ™, ‼, ⁉, ℹ and the plain arrows), plus the three dingbats
   // the app uses as icons (✦ ☆ ★). Plain text marks such as ✓ and ✕ stay as text.
   var EMO_SRC = '(?:(?![\\u00A9\\u00AE\\u203C\\u2049\\u2122\\u2139\\u2194-\\u21AA\\u2713\\u2715\\u2716\\u2717])\\p{Extended_Pictographic}|[\\u2726\\u2605\\u2606])\\uFE0F?';
   var EMO_RE = new RegExp(EMO_SRC, 'u'), EMO_RE_G = new RegExp(EMO_SRC, 'gu');
-  function emoSkip() { var r = route(); return r === 'map' || r === 'encounter'; }
+  function emoDm() { var r = route(); return r === 'map' || r === 'encounter'; }
   function deEmoji(root) {
-    if (!root || emoSkip()) return;
+    if (!root || (root.closest && root.closest('#dmMapGrid'))) return;
+    var dm = emoDm();
     var w = D.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), n, hit = [];
     while ((n = w.nextNode())) { if (EMO_RE.test(n.nodeValue)) hit.push(n); }
     hit.forEach(function (t) {
-      var p = t.parentElement; if (!p || p.closest('script,style,textarea,.dm-map-shell,.dm-map,[data-u-keep-emoji]')) return;
+      var p = t.parentElement; if (!p || p.closest('script,style,textarea,#dmMapGrid,[data-u-keep-emoji]') || p.namespaceURI === 'http://www.w3.org/2000/svg') return;
       if (p.tagName === 'OPTION' || p.tagName === 'TITLE') { t.nodeValue = t.nodeValue.replace(EMO_RE_G, '').replace(/^\s+/, ''); return; }
       var f = D.createDocumentFragment(), last = 0, s = t.nodeValue; EMO_RE_G.lastIndex = 0; var m;
       while ((m = EMO_RE_G.exec(s))) {
         if (m.index > last) f.appendChild(D.createTextNode(s.slice(last, m.index)));
-        var k = EMO[m[0].replace('\uFE0F', '')];
-        if (k && I[k]) { var sp = D.createElement('span'); sp.className = 'u-emo'; sp.setAttribute('aria-hidden', 'true'); sp.innerHTML = '<svg viewBox="0 0 24 24" focusable="false">' + I[k] + '</svg>'; f.appendChild(sp); }
+        var k = EMO[m[0].replace('\uFE0F', '')], dot = k && k.indexOf('dot:') === 0;
+        if (dot) { var sd = D.createElement('span'); sd.className = 'u-emo u-emo-dot u-emo-' + k.slice(4); sd.setAttribute('aria-hidden', 'true'); sd.innerHTML = '<svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="6.5"/></svg>'; f.appendChild(sd); }
+        else if (k && I[k]) { var sp = D.createElement('span'); sp.className = 'u-emo' + (dm ? ' u-emo-gold' : ''); sp.setAttribute('aria-hidden', 'true'); sp.innerHTML = '<svg viewBox="0 0 24 24" focusable="false">' + I[k] + '</svg>'; f.appendChild(sp); }
         last = m.index + m[0].length;
       }
       if (last < s.length) f.appendChild(D.createTextNode(s.slice(last)));
@@ -260,7 +267,6 @@
   function watchEmoji() {
     if (emoMo || !W.MutationObserver) return;
     emoMo = new MutationObserver(function (list) {
-      if (emoSkip()) return;
       list.forEach(function (m) { if (m.type === 'characterData') { if (m.target.parentElement && EMO_RE.test(m.target.nodeValue)) deEmoji(m.target.parentElement); return; } m.addedNodes.forEach(function (a) { if (a.nodeType === 1) deEmoji(a); else if (a.nodeType === 3 && a.parentElement && EMO_RE.test(a.nodeValue)) deEmoji(a.parentElement); }); });
     });
     emoMo.observe(D.body, { childList: true, subtree: true, characterData: true });
