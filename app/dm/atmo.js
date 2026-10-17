@@ -97,7 +97,7 @@
     if (st.time !== s.t) atm.setTime(s.t);
     if (Math.abs(st.darkness - s.d) > 1e-3) atm.setDarkness(s.d);
     if (Math.abs(st.windDir - s.wind) > 1e-3) atm.setWind(s.wind);
-    var list = (s.mapLights && meta ? mapLights(meta) : []).concat((s.lights || []).map(function (l) { return { id: 'tok-' + l.id, type: l.type, tok: l.id }; }));
+    var list = (s.mapLights && meta ? mapLights(meta) : []).concat((s.lights || []).map(function (l) { return l.dmOnly ? { id: 'tok-' + l.id, type: l.type, tok: l.id, dmOnly: true } : { id: 'tok-' + l.id, type: l.type, tok: l.id }; }));
     var lk = JSON.stringify(list);
     if (k.lights !== lk) {
       k.lights = lk; atm.removeLight('*');
@@ -134,13 +134,17 @@
   function encNow() { return typeof loadEncounter === 'function' ? loadEncounter() : null; }
   function hearthId(enc) { return typeof encPaintedId === 'function' ? encPaintedId(enc) || null : null; }
   function metaFor(enc) { return typeof paintedMetaFor === 'function' ? paintedMetaFor(enc) : null; }
+  // v1.7.1 — a light carried by a creature the players can't see (hidden, or under fog: the shared
+  // playerVisibility test) is DM-only: never sent to the projector, and on the DM screen it glows but
+  // throws no embers or smoke (so both screens' particle simulations stay identical) and makes no sound.
   function visibleLights(enc, a, forPlayers) {
-    var out = [];
+    var out = [], vis = typeof W.playerVisibility === 'function' ? W.playerVisibility(enc) : function (c) { return !c.hiddenFromPlayers; };
     (enc.combatants || []).forEach(function (c) {
       var t = a.lights[c.id]; if (!t || c.mapX == null) return;
       if (c.kind === 'monster' && c.dead) return;
-      if (forPlayers && c.hiddenFromPlayers) return;
-      out.push({ id: c.id, type: t });
+      var seen = vis(c);
+      if (forPlayers && !seen) return;
+      out.push(seen ? { id: c.id, type: t } : { id: c.id, type: t, dmOnly: true });
     });
     return out;
   }
