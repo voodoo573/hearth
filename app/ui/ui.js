@@ -20,7 +20,7 @@
       return 'class="' + c.split(/\s+/).filter(Boolean).map(function (k) { return k.charAt(0) === '!' ? k.slice(1) : 'u-' + k; }).join(' ') + '"';
     });
   }
-  // CSS prefixer for screen styles written with Jenny's class names (one level of @media supported)
+  // CSS prefixer for screen styles written with Jenny's class names (one level of @media / @supports / @container supported)
   function pxCss(css) {
     var out = '', i = 0;
     function selFix(sel) {
@@ -36,7 +36,7 @@
     while (i < css.length) {
       var open = css.indexOf('{', i); if (open < 0) break;
       var head = css.slice(i, open).trim();
-      if (head.indexOf('@media') === 0 || head.indexOf('@supports') === 0) {
+      if (head.indexOf('@media') === 0 || head.indexOf('@supports') === 0 || head.indexOf('@container') === 0) {
         var j = open + 1, d = 1; while (j < css.length && d) { if (css[j] === '{') d++; else if (css[j] === '}') d--; j++; }
         out += head + '{' + pxCss(css.slice(open + 1, j - 1)) + '}\n'; i = j; continue;
       }

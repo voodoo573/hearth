@@ -48,12 +48,12 @@
         '<div class="hstack gap4">' + playerToks(g) + '<span class="t-meta">' + (L.live ? L.connected + ' of ' + Math.max(np, L.known) + ' connected' : plural(np, 'player') + ' · level ' + (g.level || 1)) + '</span></div>' +
         (e ? '<div class="card sunk nextup"><div class="hstack gap3"><span class="gold">' + ic('sword') + '</span><div class="f1" style="min-width:0"><div class="t-h3 ell">Next up: ' + esc(e.name || 'Encounter') + '</div><div class="t-meta">' + plural(ms.length, 'creature') + (e.mapId ? ' · map ready' : '') + (e.fog ? ' · fog' : '') + '</div></div></div></div>' : '') +
         (note ? '<div class="t-body ell2" style="font-size:13px"><span class="t-label" style="margin-right:6px">Notes</span>' + esc(note.title ? note.title + ': ' : '') + esc(String(note.body || '').slice(0, 160)) + '</div>' : '') +
-        '<div class="hstack gap3" style="margin-top:auto">' + btn('Run game', 'primary lg', 'crown', 'data-home-opengame="' + esc(g.id) + '"') + btn('Projector', 'lg', 'tv', 'data-u-act="dm-projector" data-id="' + esc(g.id) + '"') +
+        '<div class="gact">' + btn('Run game', 'primary lg', 'crown', 'data-home-opengame="' + esc(g.id) + '"') + btn('Projector', 'lg gproj', 'tv', 'data-u-act="dm-projector" data-id="' + esc(g.id) + '" aria-label="Projector" title="Projector"') +
         '<button type="button" class="btn lg sq48" data-u-act="livelink" data-id="' + esc(g.id) + '" aria-label="Live game link">' + ic('link') + '</button></div></div></div>';
     }
     return '<div class="card gm gm2"><span class="gimg" style="' + mapStyle(e) + '"></span><div class="bd"><div class="hstack gap2">' + head + '<span class="mla">' + del + '</span></div><div class="t-h2 ell">' + esc(g.name) + '</div><div class="t-meta">' + plural(np, 'player') + ' · ' + plural((g.encounters || []).length, 'encounter') + '</div>' +
       '<div style="margin-top:6px">' + playerToks(g) + '</div>' + (e ? '<div class="t-body" style="font-size:13px">' + esc(e.name || 'Encounter') + ' is set up' + (ms.length ? ' with ' + plural(ms.length, 'creature') : '') + '.</div>' : '') +
-      '<div class="hstack gap3" style="margin-top:auto">' + btn('Resume', '', 'sword', 'data-home-opengame="' + esc(g.id) + '"') + btn('Live link', 'ghost', 'link', 'data-u-act="livelink" data-id="' + esc(g.id) + '"') + '</div></div></div>';
+      '<div class="gact">' + btn('Resume', '', 'sword', 'data-home-opengame="' + esc(g.id) + '"') + btn('Live link', 'ghost', 'link', 'data-u-act="livelink" data-id="' + esc(g.id) + '"') + '</div></div></div>';
   }
   function encRow(x) {
     var ms = x.e.monsters || [];
@@ -124,8 +124,14 @@
     },
     css: [
       '.dmg{grid-template-columns:minmax(0,1fr) 400px;align-items:stretch;min-height:calc(100vh - 88px - 64px)}',
-      '.gtop{grid-template-columns:1.5fr 1fr}.gbot{grid-template-columns:minmax(0,1fr) 400px;flex:1;min-height:0}',
-      '.gm{display:grid;grid-template-columns:300px minmax(0,1fr);overflow:hidden;padding:0;min-height:300px}.gm2{grid-template-columns:200px minmax(0,1fr)}',
+      '.gtop{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}.gbot{grid-template-columns:minmax(0,1fr) 400px;flex:1;min-height:0}',
+      // Game cards: the map column gives way before the actions do (the "Game 1" overflow); the actions wrap and the
+      // Projector button drops its label in a narrow card, so nothing is ever clipped and every target stays 44px+.
+      '.gm{display:grid;grid-template-columns:clamp(120px,40%,300px) minmax(0,1fr);overflow:hidden;padding:0;min-height:300px}.gm2{grid-template-columns:clamp(100px,36%,200px) minmax(0,1fr)}',
+      '.gm .bd{container-type:inline-size}',
+      '.gact{display:flex;flex-wrap:wrap;gap:12px;margin-top:auto;align-items:center}.gact>*{flex:none}.gact>.btn:not(.lg){height:44px;min-height:44px}',
+      '@container (max-width: 340px){.gact .gproj{width:52px;padding:0;justify-content:center}.gact .gproj>span{display:none}.gact .gproj svg{margin:0}}',
+      '@media (max-width: 1599px){.dmg{grid-template-columns:minmax(0,1fr) 340px}.gtop{grid-template-columns:minmax(0,1fr)}.gbot{grid-template-columns:minmax(0,1fr)}.gm{min-height:240px}}',
       '.gimg{display:block;background-color:var(--page-deep);background-size:600% 600%;border-right:1px solid var(--rim);min-height:100%}',
       '.gm .bd{padding:22px;display:flex;flex-direction:column;gap:10px;min-width:0}',
       '.gdel{width:36px;height:36px;color:var(--ink-faded)}',
