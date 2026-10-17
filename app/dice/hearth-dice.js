@@ -167,7 +167,7 @@ function arenaFor(W,H,compact){
   var cam=new T.PerspectiveCamera(32,W/H,.1,100); cam.position.set(0,16,6.2); cam.lookAt(0,0,0.4); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
   var ray=new T.Raycaster(), plane=new T.Plane(UP,0);
   function hit(nx,ny){ ray.setFromCamera(new T.Vector2(nx,ny),cam); var p=new T.Vector3(); ray.ray.intersectPlane(plane,p); return p; }
-  var yb=compact?-0.92:-0.40, top=hit(0,0.86), bl=hit(-0.94,yb), edge=hit(-0.96,-1);
+  var yb=compact?-0.92:-0.40, top=hit(0,0.32), bl=hit(-0.94,yb), edge=hit(-0.96,-1);
   // portrait table: dice enter below the bottom edge (zEdge) and settle between zTop and zBot (above the result text)
   return {cam:cam, hw:Math.min(Math.abs(bl.x),Math.abs(edge.x)), zTop:top.z, zBot:bl.z, zEdge:edge.z, compact:compact};
 }
@@ -365,7 +365,7 @@ function roll(opts){
     document.body.appendChild(ov);
     var W=compact?150:innerWidth, Hc=compact?120:innerHeight;
     renderer.setSize(W,Hc,false); cv.style.width=W+'px'; cv.style.height=Hc+'px';
-    if(!compact) ov.style.background='rgba(0,0,0,'+(big?0.55:0.3)+')';
+    if(!compact) ov.style.background='rgba(0,0,0,'+(big?0.55:0.45)+')';
     // plan with physics, then remap faces so the resting face = result
     var arena=arenaFor(W,Hc,compact), cam=arena.cam, units=unitsOf(list);
     var early=false, cancelled=false, meshesReady=false, hold=0;

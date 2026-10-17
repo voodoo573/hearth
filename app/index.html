@@ -1318,7 +1318,7 @@ try {
   .dm-map-scroll.panning { cursor: grabbing; }
   .dm-map-zoom { transform-origin: top left; }
   /* v0.21.62 — AoE template overlay: above map+grid, below tokens. */
-  .dm-aoe-layer { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: visible; }
+  .dm-aoe-layer { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
   .dm-aura-layer { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: visible; }
   .dm-aoe-shape > circle, .dm-aoe-shape > rect, .dm-aoe-shape > polygon {
     fill: var(--aoe-color); fill-opacity: 0.28; stroke: var(--aoe-color); stroke-width: 2; stroke-opacity: 0.9;
@@ -7929,6 +7929,21 @@ body.hearth-wide .app {
 .link-acct-unverified { color: #e8b04a; }
 
 
+
+/* v1.6.0 — condition badges + spell areas */
+.he-badge { display:inline-flex; vertical-align:middle; line-height:0; }
+.dm-status-pill .he-badge { margin-right: 3px; }
+.he-tok-badges { position:absolute; top:-6px; right:-6px; display:flex; flex-wrap:wrap; justify-content:flex-end; gap:1px; max-width: 44px; pointer-events:none; z-index:4; }
+.map-token.has-ht { background:none !important; border:none !important; box-shadow:none !important; display:flex; align-items:center; justify-content:center; overflow:visible; }
+.map-token.has-ht > .ht-token { flex:none; }
+.map-token.has-ht .map-token-num { z-index:3; top:auto !important; right:auto !important; bottom:-4px !important; left:-4px !important; }
+html:root[data-palette][data-palette] body .dm-tile-mini.dm-tile-token-btn.has-img, html body button.dm-tile-token-btn.has-img { background: var(--tok-img) center / cover no-repeat transparent !important; }
+.token-lib-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(52px, 1fr)); gap:6px; margin:6px 0 10px; }
+.token-lib-btn { padding:3px; border-radius:50%; aspect-ratio:1; background:transparent; border:2px solid transparent; cursor:pointer; }
+.token-lib-btn img { width:100%; height:100%; border-radius:50%; display:block; }
+.token-lib-btn.active, .token-lib-btn:focus-visible { border-color: var(--accent, #e3b04b); }
+.he-aoe-layer { position:absolute; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+.he-aoe-layer canvas { pointer-events:none; }
 /* v1.6.0 — dice settings + DM roll log */
 body.hd-rolling #rollOutcomeBackdrop, body.hd-rolling .hearth-roll-toast, body.hd-rolling .death-outcome-backdrop { opacity: 0 !important; transition: none !important; }
 #rollOutcomeBackdrop, .death-outcome-backdrop { transition: opacity .25s; }
@@ -7941,11 +7956,11 @@ body.hd-rolling #rollOutcomeBackdrop, body.hd-rolling .hearth-roll-toast, body.h
 .hearth-rolllog .rl-tools select { min-height: 40px; margin-left: 4px; }
 .hearth-rolllog .rl-help { font-size: 12px; opacity: .85; margin-bottom: 6px; }
 .hearth-rolllog .rl-list { overflow:auto; flex:1; min-height: 120px; }
-.hearth-rolllog .rl-row { display:grid; grid-template-columns: 78px 1fr 1.6fr auto; grid-template-areas: "time who label total" "time dice dice total"; gap: 2px 8px; padding: 7px 8px; border-bottom: 1px solid var(--rs-line, rgba(127,127,127,.25)); align-items:center; font-size: 13px; }
-.hearth-rolllog .rl-time { grid-area: time; font-family: ui-monospace, monospace; font-size: 11px; opacity: .8; }
+.hearth-rolllog .rl-row { display:grid; grid-template-columns: 78px 120px 1fr auto; grid-template-areas: "time who label total" "time dice dice total"; gap: 2px 8px; padding: 7px 8px; border-bottom: 1px solid var(--rs-line, rgba(127,127,127,.25)); align-items:center; font-size: 13px; }
+.hearth-rolllog .rl-time { grid-area: time; font-family: var(--rs-sans, system-ui, sans-serif); font-variant-numeric: tabular-nums; font-size: 11px; opacity: .8; }
 .hearth-rolllog .rl-who { grid-area: who; font-weight: 700; }
 .hearth-rolllog .rl-label { grid-area: label; }
-.hearth-rolllog .rl-dice { grid-area: dice; font-family: ui-monospace, monospace; font-size: 12px; opacity: .85; }
+.hearth-rolllog .rl-dice { grid-area: dice; font-family: var(--rs-sans, system-ui, sans-serif); font-variant-numeric: tabular-nums; font-size: 12px; opacity: .85; }
 .hearth-rolllog .rl-total { grid-area: total; font-size: 20px; font-weight: 700; text-align:right; }
 .hearth-rolllog .rl-row.nat20 { background: rgba(212,160,40,.18); box-shadow: inset 4px 0 0 #d4a028; }
 .hearth-rolllog .rl-row.nat1 { background: rgba(200,40,30,.16); box-shadow: inset 4px 0 0 #c8281e; }
@@ -7953,6 +7968,8 @@ body.hd-rolling #rollOutcomeBackdrop, body.hd-rolling .hearth-roll-toast, body.h
 .hearth-rolllog .rl-row.nat20 .rl-nat { background:#d4a028; color:#1a1208; }
 .hearth-rolllog .rl-row.nat1 .rl-nat { background:#c8281e; color:#fff; }
 .hearth-rolllog .rl-manual { font-size: 11px; padding: 1px 6px; border-radius: 999px; border: 1px dashed currentColor; opacity: .9; white-space: nowrap; }
+.hearth-rolllog .rl-row > span { text-align:left !important; min-width:0; }
+.hearth-rolllog .rl-row > .rl-total { text-align:right !important; }
 .hearth-rolllog .rl-empty { padding: 20px; text-align:center; opacity:.8; }
 @media (max-width: 520px) { .hearth-rolllog .rl-row { grid-template-columns: 62px 1fr auto; grid-template-areas: "time who total" "label label total" "dice dice total"; } }
 </style>
@@ -10986,6 +11003,8 @@ html[data-palette="scott-ultramarine"][data-texture]:not([data-texture="brushed"
 html[data-palette="scott-marine"][data-texture]:not([data-texture="none"]) { --tex-grain: rgba(255, 235, 210, .04); --tex-shade: rgba(0, 0, 0, .2); }
 html[data-texture]:not([data-palette]):not([data-theme="dark"]):not([data-texture="parchment"]) { --tex-wash: rgba(227, 207, 159, .78); }
 </style>
+<script src="effects/hearth-effects.js"></script>
+<script src="tokens/hearth-tokens.js"></script>
 <style id="hearth-reskin">/* @reskin */
 /* Hearth 1.6.0 — Jenny's "Hearth" signature reskin (built against v1.4.1; 1.5.x class names added:
    .vital-stat, .ability, .stat-cell-score, .section-label; red .danger buttons (End Rage) and pips in the parchment strips keep their colours). */
@@ -25838,6 +25857,8 @@ function tokenImageDialogHTML() {
         <input class="hearth-qol-file" id="tokenImageFile" type="file" accept="image/*" style="display:none;" />
         <button class="btn primary" data-token-img-choose="1" style="width:100%;">${hasImg ? 'Change uploaded image' : 'Upload an image'}</button>
         ${hasImg ? `<button class="btn danger" data-token-img-remove="${c.id}" style="width:100%;margin-top:6px;">Remove image</button>` : ''}
+        <div class="token-icon-head">Hearth library</div>
+        <div class="token-lib-grid">${HEARTH_TOKEN_LIBRARY.map(k => `<button class="token-lib-btn ${c.tokenImage === hearthTokenLibPath(k) ? 'active' : ''}" data-token-lib="${k}" title="${k.replace(/-/g, ' ')}"><img src="${hearthTokenLibPath(k)}" alt="${k.replace(/-/g, ' ')}" loading="lazy" draggable="false"></button>`).join('')}</div>
         <div class="token-icon-head">Or pick a silhouette</div>
         <div class="token-icon-grid">${iconGrid}</div>
         <div class="dialog-actions" style="margin-top:12px;"><button class="btn" data-token-img-done="1">Done</button></div>
@@ -29183,6 +29204,59 @@ function renderRollToast() {
   `;
 }
 // ============================================================
+// v1.6.0 — Jenny's condition badges + animated spell areas (app/effects/hearth-effects.js)
+// ============================================================
+function hearthCondBadgeHTML(name, size) {
+  try { const svg = window.HearthEffects && HearthEffects.conditionSVG(String(name || '').toLowerCase(), size || 20); return svg ? `<span class="he-badge" role="img" aria-label="${escape(name)}">${svg}</span>` : ''; } catch (e) { return ''; }
+}
+function hearthEffectsSync() {
+  if (window.HearthEffects) HearthEffects.animationsOff = hearthDicePrefs().anim === 'off' || !!(window.hearthReducedMotion && window.hearthReducedMotion());
+}
+let _heOverlays = [];
+function hearthEffectsDecorate() {
+  if (typeof document === 'undefined' || !window.HearthEffects) return;
+  hearthEffectsSync();
+  _heOverlays.forEach(cv => { try { cv.destroy(); cv.remove(); } catch (e) {} });
+  _heOverlays = [];
+  let enc = null;
+  const getEnc = () => enc || (enc = loadEncounter());
+  // Spell areas on the DM battle map.
+  const layer = document.getElementById('heAoeLayer');
+  if (layer) {
+    const cell = +layer.dataset.cell || 34;
+    (getEnc().aoes || []).forEach(a => {
+      if (!a.element) return;
+      const pos = typeof resolveAoePos === 'function' ? resolveAoePos(a, getEnc()) : { x: a.x, y: a.y };
+      const ft = (a.len || 1) * 5;
+      const shape = a.kind === 'circle' ? 'sphere' : (a.kind === 'square' ? 'cube' : a.kind);
+      try {
+        const cv = HearthEffects.createAreaOverlay({ shape, size: ft, element: a.element, angle: (a.angle || 0) * 180 / Math.PI, gridPx: cell });
+        cv.dataset.aoe = a.id;
+        cv.style.position = 'absolute';
+        cv.style.left = (pos.x * cell - cv.origin.x) + 'px'; cv.style.top = (pos.y * cell - cv.origin.y) + 'px';
+        layer.appendChild(cv); _heOverlays.push(cv);
+      } catch (e) { console.warn('area overlay', e); }
+    });
+  }
+  // Condition badges on map tokens (top-right cluster, 20px).
+  const toks = document.querySelectorAll('[data-map-token]');
+  if (toks.length) {
+    const byId = {}; (getEnc().combatants || []).forEach(c => { byId[c.id] = c; });
+    toks.forEach(t => {
+      const c = byId[t.getAttribute('data-map-token')];
+      t.querySelectorAll('.he-tok-badges').forEach(x => x.remove());
+      const sts = (c && c.statuses || []).concat(c && c.concentrating ? ['concentrating'] : []);
+      if (t.querySelector('.ht-token')) return; // framed tokens draw their own rim badges
+      const html = sts.map(s => hearthCondBadgeHTML(s, 20)).filter(Boolean).slice(0, 4).join('');
+      if (html) t.insertAdjacentHTML('beforeend', `<div class="he-tok-badges">${html}</div>`);
+    });
+  }
+}
+
+// Decorate after every render (the map and tiles are rebuilt by render()).
+if (typeof render === 'function') { const _hearthRender160 = render; render = function () { const out = _hearthRender160.apply(this, arguments); try { hearthEffectsDecorate(); } catch (e) { console.warn('effects', e); } return out; }; }
+
+// ============================================================
 // v1.6.0 — animated dice (Jenny's HearthDice v0.5, vendored in ./dice/)
 // and the shared roll feed behind the DM's roll log.
 // Every real app roll calls hearthDiceRoll(spec) with the dice it ACTUALLY
@@ -29335,14 +29409,16 @@ function hearthRecordRoll(spec) {
   // in a short queue and are sent once the DM welcomes the phone back.
   const j = HearthLink && HearthLink.join;
   if (j && j.token) {
-    if (j.status === 'linked' && j.conn) { try { j.conn.send({ t: 'roll', roll: entry }); } catch (e) { (j.rollQueue = j.rollQueue || []).push(entry); } }
-    else { j.rollQueue = (j.rollQueue || []).concat(entry).slice(-50); }
+    if (j.status === 'linked' && j.conn && j.conn.open !== false) { try { j.conn.send({ t: 'roll', roll: entry }); } catch (e) { hearthRollQueue.push(entry); } }
+    else { hearthRollQueue = hearthRollQueue.concat(entry).slice(-50); }
   }
   return entry;
 }
+// Kept outside HearthLink.join: a reconnect builds a fresh join object.
+let hearthRollQueue = [];
 function linkJoinFlushRolls(j) {
-  if (!j || !j.conn || !j.rollQueue || !j.rollQueue.length) return;
-  const q = j.rollQueue; j.rollQueue = [];
+  if (!j || !j.conn || !hearthRollQueue.length) return;
+  const q = hearthRollQueue; hearthRollQueue = [];
   q.forEach(r => { try { j.conn.send({ t: 'roll', roll: r }); } catch (e) {} });
 }
 // DM side: clean a roll that came over the link. The name shown is the one
@@ -31053,6 +31129,9 @@ function hearthOpenLegal() {
           <li>Map animations: procedural code, original.</li>
           <li>Colour themes and textures (leather, stone, parchment, scales, weave, stars): original CSS.</li>
           <li>“Hearth” signature look and its leather, parchment and charcoal textures: original procedural work by Jenny. No third-party images or fonts. The banner shield is the app icon above.</li>
+          <li>Condition badges and spell area overlays: original hand-written SVG and procedural canvas code by Jenny. No third-party icons, icon fonts or images.</li>
+          <li>Token frames and states: original hand-written SVG/CSS by Jenny. Condition badges are the HearthEffects set above.</li>
+          <li>Token portrait library (32 creatures): AI-generated with Grok Bot image generation, art-directed by Jenny; cropped and circle-masked by Jenny's own scripts. All original creatures with generic, SRD-safe names; no Wizards of the Coast product-identity monsters.</li>
           <li>Animated 3D dice: designed by Jenny, built on three.js and cannon-es (MIT, listed above).</li>
         </ul>
         <details class="hearth-legal-licence"><summary>MIT License (full text)</summary><pre>${escape(L.mit)}</pre></details>
@@ -34167,6 +34246,9 @@ function wireDMEncounter() {
   document.querySelectorAll('[data-token-icon]').forEach(b => {
     b.addEventListener('click', () => { dmSetTokenIcon(state.ui.tokenImageFor, b.dataset.tokenIcon); render(); });
   });
+  document.querySelectorAll('[data-token-lib]').forEach(b => {
+    b.addEventListener('click', () => { if (HEARTH_TOKEN_LIBRARY.includes(b.dataset.tokenLib)) { dmSetTokenImage(state.ui.tokenImageFor, hearthTokenLibPath(b.dataset.tokenLib)); render(); } });
+  });
   // v0.46.3 — Hide an enemy from the players' screen.
   document.querySelectorAll('[data-dm-hide-enemy]').forEach(b => {
     b.addEventListener('click', () => {
@@ -34908,7 +34990,7 @@ function dmEncListHTML(order, turnId) {
                   ` : ''}
                   ${c.statuses && c.statuses.length ? `
                     <div class="dm-tile-statuses">
-                      ${c.statuses.map(s => `<span class="dm-status-pill" data-dm-status-remove="${c.id}|${escape(s)}">${escape(s)} ✕</span>`).join('')}
+                      ${c.statuses.map(s => `<span class="dm-status-pill" data-dm-status-remove="${c.id}|${escape(s)}">${hearthCondBadgeHTML(s, 16)}${escape(s)} ✕</span>`).join('')}
                     </div>
                   ` : ''}
                 <div class="dm-tile-actions">
@@ -34924,7 +35006,7 @@ function dmEncListHTML(order, turnId) {
                   ${c.kind === 'player' ? `<button class="dm-tile-mini dm-tile-vision-btn ${c.vision ? 'on' : ''}" data-dm-vision="${c.id}" title="Darkvision radius (auto-reveals fog): ${c.vision ? c.vision + 'ft' : 'off'} — tap to change">${c.vision ? '🥕' + c.vision : '🥕'}</button>` : ''}
                   ${c.kind !== 'player' ? `<button class="dm-tile-mini dm-tile-disp-btn" data-dm-disposition="${c.id}" title="Team: ${c.disposition || 'enemy'} — tap to change (enemy / ally / neutral)">${c.disposition === 'ally' ? '🟢' : (c.disposition === 'neutral' ? '⚪' : '🔴')}</button>` : ''}
                   ${c.kind === 'monster' ? `<button class="dm-tile-mini dm-tile-dup-btn" data-dm-duplicate="${c.id}" title="Duplicate this monster">⧉</button>` : ''}
-                  <button class="dm-tile-mini dm-tile-token-btn ${c.tokenImage ? 'has-img' : ''}" data-token-img-open="${c.id}" title="Token image"${c.tokenImage ? ` style="background-image:url('${escape(c.tokenImage)}');"` : ''}>${c.tokenImage ? '' : '🖼'}</button>
+                  <button class="dm-tile-mini dm-tile-token-btn ${c.tokenImage ? 'has-img' : ''}" data-token-img-open="${c.id}" title="Token image"${c.tokenImage ? ` style="background-image:url('${escape(c.tokenImage)}');--tok-img:url('${escape(c.tokenImage)}');"` : ''}>${c.tokenImage ? '' : '🖼'}</button>
                   <button class="dm-tile-mini dm-tile-remove-x" data-dm-remove-ask="${c.id}" title="Remove from encounter">✕</button>
                   </div>
                   ${isDead
@@ -54215,7 +54297,8 @@ function buildMapState(enc) {
         dead: c.kind === 'monster' && !!c.dead,
         afflicted: Array.isArray(c.statuses) && c.statuses.length > 0,
         iconPath: (c.tokenIcon || c.kind === 'monster' || c.isBoss) ? monsterTypeIconPath(c.tokenIcon || mtype) : '',
-        span: c.kind === 'player' ? 1 : tokenSizeCells(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size })),
+        span: c.kind === 'player' ? 1 : tokenFootprint(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size })),
+        tiny: c.kind !== 'player' && tokenSizeCells(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size })) < 1,
         isTurn: c.id === activeTurnId,
         hidden: !!c.hiddenFromPlayers,
         hideName: !!c.hideName,
@@ -54360,12 +54443,14 @@ const AOE_COLORS = {
 };
 // v0.47.0 — Spell-type colour presets for AoE templates (damage-type conventions).
 const AOE_SPELL_COLORS = [
-  { label: 'Fire', color: '#e8552d' }, { label: 'Cold', color: '#4aa3df' },
-  { label: 'Lightning', color: '#f6d743' }, { label: 'Acid', color: '#7ac74f' },
-  { label: 'Poison', color: '#8e44ad' }, { label: 'Radiant', color: '#f5c542' },
-  { label: 'Necrotic', color: '#5b2c6f' }, { label: 'Force', color: '#c56cf0' },
-  { label: 'Psychic', color: '#e84393' }, { label: 'Thunder', color: '#95a5a6' },
+  { label: 'Fire', color: '#e8552d', element: 'fire' }, { label: 'Cold', color: '#4aa3df', element: 'cold' },
+  { label: 'Lightning', color: '#f6d743', element: 'lightning' }, { label: 'Acid', color: '#7ac74f', element: 'acid' },
+  { label: 'Poison', color: '#8e44ad', element: 'poison' }, { label: 'Radiant', color: '#f5c542', element: 'radiant' },
+  { label: 'Necrotic', color: '#5b2c6f', element: 'necrotic' }, { label: 'Force', color: '#c56cf0', element: 'force' },
+  { label: 'Psychic', color: '#e84393' }, { label: 'Thunder', color: '#95a5a6', element: 'thunder' },
 ];
+// v1.6.0 — the element for an AoE colour (drives Jenny's animated area overlay).
+function aoeElementForColor(color) { const m = AOE_SPELL_COLORS.find(x => x.color === color); return (m && m.element) || null; }
 function recolorLastAoe(color) {
   const coll = loadGames();
   const g = activeGame(coll);
@@ -54373,7 +54458,7 @@ function recolorLastAoe(color) {
   if (!e || !Array.isArray(e.aoes)) return;
   const id = state.ui.dmAoeLastDropped;
   const a = id ? e.aoes.find(x => x.id === id) : null;
-  if (a) { a.color = color || null; saveGames(coll); if (typeof broadcastMap === 'function') broadcastMap(loadEncounter()); }
+  if (a) { a.color = color || null; a.element = aoeElementForColor(color); saveGames(coll); if (typeof broadcastMap === 'function') broadcastMap(loadEncounter()); }
 }
 // v0.21.97 — Default AoE sizes (in feet) per shape, and a "drop a clean shape"
 // helper. Tapping a tool drops one of these at a sensible origin, sized right —
@@ -54419,13 +54504,17 @@ function hearthDropAoe(tool, ftOverride) {
       ox = Math.round(cx / cell);
       oy = Math.round(cy / cell);
     }
+    // v1.6.0 — keep a dropped shape's origin on the board, even when the visible
+    // part of the map (phone, scrolled) is mostly off the grid.
+    ox = Math.min(Math.max(ox, 1), Math.max(1, (enc.mapCols || 20) - 1));
+    oy = Math.min(Math.max(oy, 1), Math.max(1, (enc.mapRows || 15) - 1));
     if ((tool === 'cone' || tool === 'line') && !state.ui.dmAoeFree) {
       const ordered = (typeof sortedCombatants === 'function') ? sortedCombatants(enc) : (enc.combatants || []);
       const activeId = ordered.length ? (ordered[dmTurnIdx(enc, ordered)] || {}).id : null;
       const active = activeId ? (enc.combatants || []).find(c => c.id === activeId && c.mapX != null) : null;
       if (active) {
         const sz = (typeof tokenSizeCells === 'function' && typeof tokenSize === 'function')
-          ? tokenSizeCells(tokenSize({ monsterId: active.monsterId, isBoss: !!active.isBoss })) : 1;
+          ? tokenFootprint(tokenSize({ monsterId: active.monsterId, isBoss: !!active.isBoss })) : 1;
         ox = active.mapX + sz / 2;
         oy = active.mapY + sz / 2;
         locked = true;
@@ -54440,6 +54529,7 @@ function hearthDropAoe(tool, ftOverride) {
       len: lenCells,
       angle,
       color: state.ui.dmAoeColor || null,
+      element: aoeElementForColor(state.ui.dmAoeColor),
       pinned: true,
     };
     enc.aoes.push(a);
@@ -54478,7 +54568,7 @@ function resolveAoePos(a, enc) {
     const c = (enc.combatants || []).find(x => x.id === a.attachedTo && x.mapX != null);
     if (c) {
       const sz = (typeof tokenSizeCells === 'function' && typeof tokenSize === 'function')
-        ? tokenSizeCells(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size })) : 1;
+        ? tokenFootprint(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size })) : 1;
       return { x: c.mapX + sz / 2, y: c.mapY + sz / 2 };
     }
   }
@@ -54578,11 +54668,14 @@ function aoeFeetLabel(a) {
 }
 
 
-// 5e creature size → grid footprint in cells. Tiny/Small/Medium share one
-// square (Tiny renders a touch smaller for flavour); Large 2×2, Huge 3×3,
-// Gargantuan 4×4.
+// 5e creature size → token size in cells. Tiny is half a square (2½ ft) and is
+// drawn centred in the square it stands in; Small/Medium 1; Large 2×2, Huge 3×3,
+// Gargantuan 4×4. Position, reach and AoE maths use tokenFootprint (never < 1),
+// because a Tiny creature still stands in one whole square.
+function tokenFootprint(size) { return Math.max(1, tokenSizeCells(size)); }
 function tokenSizeCells(size) {
   switch (String(size || '').toLowerCase()) {
+    case 'tiny': return 0.5;
     case 'large': return 2;
     case 'huge': return 3;
     case 'gargantuan': return 4;
@@ -54600,7 +54693,7 @@ function tokenSize(tk) {
 }
 
 function mapTokenHTML(tk, cell, draggable) {
-  const cls = [
+  let cls = [
     'map-token',
     tk.kind === 'player' ? 'player' : 'monster',
     tk.isBoss ? 'boss' : '',
@@ -54613,7 +54706,9 @@ function mapTokenHTML(tk, cell, draggable) {
     draggable ? 'draggable' : '',
   ].join(' ');
   const left = tk.x * cell, top = tk.y * cell;
-  const imgInner = tk.tokenImage ? `<img class="map-token-img" src="${tk.tokenImage}" draggable="false" alt="" />` : '';
+  const face = hearthTokenFace(tk, cell);
+  if (face) cls += ' has-ht';
+  const imgInner = face || (tk.tokenImage ? `<img class="map-token-img" src="${tk.tokenImage}" draggable="false" alt="" />` : '');
 
   if (tk.kind === 'player') {
     // Player: initials in the disc, full name on a caption underneath.
@@ -54628,9 +54723,9 @@ function mapTokenHTML(tk, cell, draggable) {
 
   // Monster / boss — footprint scales with creature size.
   const sz = tokenSize(tk);
-  const span = tokenSizeCells(sz);
+  const span = tokenFootprint(sz);
   const px = span * cell;
-  const sizeAttr = span > 1 ? ` data-token-span="${span}"` : '';
+  const sizeAttr = span > 1 ? ` data-token-span="${span}"` : (tokenSizeCells(sz) < 1 ? ' data-token-tiny="1"' : '');
   if (tk.isBoss) {
     return `<div class="${cls}" style="left:${left}px;top:${top}px;width:${px}px;height:${px}px;"${sizeAttr}
       ${draggable ? `data-map-token="${tk.id}"` : ''}>
@@ -54645,6 +54740,27 @@ function mapTokenHTML(tk, cell, draggable) {
     <span class="map-token-num">${escape(String(num))}</span>
     ${tk.hideName ? '' : `<span class="map-token-caption">${escape(tk.name || '')}</span>`}
   </div>`;
+}
+
+// v1.6.0 — Jenny's framed tokens (app/tokens/hearth-tokens.js). Returns the
+// inner markup for a map token, or '' when the module is not loaded.
+const HEARTH_TOKEN_LIBRARY = ['goblin','goblin-archer','orc','hobgoblin','kobold','bandit','cultist','guard','knight','ranger','mage','priest','noble','merchant','innkeeper','villager','skeleton','zombie','ghoul','wraith','wolf','dire-wolf','bear','owlbear','giant-spider','gnoll','lizardfolk','ogre','troll','elemental-fire','mimic','young-dragon-red'];
+function hearthTokenLibPath(key) { return 'tokens/lib/' + key + '.webp'; }
+function hearthTokenFace(tk, cell) {
+  if (typeof window === 'undefined' || !window.HearthTokens) return '';
+  try {
+    const kind = tk.kind === 'player' ? 'player' : tk.isBoss ? 'boss' : (tk.disposition === 'ally' ? 'ally' : tk.disposition === 'neutral' ? 'neutral' : 'enemy');
+    const st = [];
+    if (tk.dead) st.push('dead');
+    if (tk.isTurn) st.push('active');
+    if (tk.highlighted) st.push('selected');
+    if (!tk.dead && tk.maxHp > 0 && tk.hp != null && tk.hp <= tk.maxHp / 2) st.push('bloodied');
+    if ((window.hearthReducedMotion && window.hearthReducedMotion()) || (typeof hearthDicePrefs === 'function' && hearthDicePrefs().anim === 'off')) st.push('still');
+    const conds = (tk.statuses || []).concat(tk.concentrating ? ['concentrating'] : []).map(s => String(s).toLowerCase().replace(/\s+/g, ''));
+    const el = HearthTokens.createToken({ img: tk.tokenImage || null, kind, size: tk.kind === 'player' ? 'medium' : String(tokenSize(tk)).toLowerCase(), state: st.filter(s => s !== 'still'), conditions: conds, cell, label: tk.name || '' });
+    if (st.includes('still')) el.classList.add('ht-still');
+    return el.outerHTML;
+  } catch (e) { return ''; }
 }
 
 // Short initials for a player name (1–2 letters).
@@ -55866,11 +55982,13 @@ function renderDMMap() {
                 <g id="dmRulerLayer"></g>
                 <g id="dmFogLayer" filter="url(#fogWave)">${fogLayerSVG(enc, cols, rows, cell)}</g>
               </svg>
+              <div class="he-aoe-layer" id="heAoeLayer" data-cell="${cell}" aria-hidden="true"></div>
               ${tokens.map(c => mapTokenHTML({
                 id: c.id, x: c.mapX, y: c.mapY, label: tokenLabel(c), kind: c.kind,
                 isBoss: !!c.isBoss, dead: c.kind === 'monster' && !!c.dead,
                 afflicted: Array.isArray(c.statuses) && c.statuses.length > 0,
                 monsterId: c.monsterId, name: c.name, isTurn: c.id === turnId, tokenImage: c.tokenImage, tokenIcon: c.tokenIcon, hidden: c.hiddenFromPlayers, hideName: c.hideName, disposition: c.disposition, highlighted: c.id === state.ui.dmHighlightMon,
+                hp: c.hp, maxHp: c.maxHp, statuses: c.statuses, concentrating: !!c.concentrating, size: c.size,
               }, cell, true)).join('')}
             </div>
             </div>
@@ -56310,8 +56428,8 @@ function wireDMMap(enc, cell, cols, rows) {
     const activeId = order2.length ? (order2[dmTurnIdx(enc, order2)] || {}).id : null;
     const active = activeId ? (enc.combatants || []).find(c => c.id === activeId && c.mapX != null) : null;
     const activeOrigin = active ? {
-      ox: (active.mapX + tokenSizeCells(tokenSize({ monsterId: active.monsterId, isBoss: !!active.isBoss })) / 2) * cell,
-      oy: (active.mapY + tokenSizeCells(tokenSize({ monsterId: active.monsterId, isBoss: !!active.isBoss })) / 2) * cell,
+      ox: (active.mapX + tokenFootprint(tokenSize({ monsterId: active.monsterId, isBoss: !!active.isBoss })) / 2) * cell,
+      oy: (active.mapY + tokenFootprint(tokenSize({ monsterId: active.monsterId, isBoss: !!active.isBoss })) / 2) * cell,
     } : null;
     const originatesFromActive = (kind) => (kind === 'cone' || kind === 'line') && !!activeOrigin && !state.ui.dmAoeFree;
 
@@ -56540,7 +56658,7 @@ function wireDMMap(enc, cell, cols, rows) {
             (e.combatants || []).forEach(c => {
               if (c.mapX == null || c.mapY == null) return;
               const sz = (typeof tokenSizeCells === 'function' && typeof tokenSize === 'function')
-                ? tokenSizeCells(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size })) : 1;
+                ? tokenFootprint(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size })) : 1;
               const cx = c.mapX + sz / 2, cy = c.mapY + sz / 2;
               const d = Math.hypot(cx - here.x, cy - here.y);
               const inside = d <= radiusCells;
@@ -56617,6 +56735,7 @@ function wireDMMap(enc, cell, cols, rows) {
       };
       const onUp = () => {
         if (mode === 'move') { a.x = Math.floor(a.x) + 0.5; a.y = Math.floor(a.y) + 0.5; }
+        else { const st = Math.PI / 12; a.angle = Math.round((a.angle || 0) / st) * st; } // v1.6.0 — aim snaps to 15°
         if (scroller) scroller.style.touchAction = '';
         saveEncounter(enc2);
         broadcastMap(loadEncounter());
@@ -56947,7 +57066,7 @@ function projectorDocumentHTML() {
   .pj-dice-who { font-size:4vmin; margin-top:1vmin; opacity:.9; }
   .pj-dice-num { font-size:22vmin; font-weight:bold; line-height:1.05; color:#fff; text-shadow:0 0 20px #000; }
   .pj-dice-nat { font-size:5vmin; font-weight:bold; min-height:1em; }
-  .pj-dice-bd { font-size:3vmin; opacity:.8; font-family: ui-monospace, monospace; }
+  .pj-dice-bd { font-size:3vmin; opacity:.8; font-family: system-ui, sans-serif; font-variant-numeric: tabular-nums; }
   .pj-dice.n20 .pj-dice-card { border-color:#ffd55a; box-shadow:0 0 90px rgba(255,190,40,.8); }
   .pj-dice.n20 .pj-dice-num, .pj-dice.n20 .pj-dice-nat { color:#ffd55a; }
   .pj-dice.n1 .pj-dice-card { border-color:#e04030; box-shadow:0 0 90px rgba(200,20,10,.8); }
@@ -57125,7 +57244,7 @@ function projectorDocumentHTML() {
           inner = (t.iconPath ? '<svg class="tok-pic" viewBox="0 0 24 24">'+t.iconPath+'</svg>' : '')
                 + '<span class="tok-num">'+esc(num)+'</span>' + ((!t.hideName&&t.name)?'<span class="tok-cap monster-cap">'+esc(t.name)+'</span>':'');
         }
-        html += '<div class="'+cls+'" data-tok-id="'+t.id+'" style="left:'+(t.x*cell)+'px;top:'+(t.y*cell)+'px;width:'+((t.span||1)*cell)+'px;height:'+((t.span||1)*cell)+'px;cursor:grab;'+(t.kind==='player'?'z-index:7;':'')+'">'+inner+'</div>';
+        html += '<div class="'+cls+'" data-tok-id="'+t.id+'" style="left:'+((t.x+(t.tiny?0.25:0))*cell)+'px;top:'+((t.y+(t.tiny?0.25:0))*cell)+'px;width:'+((t.tiny?0.5:(t.span||1))*cell)+'px;height:'+((t.tiny?0.5:(t.span||1))*cell)+'px;cursor:grab;'+(t.kind==='player'?'z-index:7;':'')+'">'+inner+'</div>';
       });
       if (fogOn) {
         var fogHtml = '';
@@ -58842,7 +58961,7 @@ function dmAuraLayerHTML(tokens, cell) {
 }
 function dmCellDistanceFt(a, b) {
   if (!a || !b || a.mapX == null || b.mapX == null) return Infinity;
-  const span = (c) => (c.kind === 'player' ? 1 : ((typeof tokenSizeCells === 'function' && typeof tokenSize === 'function') ? tokenSizeCells(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size })) : 1));
+  const span = (c) => (c.kind === 'player' ? 1 : ((typeof tokenSizeCells === 'function' && typeof tokenSize === 'function') ? tokenFootprint(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size })) : 1));
   const gap = (a0, a1, b0, b1) => Math.max(0, b0 - a1, a0 - b1);
   const sa = span(a), sb = span(b);
   const dx = gap(a.mapX, a.mapX + sa - 1, b.mapX, b.mapX + sb - 1);
