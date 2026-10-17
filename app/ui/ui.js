@@ -28,7 +28,7 @@
         x = x.trim(); if (!x) return x;
         var lead = '.u2 ', m = /^\.(u-desk|u-phone)\b\s*/.exec(x); // .u-desk/.u-phone sit on body next to .u2
         if (m) { lead = '.u2.' + m[1] + ' '; x = x.slice(m[0].length); }
-        return lead + x.replace(/\.(?!u-)(-?[_a-zA-Z][\w-]*)/g, '.u-$1');
+        return lead + x.replace(/\.(!?)(?!u-)(-?[_a-zA-Z][\w-]*)/g, function (m0, r, n) { return r ? '.' + n : '.u-' + n; }); // .!cls = the app's own class
       }).join(',');
     }
     css = css.replace(/\/\*[\s\S]*?\*\//g, '');
@@ -224,6 +224,45 @@
     }
   };
 
+  // ---------- no emoji (hard rule 4) ----------
+  // The app's own markup on the screens this build doesn't redraw still carries a few emoji glyphs; swap
+  // each for the matching SVG icon (or drop it). The 1.7.0 DM map/encounter screens are left alone (Lee's
+  // team is testing them), and so is anything inside them.
+  var EMO = { '📷': 'camera', '📸': 'camera', '🖼': 'image', '📝': 'pencil', '⚔': 'sword', '🗡': 'sword', '✦': 'sparkle', '✨': 'sparkle', '⚡': 'bolt', '⛨': 'shield', '🛡': 'shield', '🎒': 'pack', '☆': 'star', '★': 'star', '⭐': 'star', '📜': 'scroll', '🎲': 'd20', '❤': 'heart', '🔥': 'flame', '🗺': 'map', '📖': 'book', '🔒': 'lock', '🔍': 'search', '⚙': 'gear', '💾': 'download', '📤': 'upload', '📥': 'download', '🏆': 'trophy', '🔔': 'bell', '✏': 'pencil', '🧪': 'potion', '💀': 'skull', '👁': 'eye', '🪄': 'wand', '🔨': 'anvil', '⚒': 'anvil', '🌙': 'moon', '☀': 'sun', '⏱': 'clock', '🕐': 'clock', '💰': 'coins', '🪙': 'coins', '🎉': 'sparkle', '✓': 'check', '✔': 'check', '✅': 'check' };
+  // real emoji (Extended_Pictographic, minus ©, ®, ™, ‼, ⁉, ℹ and the plain arrows), plus the three dingbats
+  // the app uses as icons (✦ ☆ ★). Plain text marks such as ✓ and ✕ stay as text.
+  var EMO_SRC = '(?:(?![\\u00A9\\u00AE\\u203C\\u2049\\u2122\\u2139\\u2194-\\u21AA\\u2713\\u2715\\u2716\\u2717])\\p{Extended_Pictographic}|[\\u2726\\u2605\\u2606])\\uFE0F?';
+  var EMO_RE = new RegExp(EMO_SRC, 'u'), EMO_RE_G = new RegExp(EMO_SRC, 'gu');
+  function emoSkip() { var r = route(); return r === 'map' || r === 'encounter'; }
+  function deEmoji(root) {
+    if (!root || emoSkip()) return;
+    var w = D.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), n, hit = [];
+    while ((n = w.nextNode())) { if (EMO_RE.test(n.nodeValue)) hit.push(n); }
+    hit.forEach(function (t) {
+      var p = t.parentElement; if (!p || p.closest('script,style,textarea,.dm-map-shell,.dm-map,[data-u-keep-emoji]')) return;
+      if (p.tagName === 'OPTION' || p.tagName === 'TITLE') { t.nodeValue = t.nodeValue.replace(EMO_RE_G, '').replace(/^\s+/, ''); return; }
+      var f = D.createDocumentFragment(), last = 0, s = t.nodeValue; EMO_RE_G.lastIndex = 0; var m;
+      while ((m = EMO_RE_G.exec(s))) {
+        if (m.index > last) f.appendChild(D.createTextNode(s.slice(last, m.index)));
+        var k = EMO[m[0].replace('\uFE0F', '')];
+        if (k && I[k]) { var sp = D.createElement('span'); sp.className = 'u-emo'; sp.setAttribute('aria-hidden', 'true'); sp.innerHTML = '<svg viewBox="0 0 24 24" focusable="false">' + I[k] + '</svg>'; f.appendChild(sp); }
+        last = m.index + m[0].length;
+      }
+      if (last < s.length) f.appendChild(D.createTextNode(s.slice(last)));
+      t.parentNode.replaceChild(f, t);
+      if (!p.textContent.trim() && !p.querySelector('svg')) { var g = D.createElement('span'); g.className = 'u-emo'; g.setAttribute('aria-hidden', 'true'); g.innerHTML = '<svg viewBox="0 0 24 24" focusable="false">' + I.sparkle + '</svg>'; p.appendChild(g); }
+    });
+  }
+  var emoMo = null;
+  function watchEmoji() {
+    if (emoMo || !W.MutationObserver) return;
+    emoMo = new MutationObserver(function (list) {
+      if (emoSkip()) return;
+      list.forEach(function (m) { if (m.type === 'characterData') { if (m.target.parentElement && EMO_RE.test(m.target.nodeValue)) deEmoji(m.target.parentElement); return; } m.addedNodes.forEach(function (a) { if (a.nodeType === 1) deEmoji(a); else if (a.nodeType === 3 && a.parentElement && EMO_RE.test(a.nodeValue)) deEmoji(a.parentElement); }); });
+    });
+    emoMo.observe(D.body, { childList: true, subtree: true, characterData: true });
+  }
+
   // ---------- render hook ----------
   var CONTENT_HTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
   // Run one of the app's render functions with our markup in place of its own. The app's wiring
@@ -243,6 +282,7 @@
     c.classList.toggle('u-screen', !!(sc && sc.owns));
     c.classList.toggle('u-legacy', !(sc && sc.owns));
     if (sc && sc.after) try { sc.after(c); } catch (e) { console.warn('ui after', r, e); }
+    try { deEmoji(D.body); watchEmoji(); } catch (e) { console.warn('ui emoji', e); }
   }
   function hook(name, rkey) {
     var orig = W[name]; if (typeof orig !== 'function') return;
@@ -266,7 +306,10 @@
   // the Home overlays the app draws inside its Home markup (One-shot, Export/Import, Ruleset, AI Core).
   // Owned Home-family screens include them so those panels keep working.
   function homeModals() {
-    var p = (state.ui || {}).homePanel, f = { ruleset: 'homePanelRuleset', aicore: 'homePanelAiCore', transfer: 'homePanelTransfer', oneshot: 'homePanelOneShot' }[p];
+    var p = (state.ui || {}).homePanel;
+    // Export / Import is now a dialog (screens-dialogs.js); the old Home panel opens it instead
+    if (p === 'transfer' && actions['export']) { state.ui.homePanel = null; setTimeout(function () { if (!D.querySelector('[data-u-modal="export"]')) actions['export']({ dataset: { cat: state.ui.exportCategory || '' } }); }, 0); return ''; }
+    var f = { ruleset: 'homePanelRuleset', aicore: 'homePanelAiCore', transfer: 'homePanelTransfer', oneshot: 'homePanelOneShot' }[p];
     if (!f || typeof W[f] !== 'function' || typeof W.homeModalWrap !== 'function') return '';
     try { return raw(W.homeModalWrap(p === 'aicore' ? W[f](current()) : W[f]())); } catch (e) { return ''; }
   }

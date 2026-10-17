@@ -223,7 +223,7 @@
       var n = U.chars().length, g = (typeof HearthGoogle !== 'undefined' && HearthGoogle.user);
       return n ? { title: 'Characters', meta: n + (n === 1 ? ' hero' : ' heroes') + ' on this device' + (g ? ' · synced' : ''), search: 'Search characters…', extra: seg(),
         actions: btn('Random', '', 'd20', 'data-home-act="random-char"') + btn('New character', 'primary', 'plus', 'data-home-act="create-char"'),
-        back: 'home', pright: ibtn('search', 'data-u-act="charsearch"', true, 'Search characters') + ibtn('upload', 'data-u-act="importfile"', true, 'Import') }
+        back: 'home', pright: ibtn('search', 'data-u-act="charsearch"', true, 'Search characters') + ibtn('upload', 'data-u-act="export"', true, 'Export or import') }
         : { title: 'Characters', meta: 'No characters yet', back: 'home', pright: ibtn('help', 'data-u-act="tour"', true, 'How Hearth works') };
     },
     after: function () {

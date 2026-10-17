@@ -206,7 +206,8 @@ body.u2 { font: 400 14px/1.45 var(--sans); color: var(--ink); background: var(--
 .u2 .app { max-width: none !important; width: auto !important; margin: 0 !important; padding: 0 !important; }
 .u2 .app > header.header, .u2 .app > .header, .u2 #legalNote { display: none !important; }
 .u2 button.u-nav-a, .u2 .u-tabbar button, .u2 .u-mechar-open, .u2 .u-sec-link, .u2 .u-legal-link { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; text-align: left; box-shadow: none; min-height: 0; width: auto; text-transform: none; letter-spacing: normal; }
-.u2 button.u-btn, .u2 button.u-ibtn, .u2 button.u-chip { margin: 0; font-family: var(--sans); text-transform: none; letter-spacing: normal; min-height: 0; width: auto; line-height: 1; }
+.u2 button.u-btn, .u2 button.u-chip { margin: 0; font-family: var(--sans); text-transform: none; letter-spacing: normal; min-height: 0; width: auto; line-height: 1; }
+.u2 button.u-ibtn { margin: 0; font-family: var(--sans); text-transform: none; letter-spacing: normal; min-height: 0; line-height: 1; }
 .u2 .u-btn:focus-visible, .u2 .u-ibtn:focus-visible, .u2 .u-nav-a:focus-visible, .u2 .u-tabbar button:focus-visible, .u2 .u-chip:focus-visible, .u2 .u-row:focus-visible, .u2 [data-u-card]:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .u2 .u-btn:hover { filter: brightness(1.08); }
 .u2 .u-av { display: block; border-radius: 50%; object-fit: cover; }
@@ -299,3 +300,5 @@ html:root body.u2.u2.u2 .u-field.u-field input:is([type], :not([type])), html:ro
 .u2 .u-layer .u-grab { position: absolute; left: 50%; top: 10px; width: 40px; height: 5px; margin-left: -20px; border-radius: 3px; background: var(--rim-strong); }
 .u2 .u-layer :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 body.u2.u-modal-open { overflow: hidden; }
+.u2 .u-emo { display: inline-flex; vertical-align: -0.15em; width: 1.05em; height: 1.05em; margin-right: .3em; }
+.u2 .u-emo svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
