@@ -184,10 +184,11 @@ const flat = (landed) => [].concat(...(landed || []).map(x => Array.isArray(x) ?
   const rollAndWait = (spec) => p.evaluate(async (spec) => { window.__rolls.length = 0; const pr = hearthDiceRoll(spec); while (!window.__rolls[0]) await new Promise(r => setTimeout(r, 30)); let w = 0; while (!document.querySelector('.hd-proj') && w++ < 40) await new Promise(r => setTimeout(r, 50)); const btn = !!document.querySelector('.hd-proj'); HearthDice.skip(); await pr; await new Promise(r => setTimeout(r, 150)); return { btn, pj: window.__pj.length, o: window.__rolls[0].o }; }, spec);
   const off20 = await rollAndWait({ who: 'DM', label: 'Ogre attack', groups: [{ sides: 20, values: [20] }], total: '27 to hit' });
   check('big screen OFF (default): nat 20 not projected, no button', off20.pj === 0 && !off20.btn, off20);
+  // UI polish — the old 'important' mode is gone: asking for it gives 'ask', so even a nat 20 waits for the button.
   await p.evaluate(() => hearthDiceSetPref('diceProjector', 'important'));
-  const imp20 = await rollAndWait({ who: 'DM', label: 'Ogre attack', groups: [{ sides: 20, values: [20] }], total: '27 to hit' });
   const imp7 = await rollAndWait({ who: 'DM', label: 'Goblin save', groups: [{ sides: 20, values: [7] }], total: 9 });
-  check('important-rolls mode: nat 20 projected by itself, ordinary roll not (button offered)', imp20.pj === 1 && imp7.pj === 1 && imp7.btn, { imp20, imp7 });
+  const imp20 = await p.evaluate(async () => { window.__rolls.length = 0; const pr = hearthDiceRoll({ who: 'DM', label: 'Ogre attack', groups: [{ sides: 20, values: [20] }], total: '27 to hit' }); let w = 0; while (!document.querySelector('.hd-proj.on') && w++ < 80) await new Promise(r => setTimeout(r, 50)); const auto = window.__pj.length; const btn = document.querySelector('.hd-proj'); if (btn) btn.click(); await new Promise(r => setTimeout(r, 300)); const pj = window.__pj.length; HearthDice.skip(); await pr; await new Promise(r => setTimeout(r, 150)); return { pref: hearthDicePrefs().projector, saved: loadPrefs().diceProjector, auto, btn: !!btn, pj }; });
+  check("'important' is treated as 'ask': nat 20 not projected by itself, only after its Show button is tapped", imp20.pref === 'ask' && imp20.saved === 'ask' && imp20.auto === 0 && imp20.btn && imp20.pj === 1 && imp7.pj === 0 && imp7.btn, { imp20, imp7 });
   await proj.waitForTimeout(400);
   await proj.screenshot({ path: SHOTS + '04-projector-nat20.png' });
   check('projector window shows the roll', await proj.evaluate(() => { const e = document.getElementById('pjDice'); return !!e && /27 to hit/.test(e.textContent) && /Natural 20/.test(e.textContent); }));

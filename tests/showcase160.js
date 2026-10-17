@@ -37,7 +37,7 @@ const noToast = p => p.evaluate(() => document.querySelectorAll('.toast, #toast,
     await ctx.close(); }
 
   { const { ctx, p } = await page(b, 1366, 900);
-    await p.evaluate(() => { setActiveTab('dm'); render(); dmEncounterAddCustomMonster('Ogre', 59, 11, -1, ''); hearthDiceSetPref('diceProjector', 'important'); });
+    await p.evaluate(() => { setActiveTab('dm'); render(); dmEncounterAddCustomMonster('Ogre', 59, 11, -1, ''); hearthDiceSetPref('diceProjector', 'ask'); });
     const [proj] = await Promise.all([ctx.waitForEvent('page'), p.evaluate(() => openProjectorWindow(loadEncounter()))]);
     await proj.setViewportSize({ width: 1280, height: 720 }); await proj.waitForTimeout(700);
     await p.evaluate(async () => { const r = hearthDiceRoll({ who: 'Mira Vale', label: 'Eldritch Blast', groups: [{ sides: 20, values: [20] }], total: '25 to hit', crit: 'nat20' }); await new Promise(z => setTimeout(z, 900)); HearthDice.skip(); await r; });
