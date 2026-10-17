@@ -1,7 +1,10 @@
 /* Hearth v1.7.0 — map interactions on the C2 DM screen (design: Jenny, map-interactions/mi.css).
    Handles, chips, toolbars, the path and the brush ring use the palette (--gold, --gold-deep,
    --card-surface, --page*, --ink*); ember orange on templates and red on enemy rings are fixed. */
-.c2 { --mi-ember: #ff8a3d; --mi-ember-hot: #ffb347; }
+.c2 { --mi-ember: #ff8a3d; --mi-ember-hot: #ffb347; --mi-ember-ink: var(--mi-ember-hot); }
+/* v1.7.1 — template counts in ember on the palette-coloured label chip: on light themes the chip is
+   pale, so the ember goes deep (5:1 or better on every light palette; the bright ember is 10:1 on dark ones) */
+html[data-theme="light"] .c2 { --mi-ember-ink: color-mix(in srgb, var(--mi-ember) 30%, #000); }
 /* ---------- layers on the board ---------- */
 .c2 .mi-fog { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; }
 .c2 .mi-path { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; overflow: visible; }
@@ -43,7 +46,7 @@
 .c2 .mi-chip.big { font-size: 14px; padding: 6px 11px; border-color: var(--gold-deep); }
 .c2 .mi-chip.ghost { opacity: .8; pointer-events: none; }
 .c2 .mi-chip b { color: var(--gold); }
-.c2 .mi-chip .mi-hitc { color: var(--mi-ember-hot); }
+.c2 .mi-chip .mi-hitc { color: var(--mi-ember-ink); }
 .c2 .mi-chip .mi-shown { font-size: 11px; }
 /* creatures inside a template */
 .c2 .map-token.mi-hit { box-shadow: 0 0 0 3px var(--mi-ember), 0 0 14px var(--mi-ember) !important; transition: box-shadow .12s; }
@@ -161,6 +164,7 @@
   background: var(--page-texture, none), var(--c2-surface); border: 1px solid var(--gold-deep); box-shadow: 0 8px 22px rgba(0,0,0,.6); }
 .c2 .mi-hist > b { color: var(--gold); font: 600 13px Georgia, serif; margin-bottom: 3px; }
 .c2 .mi-hist em { color: var(--ink-faded); font-size: 11.5px; }
+.c2 .mi-hist .mi-hnote { color: var(--ink-faded); font-size: 10.5px; margin-top: 2px; }
 .c2 .mi-hi { display: flex; justify-content: space-between; gap: 8px; text-align: left; padding: 4px 7px; min-height: 0; border-radius: 6px; border: 0; background: none; color: var(--ink-soft); box-shadow: none; width: auto; font-size: 12px; text-transform: none; letter-spacing: 0; }
 .c2 .mi-hi small { color: var(--ink-faded); }
 .c2 .mi-hi.on { background: color-mix(in srgb, var(--gold) 20%, transparent); color: var(--ink); }
