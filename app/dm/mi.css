@@ -1,7 +1,15 @@
 /* Hearth v1.7.0 — map interactions on the C2 DM screen (design: Jenny, map-interactions/mi.css).
    Handles, chips, toolbars, the path and the brush ring use the palette (--gold, --gold-deep,
    --card-surface, --page*, --ink*); ember orange on templates and red on enemy rings are fixed. */
-.c2 { --mi-ember: #ff8a3d; --mi-ember-hot: #ffb347; }
+.c2 { --mi-ember: #ff8a3d; --mi-ember-hot: #ffb347; --mi-ember-ink: var(--mi-ember-hot);
+  /* v1.7.1 — the dark plates (help line, phone off-screen markers, the corner fans) stay dark on every theme, so
+     their text can't use the theme's --ink / --ink-soft, which go dark on light themes. Dark themes keep the theme
+     inks; light themes mix their ink nearly to white (and lighten the gold for the chosen fan button) */
+  --mi-plate-ink: var(--ink); --mi-plate-soft: var(--ink-soft); --mi-plate-gold: var(--gold); }
+html[data-theme="light"] .c2 { --mi-plate-ink: color-mix(in srgb, var(--ink) 8%, #fff); --mi-plate-soft: color-mix(in srgb, var(--ink) 18%, #fff); --mi-plate-gold: color-mix(in srgb, var(--gold) 45%, #fff); }
+/* v1.7.1 — template counts in ember on the palette-coloured label chip: on light themes the chip is
+   pale, so the ember goes deep (5:1 or better on every light palette; the bright ember is 10:1 on dark ones) */
+html[data-theme="light"] .c2 { --mi-ember-ink: color-mix(in srgb, var(--mi-ember) 30%, #000); }
 /* ---------- layers on the board ---------- */
 .c2 .mi-fog { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; }
 .c2 .mi-path { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; overflow: visible; }
@@ -43,14 +51,16 @@
 .c2 .mi-chip.big { font-size: 14px; padding: 6px 11px; border-color: var(--gold-deep); }
 .c2 .mi-chip.ghost { opacity: .8; pointer-events: none; }
 .c2 .mi-chip b { color: var(--gold); }
-.c2 .mi-chip .mi-hitc { color: var(--mi-ember-hot); }
+/* v1.7.1 — the template's name in gold on the pale light-theme chip: deepened like the count (--mi-ember-ink) */
+html[data-theme="light"] .c2 .mi-chip b { color: color-mix(in srgb, var(--gold) 45%, #000); }
+.c2 .mi-chip .mi-hitc { color: var(--mi-ember-ink); }
 .c2 .mi-chip .mi-shown { font-size: 11px; }
 /* creatures inside a template */
 .c2 .map-token.mi-hit { box-shadow: 0 0 0 3px var(--mi-ember), 0 0 14px var(--mi-ember) !important; transition: box-shadow .12s; }
 .c2 .map-token.mi-hit .ht-token, .c2 .map-token.mi-hit .ht-wrap { filter: drop-shadow(0 0 5px var(--mi-ember)); }
 /* phone: creatures caught off screen */
 .c2 .mi-offbox { position: absolute; inset: 0; pointer-events: none; z-index: 12; }
-.c2 .mi-offhit { position: absolute; transform: translateY(-50%); font: 600 11.5px/1 system-ui, sans-serif; color: var(--ink); padding: 6px 9px; background: rgba(20,12,6,.9); border: 1px solid var(--mi-ember); box-shadow: 0 0 10px color-mix(in srgb, var(--mi-ember) 40%, transparent); white-space: nowrap; }
+.c2 .mi-offhit { position: absolute; transform: translateY(-50%); font: 600 11.5px/1 system-ui, sans-serif; color: var(--mi-plate-ink); padding: 6px 9px; background: rgba(20,12,6,.9); border: 1px solid var(--mi-ember); box-shadow: 0 0 10px color-mix(in srgb, var(--mi-ember) 40%, transparent); white-space: nowrap; }
 .c2 .mi-offhit.l { left: 0; border-left: 0; border-radius: 0 999px 999px 0; }
 .c2 .mi-offhit.r { right: 0; border-right: 0; border-radius: 999px 0 0 999px; }
 .c2 .mi-offhit b { color: var(--mi-ember-hot); }
@@ -70,9 +80,9 @@
 .c2 .mi-af, .c2 .mi-ai, .c2 .mi-achip { border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1;
   background: var(--c2-surface); color: var(--ink); border: 1px solid var(--c2-rim); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--gold) 16%, transparent), 0 2px 5px rgba(0,0,0,.5); }
 .c2 .mi-af span { font-size: 19px; }
-.c2 .mi-af small { position: absolute; top: 100%; margin-top: 3px; font-size: 10px; color: var(--ink-soft); text-shadow: 0 1px 2px #000; white-space: nowrap; }
+.c2 .mi-af small { position: absolute; top: 100%; margin-top: 3px; font-size: 10px; color: var(--mi-plate-soft); text-shadow: 0 1px 2px #000; white-space: nowrap; }
 .c2 .mi-af.on { background: var(--c2-brass); color: var(--c2-on-gold); box-shadow: 0 0 0 2px var(--page), 0 0 16px color-mix(in srgb, var(--gold) 60%, transparent); }
-.c2 .mi-af.on small { color: var(--gold); font-weight: 700; }
+.c2 .mi-af.on small { color: var(--mi-plate-gold); font-weight: 700; }
 .c2 .mi-ai { font-size: 22px; font-weight: 700; color: var(--gold); }
 .c2 .mi-achip { font-size: 13px; background: var(--page-deep, var(--page)); border-color: var(--gold-deep); }
 .c2 .mi-achip.del { color: #f08a6e; }
@@ -93,7 +103,7 @@
 .c2 .mi-pill.on { background: var(--c2-brass); color: var(--c2-on-gold); border-color: var(--gold); }
 .c2-phone .mi-pill { font-size: 13px; padding: 9px 12px !important; }
 /* hints along the bottom of the map */
-.c2 .mi-hint { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 20; font-size: 12px; color: var(--ink-soft); background: rgba(0,0,0,.66); padding: 5px 12px; border-radius: 12px; white-space: nowrap; pointer-events: none; }
+.c2 .mi-hint { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 20; font-size: 12px; color: var(--mi-plate-soft); background: rgba(0,0,0,.66); padding: 5px 12px; border-radius: 12px; white-space: nowrap; pointer-events: none; }
 /* desktop: the template help line sits at the map's bottom-left, well away from the pills and the fan */
 .c2-desk .mi-hint-aoe { left: 14px; transform: none; bottom: 14px; }
 .c2-phone .mi-hint-aoe { display: none; }
@@ -161,6 +171,7 @@
   background: var(--page-texture, none), var(--c2-surface); border: 1px solid var(--gold-deep); box-shadow: 0 8px 22px rgba(0,0,0,.6); }
 .c2 .mi-hist > b { color: var(--gold); font: 600 13px Georgia, serif; margin-bottom: 3px; }
 .c2 .mi-hist em { color: var(--ink-faded); font-size: 11.5px; }
+.c2 .mi-hist .mi-hnote { color: var(--ink-faded); font-size: 10.5px; margin-top: 2px; }
 .c2 .mi-hi { display: flex; justify-content: space-between; gap: 8px; text-align: left; padding: 4px 7px; min-height: 0; border-radius: 6px; border: 0; background: none; color: var(--ink-soft); box-shadow: none; width: auto; font-size: 12px; text-transform: none; letter-spacing: 0; }
 .c2 .mi-hi small { color: var(--ink-faded); }
 .c2 .mi-hi.on { background: color-mix(in srgb, var(--gold) 20%, transparent); color: var(--ink); }
@@ -238,7 +249,7 @@ html:root[data-palette][data-palette] body .c2 :is(.mi-af, .mi-pill, .mi-seg but
   background: var(--c2-brass) !important; color: var(--c2-on-gold) !important; opacity: 1 !important; filter: none !important;
   box-shadow: 0 0 0 2px var(--page), 0 0 14px color-mix(in srgb, var(--gold) 55%, transparent) !important; }
 html:root[data-palette][data-palette] body .c2 :is(.mi-af, .mi-pill, .mi-seg button)[aria-pressed="true"] * { color: var(--c2-on-gold) !important; }
-html:root[data-palette][data-palette] body .c2 .mi-af[aria-pressed="true"] small { color: var(--gold) !important; text-shadow: 0 1px 2px #000; }
+html:root[data-palette][data-palette] body .c2 .mi-af[aria-pressed="true"] small { color: var(--mi-plate-gold) !important; text-shadow: 0 1px 2px #000; }
 html:root[data-palette][data-palette] body .c2 .mi-ic[aria-pressed="true"] { background: var(--c2-surface) !important; box-shadow: 0 0 0 2px var(--gold) !important; }
 /* desktop: room to slide the map left, clear of the fan */
 .c2-desk.mi-aoe-on .dm-map-scroll { padding-right: var(--mi-fanpad, 0px); }
@@ -256,3 +267,8 @@ html:root[data-palette][data-palette] body .c2 .mi-ic[aria-pressed="true"] { bac
 .c2 .mi-wpend.go { animation: mi-wfill .35s linear forwards; }
 @keyframes mi-wfill { from { --p: 0; } to { --p: 100; } }
 @media (prefers-reduced-motion: reduce) { .c2 .mi-wpend.go { animation-duration: .01s; animation-delay: .34s; } }
+
+/* v1.7.1 — a name caption the corner fan (or the round button, pills, help line) would cover moves above its
+   token, or beside it on the left (mi.js clearCaps) */
+.c2 .map-token .map-token-caption.mi-cap-up { top: auto; bottom: 100%; margin: 0 0 3px; }
+.c2 .map-token .map-token-caption.mi-cap-l { top: 50%; left: auto; right: 100%; transform: translateY(-50%); margin: 0 4px 0 0; }

@@ -160,7 +160,9 @@ async function drag(p, a, b, n, hold) { await p.mouse.move(a.x, a.y); await p.mo
   const hdlClear = (p) => p.evaluate(() => { const toks = [...document.querySelectorAll('[data-map-token]')].map(t => t.getBoundingClientRect()); const hs = [...document.querySelectorAll('.mi-hdl')]; return { n: hs.length, on: hs.filter(h => toks.some(t => { const r = h.getBoundingClientRect(); return r.left < t.right && r.right > t.left && r.top < t.bottom && r.bottom > t.top; })).map(h => h.getAttribute('aria-label')) }; });
   for (const [w, h, touch] of [[1440, 900, false], [412, 880, true]]) {
     ({ ctx, p } = await open(b, w, h, {}, touch));
-    await p.evaluate(() => { const e = loadEncounter(); e.aoes.push({ id: 'aoe_cube', kind: 'square', x: 1, y: 11, len: 3, angle: 0, color: '#c0392b', pinned: false }); e.aoes.push({ id: 'aoe_ln', kind: 'line', x: 5.5, y: 9.5, len: 6, angle: -0.6, color: '#c0392b', pinned: false }); saveEncounter(e); render(); });
+    // (v1.7.1: the cube moved from 1,11 to the top-left corner: the dragon's 60 ft breath now starts on its edge and
+    // reaches its full length, so it covers the old cube's free space and no 3-square label fits there any more)
+    await p.evaluate(() => { const e = loadEncounter(); e.aoes.push({ id: 'aoe_cube', kind: 'square', x: 0, y: 0, len: 3, angle: 0, color: '#c0392b', pinned: false }); e.aoes.push({ id: 'aoe_ln', kind: 'line', x: 5.5, y: 9.5, len: 6, angle: -0.6, color: '#c0392b', pinned: false }); saveEncounter(e); render(); });
     await p.evaluate(() => { const fb = [...document.querySelectorAll('.c2-atk')].find(x => /^Fire Breath/.test(x.textContent)); fb.querySelector('[data-c2-place]').click(); }); await p.waitForTimeout(900);
     const hc = await hdlClear(p);
     check(`${touch ? 'phone' : 'desktop'}: no template handle covers a token (cone on the dragon, circle on the goblin, line from the Ranger)`, hc.n >= 9 && hc.on.length === 0, hc);

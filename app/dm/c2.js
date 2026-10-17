@@ -470,7 +470,7 @@
     var bd = vals.map(function (g) { return g.values.length + 'd' + g.sides + ' [' + g.values.join(', ') + ']'; }).join(' + ') + (bonus ? ' ' + (bonus > 0 ? '+ ' : '\u2212 ') + Math.abs(bonus) : '');
     var total = isD20 ? sum + ' to hit' : sum;
     if (isD20 && !/attack$/.test(label)) total = sum;
-    hearthDiceRoll({ who: c.name || 'DM', label: label, groups: vals, total: total, crit: nat === 20 ? 'nat20' : nat === 1 ? 'nat1' : null, breakdown: bd, noAutoProject: true });
+    hearthDiceRoll({ who: c.name || 'DM', label: label, groups: vals, total: total, crit: nat === 20 ? 'nat20' : nat === 1 ? 'nat1' : null, breakdown: bd, noAutoProject: true, subject: c.id });
     if (typeof hearthDicePrefs === 'function' && hearthDicePrefs().anim === 'off' && typeof showToast === 'function') showToast(c.name + ' \u00b7 ' + label + ': ' + total + (nat === 20 ? ' (nat 20!)' : nat === 1 ? ' (nat 1)' : ''));
     return { sum: sum, nat: nat };
   }
@@ -560,7 +560,7 @@
   function install() {
     if (installed) return; installed = true;
     document.addEventListener('click', onClick);
-    document.addEventListener('pointerdown', function (ev) { if (ui() && ui().c2Fan && document.querySelector('.c2')) { var t = ev.target; if (!(t.closest && t.closest('.c2-fan, [data-c2-fab]'))) { ui().c2Fan = false; var f = document.querySelector('.c2-fan'), fb = document.querySelector('.c2-fab'); if (f) f.classList.remove('open'); if (fb) { fb.classList.remove('open'); fb.textContent = '\u2726'; } } } }, true);
+    document.addEventListener('pointerdown', function (ev) { if (ui() && ui().c2Fan && document.querySelector('.c2')) { var t = ev.target; if (!(t.closest && t.closest('.c2-fan, [data-c2-fab]'))) { ui().c2Fan = false; var f = document.querySelector('.c2-fan'), fb = document.querySelector('.c2-fab'); if (f) f.classList.remove('open'); if (fb) { fb.classList.remove('open'); fb.textContent = '\u2726'; }  if (W.HearthMI && HearthMI._clearCaps) HearthMI._clearCaps(); } } }, true);
     document.addEventListener('click', onPick, true);
     document.addEventListener('click', onOutside, true);
     document.addEventListener('keydown', function (ev) { if (ev.key !== 'Escape' || !document.querySelector('.c2')) return; var u = ui(); if (u.c2Fan || u.c2More || u.c2Fly || u.c2Help) { u.c2Fan = u.c2More = u.c2Help = false; u.c2Fly = null; render(); } });

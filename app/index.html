@@ -29819,6 +29819,7 @@ function hearthDiceProjectPayload(entry) {
   return { type: 'hearth-dice', who: entry.who, label: entry.label, dice: entry.dice, total: entry.total, nat: entry.nat, ts: entry.ts };
 }
 function hearthDiceSendToProjector(entry) {
+  if (entry && entry.secret) return false; // v1.7.1 — a roll for a creature the players can't see
   const ch = typeof getMapChannel === 'function' ? getMapChannel() : null;
   if (!ch) return false;
   try { ch.postMessage(hearthDiceProjectPayload(entry)); return true; } catch (e) { return false; }
@@ -29826,6 +29827,7 @@ function hearthDiceSendToProjector(entry) {
 let _hearthDiceCurrentEntry = null;
 function hearthDiceOnProjector() {
   const entry = _hearthDiceCurrentEntry; if (!entry) return;
+  if (entry.secret) { if (typeof showToast === 'function') showToast('Hidden creature \u2014 this roll stays on your screen', 2500); return; }
   const tgt = hearthDiceProjectorTarget();
   if (tgt === 'local') hearthDiceSendToProjector(entry);
   else if (tgt === 'link') { try { HearthLink.join.conn.send({ t: 'rollproj', id: entry.id }); } catch (e) {} }
@@ -29875,6 +29877,7 @@ function hearthRecordRoll(spec) {
     nat: hearthRollNat(spec),
     manual: !!spec.manual,
   };
+  if (spec.secret) entry.secret = true; // v1.7.1 — DM-only roll: never sent to the projector
   rollFeedAdd(entry);
   // A linked player's rolls go to the DM's log. While reconnecting they wait
   // in a short queue and are sent once the DM welcomes the phone back.
@@ -29927,6 +29930,12 @@ function hearthDiceRoll(spec) {
   // v1.7.0 — on the C2 DM screen nothing goes to the projector by itself: the
   // DM sends a roll up with the dice card's button, or not at all.
   if (!spec.noAutoProject && typeof dmLayoutIsC2 === 'function' && state.tab === 'dm' && state.ui && state.ui.dmMapMode && dmLayoutIsC2()) spec = Object.assign({}, spec, { noAutoProject: true });
+  // v1.7.1 — a roll for a creature the players can't see (hidden, dead, or under fog) never reaches the
+  // projector, in either layout: no auto-project for "important" rolls and no Send-to-projector button.
+  if (spec.subject != null && !spec.secret) {
+    try { const _e = loadEncounter(), _c = (_e.combatants || []).find(x => x.id === spec.subject); if (_c && !playerVisibility(_e)(_c)) spec = Object.assign({}, spec, { secret: true }); } catch (e) {}
+  }
+  if (spec.secret) spec = Object.assign({}, spec, { noAutoProject: true });
   const groups = (spec.groups || []).filter(g => g && g.values && g.values.length);
   if (!groups.length && !spec.manual) return Promise.resolve(null);
   const entry = hearthRecordRoll(Object.assign({}, spec, { groups }));
@@ -29951,8 +29960,10 @@ function hearthDiceRoll(spec) {
     const crit = entry.nat === 20 ? 'nat20' : (entry.nat === 1 ? 'nat1' : null);
     // v1.7.0 — DM stat-card rolls never go up by themselves: 'important' acts as 'ask'
     // for this roll (the Send-to-projector button is still offered).
-    const holdProj = !!(spec.noAutoProject && dp.projector === 'important' && HD.setProjectorMode);
-    if (holdProj) HD.setProjectorMode('ask');
+    // (a secret roll — see above — turns the big-screen option off altogether for this roll)
+    const holdMode = spec.secret ? (dp.projector !== 'off' ? 'off' : null) : (spec.noAutoProject && dp.projector === 'important' ? 'ask' : null);
+    const holdProj = !!(holdMode && HD.setProjectorMode);
+    if (holdProj) HD.setProjectorMode(holdMode);
     const restoreProj = () => { if (holdProj) { try { HD.setProjectorMode(hearthDicePrefs().projector); } catch (e) {} } };
     let p;
     try { p = HD.roll({
@@ -35270,7 +35281,8 @@ function hearthRollAttack(btn) {
     line += ' \u2192 <b>' + sum + '</b> dmg (' + parts.join(' + ') + ')';
     atkDmgSum = sum;
   }
-  hearthDiceRoll({ who: 'DM', label: name || 'Attack', groups: atkDice, crit: atkNat,
+  const _tile = btn.closest && btn.closest('[data-dm-tile]'); // v1.7.1 — whose attack it is, so a hidden one stays off the projector
+  hearthDiceRoll({ who: 'DM', label: name || 'Attack', groups: atkDice, crit: atkNat, subject: _tile ? _tile.getAttribute('data-dm-tile') : null,
     total: [atkHitTotal != null ? atkHitTotal + ' to hit' : '', atkDmgSum != null ? atkDmgSum + ' dmg' : ''].filter(Boolean).join(' · ') });
   state.ui.dmRollLog = [{ html: line, ts: Date.now() }].concat(state.ui.dmRollLog || []).slice(0, 10);
 }
@@ -35716,7 +35728,7 @@ function wireDMConcDialog() {
       const die = rollDie(20);
       const total = die + (dmConcSaveBonus(c) || 0);
       d.rolled = { die, total };
-      hearthDiceRoll({ who: 'DM', label: ((c && c.name) || 'Monster') + ' concentration', groups: [{ sides: 20, values: [die] }], total, boss: !!(c && c.boss) });
+      hearthDiceRoll({ who: 'DM', label: ((c && c.name) || 'Monster') + ' concentration', groups: [{ sides: 20, values: [die] }], total, boss: !!(c && c.boss), subject: c ? c.id : null });
       if (total < d.dc) {
         const e = loadEncounter();
         const cc = e.combatants.find(x => x.id === d.id);
@@ -55079,17 +55091,54 @@ function assignMapPositions(enc) {
   return enc;
 }
 
+// v1.7.1 — ONE answer to "can the players see this creature?". Every player-facing channel asks it:
+// the projector map (tokens, labels, turn order, lights), templates that follow a creature, roll cards,
+// the live game link to the players' phones, and the projector's embers and smoke. A creature is
+// player-visible unless it is hidden from players, a dead monster, or a non-player whose footprint
+// is under fog (the same footprint test the soft fog uses: at least half of its middle clear).
+// Returns a predicate vis(c); vis.underFog(c) and vis.span(c) are exposed for callers that need them.
+function playerVisibility(enc) {
+  enc = enc || {};
+  const FL = (typeof window !== 'undefined' && window.HearthFogLib) || null;
+  const MI = (typeof window !== 'undefined' && window.HearthMI) || null;
+  if (FL && MI && MI.fogSync) MI.fogSync(enc); // fold older `revealed` edits into the mask first
+  const fogOn = !!(enc.fog && enc.fog.on);
+  const mask = fogOn && FL && MI ? MI.fogMask(enc) : null;
+  const span = (c) => {
+    if (!c || c.kind === 'player') return 1;
+    try { return tokenFootprint(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size })) || 1; } catch (e) { return 1; }
+  };
+  const revealed = fogOn ? new Set(enc.fog.revealed || []) : null;
+  const underFog = (c) => {
+    if (!fogOn || !c || c.kind === 'player' || c.mapX == null || c.mapY == null) return false;
+    const s = span(c);
+    if (mask) return FL.tokenHidden(mask, enc.fog.mw, enc.fog.mh, c.mapX, c.mapY, s);
+    // no mask library: whole squares, and the creature shows only when at least half its footprint is revealed
+    let open = 0;
+    for (let j = 0; j < Math.max(1, Math.ceil(s)); j++) for (let i = 0; i < Math.max(1, Math.ceil(s)); i++) if (revealed.has((c.mapX + i) + ',' + (c.mapY + j))) open++;
+    return open * 2 < Math.max(1, Math.ceil(s)) * Math.max(1, Math.ceil(s));
+  };
+  const vis = (c) => !!c && !c.hiddenFromPlayers && !(c.kind === 'monster' && c.dead) && !underFog(c);
+  vis.underFog = underFog; vis.span = span;
+  vis.byId = (id) => vis((enc.combatants || []).find(x => x.id === id));
+  return vis;
+}
+// The name the players may see for a creature: a "hide name" creature is only its token number (or BOSS).
+function playerVisibleName(c) {
+  if (!c) return '';
+  if (c.kind !== 'player' && c.hideName) return (typeof tokenLabel === 'function' ? tokenLabel(c) : '') || '';
+  return c.name || (typeof tokenLabel === 'function' ? tokenLabel(c) : '') || 'Combatant';
+}
+
 // Build the serializable map state broadcast to the projector window.
 function buildMapState(enc) {
   const _order = (typeof sortedCombatants === 'function') ? sortedCombatants(enc) : (enc.combatants || []);
   // v1.7.0 — the fog travels as a fine alpha mask (4×4 per square) plus the last change's
   // origin, so the projector can dissolve it softly; tokens under fog stay hidden.
+  const _vis = playerVisibility(enc); // v1.7.1 — the shared player-visible test (also folds fog edits into the mask)
   const _FL = (typeof window !== 'undefined' && window.HearthFogLib) || null;
-  if (_FL && window.HearthMI) HearthMI.fogSync(enc);
   const _fogOn = !!(enc.fog && enc.fog.on);
   const _mask = _fogOn && _FL && window.HearthMI ? HearthMI.fogMask(enc) : null;
-  const _span = (c) => c.kind === 'player' ? 1 : tokenFootprint(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size }));
-  const _underFog = (c) => _fogOn && c.mapX != null && (_mask ? _FL.tokenHidden(_mask, enc.fog.mw, enc.fog.mh, c.mapX, c.mapY, _span(c)) : !(enc.fog.revealed || []).includes(c.mapX + ',' + c.mapY));
   const activeTurnId = (enc.started !== false && _order.length) ? (_order[dmTurnIdx(enc, _order)] || {}).id : null;
   return {
     type: 'hearth-map',
@@ -55108,8 +55157,10 @@ function buildMapState(enc) {
     videoLoop: enc.mapVideoLoop !== false,
     gridOverlay: enc.mapGridOverlay !== false,
     fog: _fogOn ? { on: true, revealed: (enc.fog.revealed || []), mask: _mask ? enc.fog.mask : null, mw: enc.fog.mw || 0, mh: enc.fog.mh || 0, fx: enc.fog.fx || null } : null,
-    aoes: (enc.aoes || []).filter(a => a.pinned).map(a => {
-      const pos = (typeof resolveAoePos === 'function') ? resolveAoePos(a, enc) : { x: a.x, y: a.y };
+    // v1.7.1 — a template that follows a creature the players can't see is not sent at all (it would trace it).
+    aoes: (enc.aoes || []).filter(a => a.pinned && !(a.attachedTo && !_vis.byId(a.attachedTo))).map(a => {
+      // v1.7.1 — a big caster's cone or line starts on the edge of its space (HearthMI.apex), as on the DM screen
+      const pos = (window.HearthMI && HearthMI.apex) ? HearthMI.apex(a, enc) : ((typeof resolveAoePos === 'function') ? resolveAoePos(a, enc) : { x: a.x, y: a.y });
       return {
         id: a.id, kind: a.kind, x: pos.x, y: pos.y, len: a.len, angle: a.angle || 0,
         color: a.color || (window.HearthMI ? '#ff8a3d' : (typeof AOE_COLORS !== 'undefined' ? AOE_COLORS[a.kind] : '#d4673a')),
@@ -55118,7 +55169,7 @@ function buildMapState(enc) {
     }),
     // v1.7.0 — creatures the players can't see never leave the DM screen: hidden, dead monsters, or under fog.
     // (The projector also skips them, but the payload itself carries no name, picture or position.)
-    tokens: (enc.combatants || []).filter(c => !c.hiddenFromPlayers && !(c.kind === 'monster' && c.dead) && !(c.kind !== 'player' && _underFog(c))).map(c => {
+    tokens: (enc.combatants || []).filter(_vis).map(c => {
       let mtype = null;
       if (c.kind === 'monster' && c.monsterId && typeof findMonster === 'function') {
         const m = findMonster(c.monsterId);
@@ -55128,36 +55179,35 @@ function buildMapState(enc) {
         id: c.id,
         x: c.mapX, y: c.mapY,
         label: tokenLabel(c),
-        name: c.name || '',
+        name: (c.kind !== 'player' && c.hideName) ? '' : (c.name || ''), // v1.7.1 — a hidden name never travels
         kind: c.kind,
         isBoss: !!c.isBoss,
-        dead: c.kind === 'monster' && !!c.dead,
+        dead: false, // v1.7.1 — dead monsters are never sent (kept for older projectors)
         afflicted: Array.isArray(c.statuses) && c.statuses.length > 0,
         iconPath: (c.tokenIcon || c.kind === 'monster' || c.isBoss) ? monsterTypeIconPath(c.tokenIcon || mtype) : '',
         span: c.kind === 'player' ? 1 : tokenFootprint(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size })),
         tiny: c.kind !== 'player' && tokenSizeCells(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size })) < 1,
         isTurn: c.id === activeTurnId,
-        hidden: !!c.hiddenFromPlayers,
+        hidden: false, // v1.7.1 — hidden creatures are never sent (kept for older projectors)
         hideName: !!c.hideName,
         disposition: c.disposition || 'enemy',
         tokenImage: c.tokenImage || null,
         aura: (c.kind === 'player' && typeof dmTokenAura === 'function') ? dmTokenAura(c) : null, // v1.1.0
-        fogHidden: c.kind !== 'player' && _underFog(c), // v1.7.0
+        fogHidden: false, // v1.7.1 — fogged creatures are never sent (kept for older projectors)
       };
     }),
     // v0.91.1 — the initiative panel follows the same rules as the tokens: no
     // hidden/dead monsters, no monsters standing in unrevealed fog, and a hidden
     // name shows only the token number (or "BOSS").
-    initiative: _order.filter(c => !c.hiddenFromPlayers && !(c.kind === 'monster' && c.dead)
-      && !(c.kind !== 'player' && _underFog(c))).map(c => ({
-      name: (c.kind !== 'player' && c.hideName) ? tokenLabel(c) : (c.name || (typeof tokenLabel === 'function' ? tokenLabel(c) : '') || 'Combatant'),
+    initiative: _order.filter(_vis).map(c => ({
+      name: playerVisibleName(c),
       kind: c.kind, isBoss: !!c.isBoss, isTurn: c.id === activeTurnId,
     })),
     round: enc.round || 1,
     // v1.7.0 — weather & light. Lights carried by hidden, dead or fogged creatures never reach the players.
     atmo: (function () {
       const a = (typeof window !== 'undefined' && window.HearthAtmo) ? HearthAtmo.mapState(enc, true) : null;
-      if (a) a.lights = a.lights.filter(l => { const c = (enc.combatants || []).find(x => x.id === l.id); return c && !(c.kind !== 'player' && _underFog(c)); });
+      if (a) a.lights = a.lights.filter(l => _vis.byId(l.id));
       return a;
     })(),
   };
@@ -57422,7 +57472,11 @@ function wireDMMap(enc, cell, cols, rows) {
     const toLocal = (ev) => { const gr = rgrid.getBoundingClientRect(); const z = zoomOf(); return { x: (ev.clientX - gr.left) / z, y: (ev.clientY - gr.top) / z }; };
     const draw = (a, b) => {
       const dx = b.x - a.x, dy = b.y - a.y;
-      const feet = Math.round(Math.hypot(dx, dy) / cell) * 5;
+      // v1.7.1 — the 5e grid rule the move chip uses: count squares, a diagonal square is 5 ft
+      // (squares between the two end squares = the larger of the column and row differences).
+      const sq = (v) => Math.floor(v / cell);
+      const feet = Math.max(Math.abs(sq(b.x) - sq(a.x)), Math.abs(sq(b.y) - sq(a.y))) * 5;
+      void dx; void dy;
       const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
       rlayer.innerHTML =
         '<line x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '" stroke="#d9a441" stroke-width="3" stroke-linecap="round" stroke-dasharray="7 5"/>' +
@@ -60582,8 +60636,10 @@ function linkPushCombat(now) {
     let enc; try { enc = loadEncounter(); } catch (e) { return; }
     const order = sortedCombatants(enc);
     const turnC = order.length ? order[dmTurnIdx(enc, order)] : null;
-    const visible = order.filter(c => !c.hiddenFromPlayers && !(c.kind === 'monster' && c.dead)
-      && !(c.kind !== 'player' && enc.fog && enc.fog.on && !(enc.fog.revealed || []).includes(c.mapX + ',' + c.mapY)));
+    // v1.7.1 — the same player-visible test as the projector (whole footprint under the soft fog), not the
+    // old top-left-square check that let a fogged Large/Huge creature's name and turn reach the phones.
+    const _vis = playerVisibility(enc);
+    const visible = order.filter(_vis);
     Object.values(h.devices).forEach(dev => {
       if (!dev.accepted || !dev.conn) return;
       const mine = (c) => c.kind === 'player' && !!c.link && c.link.deviceId === dev.deviceId;
@@ -60591,7 +60647,7 @@ function linkPushCombat(now) {
         t: 'combat', started: !!enc.started, round: enc.round || 1,
         yourTurn: !!(enc.started && turnC && mine(turnC)),
         order: visible.slice(0, 40).map(c => ({
-          n: String((c.kind !== 'player' && c.hideName) ? tokenLabel(c) : (c.name || tokenLabel(c) || 'Combatant')).slice(0, 40),
+          n: String(playerVisibleName(c)).slice(0, 40),
           i: c.init != null ? c.init : null, k: c.kind === 'player' ? 'p' : 'm', you: mine(c), turn: !!(enc.started && turnC && c.id === turnC.id),
         })),
       };
@@ -61231,7 +61287,7 @@ function wireDMLinkDialogs() {
     const p = dmSaveParts(c, ab, enc);
     const die = rollDie(20);
     state.ui.dmSaveResult = { id: c.id, ab, text: dmSaveRollText(p, die), total: die + (p ? p.total : 0) };
-    hearthDiceRoll({ who: 'DM', label: (c.name || 'Monster') + ' ' + String(ab).toUpperCase() + ' save', groups: [{ sides: 20, values: [die] }], total: die + (p ? p.total : 0), boss: !!c.boss });
+    hearthDiceRoll({ who: 'DM', label: (c.name || 'Monster') + ' ' + String(ab).toUpperCase() + ' save', groups: [{ sides: 20, values: [die] }], total: die + (p ? p.total : 0), boss: !!c.boss, subject: c.id });
     render();
   }));
   document.querySelectorAll('[data-dm-save-close]').forEach(b => b.addEventListener('click', () => { state.ui.dmSaveFor = null; state.ui.dmSaveResult = null; render(); }));

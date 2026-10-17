@@ -103,7 +103,21 @@
   // Templates: geometry, creatures inside, labels
   // =====================================================================
   var HALF = Math.atan(0.5); // 5e cone: width at any distance equals that distance
-  function geo(a, enc) { var p = (enc && typeof resolveAoePos === 'function') ? resolveAoePos(a, enc) : { x: a.x, y: a.y }; return { kind: a.kind, x: p.x, y: p.y, len: a.len || 1, ang: a.angle || 0 }; }
+  function geo(a, enc) { var p = apex(a, enc); return { kind: a.kind, x: p.x, y: p.y, len: a.len || 1, ang: a.angle || 0 }; }
+  // v1.7.1 — where a template really starts. A cone or line breathed or cast by a Large or bigger creature
+  // starts on the edge of its space, facing the aim (5e: the point of origin is on the creature's edge),
+  // so a Huge dragon's 60 ft breath reaches the full 60 ft. The template keeps the creature's centre as
+  // its stored point; the apex slides round the footprint as the DM aims. Medium and smaller: unchanged.
+  // If the DM drags the template off the creature (or it moved away), the stored point is used as is.
+  function apex(a, enc) {
+    var p = (enc && typeof resolveAoePos === 'function') ? resolveAoePos(a, enc) : { x: a.x, y: a.y };
+    if (!enc || !a.from || (a.kind !== 'cone' && a.kind !== 'line')) return p;
+    var c = find(enc, a.from); if (!c || c.mapX == null) return p;
+    var sp = spanOf(c); if (sp < 2) return p;
+    var cx = c.mapX + sp / 2, cy = c.mapY + sp / 2; if (Math.abs(p.x - cx) > 0.01 || Math.abs(p.y - cy) > 0.01) return p;
+    var ang = a.angle || 0, co = Math.cos(ang), si = Math.sin(ang), r = (sp / 2) / Math.max(Math.abs(co), Math.abs(si));
+    return { x: cx + co * r, y: cy + si * r };
+  }
   function insideG(g, px, py) {
     var e = 1e-6;
     if (g.kind === 'circle') return Math.hypot(px - g.x, py - g.y) <= g.len + e;
@@ -133,14 +147,21 @@
   function deg(ang) { var d = Math.round((ang || 0) * 180 / Math.PI) % 360; return d < 0 ? d + 360 : d; }
   var KIND = { circle: 'Circle', cone: 'Cone', line: 'Line', square: 'Cube' };
   function sizeWords(a) { var ft = Math.round((a.len || 0) * 5); return a.kind === 'circle' ? ft + ' ft radius' : ft + ' ft'; }
-  function labelHTML(a, n) {
-    var p = ['<b>' + KIND[a.kind] + '</b>', sizeWords(a)];
+  // n: the creatures caught (an array, or just a count). v1.7.1 — the DM's label counts creatures the
+  // players can't see too (the DM needs them to apply damage) and says how many: "3 creatures (1 hidden)".
+  // The projector never gets this label (projLabel: size only).
+  function hiddenIn(list, enc) {
+    if (!Array.isArray(list) || !list.length || typeof W.playerVisibility !== 'function') return 0;
+    var vis = W.playerVisibility(enc || (X && X.enc) || {}); return list.filter(function (c) { return !vis(c); }).length;
+  }
+  function labelHTML(a, n, enc) {
+    var p = ['<b>' + KIND[a.kind] + '</b>', sizeWords(a)], cnt = Array.isArray(n) ? n.length : n, hid = hiddenIn(n, enc);
     if (a.label) p.push(E(a.label)); else if (a.kind === 'cone') p.push(deg(a.angle) + '\u00b0');
-    p.push('<span class="mi-hitc">' + plural(n, 'creature') + '</span>');
+    p.push('<span class="mi-hitc">' + plural(cnt, 'creature') + (hid ? ' (' + hid + ' hidden)' : '') + '</span>');
     if (a.pinned) p.push('<span class="mi-shown" title="Shown to players">' + IC('pin') + '</span>');
     return p.join(' \u00b7 ');
   }
-  function labelPlain(a, n) { return labelHTML(a, n).replace(/<[^>]+>/g, '').replace(/&#39;/g, "'").replace(/&amp;/g, '&'); }
+  function labelPlain(a, n, enc) { return labelHTML(a, n, enc).replace(/<[^>]+>/g, '').replace(/&#39;/g, "'").replace(/&amp;/g, '&'); }
   // Projector: a clean size label, no counts.
   function projLabel(a) { var ft = Math.round((a.len || 0) * 5); return a.kind === 'circle' ? ft + ' ft radius' : a.kind === 'square' ? ft + ' ft cube' : ft + ' ft ' + a.kind; }
   function colourOf(a) { return a.color || FIRE; }
@@ -217,7 +238,12 @@
     var ox = g.x * cell, oy = g.y * cell, L = g.len * cell, c = [], cs = Math.cos(g.ang), sn = Math.sin(g.ang), gap = 8 / zoom();
     // a circle's label goes just below its own circle (centred, then nudged sideways), above it only if that's blocked
     if (a.kind === 'circle') { c.push([ox, oy + L + gap + h / 2]); c.push([ox - w * 0.35, oy + L * 0.97 + gap + h / 2]); c.push([ox + w * 0.35, oy + L * 0.97 + gap + h / 2]); c.push([ox - w * 0.6, oy + L * 0.88 + gap + h / 2]); c.push([ox + w * 0.6, oy + L * 0.88 + gap + h / 2]); c.push([ox, oy - L - gap - h / 2]); c.push([ox + L + gap + w / 2, oy]); c.push([ox - L - gap - w / 2, oy]); c.push([ox + L * 0.75 + w / 2, oy + L * 0.75 + h / 2]); c.push([ox - L * 0.75 - w / 2, oy - L * 0.75 - h / 2]); }
-    else if (a.kind === 'square') { c.push([ox + L / 2, oy - gap - h / 2]); c.push([ox + L / 2, oy + L + gap + h / 2]); c.push([ox + L + gap + w / 2, oy + L / 2]); c.push([ox - gap - w / 2, oy + L / 2]); }
+    else if (a.kind === 'square') { c.push([ox + L / 2, oy - gap - h / 2]); c.push([ox + L / 2, oy + L + gap + h / 2]); c.push([ox + L + gap + w / 2, oy + L / 2]); c.push([ox - gap - w / 2, oy + L / 2]);
+      // v1.7.1 — a big caster's cone now reaches its full length, so it can cover the four middles: try the corners
+      // (beside each corner, then above/below them), then inside its own cube as a last resort
+      [[-1, 0], [-1, 1], [1, 0], [1, 1]].forEach(function (q) { c.push([q[0] < 0 ? ox - gap - w / 2 : ox + L + gap + w / 2, q[1] ? oy + L - h / 2 : oy + h / 2]); });
+      [[0, -1], [1, -1], [0, 1], [1, 1]].forEach(function (q) { c.push([q[0] ? ox + L - w / 2 : ox + w / 2, q[1] < 0 ? oy - gap - h / 2 : oy + L + gap + h / 2]); });
+      c.push([ox + L / 2, oy + L - gap - h / 2]); c.push([ox + L / 2, oy + gap + h / 2]); c.push([ox + L / 2, oy + L / 2]); }
     else {
       var tip = L + gap + Math.abs(cs) * w / 2 + Math.abs(sn) * h / 2; c.push([ox + cs * tip, oy + sn * tip]);
       [0.55, 0.8, 0.3, 1].forEach(function (f) {
@@ -247,7 +273,7 @@
   function A() { return U().miAoe || null; }
   function aoes() { return (X && X.enc && X.enc.aoes) || []; }
   function selAoe() { var a = A(); return a && a.sel ? aoes().find(function (t) { return t.id === a.sel; }) : null; }
-  function snapAoe() { aoeUndo.push(JSON.stringify(aoes())); aoeLog.push(null); if (aoeUndo.length > 40) { aoeUndo.shift(); aoeLog.shift(); } }
+  function snapAoe() { aoeUndo.push(JSON.stringify(aoes())); aoeLog.push(null); if (aoeUndo.length > 40) { aoeUndo.shift(); aoeLog.shift(); } persistSoon(); }
   function dropSnap() { aoeUndo.pop(); aoeLog.pop(); }
   var aoeLog = []; // the round-history entry each template undo step wrote (Shown / Hidden), so undo can strike it
   function commitAoes(broadcast) { saveEncounter(X.enc); if (broadcast !== false && typeof broadcastMap === 'function') broadcastMap(X.enc); }
@@ -277,12 +303,12 @@
     list.concat(ghost ? [ghost] : []).forEach(function (t) {
       var gg = geo(t, enc), hit = hits(t, enc), isSel = t.id === sel || t === ghost, big = isSel && open;
       hit.forEach(function (c) { hitSet[c.id] = 1; });
-      var txt = labelPlain(t, hit.length), w = (txt.length * (big ? 7.6 : 6.9) + 22) / z, h = (big ? 30 : 25) / z;
+      var txt = labelPlain(t, hit, enc), w = (txt.length * (big ? 7.6 : 6.9) + 22) / z, h = (big ? 30 : 25) / z;
       var mid = gg.kind === 'circle' ? [gg.x, gg.y] : gg.kind === 'square' ? [gg.x + gg.len / 2, gg.y + gg.len / 2] : [gg.x + Math.cos(gg.ang) * gg.len / 2, gg.y + Math.sin(gg.ang) * gg.len / 2];
       var others = list.concat(ghost ? [ghost] : []).filter(function (q) { return q !== t; }).map(function (q) { var o = geo(q, enc); o.holds = insideG(o, mid[0], mid[1]); return o; });
       var p = placeLabel(t, gg, cell, w, h, boxes, BW, BH, vis, others);
       boxes.push([p[0] - w / 2, p[1] - h / 2, w, h]);
-      html += '<div class="mi-chip' + (big ? ' big' : '') + (t === ghost ? ' ghost' : '') + '" data-mi-sel="' + E(t.id) + '" style="left:' + p[0].toFixed(1) + 'px;top:' + p[1].toFixed(1) + 'px" title="' + E((t.label ? t.label + (t.dc ? ' \u00b7 ' + t.dc : '') + ' \u2014 ' : '') + (open ? 'Select this template' : 'Edit templates')) + '">' + labelHTML(t, hit.length) + '</div>';
+      html += '<div class="mi-chip' + (big ? ' big' : '') + (t === ghost ? ' ghost' : '') + '" data-mi-sel="' + E(t.id) + '" style="left:' + p[0].toFixed(1) + 'px;top:' + p[1].toFixed(1) + 'px" title="' + E((t.label ? t.label + (t.dc ? ' \u00b7 ' + t.dc : '') + ' \u2014 ' : '') + (open ? 'Select this template' : 'Edit templates')) + '">' + labelHTML(t, hit, enc) + '</div>';
       if (open && t !== ghost) (spots[t.id] || []).forEach(function (hp) {
         html += '<button class="mi-hdl k-' + hp.k + (isSel ? ' on' : ' sm') + (U().miDragH === t.id + hp.k ? ' active' : '') + '" data-mi-h="' + hp.k + '" data-mi-id="' + E(t.id) + '" style="left:' + hp.x.toFixed(1) + 'px;top:' + hp.y.toFixed(1) + 'px" aria-label="' + ({ move: 'Move', size: 'Resize', aim: 'Aim' })[hp.k] + ' ' + KIND[t.kind] + '">' + hp.t + '</button>';
       });
@@ -291,18 +317,62 @@
     X.grid.querySelectorAll('[data-map-token]').forEach(function (te) { te.classList.toggle('mi-hit', !!hitSet[te.dataset.mapToken]); });
     offHits();
     stackPview();
+    clearCaps();
+  }
+  // v1.7.1 — a creature's name caption keeps clear of the screen furniture in the bottom corners: the tool fan
+  // (quarter circle on the corner), the template fan, the round button, the pills and the help line. A covered
+  // caption goes above its token, then beside it on the left; if every spot is covered it goes above.
+  function furniture() {
+    var o = [];
+    [].forEach.call(document.querySelectorAll('.c2 .c2-fan.open, .c2 .mi-afan'), function (f) {
+      var r = f.getBoundingClientRect(), S = 0;
+      if (f.classList.contains('mi-afan')) S = parseFloat(f.style.getPropertyValue('--afS')) || 0;
+      else { var w = f.querySelector('.c2-fan-wrap'); S = w ? parseFloat(w.style.width) || 0 : 0; }
+      if (S) o.push({ cx: r.right, cy: r.bottom, r: S + 4 });
+    });
+    [].forEach.call(document.querySelectorAll('.c2 .c2-fab, .c2 .mi-aftogs, .c2 .mi-hint'), function (n) { var r = n.getBoundingClientRect(); if (r.width && getComputedStyle(n).display !== 'none') o.push({ l: r.left - 4, t: r.top - 4, r2: r.right + 4, b: r.bottom + 4 }); });
+    return o;
+  }
+  function hitsFurniture(r, o) {
+    return o.some(function (q) {
+      if (q.cx != null) { var nx = Math.max(r.left, Math.min(q.cx, r.right)), ny = Math.max(r.top, Math.min(q.cy, r.bottom)); return Math.hypot(nx - q.cx, ny - q.cy) < q.r; }
+      return r.left < q.r2 && r.right > q.l && r.top < q.b && r.bottom > q.t;
+    });
+  }
+  function clearCaps() {
+    if (!X || !X.grid) return;
+    var o = furniture(), caps = X.grid.querySelectorAll('.map-token-caption');
+    [].forEach.call(caps, function (cp) { cp.classList.remove('mi-cap-up', 'mi-cap-l'); });
+    if (!o.length) return;
+    [].forEach.call(caps, function (cp) {
+      if (!hitsFurniture(cp.getBoundingClientRect(), o)) return;
+      var ok = ['mi-cap-up', 'mi-cap-l'].some(function (k) { cp.classList.add(k); if (!hitsFurniture(cp.getBoundingClientRect(), o)) return true; cp.classList.remove(k); return false; });
+      if (!ok) cp.classList.add('mi-cap-up'); // above still beats under the corner fan, which is the larger and opaque cover
+    });
   }
   // Phone: creatures caught by the selected template but off screen get an edge marker at their row.
   function offHits() {
     var box = el('miOff'); if (!box) return;
     var a = A(), t = selAoe(); if (!a || !t || wide() || !X.scroll) { box.innerHTML = ''; return; }
     var sr = X.scroll.getBoundingClientRect(), br = box.getBoundingClientRect(), h = '';
+    // v1.7.1 — a marker keeps clear of the template labels, the pills and the other markers: it slides up or down off its
+    // creature's row (at most a few rows) to the nearest clear spot, and stays inside the map
+    var MH = 30, taken = [].map.call(document.querySelectorAll('#miTpl .mi-chip, .c2 .mi-aftogs'), function (n) { var q = n.getBoundingClientRect(); return [q.left - 4, q.top - br.top - 4, q.right + 4, q.bottom - br.top + 4]; });
+    var clearY = function (cy, x0, x1) {
+      var lo = sr.top - br.top + MH / 2 + 2, hi = sr.bottom - br.top - MH / 2 - 2;
+      var free = function (y) { return y >= lo && y <= hi && !taken.some(function (q) { return x0 < q[2] && x1 > q[0] && y - MH / 2 < q[3] && y + MH / 2 > q[1]; }); };
+      for (var d = 0; d <= 4 * MH; d += 4) { if (free(cy + d)) return cy + d; if (free(cy - d)) return cy - d; }
+      return cy;
+    };
     hits(t, X.enc).forEach(function (c) {
       var te = X.grid.querySelector('[data-map-token="' + c.id + '"]'); if (!te) return;
       var r = te.getBoundingClientRect(), cy = r.top + r.height / 2 - br.top;
-      var word = t.kind === 'circle' ? 'circle' : t.kind === 'square' ? 'cube' : t.kind;
-      if (r.right < sr.left + 4) h += '<div class="mi-offhit l" style="top:' + cy.toFixed(0) + 'px">\u25C2 <b>' + E(c.name) + '</b> in ' + word + '</div>';
-      else if (r.left > sr.right - 4) h += '<div class="mi-offhit r" style="top:' + cy.toFixed(0) + 'px"><b>' + E(c.name) + '</b> in ' + word + ' \u25B8</div>';
+      var word = t.kind === 'circle' ? 'circle' : t.kind === 'square' ? 'cube' : t.kind, mw = (c.name.length + word.length + 6) * 7 + 22;
+      var left = r.right < sr.left + 4, right = !left && r.left > sr.right - 4; if (!left && !right) return;
+      var x0 = left ? sr.left - br.left : sr.right - br.left - mw, y = clearY(cy, x0, x0 + mw);
+      taken.push([x0, y - MH / 2, x0 + mw, y + MH / 2]);
+      if (left) h += '<div class="mi-offhit l" style="top:' + y.toFixed(0) + 'px">\u25C2 <b>' + E(c.name) + '</b> in ' + word + '</div>';
+      else h += '<div class="mi-offhit r" style="top:' + y.toFixed(0) + 'px"><b>' + E(c.name) + '</b> in ' + word + ' \u25B8</div>';
     });
     box.innerHTML = h;
   }
@@ -615,12 +685,12 @@
       else { t.x = free ? p.x : Math.floor(p.x) + 0.5; t.y = free ? p.y : Math.floor(p.y) + 0.5; t.from = null; }
     } else if (h.k === 'aim') {
       var ang = Math.atan2(p.y - t.y, p.x - t.x); t.angle = free ? ang : Math.round(ang / st) * st;
-      if (t.kind === 'line') t.len = Math.max(1, Math.round(Math.hypot(p.x - t.x, p.y - t.y)));
+      if (t.kind === 'line') { var ap = apex(t, X.enc); t.len = Math.max(1, Math.round(Math.hypot(p.x - ap.x, p.y - ap.y))); } // measured from where it starts (a big caster's edge)
     } else {
       var L;
       if (t.kind === 'circle') L = Math.hypot(p.x - t.x, p.y - t.y);
       else if (t.kind === 'square') L = Math.max(p.x - t.x, p.y - t.y);
-      else L = (p.x - t.x) * Math.cos(t.angle) + (p.y - t.y) * Math.sin(t.angle);
+      else { var aq = apex(t, X.enc); L = (p.x - aq.x) * Math.cos(t.angle) + (p.y - aq.y) * Math.sin(t.angle); }
       t.len = Math.max(1, Math.min(40, Math.round(L)));
     }
     var a = A(); if (a) { a.ft = Math.round(t.len * 5); var v = document.querySelector('.mi-aival'); if (v) { v.textContent = a.ft + ' ft'; v.setAttribute('aria-valuenow', a.ft); } }
@@ -657,7 +727,11 @@
   // =====================================================================
   // 3. Fog of war tools
   // =====================================================================
-  var hist = {}; // per encounter: { items: [{ label, before, after, fx }], pos }
+  // v1.7.1 — each step is a per-cell diff: chg = the sub-squares it changed, after = their value once it ran
+  // (the fog is 1 bit per sub-square, so "before" is the opposite of "after" wherever chg is set).
+  // Undo puts back only the cells this step changed AND that still hold its result, so later changes made
+  // outside the history (classic Hide/Reveal all and brush, a player's darkvision reveal) survive.
+  var hist = {}; // per encounter: { items: [{ label, chg, after, fx, t, ev }], pos }
   function H() { var id = X && X.enc ? X.enc.id : 'x'; return hist[id] || (hist[id] = { items: [], pos: 0 }); }
   function Fg() { return U().miFog || null; }
   var stroke = null, rect = null, hoverRoom = null, ring = null, fogFxSeq = 0;
@@ -675,22 +749,37 @@
   }
   function closeFog() { var u = U(); if (u.miFog) u.miFogLast = Object.assign({}, u.miFog); u.miFog = null; stroke = rect = hoverRoom = ring = null; render(); }
   function fogCommit(m, label, fx) {
-    var enc = X.enc, before = enc.fog && enc.fog.mask ? enc.fog.mask : FL().encode(maskFromRevealed(enc));
-    fogPut(enc, m); var after = enc.fog.mask;
-    if (before === after) return false;
+    var enc = X.enc, b = fogMask(enc) || maskFromRevealed(enc), n = m.length, chg = new Uint8Array(n), any = false;
+    for (var i = 0; i < n; i++) if ((b[i] ? 1 : 0) !== (m[i] ? 1 : 0)) { chg[i] = 1; any = true; }
+    fogPut(enc, m);
+    if (!any) return false;
     enc.fog.fx = Object.assign({ seq: ++fogFxSeq + Date.now() % 100000 }, fx || {});
-    var h = H(); h.items = h.items.slice(0, h.pos); h.items.push({ label: label, before: before, after: after, fx: fx || {}, t: Date.now() }); h.pos = h.items.length;
+    var h = H(); h.items = h.items.slice(0, h.pos); h.items.push({ label: label, chg: FL().encode(chg), after: enc.fog.mask, n: n, fx: fx || {}, t: Date.now() }); h.pos = h.items.length;
     if (h.items.length > 60) { h.items.shift(); h.pos--; }
     saveEncounter(enc); if (typeof broadcastMap === 'function') broadcastMap(enc);
     h.items[h.items.length - 1].ev = logEvent(label);
+    persistSoon();
     return true;
+  }
+  // apply one history step to mask m, forwards (redo) or backwards (undo); returns how many cells changed
+  function fogStep(m, it, back) {
+    var n = m.length; if (it.n && it.n !== n) return 0; // the map was resized since: that step no longer applies
+    var chg = FL().decode(it.chg, n), aft = FL().decode(it.after, n), k = 0;
+    for (var i = 0; i < n; i++) if (chg[i]) {
+      var res = aft[i] ? 1 : 0, cur = m[i] ? 1 : 0;
+      if (back ? cur === res : cur !== res) { m[i] = back ? 1 - res : res; k++; }
+    }
+    return k;
   }
   function fogGoto(pos, speed) {
     var h = H(); pos = Math.max(0, Math.min(h.items.length, pos)); if (pos === h.pos) return;
-    var back = pos < h.pos, it = back ? h.items[pos] : h.items[pos - 1], str = back ? it.before : it.after;
+    var back = pos < h.pos, it = back ? h.items[pos] : h.items[pos - 1];
+    var enc = X.enc; fogSync(enc); var m = curMask();
+    if (back) for (var i = h.pos - 1; i >= pos; i--) fogStep(m, h.items[i], true);
+    else for (var j = h.pos; j < pos; j++) fogStep(m, h.items[j], false);
     h.pos = pos;
     h.items.forEach(function (q, i) { if (q.ev) q.ev.undone = i >= pos; }); // round history greys out what was undone
-    var enc = X.enc, m = FL().decode(str, dims(enc).cols * F * dims(enc).rows * F);
+    persistSoon();
     fogPut(enc, m);
     var fx = Object.assign({}, it.fx || {}, { dur: Math.round(((it.fx && it.fx.dur) || 450) / 1.5), seq: ++fogFxSeq + Date.now() % 100000 });
     enc.fog.fx = fx; saveEncounter(enc); if (typeof broadcastMap === 'function') broadcastMap(enc);
@@ -838,7 +927,7 @@
       rows += '<button class="mi-hi' + (cur ? ' on' : '') + (undone ? ' undone' : '') + '" data-mi-fgoto="' + (i + 1) + '" title="' + (undone ? 'Redo up to here' : 'Step back to here') + '">' + deco(it.label) + '<small>' + (cur ? 'now' : ago(it.t)) + '</small></button>';
     }
     if (h.items.length && h.pos === 0) rows += '<button class="mi-hi on" data-mi-fgoto="0">Start<small>now</small></button>';
-    return '<div class="mi-hist" aria-label="Fog history"><b>Fog history</b>' + (rows || '<em>Each stroke, area or room you clear shows up here.</em>') + '<button class="mi-link" data-mi-foff="1">Turn fog off</button></div>';
+    return '<div class="mi-hist" aria-label="Fog history"><b>Fog history</b>' + (rows || '<em>Each stroke, area or room you clear shows up here.</em>') + '<small class="mi-hnote">Undo steps are kept until you close this tab.</small><button class="mi-link" data-mi-foff="1">Turn fog off</button></div>';
   }
   function pviewHTML() {
     return '<div class="mi-pview" aria-label="Projector preview"><div class="mi-pvt">' + IC('screen') + ' Projector preview <small>live</small></div><div class="mi-pvmap" id="miPvMap"><canvas id="miPvFog"></canvas><div class="mi-pvtok" id="miPvTok"></div></div></div>';
@@ -884,7 +973,32 @@
 
   // ----- round history (moves and fog changes), listed from the ⋯ More menu
   var log = {};
-  function logEvent(txt) { var enc = X && X.enc; if (!enc) return; var L = log[enc.id] || (log[enc.id] = []); var e = { r: enc.started ? (enc.round || 1) : 0, txt: txt, t: Date.now() }; L.unshift(e); if (L.length > 80) L.pop(); return e; }
+  function logEvent(txt) { var enc = X && X.enc; if (!enc) return; var L = log[enc.id] || (log[enc.id] = []); var e = { id: 'e' + (++evSeq) + Date.now().toString(36), r: enc.started ? (enc.round || 1) : 0, txt: txt, t: Date.now() }; L.unshift(e); if (L.length > 80) L.pop(); persistSoon(); return e; }
+  // ----- v1.7.1: the undo histories (fog steps, templates, moves) and the round history survive a reload.
+  // They live in sessionStorage: kept for this browser tab (a reload or a crash keeps them), cleared when the tab closes.
+  var evSeq = 0, UNDO_KEY = 'hearth.miUndo.v1', persistT = 0;
+  function evById(id) { for (var k in log) { var L = log[k]; for (var i = 0; i < L.length; i++) if (L[i].id === id) return L[i]; } return null; }
+  function persistNow() {
+    clearTimeout(persistT); persistT = 0;
+    try {
+      var hs = {}; Object.keys(hist).forEach(function (k) { var h = hist[k]; hs[k] = { pos: h.pos, items: h.items.map(function (it) { return { label: it.label, chg: it.chg, after: it.after, n: it.n, fx: it.fx, t: it.t, ev: it.ev && it.ev.id }; }) }; });
+      sessionStorage.setItem(UNDO_KEY, JSON.stringify({ v: 1, log: log, hist: hs, aoe: aoeUndo, aoeLog: aoeLog.map(function (e) { return e ? e.id : null; }), move: moveUndo, enc: X && X.enc ? X.enc.id : null }));
+    } catch (e) { }
+  }
+  function persistSoon() { if (!persistT) persistT = setTimeout(persistNow, 250); }
+  function restoreUndo() {
+    try {
+      var o = JSON.parse(sessionStorage.getItem(UNDO_KEY) || 'null'); if (!o || o.v !== 1) return;
+      log = o.log || {};
+      Object.keys(log).forEach(function (k) { (log[k] || []).forEach(function (e) { if (!e.id) e.id = 'e' + (++evSeq); }); });
+      Object.keys(o.hist || {}).forEach(function (k) { var h = o.hist[k]; hist[k] = { pos: h.pos || 0, items: (h.items || []).filter(function (it) { return it && it.chg && it.after; }).map(function (it) { it.ev = it.ev ? evById(it.ev) : null; return it; }) }; if (hist[k].pos > hist[k].items.length) hist[k].pos = hist[k].items.length; });
+      aoeUndo = Array.isArray(o.aoe) ? o.aoe : []; aoeLog = (o.aoeLog || []).map(function (id) { return id ? evById(id) : null; });
+      while (aoeLog.length < aoeUndo.length) aoeLog.unshift(null);
+      moveUndo = Array.isArray(o.move) ? o.move : [];
+      undoEnc = o.enc || null;
+    } catch (e) { }
+  }
+  var undoEnc = null;
   function IC(k) { return W.HearthIcons ? HearthIcons.svg(k) : ''; }
   // log and history labels keep their \u2600/\u2601 marks as data; on screen they become gold line icons
   function deco(txt) { var t = String(txt == null ? '' : txt), m = /^(\u2600|\u2601) /.exec(t); return m ? IC(m[1] === '\u2600' ? 'sun' : 'cloud') + ' ' + E(t.slice(2)) : E(t); }
@@ -917,12 +1031,40 @@
     for (var i = 1; i <= n; i++) out.push([Math.round(ax + (bx - ax) * i / n), Math.round(ay + (by - ay) * i / n)]);
     void sx; void sy; return out;
   }
+  // v1.7.1 — each leg of a drag (start or waypoint to the next) is charged along its cheapest route, the
+  // same rule the reach shading uses (Dijkstra, 8 directions, difficult squares 10 ft, walls blocked), so a
+  // square the shading says is reachable never reads "over speed". The straight line is kept whenever it
+  // is as cheap (so dry ground looks exactly as before); waypoints still force a route.
+  function cheapestLeg(m, ax, ay, bx, by, limit) {
+    var d = m.d, t = m.terrain, s = m.span, best = {}, prev = {}, q = [[ax, ay, 0]], goal = bx + ',' + by;
+    var wallAt = function (x, y) { if (!t || !t.wall) return false; for (var j = 0; j < s; j++) for (var i = 0; i < s; i++) if (t.wall[(y + j) * d.cols + x + i]) return true; return false; };
+    best[ax + ',' + ay] = 0;
+    while (q.length) {
+      q.sort(function (a, b) { return a[2] - b[2]; }); var c = q.shift(), ck = c[0] + ',' + c[1];
+      if (c[2] > best[ck]) continue;
+      if (ck === goal) break;
+      for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue; var nx = c[0] + dx, ny = c[1] + dy;
+        if (nx < 0 || ny < 0 || nx > d.cols - s || ny > d.rows - s || wallAt(nx, ny)) continue;
+        var cost = c[2] + (difficultAt(t, d, nx, ny, s) ? 10 : 5); if (cost >= limit) continue;
+        var k = nx + ',' + ny; if (best[k] != null && best[k] <= cost) continue; best[k] = cost; prev[k] = ck; q.push([nx, ny, cost]);
+      }
+    }
+    if (best[goal] == null || goal === ax + ',' + ay) return null;
+    var out = [], k2 = goal; while (k2 && k2 !== ax + ',' + ay) { var p = k2.split(','); out.unshift([+p[0], +p[1]]); k2 = prev[k2]; }
+    return out;
+  }
   function pathCost(m) {
-    var t = m.terrain, d = m.d, cells = [], ft = 0, extra = 0, pts = m.way.concat([m.cur]);
-    for (var k = 1; k < pts.length; k++) walk(pts[k - 1][0], pts[k - 1][1], pts[k][0], pts[k][1]).forEach(function (q) {
-      var diff = difficultAt(t, d, q[0], q[1], m.span); cells.push([q[0], q[1], diff]); ft += diff ? 10 : 5; if (diff) extra += 5;
-    });
-    return { cells: cells, ft: ft, extra: extra };
+    var t = m.terrain, d = m.d, cells = [], ft = 0, extra = 0, pts = m.way.concat([m.cur]), line = [pts[0]];
+    var price = function (list) { var f = 0; list.forEach(function (q) { f += difficultAt(t, d, q[0], q[1], m.span) ? 10 : 5; }); return f; };
+    for (var k = 1; k < pts.length; k++) {
+      var a = pts[k - 1], b = pts[k], leg = walk(a[0], a[1], b[0], b[1]);
+      var routed = false;
+      if (t && t.water && leg.length) { var lim = price(leg), alt = cheapestLeg(m, a[0], a[1], b[0], b[1], lim); if (alt && price(alt) < lim) { leg = alt; routed = true; } }
+      if (routed) line = line.concat(leg); else line.push(b); // the drawn line bends only where the route leaves the straight line
+      leg.forEach(function (q) { var diff = difficultAt(t, d, q[0], q[1], m.span); cells.push([q[0], q[1], diff]); ft += diff ? 10 : 5; if (diff) extra += 5; });
+    }
+    return { cells: cells, ft: ft, extra: extra, line: line };
   }
   function reachOf(m) {
     var d = m.d, t = m.terrain, s = m.span, best = {}, q = [[m.x0, m.y0, 0]], out = [];
@@ -948,7 +1090,7 @@
     mv.reachCells.forEach(function (q) { h += '<rect class="mi-reach" x="' + q[0] * cell + '" y="' + q[1] * cell + '" width="' + cell + '" height="' + cell + '"/>'; }); // each square once: a big creature's reach doesn't stack
     if (t && t.water) for (var i = 0; i < t.water.length; i++) if (t.water[i]) h += '<rect class="mi-diffzone" x="' + (i % d.cols) * cell + '" y="' + Math.floor(i / d.cols) * cell + '" width="' + cell + '" height="' + cell + '"/>';
     if (!mv.free) pc.cells.forEach(function (q) { h += '<rect class="mi-pcell' + (q[2] ? ' diff' : '') + '" x="' + q[0] * cell + '" y="' + q[1] * cell + '" width="' + s * cell + '" height="' + s * cell + '"/>'; });
-    var pts = mv.way.concat([mv.cur]).map(function (q) { return ((q[0] + s / 2) * cell).toFixed(1) + ',' + ((q[1] + s / 2) * cell).toFixed(1); });
+    var pts = (mv.free ? mv.way.concat([mv.cur]) : pc.line).map(function (q) { return ((q[0] + s / 2) * cell).toFixed(1) + ',' + ((q[1] + s / 2) * cell).toFixed(1); }); // the line follows the squares charged
     if (mv.free && mv.fp) pts[pts.length - 1] = (mv.fp.x * cell).toFixed(1) + ',' + (mv.fp.y * cell).toFixed(1);
     h += '<polyline class="mi-pline" points="' + pts.join(' ') + '"/>';
     mv.way.slice(1).forEach(function (q) { h += '<circle class="mi-wp" cx="' + ((q[0] + s / 2) * cell).toFixed(1) + '" cy="' + ((q[1] + s / 2) * cell).toFixed(1) + '" r="' + (cell * 0.18).toFixed(1) + '"/>'; });
@@ -1096,6 +1238,9 @@
     var prev = X;
     X = { enc: ctx.enc, cell: ctx.cell, cols: ctx.cols, rows: ctx.rows, grid: el('dmMapGrid'), scroll: el('dmMapScroll'), getZoom: ctx.getZoom, setZoom: ctx.setZoom, fitZoom: ctx.fitZoom, onTap: ctx.onTap };
     if (!X.grid) { X = null; return; }
+    // template and move undo restored after a reload belong to the encounter they were made in
+    if (undoEnc && X.enc && X.enc.id !== undoEnc) { aoeUndo = []; aoeLog = []; moveUndo = []; }
+    undoEnc = null;
     if (X.scroll) X.scroll.style.setProperty('--mi-fanpad', '0px'); // full-bleed: the camera stays inside the map's edges
     var ov = el('miOv'); if (ov) ov.innerHTML = '<div id="miTpl"></div><div id="miFx"></div><div id="miMv"></div>';
     X.grid.style.setProperty('--mi-inv', (1 / zoom()).toFixed(4));
@@ -1152,6 +1297,7 @@
         else closeAoe(false);
       }, true);
       sc.addEventListener('scroll', function () { if (A()) { cancelAnimationFrame(ghostRaf); ghostRaf = requestAnimationFrame(offHits); } }, { passive: true });
+      var capRaf = 0; sc.addEventListener('scroll', function () { cancelAnimationFrame(capRaf); capRaf = requestAnimationFrame(clearCaps); }, { passive: true });
       var lblRaf = 0; sc.addEventListener('scroll', function () { if (hdrag || !aoes().length) return; cancelAnimationFrame(lblRaf); lblRaf = requestAnimationFrame(refresh); }, { passive: true }); // keep labels inside the visible map
     }
     refresh(); fxRefresh();
@@ -1260,12 +1406,14 @@
     document.addEventListener('wheel', function (ev) { var t = ev.target; if (!A() || !t || !t.closest || !t.closest('[data-mi-dial]')) return; ev.preventDefault(); var s = selAoe(); setFt((s ? Math.round(s.len * 5) : A().ft) + (ev.deltaY < 0 ? 5 : -5), false); }, { passive: false });
   }
   if (typeof document !== 'undefined') install();
+  restoreUndo();
+  if (typeof window !== 'undefined') { window.addEventListener('pagehide', persistNow); document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') persistNow(); }); }
 
   W.HearthMI = {
-    fogSync: fogSync, fogMask: fogMask, fogPut: fogPut, under: under, aoeGroup: aoeGroup, pathLayer: pathLayer, over: over, wire: wire, onZoom: onZoom,
+    fogSync: fogSync, fogMask: fogMask, apex: apex, fogPut: fogPut, under: under, aoeGroup: aoeGroup, pathLayer: pathLayer, over: over, wire: wire, onZoom: onZoom,
     tokenDown: tokenHook, ownsPointer: ownsPointer, fanHTML: fanHTML, stageHTML: stageHTML, openAoe: openAoe, openFog: openFog, closeAoe: closeAoe,
     placeFromCard: placeFromCard, _fogTone: _fogTone, _fog: function () { return X && X.fog; }, _lum: function () { return lumCache; }, placing: placing, projLabel: projLabel, historyHTML: historyHTML, undoMove: undoMove,
     aoeOpen: function () { return !!A(); }, fogOpen: function () { return !!Fg(); },
-    _hits: hits, _inside: insideG, _geo: geo, _label: labelPlain, _stamp: stampSeg, _derived: derived, _walk: walk, _speed: speedOf, _terrain: terrainFor, _hist: H, _moves: function () { return moveUndo; }, _x: function () { return X; }
+    _hits: hits, _inside: insideG, _geo: geo, _label: labelPlain, _stamp: stampSeg, _derived: derived, _walk: walk, _speed: speedOf, _terrain: terrainFor, _hist: H, _persist: persistNow, _clearCaps: clearCaps, _moves: function () { return moveUndo; }, _x: function () { return X; }
   };
 })();
