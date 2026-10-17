@@ -137,7 +137,7 @@
     var p = ['<b>' + KIND[a.kind] + '</b>', sizeWords(a)];
     if (a.label) p.push(E(a.label)); else if (a.kind === 'cone') p.push(deg(a.angle) + '\u00b0');
     p.push('<span class="mi-hitc">' + plural(n, 'creature') + '</span>');
-    if (a.pinned) p.push('<span class="mi-shown" title="Shown to players">\uD83D\uDCCD</span>');
+    if (a.pinned) p.push('<span class="mi-shown" title="Shown to players">' + IC('pin') + '</span>');
     return p.join(' \u00b7 ');
   }
   function labelPlain(a, n) { return labelHTML(a, n).replace(/<[^>]+>/g, '').replace(/&#39;/g, "'").replace(/&amp;/g, '&'); }
@@ -239,7 +239,7 @@
   function selAoe() { var a = A(); return a && a.sel ? aoes().find(function (t) { return t.id === a.sel; }) : null; }
   function snapAoe() { aoeUndo.push(JSON.stringify(aoes())); aoeLog.push(null); if (aoeUndo.length > 40) { aoeUndo.shift(); aoeLog.shift(); } }
   function dropSnap() { aoeUndo.pop(); aoeLog.pop(); }
-  var aoeLog = []; // the round-history entry each template undo step wrote (📍 Shown / Hidden), so undo can strike it
+  var aoeLog = []; // the round-history entry each template undo step wrote (Shown / Hidden), so undo can strike it
   function commitAoes(broadcast) { saveEncounter(X.enc); if (broadcast !== false && typeof broadcastMap === 'function') broadcastMap(X.enc); }
   function turnToken(enc) {
     var ord = typeof sortedCombatants === 'function' ? sortedCombatants(enc) : [], tid = ord.length && enc.started ? (ord[dmTurnIdx(enc, ord)] || {}).id : null;
@@ -258,6 +258,11 @@
     var vis = [0, 0, BW, BH];
     if (X.scroll) { var sr0 = X.scroll.getBoundingClientRect(), gr0 = X.grid.getBoundingClientRect(); vis = [Math.max(0, (sr0.left - gr0.left) / z), Math.max(0, (sr0.top - gr0.top) / z), Math.min(BW, (sr0.right - gr0.left) / z), Math.min(BH, (sr0.bottom - gr0.top) / z)]; }
     var hs = W.innerWidth < 900 ? 44 : 26, hb = (hs + 6) / z;
+    // labels keep clear of the fan's quarter-circle, the pills and the help line too (screen furniture, mapped to board px)
+    if (open && X.grid) { var gr1 = X.grid.getBoundingClientRect(), Gf = fanGeom(), Sf = Gf.R1 + Gf.sz / 2 + 16, fx = W.innerWidth, fy = W.innerHeight;
+      var toB = function (l, t2, r, b2) { boxes.push([(l - gr1.left) / z, (t2 - gr1.top) / z, (r - l) / z, (b2 - t2) / z, 8]); };
+      for (var fi = 0; fi < 8; fi++) { var y0 = fy - Sf + fi * Sf / 8, dx0 = Math.sqrt(Math.max(0, Sf * Sf - Math.pow(fy - (y0 + Sf / 8), 2))); toB(fx - dx0, y0, fx, y0 + Sf / 8); }
+      [].forEach.call(document.querySelectorAll('.mi-aftogs, .mi-hint-aoe'), function (n) { var r = n.getBoundingClientRect(); if (r.width) toB(r.left - 6, r.top - 6, r.right + 6, r.bottom + 6); }); }
     var spots = {}; if (open) list.forEach(function (t) { var b2 = t.id === sel ? hb : 32 / z; spots[t.id] = handleSpots(t, geo(t, enc), t.id === sel, enc); spots[t.id].forEach(function (h) { boxes.push([h.x - b2 / 2, h.y - b2 / 2, b2, b2]); }); });
     list.concat(ghost ? [ghost] : []).forEach(function (t) {
       var gg = geo(t, enc), hit = hits(t, enc), isSel = t.id === sel || t === ghost, big = isSel && open;
@@ -273,6 +278,7 @@
     var tpl = el('miTpl'); if (tpl) tpl.innerHTML = html;
     X.grid.querySelectorAll('[data-map-token]').forEach(function (te) { te.classList.toggle('mi-hit', !!hitSet[te.dataset.mapToken]); });
     offHits();
+    stackPview();
   }
   // Phone: creatures caught by the selected template but off screen get an edge marker at their row.
   function offHits() {
@@ -308,12 +314,12 @@
     b += '<div class="mi-aival" style="' + pos(G.R2, 135, G.isz + 30, G.isz - 8) + '--i:' + (i++) + '" data-mi-dial="1" role="slider" tabindex="0" aria-label="Template size" aria-valuenow="' + ft + '" aria-valuemin="5" aria-valuemax="200" title="Drag along the arc or scroll to resize">' + ft + ' ft</div>';
     b += '<button class="mi-ai" style="' + pos(G.R2, 161, G.isz, G.isz) + '--i:' + (i++) + '" data-mi-step="5" aria-label="Bigger by 5 ft">+</button>';
     b += '<button class="mi-achip" style="' + pos(G.cr, 160, G.chip, G.chip) + '--i:' + (i++) + '" data-mi-undo="1" title="Undo (Ctrl+Z)" aria-label="Undo"' + (aoeUndo.length ? '' : ' disabled') + '>\u21B6</button>';
-    b += '<button class="mi-achip del" style="' + pos(G.cr, 110, G.chip, G.chip) + '--i:' + (i++) + '" data-mi-del="1" title="Delete template (Delete)" aria-label="Delete template"' + (t ? '' : ' disabled') + '>\uD83D\uDDD1</button>';
-    var peek = !wide() && U().c2Card;
-    var pills = '<div class="mi-aftogs' + (peek ? ' left' : '') + '" style="' + (wide() ? 'right:' + (S + 10) + 'px;bottom:14px' : (peek ? '' : 'right:12px;bottom:' + (S + 12) + 'px')) + '">' +
+    b += '<button class="mi-achip del" style="' + pos(G.cr, 110, G.chip, G.chip) + '--i:' + (i++) + '" data-mi-del="1" title="Delete template (Delete)" aria-label="Delete template"' + (t ? '' : ' disabled') + '>' + IC('trash') + '</button>';
+    var peek = !wide(); // phone: the pills sit over the map's bottom-left, beside the fan
+    var pills = '<div class="mi-aftogs' + (peek ? ' left' : '') + '" style="' + (wide() ? 'right:' + (S + 10) + 'px;bottom:14px' : '') + '">' +
       '<button class="mi-pill' + (a.snap !== false ? ' on' : '') + '" data-mi-snap="1" aria-pressed="' + (a.snap !== false) + '" title="Snap to the grid (hold Shift for a free position or angle)">\u2317 Snap</button>' +
-      '<button class="mi-pill' + (shown ? ' on' : '') + '" data-mi-show="1" aria-pressed="' + shown + '" title="Show this template on the projector">\uD83D\uDCCD Show players</button>' +
-      '<button class="mi-pill" data-c2-fly="aoe" title="Template colours and clear all">\uD83C\uDFA8</button></div>';
+      '<button class="mi-pill' + (shown ? ' on' : '') + '" data-mi-show="1" aria-pressed="' + shown + '" title="Show this template on the projector">' + IC('pin') + ' Show players</button>' +
+      '<button class="mi-pill" data-c2-fly="aoe" title="Template colours and clear all" aria-label="Template colours">' + IC('palette') + '</button></div>';
     var hint = '';
     if (a.armed && !t) hint = kind === 'cone' || kind === 'line' ? (wide() ? 'Click where the ' + KIND[kind].toLowerCase() + ' should point \u00b7 Shift = free angle \u00b7 Esc cancels' : 'Tap where the ' + KIND[kind].toLowerCase() + ' should point') : (wide() ? 'Click to place the ' + KIND[kind].toLowerCase() + ' \u00b7 Shift = free position \u00b7 Esc cancels' : 'Tap to place the ' + KIND[kind].toLowerCase());
     else if (t) hint = wide() ? 'Drag \u2725 to move' + (t.kind === 'cone' || t.kind === 'line' ? ' \u00b7 \u27F3 to aim' : '') + (t.kind !== 'line' ? ' \u00b7 \u25C6 to resize' : ' \u00b7 \u27F3 sets the length too') + ' \u00b7 [ ] size \u00b7 Delete removes' : '';
@@ -409,35 +415,68 @@
     var box = function () {
       var z = zoom(), gr = X.grid.getBoundingClientRect(), g = geo(t, X.enc), pts = [];
       var push = function (x, y) { pts.push([gr.left + x * cell * z, gr.top + y * cell * z]); };
-      if (t.kind === 'circle') { push(g.x - g.len, g.y - g.len); push(g.x + g.len, g.y + g.len); }
-      else if (t.kind === 'square') { push(g.x, g.y); push(g.x + g.len, g.y + g.len); }
-      else { var Lc = t.kind === 'cone' ? g.len / Math.cos(HALF) : g.len, hh = t.kind === 'cone' ? HALF : 0; push(g.x, g.y); push(g.x + Math.cos(g.ang - hh) * Lc, g.y + Math.sin(g.ang - hh) * Lc); push(g.x + Math.cos(g.ang + hh) * Lc, g.y + Math.sin(g.ang + hh) * Lc); }
+      // the shape's outline, sampled (so a template's edge crossing the fan counts, not just its bounding box)
+      var seg = function (x0, y0, x1, y1) { for (var k = 0; k <= 4; k++) push(x0 + (x1 - x0) * k / 4, y0 + (y1 - y0) * k / 4); };
+      if (t.kind === 'circle') { for (var k2 = 0; k2 < 16; k2++) push(g.x + Math.cos(k2 * Math.PI / 8) * g.len, g.y + Math.sin(k2 * Math.PI / 8) * g.len); }
+      else if (t.kind === 'square') { seg(g.x, g.y, g.x + g.len, g.y); seg(g.x + g.len, g.y, g.x + g.len, g.y + g.len); seg(g.x + g.len, g.y + g.len, g.x, g.y + g.len); seg(g.x, g.y + g.len, g.x, g.y); }
+      else { var Lc = t.kind === 'cone' ? g.len / Math.cos(HALF) : g.len, hh = t.kind === 'cone' ? HALF : 0, ax = g.x + Math.cos(g.ang - hh) * Lc, ay = g.y + Math.sin(g.ang - hh) * Lc, bx = g.x + Math.cos(g.ang + hh) * Lc, by = g.y + Math.sin(g.ang + hh) * Lc; seg(g.x, g.y, ax, ay); seg(g.x, g.y, bx, by); seg(ax, ay, bx, by); }
       var org = t.from ? find(X.enc, t.from) : null;
       if (org && org.mapX != null) { var s = spanOf(org); push(org.mapX, org.mapY); push(org.mapX + s, org.mapY + s + 0.4); }
       var xs = pts.map(function (p) { return p[0]; }), ys = pts.map(function (p) { return p[1]; });
       return { z: z, pts: pts, x0: Math.min.apply(null, xs), x1: Math.max.apply(null, xs), y0: Math.min.apply(null, ys), y1: Math.max.apply(null, ys) };
     };
     var b = box(), R = fanZoneR(), cx = W.innerWidth, cy = W.innerHeight, sr = sc.getBoundingClientRect();
-    var inZone = function (dx, dy) { return b.pts.some(function (p) { return Math.hypot(cx - (p[0] - dx), cy - (p[1] - dy)) < R; }) || (b.x1 - dx > cx - R && b.y1 - dy > cy - R); };
+    var inZone = function (dx, dy) { return b.pts.some(function (p) { return Math.hypot(cx - (p[0] - dx), cy - (p[1] - dy)) < R; }); };
     var behavior = reduced() ? 'auto' : 'smooth';
     if (wide()) {
+      // the board already fills the width: pan up only, inside the map's edges (the scroller clamps; no padding)
       if (!inZone(0, 0)) return;
-      // slide the map left (the stage has a fan-wide pad on the right while the fan is open); fall back to up
-      var dx = 0, step = 12; while (dx < R + 40 && inZone(dx, 0)) dx += step;
-      var maxX = sc.scrollWidth - sc.clientWidth - sc.scrollLeft;
-      if (!inZone(dx, 0) && dx <= maxX + 1) { sc.scrollTo({ left: sc.scrollLeft + dx, behavior: behavior }); }
-      else { var need = (b.y1 - (cy - R)); sc.scrollTo({ left: sc.scrollLeft + Math.min(dx, Math.max(0, maxX)), top: sc.scrollTop + Math.max(0, need), behavior: behavior }); }
+      var dy = 0; while (dy < sc.scrollHeight && inZone(0, dy)) dy += 12;
+      var maxY = sc.scrollHeight - sc.clientHeight - sc.scrollTop;
+      if (dy > 0) sc.scrollTo({ top: sc.scrollTop + Math.min(dy, Math.max(0, maxY)), behavior: behavior });
     } else {
-      // phone: the template (and its origin creature) must fit in the band above the fan; zoom out if it can't
+      // phone: frame the template in the band above the fan at readable squares (~45 px), never below the
+      // zoom that fills the stage; a template too big for the band keeps its origin creature in view
       var top = sr.top + 6, availW = sr.width - 12, availH = Math.max(140, (cy - R * 0.92) - top - 34);
       var bw = (b.x1 - b.x0) / b.z + cell, bh = (b.y1 - b.y0) / b.z + cell;
-      var zf = Math.min(availW / bw, availH / bh);
-      if (zf < b.z - 0.01 && X.setZoom) { X.setZoom(Math.max(0.4, zf), false); b = box(); }
-      var ddx = (b.x0 + b.x1) / 2 - (sr.left + 6 + availW / 2), ddy = (b.y0 + b.y1) / 2 - (top + 34 + availH / 2);
+      var zc = X.fitZoom ? Math.max(sr.width / (X.cols * cell), sr.height / (X.rows * cell)) : b.z;
+      var zt = Math.max(zc, Math.min(availW / bw, availH / bh, 45 / cell));
+      var org = t.from ? find(X.enc, t.from) : null, hasOrg = org && org.mapX != null;
+      // A template too big for the band keeps its origin creature in view, beside the fan rather than under
+      // it (tmpl-sheet-phone). Where the map's edges stop the pan, step the zoom up (to ~66 px squares at most)
+      // until the creature's round token clears the fan's ring.
+      var strict = true;
+      var plan = function (z) {
+        var sp = hasOrg ? spanOf(org) : 1, s = cell * z, gwz = X.cols * cell * z, ghz = X.rows * cell * z;
+        var fits = (b.x1 - b.x0) / b.z * z <= availW;
+        var ocx = hasOrg ? (org.mapX + sp / 2) * s : 0, ocy = hasOrg ? (org.mapY + sp / 2) * s : 0, r = sp * s / 2;
+        // box in content px at zoom z
+        var gr = X.grid.getBoundingClientRect(), k = z / b.z;
+        var cx0 = (b.x0 - gr.left) * k, cx1 = (b.x1 - gr.left) * k, cy0 = (b.y0 - gr.top) * k, cy1 = (b.y1 - gr.top) * k;
+        var sl, st;
+        if (fits || !hasOrg) sl = (cx0 + cx1) / 2 - (6 + availW / 2);
+        else sl = ocx > (cx0 + cx1) / 2 ? ocx + r - (sr.width - 8) : ocx - r - 8;
+        st = (cy1 - cy0) <= availH ? (cy0 + cy1) / 2 - (top - sr.top + 34 + availH / 2) : (hasOrg && !fits ? ocy - (top - sr.top + 34 + availH / 2) : cy0 - (top - sr.top + 34));
+        var mxl = Math.max(0, gwz - sr.width), mxt = Math.max(0, ghz - sr.height);
+        sl = Math.max(0, Math.min(mxl, sl)); st = Math.max(0, Math.min(mxt, st));
+        var Gq = fanGeom(), clr = function (l, t2) { var dd = Math.hypot(cx - (sr.left + ocx - l), cy - (sr.top + ocy - t2)); return !hasOrg || (strict ? dd - r >= Gq.R1 + Gq.sz / 2 + 4 : dd - r * 0.35 >= Gq.R1 + Gq.sz / 2 + 8); }; // strict: the whole token clears the ring; else most of it (and its middle)
+        if (clr(sl, st)) return { sl: sl, st: st, clear: true };
+        // not clear: slide the view toward the corner (the creature moves up and away from the fan) as far as needed
+        for (var f = 0.1; f <= 1.001; f += 0.1) { var l2 = sl + (mxl - sl) * f, t3 = st + (mxt - st) * f; if (clr(l2, t3)) return { sl: l2, st: t3, clear: true }; }
+        return { sl: sl, st: st, clear: false }; // can't clear inside the map's edges: keep the template framed
+      };
+      var pl = plan(zt);
+      var z0 = zt;
+      if (hasOrg && !pl.clear) { for (var zz = z0 + 0.04; zz <= 52 / cell; zz += 0.04) { var q = plan(zz); if (q.clear) { zt = zz; pl = q; break; } } }
+      if (hasOrg && !pl.clear) { strict = false; pl = plan(z0); zt = z0; if (!pl.clear) for (var z3 = z0 + 0.04; z3 <= 52 / cell; z3 += 0.04) { var q3 = plan(z3); if (q3.clear) { zt = z3; pl = q3; break; } } }
+      // (a creature in the map's last few squares under the fan's corner can't clear it without panning past
+      // the map's edge, which the board doesn't do; the template stays framed and the DM can drag it out)
+      if (Math.abs(zt - b.z) > 0.01 && X.setZoom) { X.setZoom(zt, false); b = box(); pl = plan(zt); }
+      var ddx = pl.sl - sc.scrollLeft, ddy = pl.st - sc.scrollTop;
       // then nudge sideways so the selected template's 44 px thumb handles aren't cut off by the screen edge
       var gr2 = X.grid.getBoundingClientRect(), g2 = geo(t, X.enc), hx = handleSpots(t, g2, true).map(function (hp) { return gr2.left + hp.x * b.z; });
       var hx0 = Math.min.apply(null, hx) - 24, hx1 = Math.max.apply(null, hx) + 24;
-      if (hx0 - ddx < sr.left + 4) ddx = hx0 - sr.left - 4; else if (hx1 - ddx > sr.right - 4) ddx = hx1 - sr.right + 4;
+      if (b.x1 - b.x0 <= availW) { if (hx0 - ddx < sr.left + 4) ddx = hx0 - sr.left - 4; else if (hx1 - ddx > sr.right - 4) ddx = hx1 - sr.right + 4; }
       sc.scrollTo({ left: sc.scrollLeft + ddx, top: sc.scrollTop + ddy, behavior: behavior });
     }
     setTimeout(offHits, reduced() ? 0 : 320);
@@ -469,7 +508,8 @@
     var dm = dims(X.enc), BW = dm.cols * X.cell, BH = dm.rows * X.cell, r = hs / 2 + 4 / z;
     var at = function (d, ax) { var c2 = ax == null ? ca : Math.cos(ax), s2 = ax == null ? sa : Math.sin(ax); return [Math.max(r, Math.min(BW - r, hp.x + c2 * d)), Math.max(r, Math.min(BH - r, hp.y + s2 * d))]; };
     var cost = function (q) { return overlapScore([q[0] - r, q[1] - r, 2 * r, 2 * r], boxes); };
-    var d0 = big ? 30 / z : 0, step = 4 / z, max = X.cell * 3.5, best = null, bestC = Infinity;
+    // (a cone's resize handle stays right on its corner, Jenny's tmpl-phone; it only slides off to clear a token)
+    var d0 = big && !(t.kind === 'cone' && hp.k === 'size') ? 30 / z : 0, step = 4 / z, max = X.cell * 3.5, best = null, bestC = Infinity;
     // inward steps are only used where sliding back stays meaningful (rims and tips, not origins)
     var inward = hp.k !== 'move' || t.kind === 'circle';
     for (var k = 0; k * step <= max; k++) {
@@ -696,7 +736,7 @@
       var m = new Uint8Array(d.cols * F * d.rows * F); if (clear) m.fill(1);
       if (fogCommit(m, clear ? '\u2600 Reveal all' : '\u2601 Re-cover all', { origin: 'left', dur: 800, dmDur: 800 })) { if (X.fog) X.fog.set(m, { origin: 'left', dur: 800 }); afterFog(m, 'left', 800); }
       syncFogBar();
-    }, { title: clear ? 'Reveal all' : 'Re-cover all', yes: clear ? '\u2600 Reveal all' : '\u2601 Re-cover all' });
+    }, { title: clear ? 'Reveal all' : 'Re-cover all', yes: clear ? 'Reveal all' : 'Re-cover all' });
   }
   function fogOff() {
     var enc = X.enc; enc.fog = Object.assign({}, enc.fog || {}, { on: false }); saveEncounter(enc); if (typeof broadcastMap === 'function') broadcastMap(enc);
@@ -723,7 +763,7 @@
         if (x === 0 || !set[i - 1]) seg += 'M' + X0 + ',' + Y0 + 'V' + Y1; if (x === d.cols - 1 || !set[i + 1]) seg += 'M' + X1 + ',' + Y0 + 'V' + Y1; });
       var fill = r.cells.map(function (i) { var x = i % d.cols, y = Math.floor(i / d.cols); return 'M' + x * cell + ',' + y * cell + 'h' + cell + 'v' + cell + 'h' + (-cell) + 'z'; }).join('');
       h += '<svg class="mi-roomhi" width="' + d.cols * cell + '" height="' + d.rows * cell + '"><path class="f" d="' + fill + '"/><path class="o" d="' + seg + '"/></svg>' +
-        '<div class="mi-fchip room" style="left:' + ((r.x0 + r.x1 + 1) / 2 * cell).toFixed(1) + 'px;top:' + (r.y0 * cell - 16 / zoom()).toFixed(1) + 'px">\u2302 ' + roomName(r) + ' \u00b7 ' + (r.x1 - r.x0 + 1) * 5 + '\u00d7' + (r.y1 - r.y0 + 1) * 5 + ' ft \u00b7 tap to ' + (modeNow() === 'clear' ? 'reveal' : 'cover') + '</div>';
+        '<div class="mi-fchip room" style="left:' + ((r.x0 + r.x1 + 1) / 2 * cell).toFixed(1) + 'px;top:' + (r.y0 * cell - 16 / zoom()).toFixed(1) + 'px">' + IC('house') + ' ' + roomName(r) + ' \u00b7 ' + (r.x1 - r.x0 + 1) * 5 + '\u00d7' + (r.y1 - r.y0 + 1) * 5 + ' ft \u00b7 tap to ' + (modeNow() === 'clear' ? 'reveal' : 'cover') + '</div>';
     }
     box.innerHTML = h;
   }
@@ -733,14 +773,14 @@
   function fogBarHTML() {
     var f = Fg(); if (!f) return '';
     var h = H(), t = X && X.enc ? terrainFor(X.enc) : null, hasRooms = !!(t && t.rooms && t.rooms.length);
-    var tools = '<div class="mi-seg">' + fbtn('data-mi-ftool="brush"', '\uD83D\uDD8C', 'Brush', f.tool === 'brush') + fbtn('data-mi-ftool="rect"', '\u25AD', 'Area', f.tool === 'rect') +
-      fbtn('data-mi-ftool="room"', '\u2302', 'Room', f.tool === 'room', (t && !hasRooms) ? ' disabled title="This map has no rooms to pick"' : ' title="Tap a room to reveal it"') + '</div>';
-    var modes = '<div class="mi-seg">' + fbtn('data-mi-fmode="clear"', '\u2600', 'Clear', f.mode === 'clear', ' title="Clear fog (hold Alt to cover)"') + fbtn('data-mi-fmode="cover"', '\u2601', 'Cover', f.mode === 'cover', ' title="Cover with fog (hold Alt to clear)"') + '</div>';
+    var tools = '<div class="mi-seg">' + fbtn('data-mi-ftool="brush"', IC('brush'), 'Brush', f.tool === 'brush') + fbtn('data-mi-ftool="rect"', '\u25AD', 'Area', f.tool === 'rect') +
+      fbtn('data-mi-ftool="room"', IC('house'), 'Room', f.tool === 'room', (t && !hasRooms) ? ' disabled title="This map has no rooms to pick"' : ' title="Tap a room to reveal it"') + '</div>';
+    var modes = '<div class="mi-seg">' + fbtn('data-mi-fmode="clear"', IC('sun'), 'Clear', f.mode === 'clear', ' title="Clear fog (hold Alt to cover)"') + fbtn('data-mi-fmode="cover"', IC('cloud'), 'Cover', f.mode === 'cover', ' title="Cover with fog (hold Alt to clear)"') + '</div>';
     var size = '<label class="mi-step' + (f.tool === 'brush' ? '' : ' dim') + '"><small>Size</small><input type="range" min="5" max="30" step="5" value="' + f.size + '" data-mi-fsize="1" aria-label="Brush size"><b>' + f.size + ' ft</b></label>';
     var undo = '<button class="mi-ic" data-mi-fundo="1" title="Undo (Ctrl+Z)" aria-label="Undo"' + (h.pos ? '' : ' disabled') + '>\u21B6</button><button class="mi-ic" data-mi-fredo="1" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"' + (h.pos < h.items.length ? '' : ' disabled') + '>\u21B7</button>';
     var done = '<button class="mi-done c2-brass" data-mi-fdone="1">\u2713' + (wide() ? ' Done' : '') + '</button>';
-    if (wide()) return '<div class="mi-fbar" role="toolbar" aria-label="Fog of war">' + tools + modes + size + '<span class="mi-sep"></span><button class="mi-tx" data-mi-fall="clear">\u2600 Reveal all</button><button class="mi-tx" data-mi-fall="cover">\u2601 Re-cover all</button><span class="mi-sep"></span>' + undo + done + '</div>' + histHTML() + pviewHTML();
-    var more = U().miFogMore ? '<div class="mi-fmore" role="menu">' + size + '<button class="mi-tx" data-mi-fall="clear">\u2600 Reveal all</button><button class="mi-tx" data-mi-fall="cover">\u2601 Re-cover all</button><button class="mi-tx" data-mi-foff="1">Turn fog off</button></div>' : '';
+    if (wide()) return '<div class="mi-fbar" role="toolbar" aria-label="Fog of war">' + tools + modes + size + '<span class="mi-sep"></span><button class="mi-tx" data-mi-fall="clear">' + IC('sun') + ' Reveal all</button><button class="mi-tx" data-mi-fall="cover">' + IC('cloud') + ' Re-cover all</button><span class="mi-sep"></span>' + undo + done + '</div>' + histHTML() + pviewHTML();
+    var more = U().miFogMore ? '<div class="mi-fmore" role="menu">' + size + '<button class="mi-tx" data-mi-fall="clear">' + IC('sun') + ' Reveal all</button><button class="mi-tx" data-mi-fall="cover">' + IC('cloud') + ' Re-cover all</button><button class="mi-tx" data-mi-foff="1">Turn fog off</button></div>' : '';
     return more + '<div class="mi-fbar phone" role="toolbar" aria-label="Fog of war">' + tools.replace(/<small>[^<]*<\/small>/g, '') + modes.replace(/<small>[^<]*<\/small>/g, '') + undo + '<button class="mi-ic' + (U().miFogMore ? ' on' : '') + '" data-mi-fmore="1" aria-label="More fog tools" aria-expanded="' + !!U().miFogMore + '">\u22EF</button>' + done + '</div>';
   }
   function ago(t) { var s = Math.round((Date.now() - t) / 1000); return s < 45 ? 'now' : s < 3600 ? Math.round(s / 60) + ' min' : Math.round(s / 3600) + ' h'; }
@@ -748,19 +788,25 @@
     var h = H(), rows = '';
     for (var i = h.items.length - 1; i >= 0 && h.items.length - i <= 8; i--) {
       var it = h.items[i], cur = i === h.pos - 1, undone = i >= h.pos;
-      rows += '<button class="mi-hi' + (cur ? ' on' : '') + (undone ? ' undone' : '') + '" data-mi-fgoto="' + (i + 1) + '" title="' + (undone ? 'Redo up to here' : 'Step back to here') + '">' + E(it.label) + '<small>' + (cur ? 'now' : ago(it.t)) + '</small></button>';
+      rows += '<button class="mi-hi' + (cur ? ' on' : '') + (undone ? ' undone' : '') + '" data-mi-fgoto="' + (i + 1) + '" title="' + (undone ? 'Redo up to here' : 'Step back to here') + '">' + deco(it.label) + '<small>' + (cur ? 'now' : ago(it.t)) + '</small></button>';
     }
     if (h.items.length && h.pos === 0) rows += '<button class="mi-hi on" data-mi-fgoto="0">Start<small>now</small></button>';
     return '<div class="mi-hist" aria-label="Fog history"><b>Fog history</b>' + (rows || '<em>Each stroke, area or room you clear shows up here.</em>') + '<button class="mi-link" data-mi-foff="1">Turn fog off</button></div>';
   }
   function pviewHTML() {
-    return '<div class="mi-pview" aria-label="Projector preview"><div class="mi-pvt">\uD83D\uDDA5 Projector preview <small>live</small></div><div class="mi-pvmap" id="miPvMap"><canvas id="miPvFog"></canvas><div class="mi-pvtok" id="miPvTok"></div></div></div>';
+    return '<div class="mi-pview" aria-label="Projector preview"><div class="mi-pvt">' + IC('screen') + ' Projector preview <small>live</small></div><div class="mi-pvmap" id="miPvMap"><canvas id="miPvFog"></canvas><div class="mi-pvtok" id="miPvTok"></div></div></div>';
   }
   function syncFogBar() {
     var st = document.querySelector('.c2-stage'); if (!st || !Fg()) return;
     st.querySelectorAll('.mi-fbar, .mi-hist, .mi-fmore').forEach(function (n) { n.remove(); });
     var tmp = document.createElement('div'); tmp.innerHTML = fogBarHTML();
     Array.prototype.slice.call(tmp.children).forEach(function (n) { if (n.classList.contains('mi-pview')) return; st.appendChild(n); });
+    stackPview();
+  }
+  // desktop: the projector preview stacks under the fog history (top right), clear of the tokens and the \u2726 corner
+  function stackPview() {
+    var st = document.querySelector('.c2-stage'), pv = st && st.querySelector('.mi-pview'), hi = st && st.querySelector('.mi-hist'); if (!pv) return;
+    if (wide() && hi) { pv.style.top = (hi.offsetTop + hi.offsetHeight + 10) + 'px'; pv.style.bottom = 'auto'; } else { pv.style.top = ''; pv.style.bottom = ''; }
   }
   function baseImageURL() {
     var b = el('dmPaintedBase'); if (b) { var m = /url\(["']?([^"')]+)["']?\)/.exec(b.style.backgroundImage || ''); if (m) return m[1]; }
@@ -792,11 +838,14 @@
   // ----- round history (moves and fog changes), listed from the ⋯ More menu
   var log = {};
   function logEvent(txt) { var enc = X && X.enc; if (!enc) return; var L = log[enc.id] || (log[enc.id] = []); var e = { r: enc.started ? (enc.round || 1) : 0, txt: txt, t: Date.now() }; L.unshift(e); if (L.length > 80) L.pop(); return e; }
+  function IC(k) { return W.HearthIcons ? HearthIcons.svg(k) : ''; }
+  // log and history labels keep their \u2600/\u2601 marks as data; on screen they become gold line icons
+  function deco(txt) { var t = String(txt == null ? '' : txt), m = /^(\u2600|\u2601) /.exec(t); return m ? IC(m[1] === '\u2600' ? 'sun' : 'cloud') + ' ' + E(t.slice(2)) : E(t); }
   function historyHTML(enc) {
     var L = log[enc.id] || [];
     if (!L.length) return '<div class="mi-rh"><b>Round history</b><em>Moves, templates and fog changes this session show up here.</em></div>';
     var out = '<div class="mi-rh"><b>Round history</b>', last = null;
-    L.slice(0, 14).forEach(function (e) { if (e.r !== last) { out += '<small class="mi-rhr">' + (e.r ? 'Round ' + e.r : 'Before combat') + '</small>'; last = e.r; } out += e.undone ? '<span class="undone" title="Undone">' + E(e.txt) + ' <small>undone</small></span>' : '<span>' + E(e.txt) + '</span>'; });
+    L.slice(0, 14).forEach(function (e) { if (e.r !== last) { out += '<small class="mi-rhr">' + (e.r ? 'Round ' + e.r : 'Before combat') + '</small>'; last = e.r; } out += e.undone ? '<span class="undone" title="Undone">' + deco(e.txt) + ' <small>undone</small></span>' : '<span>' + deco(e.txt) + '</span>'; });
     return out + '</div>';
   }
 
@@ -886,7 +935,7 @@
     var st = document.querySelector('.c2-stage');
     if (st) {
       var hint = document.createElement('div'); hint.className = 'mi-hint mi-hint-move';
-      hint.textContent = wide() ? 'Pause or press W to add a waypoint \u00b7 Esc or right-click cancels \u00b7 Alt = ignore snapping' : 'Pause to add a waypoint';
+      hint.textContent = wide() ? 'W adds a waypoint (or pause) \u00b7 Esc or right-click cancels \u00b7 Alt = ignore snapping' : 'Pause to add a waypoint';
       st.appendChild(hint); m.hint = hint;
     }
     if (m.touch) { var cz = document.createElement('div'); cz.className = 'mi-cancel'; cz.textContent = '\u2715 Drag here to cancel'; (document.querySelector('.c2') || document.body).appendChild(cz); m.cz = cz; }
@@ -905,19 +954,28 @@
     var changed = nx !== m.cur[0] || ny !== m.cur[1];
     m.cur = [nx, ny];
     if (m.cz) { var zr = m.cz.getBoundingClientRect(); m.inCancel = ev.clientY >= zr.top; m.cz.classList.toggle('hot', m.inCancel); }
-    clearTimeout(m.timer); m.timer = setTimeout(addWaypoint, 400);
+    clearTimeout(m.timer); m.timer = setTimeout(addWaypoint, 350); pendDot(m, changed); // a pause of ~350 ms bends the path; the dot fills while you wait
     if (changed || m.free) drawPath();
     if (!m.drawn) { m.drawn = true; drawPath(); }
   }
+  function pendDot(m, moved) {
+    var g = X && X.grid; if (!g) return;
+    var last = m.way[m.way.length - 1], same = last[0] === m.cur[0] && last[1] === m.cur[1], d = m.pend;
+    if (same) { if (d) d.remove(); m.pend = null; return; }
+    if (!d) { d = m.pend = document.createElement('i'); d.className = 'mi-wpend'; d.setAttribute('aria-hidden', 'true'); g.appendChild(d); moved = true; }
+    var c = X.cell, s = m.span; d.style.left = ((m.cur[0] + s / 2) * c) + 'px'; d.style.top = ((m.cur[1] + s / 2) * c) + 'px';
+    if (moved) { d.classList.remove('go'); void d.offsetWidth; d.classList.add('go'); }
+  }
   function addWaypoint() {
     var m = mv; if (!m || !m.lifted) return;
+    if (m.pend) { m.pend.remove(); m.pend = null; }
     var last = m.way[m.way.length - 1];
     if (last[0] === m.cur[0] && last[1] === m.cur[1]) return;
     if (m.way.length > 1 || !(m.cur[0] === m.x0 && m.cur[1] === m.y0)) { m.way.push(m.cur.slice()); vibrate(10); drawPath(); }
   }
   function cleanupMove() {
     var m = mv; mv = null; if (!m) return;
-    clearTimeout(m.timer);
+    clearTimeout(m.timer); if (m.pend) { m.pend.remove(); m.pend = null; }
     if (m.ghost) m.ghost.remove(); if (m.hint) m.hint.remove(); if (m.cz) m.cz.remove();
     var g = el('miPathG'); if (g) g.innerHTML = ''; var b = el('miMv'); if (b) b.innerHTML = '';
     m.el.classList.remove('dragging', 'mi-lift'); X.grid.classList.remove('mi-moving');
@@ -954,6 +1012,8 @@
     clearTimeout(toastT);
     var t = document.createElement('div'); t.className = 'mi-toast' + (wide() ? ' desk' : ''); t.setAttribute('role', 'status');
     t.innerHTML = '<span>' + E(txt) + '</span><button data-mi-mundo="1">\u21B6 Undo</button>' + (wide() ? '<small>Ctrl+Z</small>' : '');
+    // desktop: just below the turn strip, over the top of the map (never over the strip's cards), centred on the map
+    if (wide() && X && X.scroll) { var sr = X.scroll.getBoundingClientRect(); t.style.top = Math.round(sr.top + 12) + 'px'; t.style.left = Math.round(sr.left + sr.width / 2) + 'px'; }
     document.body.appendChild(t);
     requestAnimationFrame(function () { t.classList.add('show'); });
     toastT = setTimeout(function () { t.classList.remove('show'); setTimeout(function () { t.remove(); }, 220); }, 6000);
@@ -989,7 +1049,7 @@
     var prev = X;
     X = { enc: ctx.enc, cell: ctx.cell, cols: ctx.cols, rows: ctx.rows, grid: el('dmMapGrid'), scroll: el('dmMapScroll'), getZoom: ctx.getZoom, setZoom: ctx.setZoom, fitZoom: ctx.fitZoom, onTap: ctx.onTap };
     if (!X.grid) { X = null; return; }
-    if (X.scroll) X.scroll.style.setProperty('--mi-fanpad', A() ? (wide() ? fanZoneR() + 20 : Math.round(fanZoneR() * 0.9)) + 'px' : '0px');
+    if (X.scroll) X.scroll.style.setProperty('--mi-fanpad', '0px'); // full-bleed: the camera stays inside the map's edges
     var ov = el('miOv'); if (ov) ov.innerHTML = '<div id="miTpl"></div><div id="miFx"></div><div id="miMv"></div>';
     X.grid.style.setProperty('--mi-inv', (1 / zoom()).toFixed(4));
     X.grid.classList.toggle('mi-phone', !wide());
@@ -1084,7 +1144,7 @@
       if (t.closest('[data-mi-undo]')) { undoAoe(); return; }
       if (t.closest('[data-mi-del]')) { deleteSel(); return; }
       if (t.closest('[data-mi-snap]')) { a.snap = a.snap === false; U().miSnap = a.snap; syncFan(); return; }
-      if (t.closest('[data-mi-show]')) { var s = selAoe(); if (s) { snapAoe(); s.pinned = !s.pinned; commitAoes(true); aoeLog[aoeLog.length - 1] = logEvent((s.pinned ? '\uD83D\uDCCD Shown: ' : 'Hidden: ') + KIND[s.kind] + ' ' + sizeWords(s)); } else a.show = !a.show; syncFan(); refresh(); return; }
+      if (t.closest('[data-mi-show]')) { var s = selAoe(); if (s) { snapAoe(); s.pinned = !s.pinned; commitAoes(true); aoeLog[aoeLog.length - 1] = logEvent((s.pinned ? 'Shown to players: ' : 'Hidden from players: ') + KIND[s.kind] + ' ' + sizeWords(s)); } else a.show = !a.show; syncFan(); refresh(); return; }
       if (t.closest('[data-mi-done]')) { closeAoe(true); return; }
     }
     if (Fg()) {
@@ -1113,7 +1173,8 @@
     var k = ev.key, mod = ev.ctrlKey || ev.metaKey, a = A();
     if (mv && mv.lifted) {
       if (k === 'Escape') { ev.preventDefault(); endMove(ev, true); return; }
-      if (k === 'w' || k === 'W' || k === ' ') { ev.preventDefault(); addWaypoint(); return; }
+      // W is the waypoint key; Space works too, since Space isn't hold-to-pan anywhere on the DM screen
+      if (k === 'w' || k === 'W' || k === ' ') { ev.preventDefault(); clearTimeout(mv.timer); addWaypoint(); return; }
       return;
     }
     if (Fg()) {

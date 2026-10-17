@@ -20,8 +20,10 @@ const scrollCard = (p, re) => p.evaluate((src) => { const re = new RegExp(src); 
 (async () => {
   const b = await chromium.launch({ args: ['--no-sandbox'] });
   // desktop, dragon's turn with Fire Breath placed
+  // (template shots stage the dragon two squares in from the corner, as Jenny's mockups do, so it clears the fan)
+  const AIM = { dragonAt: [14, 7] }; // origin (15.5, 8.5): the 60 ft cone's corners stay inside the 15-row map
   for (const pal of ['hearth', 'arcane', 'scott-ultramarine']) {
-    const { ctx, p } = await page(b, 1440, 900);
+    const { ctx, p } = await page(b, 1440, 900, 1, AIM);
     if (pal !== 'hearth') await p.evaluate((pal) => { document.documentElement.setAttribute('data-palette', pal); render(); }, pal);
     await p.evaluate(() => { const fb = [...document.querySelectorAll('.c2-atk')].find(x => /^Fire Breath/.test(x.textContent)); fb.querySelector('[data-c2-place]').click(); });
     await p.waitForTimeout(900); await scrollCard(p, /Actions/);
@@ -55,7 +57,7 @@ const scrollCard = (p, re) => p.evaluate((src) => { const re = new RegExp(src); 
   const bare = (p) => p.evaluate(() => { state.ui.c2Card = null; const e = loadEncounter(); e.aoes = []; saveEncounter(e); render(); });
   // templates: aiming the dragon's cone with the circle and a cube on the board
   for (const pal of ['hearth', 'arcane', 'scott-ultramarine']) {
-    const { ctx, p } = await page(b, 1440, 900);
+    const { ctx, p } = await page(b, 1440, 900, 1, AIM);
     if (pal !== 'hearth') await p.evaluate((pal) => { document.documentElement.setAttribute('data-palette', pal); render(); }, pal);
     await p.evaluate(() => { const e = loadEncounter(); e.aoes.push({ id: 'aoe_cube', kind: 'square', x: 16, y: 2, len: 3, angle: 0, color: '#c0392b', pinned: false }); saveEncounter(e); render(); });
     await placeCone(p); await p.waitForTimeout(300);
@@ -63,7 +65,7 @@ const scrollCard = (p, re) => p.evaluate((src) => { const re = new RegExp(src); 
     await shot(p, `tmpl-desk${pal === 'hearth' ? '' : '-' + pal}.png`);
     await ctx.close();
   }
-  { const { ctx, p } = await page(b, 412, 880, 2, undefined, true);
+  { const { ctx, p } = await page(b, 412, 880, 2, AIM, true);
     await placeCone(p); await p.waitForTimeout(1200); await shot(p, 'tmpl-phone.png');
     await ctx.close(); }
   { const { ctx, p } = await page(b, 1440, 900);

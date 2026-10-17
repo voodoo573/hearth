@@ -14,7 +14,7 @@ module.exports.STAGE = (opts) => {
   mk('monster', 'Ogre', { monsterId: 'm_ogre', hp: 59, maxHp: 59, ac: 11, init: 14, tokenImage: L('ogre'), mapX: 7, mapY: 6, statuses: [] });
   mk('monster', 'Goblin Archer', { monsterId: 'm_goblin', hp: 3, maxHp: 7, ac: 13, init: 12, tokenImage: L('goblin-archer'), mapX: 13, mapY: 3, statuses: ['Frightened'] });
   mk('monster', 'Cultist', { monsterId: 'm_cultist', hp: 9, maxHp: 9, ac: 12, init: 9, tokenImage: L('cultist'), mapX: 4, mapY: 3, statuses: ['Restrained', 'Poisoned'] });
-  mk('monster', 'Adult Red Dragon', { monsterId: 'm_adult_red_dragon', hp: 212, maxHp: 256, ac: 19, init: 7, tokenImage: L('young-dragon-red'), mapX: 15, mapY: 9, isBoss: false });
+  mk('monster', 'Adult Red Dragon', { monsterId: 'm_adult_red_dragon', hp: 212, maxHp: 256, ac: 19, init: 7, tokenImage: L('young-dragon-red'), mapX: (opts.dragonAt || [15, 9])[0], mapY: (opts.dragonAt || [15, 9])[1], isBoss: false });
   const e = loadEncounter();
   e.mapCols = 20; e.mapRows = 15; e.mapKind = 'painted'; e.mapId = (BATTLE_MAPS.find(m => /dungeon|crypt|hall/i.test(m.id + ' ' + (m.name || ''))) || BATTLE_MAPS[0]).id;
   e.started = true; e.round = 2;

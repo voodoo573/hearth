@@ -12,6 +12,35 @@
   function E(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]; }); }
   function ui() { return state.ui; }
   function wide() { return W.innerWidth >= 900; }
+  // v1.7.0 — gold line icons for the DM screen (no emoji placeholders). 24-unit grid, 2 px strokes in currentColor,
+  // matching the fan's tool icons. HearthIcons.svg(name) is shared with map tools and the weather panel.
+  var ICONS = {
+    trash: '<path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 12.5h9l1-12.5M10 11v5.5M14 11v5.5"/>',
+    palette: '<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.3 0 2-.8 2-1.8 0-1.4-1.2-1.6-1.2-2.8 0-1 .8-1.6 1.8-1.6H17a3.5 3.5 0 0 0 3.5-3.5c0-4-3.8-7.3-8.5-7.3z"/><circle cx="7.6" cy="11" r="1.2" fill="currentColor" stroke="none"/><circle cx="10.2" cy="7.3" r="1.2" fill="currentColor" stroke="none"/><circle cx="14.6" cy="7.4" r="1.2" fill="currentColor" stroke="none"/>',
+    pin: '<path d="M12 21s-6.5-6.3-6.5-11a6.5 6.5 0 0 1 13 0c0 4.7-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3" fill="currentColor" stroke="none"/>',
+    link: '<path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1.1 1.1"/><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1.1-1.1"/>',
+    screen: '<rect x="3" y="4.5" width="18" height="11.5" rx="1.8"/><path d="M8.5 20h7M12 16v4"/>',
+    dice: '<rect x="4" y="4" width="16" height="16" rx="3.2"/><circle cx="8.6" cy="8.6" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.4" cy="8.6" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="8.6" cy="15.4" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.4" cy="15.4" r="1.3" fill="currentColor" stroke="none"/>',
+    notes: '<path d="M6 3.5h11.5v17H6.8A1.8 1.8 0 0 1 5 18.7V4.5a1 1 0 0 1 1-1z"/><path d="M5 17.2a1.8 1.8 0 0 1 1.8-1.7h10.7M9 7.5h5.5M9 10.5h4"/>',
+    scroll: '<path d="M7.5 4h10.5a2 2 0 0 1 2 2v1.5h-4"/><path d="M16 6v11.5a2.5 2.5 0 0 1-2.5 2.5H6a2.5 2.5 0 0 1-2.5-2.5V16H13v1.5a2.5 2.5 0 0 0 2.5 2.5"/><path d="M7.5 4A2.5 2.5 0 0 0 5 6.5V16M8.5 9h4.5M8.5 12h4.5"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.3M12 19.2v2.3M2.5 12h2.3M19.2 12h2.3M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/>',
+    cloud: '<path d="M7 18.5h10a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 7 11.3a3.6 3.6 0 0 0 0 7.2z"/>',
+    house: '<path d="M3.5 11.5L12 4l8.5 7.5"/><path d="M6 9.5v10.5h12V9.5M10 20v-5.5h4V20"/>',
+    map: '<path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/>',
+    books: '<path d="M4.5 4.5h4v15h-4zM8.5 6.5h4v13h-4z"/><path d="M13.2 6.9l3.7-1.2 3.9 12.6-3.7 1.2z"/>',
+    ruler: '<path d="M3.5 15.5L15.5 3.5l5 5-12 12z"/><path d="M7.5 11.5l1.8 1.8M10 9l1.8 1.8M12.5 6.5l1.8 1.8"/>',
+    hand: '<path d="M9 11.5V5a1.5 1.5 0 0 1 3 0v5.5M12 10V8.5a1.5 1.5 0 0 1 3 0V11M15 10.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-.5a5.5 5.5 0 0 1-4.6-2.5L4.5 15a1.5 1.5 0 0 1 2.4-1.8L9 15"/>',
+    group: '<circle cx="8.5" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 19c.8-3 3-4.5 5.5-4.5S13.2 16 14 19M11.5 15.2c1.2-.5 2.8-.7 4.5-.7 2.5 0 4.7 1.5 5.5 4.5"/>',
+    eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+    eyeoff: '<path d="M4 4l16 16M10.6 6.1A9 9 0 0 1 12 6c6 0 9.5 6 9.5 6a16 16 0 0 1-2.9 3.6M6.4 7.6C3.9 9.3 2.5 12 2.5 12S6 18 12 18a9 9 0 0 0 3.7-.8M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+    tag: '<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1.4 1.4 0 0 1 0 2l-6.7 6.7a1.4 1.4 0 0 1-2 0z"/><circle cx="8" cy="8" r="1.4" fill="currentColor" stroke="none"/>',
+    image: '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="9.5" r="1.8"/><path d="M4 17.5l5-5 4 4 2.5-2.5 4.5 4.5"/>',
+    brush: '<path d="M14.5 4.5l5 5-7.8 7.8-5-5z"/><path d="M6.7 12.3c-2 .3-3.2 1.8-3.2 4.2 0 1.2-.4 2.2-1 3 3.3.3 6.6-.6 7.7-2.7"/>',
+    speaker: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
+    spark: '<path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>',
+  };
+  function icon(k, cls) { return ICONS[k] ? '<svg class="hi ' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + ICONS[k] + '</svg>' : ''; }
+  W.HearthIcons = { svg: icon, names: Object.keys(ICONS) };
   function sgn(n) { return (n >= 0 ? '+' : '\u2212') + Math.abs(n); }
   function mod(score) { return Math.floor(((+score || 10) - 10) / 2); }
   var ABIL = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
@@ -75,7 +104,7 @@
   function headHTML(ctx) {
     var enc = ctx.enc, tc = ctx.order.find(function (c) { return c.id === ctx.turnId; });
     var info = enc.started ? '<b>Round ' + E(enc.round || 1) + '</b>' + (tc ? '<span class="c2-wide-only"> \u00b7 ' + E(tc.name) + '\u2019s turn</span>' : '') : '<span>Not started</span>';
-    var chip = typeof dmLinkStatusChip === 'function' ? dmLinkStatusChip().replace('class="btn dm-link-btn', 'class="c2-btn dm-link-btn c2-wide-only') : '';
+    var chip = typeof dmLinkStatusChip === 'function' ? dmLinkStatusChip().replace('class="btn dm-link-btn', 'class="c2-btn dm-link-btn c2-wide-only').replace('\uD83D\uDD17', icon('link')) : '';
     var next = ctx.order.length ? (enc.started ? '<button class="c2-btn c2-brass c2-narrow-only" data-dm-turn="next">Next \u25B8</button>' : '<button class="c2-btn c2-brass c2-narrow-only" data-dm-turn="start">\u2694 Start</button>') : '';
     return '<div class="dm-map-top c2-top"><button class="c2-back" id="dmMapExit">\u2039 <span class="c2-wide-only">Build</span></button>' +
       '<div class="dm-map-title c2-title">Battle Map</div><div class="c2-round">' + info + '</div><span class="c2-sp"></span>' +
@@ -87,16 +116,17 @@
   function moreHTML(ctx) {
     var enc = ctx.enc, mapEncs = ctx.mapEncs || [];
     var hidden = Array.isArray(enc.hiddenPlayers) ? enc.hiddenPlayers : [];
-    var chip = typeof dmLinkStatusChip === 'function' ? dmLinkStatusChip().replace('class="btn dm-link-btn', 'class="c2-mi dm-link-btn c2-narrow-only') : '';
+    var chip = typeof dmLinkStatusChip === 'function' ? dmLinkStatusChip().replace('class="btn dm-link-btn', 'class="c2-mi dm-link-btn c2-narrow-only').replace('\uD83D\uDD17', icon('link')) : '';
     return '<div class="c2-more ' + (ui().c2More ? 'open' : '') + '" role="menu" aria-label="More">' +
       (mapEncs.length > 1 ? '<label class="c2-mi c2-mi-sel"><span>Encounter</span><select id="dmMapEncSelect" title="Switch encounter">' + mapEncs.map(function (e) { return '<option value="' + E(e.id) + '"' + (e.id === enc.id ? ' selected' : '') + '>' + E(e.name) + '</option>'; }).join('') + '</select></label>' : '') +
-      chip + (typeof dmRollLogButton === 'function' ? dmRollLogButton('c2-mi') : '') +
-      '<button class="c2-mi" data-dm-notes-open="1">\uD83D\uDCD3 Campaign notes</button>' +
-      (ctx.needsRollMonsters ? '<button class="c2-mi" data-dm-roll-monsters="1">\uD83C\uDFB2 Roll monster initiative</button>' : '') +
+      chip + (typeof dmRollLogButton === 'function' ? dmRollLogButton('c2-mi').replace('\uD83C\uDFB2', icon('dice')) : '') +
+      '<button class="c2-mi" data-dm-notes-open="1">' + icon('notes') + ' Campaign notes</button>' +
+      (ctx.needsRollMonsters ? '<button class="c2-mi" data-dm-roll-monsters="1">' + icon('dice') + ' Roll monster initiative</button>' : '') +
+      '<button class="c2-mi' + (W.HearthAtmo && HearthAtmo.isActive(HearthAtmo.cfg(enc)) ? ' on' : '') + '" data-c2-fly="weather">' + ICO.weather + ' Weather &amp; light</button>' +
       '<button class="c2-mi" data-dm-reset-enc="1">\u21BA Reset combat</button>' +
       '<button class="c2-mi c2-mi-tog ' + (projOn() ? 'on' : '') + '" data-c2-proj-dice="1" role="menuitemcheckbox" aria-checked="' + (projOn() ? 'true' : 'false') + '"><span>Show dice rolls on projector</span><i class="c2-switch"></i></button>' +
       (hidden.length ? '<div class="c2-mi c2-mi-hid"><span>Sitting out</span>' + hidden.map(function (h) { return '<button class="c2-chip" data-dm-unhide="' + E(h.id) + '">' + E(h.name || 'Player') + ' + back</button>'; }).join('') + '</div>' : '') +
-      (MI() ? '<button class="c2-mi c2-mi-tog ' + (ui().miRH ? 'on' : '') + '" data-mi-rh="1" aria-expanded="' + (ui().miRH ? 'true' : 'false') + '">\uD83D\uDCDC Round history</button>' + (ui().miRH ? MI().historyHTML(enc) : '') : '') +
+      (MI() ? '<button class="c2-mi c2-mi-tog ' + (ui().miRH ? 'on' : '') + '" data-mi-rh="1" aria-expanded="' + (ui().miRH ? 'true' : 'false') + '">' + icon('scroll') + ' Round history</button>' + (ui().miRH ? MI().historyHTML(enc) : '') : '') +
       '<button class="c2-mi" data-c2-layout="classic">\u25A4 Classic layout</button></div>';
   }
 
@@ -123,24 +153,49 @@
       fanItem('measure', 'Measure', 'data-ruler-tool="1"', !!u.dmRulerTool),
       fanItem('point', 'Point', 'data-pointer-tool="1"', !!u.dmPointerMode),
     ];
+    // only things you do during a turn live here; Weather & light is in More
     var outer = [
       fanItem('fog', 'Fog', mi ? 'data-mi-fog-open="1"' : 'data-c2-miwait="1" aria-disabled="true" title="Map tools are loading\u2026"', !!mi && !!(enc.fog && enc.fog.on)),
       fanItem('group', 'Group', 'data-group-tool="1"', !!u.dmGroupMode),
       fanItem('grid', 'Grid', 'data-c2-fly="grid"', u.c2Fly === 'grid'),
       fanItem('map', 'Map', 'data-c2-fly="map"', u.c2Fly === 'map'),
-      fanItem('weather', 'Weather', 'data-c2-fly="weather"', u.c2Fly === 'weather' || !!(W.HearthAtmo && HearthAtmo.isActive(HearthAtmo.cfg(enc)))),
       fanItem('view', 'View', 'data-c2-fly="view"', u.c2Fly === 'view'),
     ];
-    function place(list, r, a0, a1) {
-      return list.map(function (h, i) {
-        var a = (a0 + (a1 - a0) * (list.length === 1 ? 0.5 : i / (list.length - 1))) * Math.PI / 180;
-        return h.replace('class="c2-fan-i', 'style="--x:' + (Math.cos(a) * r).toFixed(3) + ';--y:' + (Math.sin(a) * r).toFixed(3) + '" class="c2-fan-i');
-      }).join('');
-    }
-    return '<div class="c2-fan ' + (open ? 'open' : '') + '" aria-hidden="' + (open ? 'false' : 'true') + '"><span class="c2-fan-glow"></span>' +
-      '<span class="c2-fan-ring c2-fan-r1">' + place(inner, 1, 180, 270) + '</span><span class="c2-fan-ring c2-fan-r2">' + place(outer, 1, 180, 270) + '</span></div>' +
-      '<button class="c2-fab ' + (open ? 'open' : '') + '" data-c2-fab="1" aria-expanded="' + (open ? 'true' : 'false') + '" title="' + (open ? 'Close tools' : 'Map tools') + '">' + (open ? '\u2715' : '\u2726') + '</button>';
+    // SPEC v3 geometry (same as the AoE fan): a quarter-circle centred on the screen corner, a brass track,
+    // two evenly spaced rings (outer 5 tools in 16\u00b0 steps from 102\u00b0, inner 3 in 23\u00b0 steps from 112\u00b0, so the lowest labels stay on screen), the hub on the corner
+    var G = fanGeom(), S = G.R1 + G.sz / 2 + 16;
+    function pos(r, deg, w) { var a = deg * Math.PI / 180, x = r * Math.cos(a), y = r * Math.sin(a); return 'right:' + (-x - w / 2).toFixed(1) + 'px;bottom:' + (y - w / 2).toFixed(1) + 'px;width:' + w + 'px;height:' + w + 'px;--fx:' + x.toFixed(1) + 'px;--fy:' + (-y).toFixed(1) + 'px;'; }
+    function arc(r, a0, a1) { var p = function (d) { var a = d * Math.PI / 180; return (S + r * Math.cos(a)).toFixed(1) + ',' + (S - r * Math.sin(a)).toFixed(1); }; return 'M' + p(a0) + ' A' + r + ',' + r + ' 0 0 0 ' + p(a1); }
+    function place(list, r, a0, step, w, k0) { return list.map(function (h, i) { return h.replace('class="c2-fan-i', 'style="' + pos(r, a0 + i * step, w) + '--i:' + (k0 + i) + '" class="c2-fan-i'); }).join(''); }
+    var svg = '<svg class="c2-fan-svg" width="' + S + '" height="' + S + '" viewBox="0 0 ' + S + ' ' + S + '" aria-hidden="true">' +
+      '<path class="c2-fan-bg" d="M' + S + ',' + S + ' L' + S + ',0 A' + S + ',' + S + ' 0 0 0 0,' + S + ' Z"/><path class="c2-fan-rim" d="' + arc(S - 1.5, 90, 180) + '"/>' +
+      '<path class="c2-fan-track" d="' + arc(G.R1, 90, 180) + '"/><path class="c2-fan-track" d="' + arc(G.R2, 90, 180) + '"/>' +
+      '<path class="c2-fan-divide" d="' + arc((G.R1 + G.R2) / 2, 90, 180) + '"/></svg>';
+    return '<div class="c2-fan ' + (open ? 'open' : '') + '" aria-hidden="' + (open ? 'false' : 'true') + '" role="toolbar" aria-label="Map tools">' +
+      '<div class="c2-fan-wrap" style="width:' + S + 'px;height:' + S + 'px">' + svg + '</div>' +
+      place(outer, G.R1, 102, 16, G.sz, 0) + place(inner, G.R2, 112, 23, G.isz, outer.length) + '</div>' +
+      '<button class="c2-fab ' + (open ? 'open' : '') + '" data-c2-fab="1" aria-expanded="' + (open ? 'true' : 'false') + '" title="' + (open ? 'Close tools' : 'Map tools') + '"' +
+      (open ? ' style="width:' + G.hub + 'px;height:' + G.hub + 'px;right:' + (-G.hub / 2) + 'px;bottom:' + (-G.hub / 2) + 'px"' : '') + '><span>' + (open ? '\u2715' : '\u2726') + '</span></button>';
   }
+  // The tool fan opens over the map's corner; if it would sit on tokens (or their name labels), pan the map so
+  // they clear it, inside the map's edges. Desktop moves the board up only; a phone may also slide it left.
+  function fanCamera() {
+    var sc = document.getElementById('dmMapScroll'), fab = document.querySelector('.c2-fab'); if (!sc || !fab) return;
+    var G = fanGeom(), fr = fab.getBoundingClientRect(), cx = fr.left + fr.width / 2, cy = fr.top + fr.height / 2, R = G.R1 + G.sz / 2 + 14;
+    var boxes = [].slice.call(sc.querySelectorAll('[data-map-token]')).map(function (n) { var r = n.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom + 20 }; });
+    var sr = sc.getBoundingClientRect();
+    // how deep tokens reach into the fan (0 = all clear)
+    var hits = function (dx, dy) { return boxes.reduce(function (sum, q) { if (q.r - dx < sr.left || q.t - dy > sr.bottom) return sum; var nx = Math.max(q.l - dx, Math.min(cx, q.r - dx)), ny = Math.max(q.t - dy, Math.min(cy, q.b - dy)); return sum + Math.max(0, R - Math.hypot(cx - nx, cy - ny)); }, 0); };
+    if (!hits(0, 0)) return;
+    var mxX = wide() ? 0 : Math.max(0, sc.scrollWidth - sc.clientWidth - sc.scrollLeft), mxY = Math.max(0, sc.scrollHeight - sc.clientHeight - sc.scrollTop);
+    var best = null;
+    for (var d = 12; d <= Math.max(mxX, mxY) + 12; d += 12) {
+      for (var k = 0; k <= 4; k++) { var dx = Math.min(mxX, d * k / 4), dy = Math.min(mxY, d * (4 - k) / 4), h = hits(dx, dy); if (!best || h < best.h - 0.5) best = { h: h, dx: dx, dy: dy }; if (!h) break; }
+      if (best && !best.h) break;
+    }
+    if (best && (best.dx || best.dy)) sc.scrollTo({ left: sc.scrollLeft + best.dx, top: sc.scrollTop + best.dy, behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth' });
+  }
+  function fanGeom() { return wide() ? { R1: 230, R2: 150, sz: 56, isz: 52, hub: 116 } : { R1: 226, R2: 146, sz: 52, isz: 48, hub: 132 }; }
   function b(attrs, label, on, extra) { return '<button class="c2-btn ' + (on ? 'on' : '') + ' ' + (extra || '') + '" ' + attrs + '>' + label + '</button>'; }
   function flyHTML(enc, cols, rows) {
     var u = ui(), f = u.c2Fly, fogOn = !!(enc.fog && enc.fog.on), hasMap = typeof encHasMap === 'function' && encHasMap(enc);
@@ -158,7 +213,7 @@
         '<div class="c2-lbl">Brush</div><div class="c2-row">' + b('data-fog-brush="0"', 'Fine', (u.dmFogBrush || 0) === 0) + b('data-fog-brush="1"', 'Med', u.dmFogBrush === 1) + b('data-fog-brush="2"', 'Wide', u.dmFogBrush === 2) + '</div>' : '<div class="c2-note">Fog hides the board on the projector until you reveal it.</div>');
     var grid = '<div class="c2-row">' + b('data-map-grid="-c"', '\u2212 col') + b('data-map-grid="+c"', '+ col') + b('data-map-grid="-r"', '\u2212 row') + b('data-map-grid="+r"', '+ row') + '<span class="c2-dim">' + cols + ' \u00d7 ' + rows + '</span></div>' +
       '<div class="c2-row">' + (hasMap ? b('id="dmMapGridToggle"', (enc.mapGridOverlay ? '\u2611' : '\u2610') + ' Grid lines', enc.mapGridOverlay) : '') + b('data-map-reset="1"', 'Reset positions') + '</div>';
-    var map = '<div class="c2-row">' + b('id="dmMapAdd"', hasMap ? '\uD83D\uDDFA Replace map' : '\uD83D\uDDFA Add map') + b('id="dmMapLibrary"', '\uD83D\uDCDA Map library') + (hasMap ? b('id="dmMapRemove"', 'Remove map') : '') + '</div>' +
+    var map = '<div class="c2-row">' + b('id="dmMapAdd"', hasMap ? '' + icon('map') + ' Replace map' : '' + icon('map') + ' Add map') + b('id="dmMapLibrary"', '' + icon('books') + ' Map library') + (hasMap ? b('id="dmMapRemove"', 'Remove map') : '') + '</div>' +
       '<input type="file" id="dmMapFile" accept="image/*,video/mp4,video/webm,video/ogg" style="display:none;" />';
     var view = '<div class="c2-row">' + b('data-map-zoom="out"', '\u2212 Zoom') + b('data-map-zoom="in"', '+ Zoom') + b('data-map-zoom="fit"', '\u2922 Fit board') + '<span class="c2-dim" id="dmMapZoomPct">100%</span></div>';
     var weather = f === 'weather' ? (W.HearthAtmo ? HearthAtmo.panelHTML(enc) : '<div class="c2-note">Weather is still loading\u2026</div>') : '';
@@ -166,16 +221,16 @@
   }
   function modeChip() {
     var u = ui(), t = null;
-    if (u.dmRulerTool) t = ['\uD83D\uDCCF Measuring \u2014 drag on the map', 'data-ruler-tool="1"'];
-    else if (u.dmPointerMode) t = ['\uD83D\uDC46 Pointing on the projector \u2014 drag on the map', 'data-pointer-tool="1"'];
-    else if (u.dmGroupMode) t = ['\uD83D\uDC65 Group move \u2014 lasso tokens, drag one to move them all', 'data-group-tool="1"'];
+    if (u.dmRulerTool) t = ['' + icon('ruler') + ' Measuring \u2014 drag on the map', 'data-ruler-tool="1"'];
+    else if (u.dmPointerMode) t = ['' + icon('hand') + ' Pointing on the projector \u2014 drag on the map', 'data-pointer-tool="1"'];
+    else if (u.dmGroupMode) t = ['' + icon('group') + ' Group move \u2014 lasso tokens, drag one to move them all', 'data-group-tool="1"'];
     else if (u.dmFogTool) t = [(u.dmFogTool === 'reveal' ? 'Revealing fog' : 'Hiding with fog') + ' \u2014 brush on the map', 'data-fog-tool="' + u.dmFogTool + '"'];
     if (!t) return '';
     return '<div class="c2-mode"><span>' + t[0] + '</span><button class="c2-btn c2-brass" ' + t[1] + '>\u2713 Done</button></div>';
   }
   function helpHTML() {
     return '<button class="c2-help ' + (ui().c2Help ? 'on' : '') + '" data-c2-help="1" aria-expanded="' + (ui().c2Help ? 'true' : 'false') + '" title="How the map works">?</button>' +
-      (ui().c2Help ? '<div class="c2-helpbox" role="note"><b>Map tools</b>' + (MI() ? '<p>Tap \u2726 for templates, measuring, fog, grid, map and view. <b>AoE</b>: pick a shape, tap the map to place it, then drag \u2725 to move, \u27F3 to aim and \u25C6 to resize. The label shows how many creatures are inside; \uD83D\uDCCD Show players puts it on the projector. <b>Fog</b>: brush, drag a rectangle or tap a room to reveal; every change can be undone.</p><p>Tap a token or a portrait to open its card. Drag a token to move it: the path counts feet against its speed. Right-click or Esc cancels; Ctrl+Z undoes a move.</p>' : '<p>Tap \u2726 for templates, measuring, fog, grid, map and view. A template drops on the board: drag \u271B to move it, \u21BB to aim a cone or line, \uD83D\uDCCD shows it to players, \u2715 deletes it. Cones and lines start from the active token unless Free-place is on.</p><p>Tap a token or a portrait to open its card. Drag tokens to move them.</p>') + '<p><b>Projector:</b> open it, set your second screen to <em>Extend</em>, drag the window to the TV and press <em>Fullscreen</em>.</p></div>' : '');
+      (ui().c2Help ? '<div class="c2-helpbox" role="note"><b>Map tools</b>' + (MI() ? '<p>Tap \u2726 for templates, measuring, fog, grid, map and view. <b>AoE</b>: pick a shape, tap the map to place it, then drag \u2725 to move, \u27F3 to aim and \u25C6 to resize. The label shows how many creatures are inside; <b>Show players</b> puts it on the projector. <b>Fog</b>: brush, drag a rectangle or tap a room to reveal; every change can be undone.</p><p>Tap a token or a portrait to open its card. Drag a token to move it: the path counts feet against its speed. Right-click or Esc cancels; Ctrl+Z undoes a move.</p>' : '<p>Tap \u2726 for templates, measuring, fog, grid, map and view. A template drops on the board: drag \u271B to move it, \u21BB to aim a cone or line, the pin shows it to players, \u2715 deletes it. Cones and lines start from the active token unless Free-place is on.</p><p>Tap a token or a portrait to open its card. Drag tokens to move them.</p>') + '<p><b>Projector:</b> open it, set your second screen to <em>Extend</em>, drag the window to the TV and press <em>Fullscreen</em>.</p></div>' : '');
   }
 
   // ---------- stat card ----------
@@ -196,11 +251,11 @@
     return damages.map(function (d) {
       var t = d.type ? ' ' + (DMG_SHORT[d.type] || d.type) : '';
       var f = (d.count) + 'd' + d.sides + (d.bonus ? sgn(d.bonus) : '');
-      return '<button class="c2-roll ' + (d.type === 'fire' ? 'fire ' : '') + (crit ? 'crit' : '') + '" data-c2-roll="dmg" data-c2-id="' + E(c.id) + '" data-c2-n="' + d.count + '" data-c2-s="' + d.sides + '" data-c2-b="' + d.bonus + '" data-c2-t="' + E(d.type || '') + '" data-c2-l="' + E(label) + '" title="Roll ' + E(label) + ' damage' + (crit ? ' (critical: dice doubled)' : '') + '">\uD83C\uDFB2 ' + f + E(t) + (crit ? ' \u00d72' : '') + '</button>';
+      return '<button class="c2-roll ' + (d.type === 'fire' ? 'fire ' : '') + (crit ? 'crit' : '') + '" data-c2-roll="dmg" data-c2-id="' + E(c.id) + '" data-c2-n="' + d.count + '" data-c2-s="' + d.sides + '" data-c2-b="' + d.bonus + '" data-c2-t="' + E(d.type || '') + '" data-c2-l="' + E(label) + '" title="Roll ' + E(label) + ' damage' + (crit ? ' (critical: dice doubled)' : '') + '">' + icon('dice') + '' + f + E(t) + (crit ? ' \u00d72' : '') + '</button>';
     }).join('');
   }
   function hitBtn(c, label, bonus) {
-    return '<button class="c2-roll" data-c2-roll="d20" data-c2-id="' + E(c.id) + '" data-c2-b="' + bonus + '" data-c2-l="' + E(label + ' attack') + '" data-c2-k="' + E(label) + '" title="Roll to hit">\uD83C\uDFB2 ' + sgn(bonus) + ' hit</button>';
+    return '<button class="c2-roll" data-c2-roll="d20" data-c2-id="' + E(c.id) + '" data-c2-b="' + bonus + '" data-c2-l="' + E(label + ' attack') + '" data-c2-k="' + E(label) + '" title="Roll to hit">' + icon('dice') + '' + sgn(bonus) + ' hit</button>';
   }
   function pips(c, kind, key, total, used, title) {
     var h = '<span class="c2-pips" title="' + E(title) + '">';
@@ -237,7 +292,7 @@
       if (ck && opts.block) {
         var sk = (opts.block.skills || {})[ck[2].toLowerCase()];
         var bonus = sk != null ? +sk : mod((opts.abilities || {})[ABIL_FULL[ck[1].toLowerCase()]]);
-        borrowed += '<button class="c2-roll" data-c2-roll="d20" data-c2-id="' + E(c.id) + '" data-c2-b="' + bonus + '" data-c2-l="' + E(ck[2] + ' check') + '">\uD83C\uDFB2 ' + sgn(bonus) + '</button>';
+        borrowed += '<button class="c2-roll" data-c2-roll="d20" data-c2-id="' + E(c.id) + '" data-c2-b="' + bonus + '" data-c2-l="' + E(ck[2] + ' check') + '">' + icon('dice') + '' + sgn(bonus) + '</button>';
       }
     }
     if (isAttack || area || rech || rest || cost || opts.legendary) {
@@ -254,7 +309,7 @@
       if (rech || rest) {
         var lbl = rech ? 'Recharge ' + rech[1] + (rech[2] ? '\u2013' + rech[2] : '') : 'Recharges after a ' + rest[1].toLowerCase() + ' rest';
         rc = '<span class="c2-rc">' + lbl + ' \u00b7 <b>' + (spent ? 'SPENT' : 'READY') + '</b></span>';
-        buttons += rech ? '<button class="c2-roll" data-c2-recharge="' + E(c.id) + '" data-c2-key="' + E(key) + '" data-c2-min="' + rech[1] + '" title="Roll a d6 to recharge">\uD83C\uDFB2 Recharge</button>' : '';
+        buttons += rech ? '<button class="c2-roll" data-c2-recharge="' + E(c.id) + '" data-c2-key="' + E(key) + '" data-c2-min="' + rech[1] + '" title="Roll a d6 to recharge">' + icon('dice') + 'Recharge</button>' : '';
         buttons += '<button class="c2-roll c2-sm" data-c2-spend="' + E(c.id) + '" data-c2-key="' + E(key) + '">' + (spent ? '\u21BA Ready' : '\u2713 Used') + '</button>';
       }
       if (area) {
@@ -337,21 +392,21 @@
       (hasStep ? '<div class="c2-hpstep"><button class="dmg" data-dm-hp="dmg|' + E(c.id) + '|10">\u221210</button><button class="dmg" data-dm-hp="dmg|' + E(c.id) + '|1">\u22121</button>' + hpCell + '<button class="heal" data-dm-hp="heal|' + E(c.id) + '|1">+1</button><button class="heal" data-dm-hp="heal|' + E(c.id) + '|10">+10</button></div>' : '') +
       '<div class="c2-cbtns"><button class="c2-btn c2-sm" data-dm-status-open="' + E(c.id) + '">+ Condition</button>' +
       '<button class="c2-btn c2-sm ' + (c.concentrating ? 'on' : '') + '" data-dm-conc-toggle="' + E(c.id) + '" title="' + (c.concentrating ? 'Concentrating \u2014 tap to end' : 'Mark as concentrating') + '">\u25C8 Conc' + (c.concentrating ? ' \u2713' : '') + '</button>' +
-      '<button class="c2-btn c2-sm" data-dm-save-open="' + E(c.id) + '" title="Roll a saving throw (aura bonuses added automatically)">\uD83C\uDFB2 Save</button>' +
+      '<button class="c2-btn c2-sm" data-dm-save-open="' + E(c.id) + '" title="Roll a saving throw (aura bonuses added automatically)">' + icon('dice') + 'Save</button>' +
       ((c.kind === 'monster' && !c.monsterId && !c.isBoss) ? '<button class="c2-btn c2-sm" data-dm-custom-edit="' + E(c.id) + '">\u270E Edit</button>' : '<button class="c2-btn c2-sm" data-dm-rename="' + E(c.id) + '">\u270E Rename</button>') +
       (u.dmInitFor === c.id ? '<input id="dmInitInput" class="c2-initset" type="number" inputmode="numeric" value="' + (c.init != null ? E(c.init) : '') + '" />' : '<button class="c2-btn c2-sm" data-dm-init="' + E(c.id) + '" title="Set initiative">Init ' + (c.init != null ? E(c.init) : '+') + '</button>') +
       ((c.kind === 'player' && c.link) ? '<button class="c2-btn c2-sm" data-dm-link-dmg="' + E(c.id) + '">\u2694 Hit</button>' : '') +
       ((c.kind === 'player' && c.fromCharId) ? '<button class="c2-btn c2-sm" data-dm-char-resync="' + E(c.id) + '">\u21BB Sync</button>' : '') +
-      '<span class="c2-dicenote">\uD83C\uDFB2 Rolls stay on DM screen \u00b7 projector ' + (proj ? 'on request' : 'off') + '</span></div>' +
+      '<span class="c2-dicenote">' + icon('dice') + 'Rolls stay on DM screen \u00b7 projector ' + (proj ? 'on request' : 'off') + '</span></div>' +
       ((c.statuses && c.statuses.length) ? '<div class="c2-conds">' + c.statuses.map(function (s) { return '<button class="c2-cond" data-dm-status-remove="' + E(c.id) + '|' + E(s) + '" title="Remove ' + E(s) + '">' + (typeof hearthCondBadgeHTML === 'function' ? hearthCondBadgeHTML(s, 16) : '') + E(s) + ' \u2715</button>'; }).join('') + '</div>' : '') +
       '</div>';
     var tokenRow = '<div class="c2-tokrow"><span class="c2-lbl">Token</span>' +
-      (c.kind !== 'player' ? '<button class="c2-btn c2-ico ' + (c.hiddenFromPlayers ? 'on' : '') + '" data-dm-hide-enemy="' + E(c.id) + '" title="' + (c.hiddenFromPlayers ? 'Hidden from players \u2014 tap to reveal' : 'Hide from players') + '">' + (c.hiddenFromPlayers ? '\uD83D\uDE48 Hidden' : '\uD83D\uDC41 Shown') + '</button>' : '') +
-      (c.kind !== 'player' ? '<button class="c2-btn c2-ico ' + (c.hideName ? 'on' : '') + '" data-dm-hide-name="' + E(c.id) + '" title="' + (c.hideName ? 'Name hidden on map \u2014 tap to show' : 'Hide name on map') + '">\uD83C\uDFF7 ' + (c.hideName ? 'No name' : 'Name') + '</button>' : '') +
-      (c.kind === 'player' ? '<button class="c2-btn c2-ico ' + (c.vision ? 'on' : '') + '" data-dm-vision="' + E(c.id) + '" title="Darkvision radius (auto-reveals fog) \u2014 tap to change">\uD83D\uDC41 ' + (c.vision ? c.vision + ' ft' : 'Vision') + '</button>' : '') +
-      (c.kind !== 'player' ? '<button class="c2-btn c2-ico" data-dm-disposition="' + E(c.id) + '" title="Team: ' + E(c.disposition || 'enemy') + ' \u2014 tap to change">' + (c.disposition === 'ally' ? '\uD83D\uDFE2 Ally' : (c.disposition === 'neutral' ? '\u26AA Neutral' : '\uD83D\uDD34 Enemy')) + '</button>' : '') +
+      (c.kind !== 'player' ? '<button class="c2-btn c2-ico ' + (c.hiddenFromPlayers ? 'on' : '') + '" data-dm-hide-enemy="' + E(c.id) + '" title="' + (c.hiddenFromPlayers ? 'Hidden from players \u2014 tap to reveal' : 'Hide from players') + '">' + (c.hiddenFromPlayers ? '' + icon('eyeoff') + ' Hidden' : '' + icon('eye') + ' Shown') + '</button>' : '') +
+      (c.kind !== 'player' ? '<button class="c2-btn c2-ico ' + (c.hideName ? 'on' : '') + '" data-dm-hide-name="' + E(c.id) + '" title="' + (c.hideName ? 'Name hidden on map \u2014 tap to show' : 'Hide name on map') + '">' + icon('tag') + ' ' + (c.hideName ? 'No name' : 'Name') + '</button>' : '') +
+      (c.kind === 'player' ? '<button class="c2-btn c2-ico ' + (c.vision ? 'on' : '') + '" data-dm-vision="' + E(c.id) + '" title="Darkvision radius (auto-reveals fog) \u2014 tap to change">' + icon('eye') + ' ' + (c.vision ? c.vision + ' ft' : 'Vision') + '</button>' : '') +
+      (c.kind !== 'player' ? '<button class="c2-btn c2-ico" data-dm-disposition="' + E(c.id) + '" title="Team: ' + E(c.disposition || 'enemy') + ' \u2014 tap to change">' + (c.disposition === 'ally' ? '<i class="c2-dot ally"></i> Ally' : (c.disposition === 'neutral' ? '<i class="c2-dot neutral"></i> Neutral' : '<i class="c2-dot enemy"></i> Enemy')) + '</button>' : '') +
       (c.kind === 'monster' ? '<button class="c2-btn c2-ico" data-dm-duplicate="' + E(c.id) + '" title="Duplicate this monster"><svg class="hi-ico" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" focusable="false"><rect x="5" y="5" width="9" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 3.5V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg> Copy</button>' : '') +
-      '<button class="c2-btn c2-ico" data-token-img-open="' + E(c.id) + '" title="Token image">\uD83D\uDDBC Image</button>' +
+      '<button class="c2-btn c2-ico" data-token-img-open="' + E(c.id) + '" title="Token image">' + icon('image') + ' Image</button>' +
       (c.dead ? '<button class="c2-btn c2-ico" data-dm-revive="' + E(c.id) + '">Revive</button>' : (atZero ? '<button class="c2-btn c2-ico c2-danger" data-dm-kill="' + E(c.id) + '">Kill</button>' : '')) +
       '<button class="c2-btn c2-ico c2-danger" data-dm-remove-ask="' + E(c.id) + '" title="Remove from encounter">\u2715 Remove</button></div>';
     var phone = !wide();
@@ -393,7 +448,7 @@
     if (u.c2Card && !card) u.c2Card = null;
     var phone = !wide();
     var tools = !!(MI() && (MI().aoeOpen() || MI().fogOpen()));
-    var mini = phone && (!!card || tools); // phone: the one-row portrait strip whenever a card or a map tool needs the room (map-interactions renders)
+    var mini = phone; void tools; // phone: always the one-row portrait strip with AC badges (the 2×3 card grid is gone)
     var lk = (phone ? 'p' : 'd') + (card ? 1 : 0) + (phone && card && MI() && MI().aoeOpen() ? 'k' : '') + (mini ? 'm' : ''); // the peek bar gives the map more height: refit
     if (u.c2LayoutKey !== lk) { if (u.c2LayoutKey != null && !u.c2ManualZoom) u.dmMapZoomInit = false; u.c2LayoutKey = lk; }
     var mi = MI(), miCls = mi ? (mi.aoeOpen() ? ' mi-aoe-on' : '') + (mi.fogOpen() ? ' mi-fog-on' : '') : '';
@@ -435,8 +490,8 @@
     if (lay) { ev.preventDefault(); u.c2More = false; dmSetLayout(lay.getAttribute('data-c2-layout')); render(); return; }
     if (!t.closest('.c2')) return;
     var el;
-    if ((el = t.closest('[data-c2-fab]'))) { u.c2Fan = !u.c2Fan; if (u.c2Fan) { u.c2Fly = null; u.c2More = false; } render(); return; }
-    if ((el = t.closest('[data-c2-fly]'))) { u.c2Fly = el.getAttribute('data-c2-fly'); u.c2Fan = false; render(); return; }
+    if ((el = t.closest('[data-c2-fab]'))) { u.c2Fan = !u.c2Fan; if (u.c2Fan) { u.c2Fly = null; u.c2More = false; } render(); if (u.c2Fan) setTimeout(fanCamera, 0); return; }
+    if ((el = t.closest('[data-c2-fly]'))) { u.c2Fly = el.getAttribute('data-c2-fly'); u.c2Fan = false; u.c2More = false; render(); return; }
     if (t.closest('[data-c2-fly-close]')) { u.c2Fly = null; render(); return; }
     if (t.closest('[data-c2-size-close]')) { u.dmAoeLastDropped = null; render(); return; }
     if (t.closest('[data-c2-more]')) { u.c2More = !u.c2More; u.c2Fan = false; render(); return; }

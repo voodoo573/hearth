@@ -31,8 +31,11 @@ const waitPainted = (p, id) => p.waitForFunction((id) => { const b = document.ge
   const d0 = await p.evaluate(() => ({ atmo: loadEncounter().atmo, layers: document.querySelectorAll('#dmMapGrid .hatm').length, lib: !!window.HearthAtmosphere, glue: !!window.HearthAtmo }));
   check('off by default: no settings, no layers, and Jenny\u2019s 67 KB engine isn\u2019t even loaded yet', !d0.atmo && d0.layers === 0 && !d0.lib && d0.glue, d0);
   await p.evaluate(() => { state.ui.c2Fan = true; render(); });
-  check('the \u2726 fan has a Weather tool (C2\u2019s missing Weather)', await p.evaluate(() => !!document.querySelector('.c2-fan [data-c2-fly="weather"]')));
-  await p.click('.c2-fan [data-c2-fly="weather"]');
+  const fanW = await p.evaluate(() => !!document.querySelector('.c2-fan [data-c2-fly="weather"]'));
+  await p.evaluate(() => { state.ui.c2Fan = false; state.ui.c2More = true; render(); });
+  const inMore = await p.evaluate(() => { const b = document.querySelector('[data-c2-fly="weather"]'); return !!b && !b.closest('.c2-fan') && b.offsetParent !== null; });
+  check('Weather & light lives in More (the \u2726 fan keeps turn tools only)', !fanW && inMore, { fanW, inMore });
+  await p.click('[data-c2-fly="weather"]');
   await p.waitForFunction(() => window.HearthAtmosphere && HearthAtmosphere.wallsFor && document.querySelector('[data-c2-panel="weather"] [data-atmo-door]'), null, { timeout: 15000 });
   const pan = await p.evaluate(() => { const q = (s) => document.querySelector('[data-c2-panel="weather"] ' + s); return { clear: q('[data-atmo-w="none"]').classList.contains('on'), day: q('[data-atmo-t="day"]').classList.contains('on'), snd: q('[data-atmo-snd="off"]').classList.contains('on'), vol: q('[data-atmo-vol]').disabled, n: document.querySelectorAll('[data-atmo-w]').length }; });
   check('Weather & light flyout: Clear, Day, Sound off (volume disabled), nine weathers', pan.clear && pan.day && pan.snd && pan.vol && pan.n === 9, pan);
@@ -44,10 +47,10 @@ const waitPainted = (p, id) => p.waitForFunction((id) => { const b = document.ge
     const w = g.querySelector('.hatm-weather'), l = g.querySelector('.hatm-light'), toks = [...g.querySelectorAll('.map-token')];
     return { saved: loadEncounter().atmo.w, st: A.state().weather, dmView: A.state().dmView,
       order: ix(w) > ix(document.getElementById('dmPaintedOv')) && ix(w) < ix(document.getElementById('dmAoeLayer')) && ix(l) > Math.max.apply(null, toks.map(ix)) && ix(l) < ix(document.getElementById('miOv')),
-      zLight: getComputedStyle(l.querySelector('canvas')).zIndex, zOv: getComputedStyle(document.getElementById('miOv')).zIndex, wrapZ: getComputedStyle(l).zIndex, walls: !!A.walls(), indoor: A.state().indoor };
+      zLight: getComputedStyle(l.querySelector('canvas')).zIndex, zToks: toks.map(t => +getComputedStyle(t).zIndex || 0), zAoe: getComputedStyle(document.getElementById('dmAoeLayer')).zIndex, zOv: getComputedStyle(document.getElementById('miOv')).zIndex, wrapZ: getComputedStyle(l).zIndex, walls: !!A.walls(), indoor: A.state().indoor };
   });
   check('Rain saves with the encounter and runs on the DM screen in DM view', d1.saved === 'rain' && d1.st === 'rain' && d1.dmView === true, d1);
-  check('layering: map \u2192 overlay \u2192 weather \u2192 templates \u2192 tokens \u2192 light \u2192 handles/labels', d1.order && d1.zLight === '6' && d1.zOv === '7' && d1.wrapZ === 'auto', d1);
+  check('layering (DM): map \u2192 overlay \u2192 weather \u2192 light \u2192 templates \u2192 tokens & labels \u2192 handles (creatures stay readable after dark)', d1.order && d1.zLight === '0' && d1.zToks.every(z => z >= 1) && d1.zAoe === '1' && d1.zOv === '7' && d1.wrapZ === 'auto', d1);
   check('Hearth map (dungeon): wall data loaded, indoor', d1.walls && d1.indoor, d1);
 
   // ---- 3. night: map light sources, doors, carried light
@@ -72,7 +75,7 @@ const waitPainted = (p, id) => p.waitForFunction((id) => { const b = document.ge
   await pop.waitForFunction(() => window.HearthAtmo && HearthAtmo._proj().atm, null, { timeout: 20000 }); await pop.waitForTimeout(1200);
   const pj = await pop.evaluate(() => { const A = HearthAtmo._proj().atm, g = document.getElementById('grid'), kids = [...g.children], ix = (e) => kids.indexOf(e);
     const l = g.querySelector('.hatm-light'), w = g.querySelector('.hatm-weather'), lbl = g.querySelector('.plbl'), pm = g.querySelector('.pm-ov'), toks = [...g.querySelectorAll('.tok')];
-    return { st: A.state(), walls: !!A.walls(), lights: A.lights().map(x => x.id), order: (!pm || ix(w) === ix(pm) + 1) && ix(l) < ix(lbl) && getComputedStyle(l.querySelector('canvas')).zIndex === '6' && getComputedStyle(lbl).zIndex === '6' && toks.every(t => getComputedStyle(t).zIndex !== '6') };
+    return { st: A.state(), walls: !!A.walls(), lights: A.lights().map(x => x.id), order: (!pm || ix(w) === ix(pm) + 1 || (ix(w) === ix(pm) + 2 && kids[ix(pm) + 1].classList.contains('hatm-cloud'))) && ix(l) < ix(lbl) && getComputedStyle(l.querySelector('canvas')).zIndex === '6' && getComputedStyle(lbl).zIndex === '6' && toks.every(t => getComputedStyle(t).zIndex !== '6') };
   });
   check('projector: rain at night, full darkness (no DM cap), same walls', pj.st.weather === 'rain' && pj.st.time === 'night' && pj.st.dmView === false && pj.walls, pj.st);
   check('projector layering: weather on the map overlay, light over the tokens, labels readable over the light', pj.order, pj);
@@ -97,7 +100,7 @@ const waitPainted = (p, id) => p.waitForFunction((id) => { const b = document.ge
   // (Playwright marks the popup as already activated, so the rule is emulated with a real pointer tap)
   await pop.evaluate(() => { let tapped = false; document.addEventListener('pointerdown', () => { tapped = true; }, true);
     const AC = window.AudioContext; window.AudioContext = function (o) { const c = new AC(o); c.suspend(); const r = c.resume.bind(c); c.resume = () => tapped ? r() : new Promise(() => {}); return c; }; });
-  const snd = async () => ({ dm: await p.evaluate(() => HearthAtmo.sound.state()), pj: await pop.evaluate(() => HearthAtmo._proj().snd.state()), btn: await pop.evaluate(() => { const b = document.getElementById('pjSnd'); return !!b && !b.hidden; }) });
+  const snd = async () => ({ dm: await p.evaluate(() => HearthAtmo.sound.state()), pj: await pop.evaluate(() => HearthAtmo._proj().snd.state()), btn: await p.evaluate(() => { const b = document.getElementById('atmoUnlock'); return !!b && b.offsetParent !== null; }), pjUi: await pop.evaluate(() => /enable sound/i.test(document.body.innerText) || !!document.querySelector('#pjSnd, .pj-snd')), blocked: await pop.evaluate(() => HearthAtmo._proj().blocked) });
   let s0 = await snd();
   check('sound is off on both screens by default', !s0.dm.enabled && !s0.dm.playing && !s0.pj.playing && !s0.btn, s0);
   await p.click('[data-atmo-snd="dm"]'); await p.waitForTimeout(700);
@@ -105,10 +108,10 @@ const waitPainted = (p, id) => p.waitForFunction((id) => { const b = document.ge
   check('Sound \u2192 This screen: the DM screen plays, the projector stays silent', s1.dm.playing && !s1.pj.playing, s1);
   await p.click('[data-atmo-snd="projector"]'); await p.waitForTimeout(1200);
   let s2 = await snd();
-  check('Sound \u2192 Projector: the DM stops; the projector asks for one tap (autoplay rules)', !s2.dm.playing && s2.pj.output === 'projector' && s2.btn, s2);
-  await pop.bringToFront(); await pop.click('#pjSnd'); await pop.waitForTimeout(900);
+  check('Sound \u2192 Projector: the DM stops; the DM screen (not the projector) shows \u201cTap to enable sound\u201d (autoplay rules)', !s2.dm.playing && s2.pj.output === 'projector' && s2.blocked && s2.btn && !s2.pjUi, s2);
+  await pop.bringToFront(); await pop.mouse.click(300, 300); await pop.waitForTimeout(1200);
   let s3 = await snd();
-  check('one tap on the projector starts its sound and hides the button; still only one screen playing', s3.pj.playing && s3.pj.context === 'running' && !s3.btn && !s3.dm.playing, s3);
+  check('a tap anywhere on the projector starts its sound (nothing shown there) and the DM\u2019s prompt goes away; still only one screen playing', s3.pj.playing && s3.pj.context === 'running' && !s3.blocked && !s3.btn && !s3.pjUi && !s3.dm.playing, s3);
   await p.bringToFront();
   await p.evaluate(() => { const v = document.querySelector('[data-atmo-vol]'); v.value = '0.3'; v.dispatchEvent(new Event('change', { bubbles: true })); }); await p.waitForTimeout(400);
   const vol = await pop.evaluate(() => HearthAtmo._proj().snd.state().volume);

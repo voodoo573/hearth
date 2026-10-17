@@ -26,7 +26,7 @@ async function drag(p, a, b, n, hold) { await p.mouse.move(a.x, a.y); await p.mo
     const cone = { kind: 'cone', x: 16, y: 10, len: 12, angle: Math.PI, color: '#e8552d' }, line = { kind: 'line', x: 16, y: 10, len: 6, angle: Math.PI }, cube = { kind: 'square', x: 0, y: 12, len: 3 };
     return { circle: L(c), cone: L(cone), line: L(line), cube: L(cube), hits: HearthMI._hits(c, e).map(x => x.name).sort() };
   });
-  check('the stage circle is 15 ft radius on a grid intersection and catches the two goblins', /^Circle · 15 ft radius · 2 creatures · 📍$/.test(lbl.circle) && lbl.hits.join() === 'Goblin,Goblin Archer', lbl);
+  check('the stage circle is 15 ft radius on a grid intersection and catches the two goblins', /^Circle · 15 ft radius · 2 creatures( ·)? ?$/.test(lbl.circle.trim() + ' ') && !/\p{Extended_Pictographic}/u.test(lbl.circle) && lbl.hits.join() === 'Goblin,Goblin Archer', lbl);
   check('every shape gets the same label: shape · size · creatures', /^Cone · 60 ft · 180° · \d+ creatures?$/.test(lbl.cone) && /^Line · 30 ft · \d+ creatures?$/.test(lbl.line) && /^Cube · 15 ft · 0 creatures$/.test(lbl.cube), lbl);
   const cg = await p.evaluate(() => { const g = { kind: 'cone', x: 0, y: 0, len: 4, ang: 0 }; return { axisEnd: HearthMI._inside(g, 3.9, 0), farCorner: HearthMI._inside(g, 3.9, 1.9), outside: HearthMI._inside(g, 3.9, 2.2), behind: HearthMI._inside(g, -0.5, 0) }; });
   check('cones follow 5e: as wide at the far end as they are long', cg.axisEnd && cg.farCorner && !cg.outside && !cg.behind, cg);
@@ -57,7 +57,7 @@ async function drag(p, a, b, n, hold) { await p.mouse.move(a.x, a.y); await p.mo
   const rh0 = await rh();
   await p.keyboard.press('Control+z'); await p.waitForTimeout(150);
   const rh1 = await rh();
-  check('round history is honest: undoing 📍 Show players greys out its "Shown" entry', /^📍 Shown: Cube/.test(rh0[0]) && /^~📍 Shown: Cube.*undone$/.test(rh1[0]), { rh0: rh0.slice(0, 2), rh1: rh1.slice(0, 2) });
+  check('round history is honest: undoing Show players greys out its "Shown" entry', /^Shown to players: Cube/.test(rh0[0]) && /^~Shown to players: Cube.*undone$/.test(rh1[0]), { rh0: rh0.slice(0, 2), rh1: rh1.slice(0, 2) });
   check('Ctrl+Z undoes the last template change', await p.evaluate(() => !loadEncounter().aoes.slice(-1)[0].pinned));
   await p.keyboard.press('Delete'); await p.waitForTimeout(150);
   check('Delete removes the selected template', await p.evaluate(() => loadEncounter().aoes.length === 1));
@@ -70,10 +70,10 @@ async function drag(p, a, b, n, hold) { await p.mouse.move(a.x, a.y); await p.mo
     for (let x = 0; x < 20; x++) for (let y = 0; y < 15; y++) if (!(x >= 13 && y >= 7)) e.fog.revealed.push(x + ',' + y);
     const d = e.combatants.find(c => c.name === 'Ogre'); d.hiddenFromPlayers = true; saveEncounter(e);
     const st = buildMapState(e); const tok = (n) => st.tokens.find(t => t.name === n);
-    return { aoes: st.aoes.map(a => a.id), counts: JSON.stringify(st.aoes).includes('creature'), dragonFog: tok('Adult Red Dragon').fogHidden, goblinFog: tok('Goblin').fogHidden, ogreHidden: tok('Ogre').hidden, init: st.initiative.map(i => i.name), mask: !!st.fog.mask };
+    return { aoes: st.aoes.map(a => a.id), counts: JSON.stringify(st.aoes).includes('creature'), dragonFog: !tok('Adult Red Dragon') || !!tok('Adult Red Dragon').fogHidden, goblinFog: !tok('Goblin') || !!tok('Goblin').fogHidden, ogreHidden: !tok('Ogre') || !!tok('Ogre').hidden, dragonSent: !!tok('Adult Red Dragon'), ogreSent: !!tok('Ogre'), init: st.initiative.map(i => i.name), mask: !!st.fog.mask };
   });
   check('projector: only shown templates, no creature counts', proj.aoes.join() === 'aoe_fb' && !proj.counts, proj);
-  check('projector: a monster under fog is hidden (and left off the initiative list); a hidden token stays hidden', proj.dragonFog && !proj.goblinFog && proj.ogreHidden && !proj.init.includes('Adult Red Dragon') && !proj.init.includes('Ogre') && proj.mask, proj);
+  check('projector: a monster under fog and a hidden token aren\u2019t sent at all (and are left off the initiative list)', proj.dragonFog && !proj.dragonSent && !proj.ogreSent && !proj.goblinFog && proj.ogreHidden && !proj.init.includes('Adult Red Dragon') && !proj.init.includes('Ogre') && proj.mask, proj);
   // ---------- fog ----------
   await p.evaluate(() => { const e = loadEncounter(); e.fog = { on: true, revealed: [] }; e.combatants.forEach(c => { c.hiddenFromPlayers = false; c.vision = 0; }); e.aoes = []; saveEncounter(e); render(); });
   await p.waitForTimeout(300);
@@ -90,20 +90,20 @@ async function drag(p, a, b, n, hold) { await p.mouse.move(a.x, a.y); await p.mo
   check('the stroke is one history step', after.hist.length === 1 && /Brush clear/.test(after.hist[0]), after.hist);
   const sub = await p.evaluate(() => { const e = loadEncounter(), m = HearthMI.fogMask(e); let part = 0; for (let y = 0; y < 15; y++) for (let x = 0; x < 20; x++) { let s = 0; for (let j = 0; j < 4; j++) for (let i = 0; i < 4; i++) s += m[(y * 4 + j) * 80 + x * 4 + i]; if (s > 0 && s < 16) part++; } return part; });
   check('fog is a fine mask: brush edges cut through squares (no per-square jaggies)', sub > 0, sub);
-  await p.click('[data-mi-ftool="rect"]');
+  await p.click('[data-mi-ftool="rect"]'); await p.evaluate(() => { document.getElementById('dmMapScroll').scrollTop = 0; }); await p.waitForTimeout(150); // the full-bleed board scrolls: bring row 2 into view
   A = await cellPt(p, 12, 2); B = await cellPt(p, 16, 5); await drag(p, A, B, 6); await p.waitForTimeout(300);
   const ar = await p.evaluate(() => { const r = new Set(loadEncounter().fog.revealed); let all = true; for (let x = 12; x < 16; x++) for (let y = 2; y < 5; y++) if (!r.has(x + ',' + y)) all = false; return { all, hist: HearthMI._hist().items.length, last: HearthMI._hist().items.slice(-1)[0].label }; });
   check('area reveal snaps to the grid (20×15 ft) and is one step', ar.all && ar.hist === 2 && /Area 20×15 ft/.test(ar.last), ar);
   await p.keyboard.press('Control+z'); await p.waitForTimeout(300);
   check('Ctrl+Z steps the fog back', await p.evaluate(() => !loadEncounter().fog.revealed.includes('13,3') && HearthMI._hist().pos === 1));
   const fr1 = await rh();
-  check('…and greys out that fog step in the round history', fr1.some(x => /^~☀ Area 20×15 ft/.test(x)) && fr1.some(x => /^☀ Brush clear/.test(x)), fr1.slice(0, 4));
+  check('…and greys out that fog step in the round history', fr1.some(x => /^~\s*Area 20×15 ft/.test(x)) && fr1.some(x => /^\s*Brush clear/.test(x)), fr1.slice(0, 4));
   await p.keyboard.press('Control+Shift+Z'); await p.waitForTimeout(300);
   check('Ctrl+Shift+Z redoes it', await p.evaluate(() => loadEncounter().fog.revealed.includes('13,3') && HearthMI._hist().pos === 2));
   const fr2 = await rh();
-  check('redo restores the history entry', fr2.some(x => /^☀ Area 20×15 ft/.test(x)) && !fr2.some(x => /^~☀ Area 20×15/.test(x)), fr2.slice(0, 4));
+  check('redo restores the history entry', fr2.some(x => /^\s*Area 20×15 ft/.test(x)) && !fr2.some(x => /^~\s*Area 20×15/.test(x)), fr2.slice(0, 4));
   // brush wobble then Esc: nothing changes
-  await p.click('[data-mi-ftool="brush"]');
+  await p.click('[data-mi-ftool="brush"]'); await p.evaluate(() => { const sc = document.getElementById('dmMapScroll'); sc.scrollTop = sc.scrollHeight; }); await p.waitForTimeout(150); // row 12 into view
   const before = await p.evaluate(() => loadEncounter().fog.mask);
   A = await cellPt(p, 5, 12); B = await cellPt(p, 9, 12);
   await drag(p, A, B, 6, async () => { await p.keyboard.press('Escape'); });

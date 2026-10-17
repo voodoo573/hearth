@@ -1,6 +1,7 @@
 /* Hearth v1.7.0 — Atmosphere v2 on the C2 DM screen (glue for Jenny's HearthAtmosphere; see dm/atmo.js). */
-/* light (multiply + bloom) above the tokens, below handles/labels (.mi-ov, z 7); the wrapper stays z-auto so the blend reaches the map */
-.dm-map-grid > .hatm-light > canvas { z-index: 6; }
+/* light (multiply + bloom) above the map art, weather and fog but under the tokens and their labels: on the DM screen every
+   creature stays readable after dark (the projector keeps its own layering). The wrapper stays z-auto so the blend reaches the map */
+.dm-map-grid > .hatm-light > canvas { z-index: 0; }
 /* Weather & light flyout */
 .c2 .atmo .c2-lbl { margin: 4px 0 6px; }
 .c2 .atmo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
@@ -29,3 +30,19 @@
 }
 /* the Weather & light flyout is the tallest one: its title and close button stay put while it scrolls */
 .c2 [data-c2-panel="weather"] > .c2-fly-h { position: sticky; top: -10px; z-index: 2; margin: -10px -12px 8px; padding: 10px 12px 7px; background: var(--c2-surface); border-bottom: 1px solid color-mix(in srgb, var(--gold-deep) 45%, transparent); }
+/* DM screen only: the projector's sound is waiting for a tap */
+.atmo-unlock { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); z-index: 34; display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; cursor: pointer;
+  font: 700 13px/1 var(--rs-sans, system-ui, sans-serif); color: var(--c2-on-gold, #2a1d0c); background: var(--c2-brass, linear-gradient(#f0c46a, #c8902e)); border: 1px solid var(--gold-deep, #8a6420);
+  box-shadow: 0 0 0 3px rgba(0,0,0,.35), 0 8px 20px rgba(0,0,0,.55); min-height: 0; }
+.atmo-unlock small { font-weight: 500; opacity: .8; }
+.atmo-unlock svg.hi { width: 17px; height: 17px; color: currentColor; }
+/* desktop: the flyout opens wide in two columns (sky on the left; carried light, the map and sound on the right) so it never scrolls */
+.c2-desk [data-c2-panel="weather"] { width: 640px; max-width: calc(100% - 110px); }
+.c2-desk [data-c2-panel="weather"] .atmo { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; align-items: start; }
+.c2-desk [data-c2-panel="weather"] .atmo-col + .atmo-col { border-left: 1px solid color-mix(in srgb, var(--gold-deep) 40%, transparent); padding-left: 16px; }
+.c2-desk [data-c2-panel="weather"] .atmo-lights { max-height: 214px; }
+/* the map-lights toggle: a drawn checkbox rather than a ☑ character */
+.c2 .atmo-cb { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid currentColor; margin-right: 6px; vertical-align: -1px; position: relative; }
+.c2 .on > .atmo-cb::after { content: ''; position: absolute; left: 3px; top: 0; width: 3px; height: 7px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+/* phone: the flyout's last row stays clear of the ✦ button */
+.c2-phone [data-c2-panel="weather"] { padding-bottom: 16px; }

@@ -84,9 +84,10 @@ body:has(.c2) { overflow: hidden; }
 /* body */
 .c2 .c2-body { flex: 1; min-height: 0; display: flex; position: relative; }
 .c2 .c2-stage { flex: 1; min-width: 0; position: relative; overflow: hidden; display: block; padding: 0; margin: 0; background: none; border: 0; }
-.c2 .c2-stage .dm-map-scroll { position: absolute; inset: 0; padding: 14px; display: flex; justify-content: safe center; align-items: safe center; overflow: auto; flex: none; }
+.c2 .c2-stage .dm-map-scroll { position: absolute; inset: 0; padding: 0; display: flex; justify-content: flex-start; align-items: flex-start; overflow: auto; flex: none; scrollbar-width: none; }
+.c2 .c2-stage .dm-map-scroll::-webkit-scrollbar { display: none; }
 .c2 .c2-stage .dm-map-zoom { flex: none; }
-.c2 .c2-stage .dm-map-grid { border-radius: 6px; box-shadow: 0 0 0 1px var(--gold-deep), 0 0 0 4px rgba(0,0,0,.35), 0 10px 30px rgba(0,0,0,.6); }
+.c2 .c2-stage .dm-map-grid { border-radius: 0; box-shadow: none; border: 0; outline: 0; } /* full-bleed: no frame, no side bars */
 .c2 .c2-bars { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); z-index: 12; display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; max-width: calc(100% - 100px); }
 .c2 .c2-bar, .c2 .c2-mode { pointer-events: auto; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; padding: 6px 8px 6px 12px; border-radius: 12px;
   background: color-mix(in srgb, var(--page) 88%, transparent); border: 1px solid var(--c2-rim); box-shadow: 0 6px 18px rgba(0,0,0,.55); color: var(--ink-soft); }
@@ -103,20 +104,25 @@ body:has(.c2) { overflow: hidden; }
 /* fan */
 .c2 .c2-fab { position: absolute; right: 22px; bottom: 22px; z-index: 31; width: 60px; height: 60px; padding: 0; border-radius: 50%; font-size: 24px; line-height: 1; min-height: 0;
   background: var(--c2-brass); color: var(--c2-on-gold); border: 1px solid var(--gold-deep); box-shadow: 0 0 0 3px rgba(0,0,0,.35), 0 6px 16px rgba(0,0,0,.6); }
-.c2 .c2-fan { position: absolute; right: 22px; bottom: 22px; width: 60px; height: 60px; z-index: 30; pointer-events: none; isolation: isolate; }
-.c2 .c2-fan-glow { position: absolute; right: -250px; bottom: -250px; width: 560px; height: 560px; border-radius: 50%; z-index: -1; opacity: 0; transition: opacity .18s;
-  background: radial-gradient(circle closest-side, color-mix(in srgb, var(--page) 90%, transparent) 0 70%, color-mix(in srgb, var(--page) 55%, transparent) 84%, transparent 100%); }
-.c2 .c2-fan.open .c2-fan-glow { opacity: 1; }
-.c2 .c2-fan-ring { position: absolute; left: 30px; top: 30px; }
-.c2 .c2-fan-r1 { --r: 96px; } .c2 .c2-fan-r2 { --r: 210px; } /* six tools on the outer ring since Weather joined (same spacing as the old five) */
-.c2 .c2-fan-i { position: absolute; left: 0; top: 0; width: 50px; height: 50px; margin: -25px 0 0 -25px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  background: var(--c2-surface); border: 1px solid var(--gold-deep); color: var(--gold); box-shadow: 0 3px 8px rgba(0,0,0,.6); min-height: 0;
-  transform: translate(0, 0) scale(.4); opacity: 0; transition: transform .2s cubic-bezier(.2,.9,.3,1.2), opacity .15s; pointer-events: none; }
-.c2 .c2-fan.open .c2-fan-i { transform: translate(calc(var(--x) * var(--r)), calc(var(--y) * var(--r))) scale(1); opacity: 1; pointer-events: auto; }
+/* open: the ✦ becomes the hub on the screen corner (its visible quarter is the target), like the AoE fan's ✓ */
+.c2 .c2-fab.open { z-index: 33; text-align: left; font-size: 26px; box-shadow: 0 0 0 3px var(--page), 0 0 18px color-mix(in srgb, var(--gold) 55%, transparent); }
+.c2 .c2-fab.open span { position: absolute; left: 22%; top: 18%; font-weight: 700; }
+.c2 .c2-fan { position: absolute; right: 0; bottom: 0; width: 0; height: 0; z-index: 32; pointer-events: none; }
+.c2 .c2-fan-wrap { position: absolute; right: 0; bottom: 0; pointer-events: none; filter: drop-shadow(0 10px 22px rgba(0,0,0,.75)); transform-origin: 100% 100%; transform: scale(.2); opacity: 0; transition: transform .22s ease-out, opacity .15s; }
+.c2 .c2-fan.open .c2-fan-wrap { transform: none; opacity: 1; }
+.c2 .c2-fan-svg { display: block; overflow: visible; }
+.c2 .c2-fan-bg { fill: color-mix(in srgb, var(--c2-surface) 94%, transparent); }
+.c2 .c2-fan-rim { fill: none; stroke: var(--gold-deep); stroke-width: 2; }
+.c2 .c2-fan-track { fill: none; stroke: color-mix(in srgb, var(--gold) 55%, var(--gold-deep)); stroke-width: 3; stroke-linecap: round; opacity: .85; } /* the brass track the tools sit on */
+.c2 .c2-fan-divide { fill: none; stroke: color-mix(in srgb, var(--gold-deep) 45%, transparent); stroke-width: 1; stroke-dasharray: 1 5; stroke-linecap: round; }
+.c2 .c2-fan-i { position: absolute; padding: 0; margin: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 0;
+  background: var(--c2-surface); border: 1px solid var(--gold-deep); color: var(--gold); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--gold) 16%, transparent), 0 2px 5px rgba(0,0,0,.5);
+  transform: translate(var(--fx), var(--fy)) scale(.4); opacity: 0; transition: transform .2s cubic-bezier(.2,.9,.3,1.2), opacity .15s; transition-delay: calc(var(--i) * 18ms); pointer-events: none; }
+.c2 .c2-fan.open .c2-fan-i { transform: none; opacity: 1; pointer-events: auto; }
 .c2 .c2-fan-i svg { width: 22px; height: 22px; }
 .c2 .c2-fan-i small { position: absolute; top: 100%; margin-top: 3px; font-size: 10.5px; color: var(--ink); text-shadow: 0 1px 2px #000, 0 0 4px #000; white-space: nowrap; }
-.c2 .c2-fan-i.on { background: var(--c2-brass); color: var(--c2-on-gold); }
-@media (prefers-reduced-motion: reduce) { .c2 .c2-fan-i, .c2 .c2-fan-glow { transition: none; } }
+.c2 .c2-fan-i.on { background: var(--c2-brass); color: var(--c2-on-gold); box-shadow: 0 0 0 2px var(--page), 0 0 14px color-mix(in srgb, var(--gold) 50%, transparent); }
+@media (prefers-reduced-motion: reduce) { .c2 .c2-fan-i, .c2 .c2-fan-wrap { transition: none; } }
 /* flyouts */
 .c2 .c2-fly { position: absolute; right: 94px; bottom: 22px; z-index: 29; width: 330px; max-width: calc(100% - 110px); max-height: calc(100% - 44px); overflow: auto; padding: 10px 12px 12px;
   background: var(--c2-surface); border: 1px solid var(--gold-deep); border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,.6), inset 0 0 0 3px rgba(0,0,0,.2); }
@@ -248,15 +254,10 @@ body:has(.c2) { overflow: hidden; }
   .c2 .c2-card.sheet .c2-hpstep button { padding: 9px 0; }
   .c2 .c2-card.sheet .c2-btn.c2-sm { padding: 6px 11px; }
   .c2 .c2-card.sheet .c2-roll { padding: 5px 8px; }
-  .c2 .c2-stage .dm-map-scroll { padding: 8px; }
+  .c2 .c2-stage .dm-map-scroll { padding: 0; }
   .c2.c2-open .c2-fab, .c2.c2-open .c2-fan, .c2.c2-open .c2-help { display: none; }
-  .c2 .c2-fab { right: 14px; bottom: 14px; width: 54px; height: 54px; font-size: 21px; }
-  .c2 .c2-fan { right: 14px; bottom: 14px; width: 54px; height: 54px; }
-  .c2 .c2-fan-ring { left: 27px; top: 27px; }
-  .c2 .c2-fan-r1 { --r: 86px; } .c2 .c2-fan-r2 { --r: 184px; }
-  .c2 .c2-fan-glow { right: -222px; bottom: -222px; width: 498px; height: 498px; }
-  .c2 .c2-fan-i { width: 46px; height: 46px; margin: -23px 0 0 -23px; }
-  .c2 .c2-fan-i small { font-size: 9.5px; }
+  .c2 .c2-fab:not(.open) { right: 14px; bottom: 14px; width: 54px; height: 54px; font-size: 21px; }
+  .c2 .c2-fan-i small { font-size: 10px; }
   .c2 .c2-fly { left: 10px; right: 10px; bottom: 80px; width: auto; max-width: none; max-height: calc(100% - 96px); }
   .c2 .c2-bars { max-width: calc(100% - 20px); top: 8px; }
   .c2 .c2-dicenote { margin-left: 0; flex-basis: 100%; text-align: right; }
@@ -264,3 +265,15 @@ body:has(.c2) { overflow: hidden; }
 /* v1.7.0 — shown only if mi.js failed to load and is being fetched again (no v1.6 templates or fog stand in) */
 .c2 .c2-miwait { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); z-index: 6; padding: 6px 14px; border-radius: 999px; font-size: 12px; color: var(--ink-soft); background: color-mix(in srgb, var(--card-surface, #000) 88%, transparent); border: 1px solid var(--c2-rim); box-shadow: 0 2px 8px rgba(0,0,0,.6); pointer-events: none; }
 .c2 [data-c2-miwait] { opacity: .45; cursor: progress; }
+/* v1.7.0 — gold line icons (HearthIcons) in place of emoji */
+.c2 svg.hi { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; color: var(--gold); }
+.c2 .c2-brass svg.hi, .c2 .c2-fan-i.on svg.hi, .c2 .mi-pill.on svg.hi, .c2 .c2-btn.on svg.hi { color: currentColor; }
+.c2 .c2-mi svg.hi { width: 18px; height: 18px; }
+.c2 .c2-roll svg.hi { width: 13px; height: 13px; vertical-align: -2px; margin-right: 3px; }
+.c2 .c2-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; vertical-align: 0; box-shadow: 0 0 0 1.5px rgba(0,0,0,.4); }
+.c2 .c2-dot.ally { background: #6fbf5a; } .c2 .c2-dot.neutral { background: #c9c2b0; } .c2 .c2-dot.enemy { background: #d0473a; }
+/* v1.7.0 — token labels scale with the square (a quarter of it), never under 11 px on screen */
+.c2 .map-token-caption { font-size: max(8.5px, calc(11px * var(--mi-inv, 1))); max-width: none; padding: 1px 5px; }
+.c2-desk .map-token-caption { font-size: max(8.5px, calc(11.5px * var(--mi-inv, 1))); }
+/* arcane: its pale gold needs dark ink (AC numbers, turn badge, brass buttons) */
+html[data-palette="arcane"] .c2 { --c2-on-gold: #1d1633; }

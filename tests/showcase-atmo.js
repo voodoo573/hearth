@@ -68,7 +68,14 @@ const DUNGEON = { map: 'dungeon', atmo: { t: 'night', d: 0.75 }, lights: { Range
   if (want('atmo-desk-storm')) {
     const { ctx, p } = await page(b, 1440, 900);
     await scene(p, { map: 'forest', atmo: { w: 'storm', i: 0.85, t: 'dusk', wind: 0.5 }, lights: { Ranger: 'lantern' } });
-    await shot(p, 'atmo-desk-storm.png');
+    await p.waitForTimeout(1500); // the cloud shadows fade in
+    // catch a lightning strike: strikes come every 5\u201316 s, so trigger one (the engine's own flash()) and shoot near a pulse's peak
+    if (want('atmo-desk-storm.png')) {
+      await clean(p); await p.waitForTimeout(200);
+      const pk = await p.evaluate(() => new Promise(r => { const A = HearthAtmo.atm, t0 = performance.now(); A.flash();
+        (function poll() { const f = A.audioState().flash; if (f > 0.55 || performance.now() - t0 > 2500) return r(+f.toFixed(2)); requestAnimationFrame(poll); })(); }));
+      await p.screenshot({ path: OUT + 'atmo-desk-storm.png' }); console.log('shot atmo-desk-storm.png (lightning pulse ' + pk + ')');
+    }
     await ctx.close();
   }
   // 3. embers off the volcanic map's lava
@@ -111,9 +118,14 @@ const DUNGEON = { map: 'dungeon', atmo: { t: 'night', d: 0.75 }, lights: { Range
       } : null);
       if (tap) { await p.bringToFront(); await p.evaluate(() => { state.ui.c2Fly = 'weather'; render(); }); await p.waitForTimeout(500);
         await p.click('[data-atmo-snd="projector"]'); await p.waitForTimeout(1500); await pop.bringToFront(); await pop.waitForTimeout(1500); }
-      const btn = await pop.evaluate(() => { const b = document.getElementById('pjSnd'); return !!b && !b.hidden; });
-      if (btn !== tap) errs.push(name + ': tap button ' + (btn ? 'showing' : 'missing'));
-      await pop.screenshot({ path: OUT + name }); console.log('shot', name, btn ? '(tap button showing)' : '(no sound button)');
+      // the projector never shows a sound prompt (players see only the map); the DM screen does
+      const pjUi = await pop.evaluate(() => /enable sound/i.test(document.body.innerText) || !!document.querySelector('#pjSnd, .pj-snd'));
+      const blocked = await pop.evaluate(() => HearthAtmo._proj().blocked);
+      const dmBtn = await p.evaluate(() => { const b = document.getElementById('atmoUnlock'); return !!b && b.offsetParent !== null; });
+      if (pjUi) errs.push(name + ': the projector shows a sound prompt');
+      if (blocked !== tap || dmBtn !== tap) errs.push(name + ': DM prompt ' + (dmBtn ? 'showing' : 'missing') + ', projector blocked=' + blocked);
+      await pop.screenshot({ path: OUT + name }); console.log('shot', name, '(projector: nothing about sound)');
+      if (tap && want('atmo-desk-camp-tap.png')) { await p.bringToFront(); await p.evaluate(() => { state.ui.c2Fly = null; render(); }); await p.waitForTimeout(500); await p.screenshot({ path: OUT + 'atmo-desk-camp-tap.png' }); console.log('shot atmo-desk-camp-tap.png', dmBtn ? '(DM: Tap to enable sound)' : '(DM prompt missing)'); }
       await ctx.close();
     }
   }

@@ -38,24 +38,61 @@
     });
     return out.slice(0, 28);
   }
+  // Storm cloud shadow. Jenny's engine has the lightning but no cloud shadow, so it lives here, in our wrapper:
+  // soft dark blotches drifting with the wind under the rain. Both screens run the same CSS loop phased off the
+  // wall clock, so the DM screen and the projector show the shadows in the same place.
+  var CLOUD_S = 90; // seconds for one tile to drift past
+  function cloudEl(doc) {
+    if (!doc.getElementById('hatmCloudCss')) {
+      var st = doc.createElement('style'); st.id = 'hatmCloudCss';
+      st.textContent = '.hatm-cloud{position:absolute;inset:0;overflow:hidden;pointer-events:none;transition:opacity 1.2s}' +
+        '.hatm-cloud[hidden]{display:block;opacity:0}' +
+        '.hatm-cloud>i{position:absolute;left:calc(var(--ct) * -1);top:calc(var(--ct) * -1);width:calc(100% + var(--ct) * 2);height:calc(100% + var(--ct) * 2);' +
+        'background:radial-gradient(closest-side at 28% 34%,rgba(8,10,16,.5),rgba(8,10,16,.24) 55%,transparent),radial-gradient(closest-side at 74% 70%,rgba(8,10,16,.42),rgba(8,10,16,.18) 60%,transparent),radial-gradient(closest-side at 80% 18%,rgba(8,10,16,.3),transparent);' +
+        'background-size:var(--ct) var(--ct);animation:hatmCloud ' + CLOUD_S + 's linear infinite;will-change:transform}' +
+        '@keyframes hatmCloud{from{transform:translate(0,0)}to{transform:translate(var(--cdx),var(--cdy))}}' +
+        '@media (prefers-reduced-motion: reduce){.hatm-cloud>i{animation:none}}';
+      doc.head.appendChild(st);
+    }
+    var el = doc.createElement('div'); el.className = 'hatm-cloud'; el.hidden = true; el.setAttribute('aria-hidden', 'true'); el.innerHTML = '<i></i>'; return el;
+  }
+  function cloudScene(R, s, env, gridEl) {
+    var el = R.cloud; if (!el) return;
+    var on = s.w === 'storm'; if (el.hidden === on) el.hidden = !on;
+    if (!on) return;
+    var w = gridEl ? gridEl.clientWidth || parseFloat(gridEl.style.width) || 600 : 600, T = Math.round(Math.max(240, w * 0.7));
+    // drift one whole tile along the nearest of the eight wind directions, so the loop is seamless
+    var d = nearestWind(s.wind), ang = d * Math.PI / 4, dx = Math.round(Math.cos(ang)), dy = Math.round(Math.sin(ang));
+    var key = T + ':' + dx + ':' + dy + ':' + (env.reduced ? 1 : 0);
+    if (R.cloudK === key) return; R.cloudK = key;
+    var i = el.firstChild;
+    el.style.setProperty('--ct', T + 'px'); el.style.setProperty('--cdx', (dx * T) + 'px'); el.style.setProperty('--cdy', (dy * T) + 'px');
+    i.style.animationDelay = '-' + ((Date.now() / 1000) % CLOUD_S).toFixed(2) + 's';
+    i.style.animationPlayState = env.reduced ? 'paused' : '';
+  }
   // Apply one scene to an atmosphere instance. s = the map-state form of the settings (see mapState), env = screen hooks.
   // Every setter runs only when its value really changed: setWeather reseeds the particles.
   function applyScene(R, s, env) {
     var H = W.HearthAtmosphere, atm = R.atm, k = R.k; R.env = env;
     var hearth = s.map || null, meta = hearth ? env.meta || null : null;
-    var mk = (hearth || '-') + ':' + s.cols + 'x' + s.rows + ':' + (meta ? 1 : 0);
+    // Hearth maps after dark: their torches, fires and lava throw a few sparks even with no weather set
+    // (the engine's embers rise from torch and campfire lights). Uploaded maps never do (product rule).
+    var fires = meta && s.mapLights ? mapLights(meta).length : 0;
+    var sparks = s.w === 'none' && fires > 0 && (s.t !== 'day' || s.d > 0.2);
+    var mk = (hearth || '-') + ':' + s.cols + 'x' + s.rows + ':' + (meta ? 1 : 0) + (sparks ? ':s' : '');
     if (k.map !== mk) { // walls, indoor and map embers: Hearth maps only (uploaded maps: none of these)
       k.map = mk; k.doors = null;
       var walls = hearth && H.wallsFor ? H.wallsFor(hearth, s.cols, s.rows) : null;
       atm.setWalls(walls || null); atm.setIndoor(!!walls);
-      atm.setEmitters(meta ? H.emittersFromMeta(meta) : []);
+      atm.setEmitters(meta ? H.emittersFromMeta(meta) : []); // lava and fire overlays (torch sparks come from the torch lights themselves)
       R.doorIds = walls && walls.doors ? walls.doors.map(function (d) { return d.id; }) : [];
     }
     var dk = JSON.stringify(s.doors || {});
     if (k.doors !== dk) { k.doors = dk; (R.doorIds || []).forEach(function (id) { if (s.doors && s.doors[id] != null) atm.setDoor(id, !!s.doors[id]); }); }
     // the projector normally gets these from the DM's snapshot first, so here they already match and nothing reseeds
     var st = atm.state();
-    if (st.weather !== s.w || Math.abs(st.wI - s.i) > 1e-3) atm.setWeather(s.w, s.i);
+    var w = sparks ? 'embers' : s.w, wi = sparks ? 0.16 : s.i;
+    if (st.weather !== w || Math.abs(st.wI - wi) > 1e-3) atm.setWeather(w, wi);
     if (atm.state().lightning !== (s.w === 'storm')) atm.setLightning(s.w === 'storm', 1);
     if (st.time !== s.t) atm.setTime(s.t);
     if (Math.abs(st.darkness - s.d) > 1e-3) atm.setDarkness(s.d);
@@ -128,11 +165,12 @@
   function teardownDM(keepOn) {
     var r = D.R; D.R = null; D.key = null;
     if (D.watch) { clearInterval(D.watch); D.watch = null; }
+    D.projBlocked = false; var ul = document.getElementById('atmoUnlock'); if (ul) ul.remove();
     if (D.sync) { try { D.sync.stop(); } catch (e) { } D.sync = null; }
     if (D.hello) { try { D.hello(); } catch (e) { } D.hello = null; }
     if (D.snd) { var was = U().atmoSnd ? Object.assign({}, U().atmoSnd) : null, snd = D.snd; D.snd = null; retire(snd);
       if (was) { U().atmoSnd = was; if (!keepOn) U().atmoSnd.enabled = false; } paintSound(); }
-    if (r) { try { r.atm.stop(); } catch (e) { } r.atm.weatherEl.remove(); r.atm.lightEl.remove(); }
+    if (r) { try { r.atm.stop(); } catch (e) { } r.atm.weatherEl.remove(); r.atm.lightEl.remove(); if (r.cloud) r.cloud.remove(); }
   }
   // leaving the board (another tab, closing the encounter) doesn't call us, so watch for the layers falling out of the page
   function watchBoard() {
@@ -148,7 +186,7 @@
   function mount(g) { // weather right above the map art (and its animated overlay), light right above the tokens
     var atm = D.R.atm, base = g.querySelector('#dmPaintedOv') || g.querySelector('#dmPaintedBase') || g.querySelector('.dm-map-img, .dm-map-video');
     var wRef = base ? base.nextSibling : g.firstChild;
-    if (atm.weatherEl.parentNode !== g || atm.weatherEl.previousSibling !== base) g.insertBefore(atm.weatherEl, wRef);
+    if (atm.weatherEl.parentNode !== g || atm.weatherEl.previousSibling !== (D.R.cloud || base)) { if (D.R.cloud) g.insertBefore(D.R.cloud, wRef); g.insertBefore(atm.weatherEl, D.R.cloud ? D.R.cloud.nextSibling : wRef); }
     var ov = g.querySelector('#miOv');
     if (atm.lightEl.parentNode !== g || atm.lightEl.nextSibling !== ov) g.insertBefore(atm.lightEl, ov || null);
   }
@@ -168,21 +206,22 @@
     if (D.key !== key) {
       teardownDM(true);
       var H = W.HearthAtmosphere;
-      D.R = { atm: H.create({ cols: s.cols, rows: s.rows, quality: 'auto', animate: !reduced(), dmView: true, seed: s.seed }), k: {} };
+      D.R = { atm: H.create({ cols: s.cols, rows: s.rows, quality: 'auto', animate: !reduced(), dmView: true, seed: s.seed }), k: {}, cloud: cloudEl(document) };
       D.key = key;
       var mine = D.R.atm; mine.on('stop', function () { if (D.R && D.R.atm === mine) teardownDM(false); }); // it stops itself after 60 s off screen
       var ch = channel();
       D.sync = H.sync(D.R.atm, { role: 'dm', channel: ch || undefined });
       if (H.createAudio) {
         D.snd = H.createAudio(D.R.atm, { role: 'dm', channel: ch || undefined, volume: (U().atmoSnd && U().atmoSnd.volume) || 0.6, output: (U().atmoSnd && U().atmoSnd.output) || 'dm' });
-        var snd0 = D.snd; D.snd.on('change', function (st) { if (D.snd !== snd0) return; U().atmoSnd = { enabled: st.enabled, output: st.output, volume: st.volume }; paintSound(); });
+        var snd0 = D.snd; D.snd.on('change', function (st) { if (D.snd !== snd0) return; U().atmoSnd = { enabled: st.enabled, output: st.output, volume: st.volume }; paintSound(); paintUnlock(); });
         if (U().atmoSnd && U().atmoSnd.enabled) D.snd.enable(true);
         // a projector that opens later learns the sound settings when it says hello
-        if (ch) { var onHello = function (ev) { var d = ev.data; if (d && d.type === 'hearth-atmos-hello' && d.from === 'projector' && D.snd) D.snd.setVolume(D.snd.state().volume); }; ch.addEventListener('message', onHello); D.hello = function () { ch.removeEventListener('message', onHello); }; }
+        if (ch) { var onHello = function (ev) { var d = ev.data; if (d && d.type === 'hearth-atmos-hello' && d.from === 'projector' && D.snd) D.snd.setVolume(D.snd.state().volume); if (d && d.type === 'hearth-atmo-snd-blocked') { D.projBlocked = !!d.blocked; paintUnlock(); } }; ch.addEventListener('message', onHello); D.hello = function () { ch.removeEventListener('message', onHello); }; }
       }
     }
-    mount(g); watchBoard();
+    mount(g); watchBoard(); paintUnlock();
     applyScene(D.R, s, { role: 'dm', meta: metaFor(enc), tokenPos: tokenPosDM, reduced: reduced() });
+    cloudScene(D.R, s, { reduced: reduced() }, g);
     bindPanel();
   }
 
@@ -200,7 +239,7 @@
     var a = cfg(enc), hid = hearthId(enc), walls = hid && W.HearthAtmosphere && W.HearthAtmosphere.wallsFor ? W.HearthAtmosphere.wallsFor(hid, enc.mapCols || 20, enc.mapRows || 15) : null;
     var hasMap = typeof encHasMap === 'function' ? encHasMap(enc) : true;
     if (!(W.HearthAtmosphere && W.HearthAtmosphere.wallsFor)) ensureLib('dm/').then(function () { if (U().c2Fly === 'weather' && typeof render === 'function') render(); }, function () { });
-    var h = '<div class="atmo">';
+    var h = '<div class="atmo"><div class="atmo-col">'; // desktop: two columns (sky | creatures, map & sound), so nothing scrolls
     h += '<div class="c2-lbl">Weather</div><div class="atmo-grid">' + seg('data-atmo-w', WEATHER, a.w) + '</div>';
     h += '<div class="c2-row atmo-slide' + (a.w === 'none' ? ' off' : '') + '"><span>Strength</span><input type="range" min="0.1" max="1" step="0.05" value="' + a.i + '" data-atmo-i="1" aria-label="Weather strength"' + (a.w === 'none' ? ' disabled' : '') + '><output>' + Math.round(a.i * 100) + '%</output></div>';
     h += '<div class="c2-row atmo-wind' + (a.w === 'none' ? ' off' : '') + '"><span>Wind</span>' + WIND.map(function (o) { var on = nearestWind(a.wind) === o[1]; return '<button class="c2-btn atmo-dir ' + (on ? 'on' : '') + '" data-atmo-wind="' + o[1] + '" aria-label="Wind blowing ' + o[2] + '" aria-pressed="' + on + '"' + (a.w === 'none' ? ' disabled' : '') + '>' + o[0] + '</button>'; }).join('') + '</div>';
@@ -210,6 +249,7 @@
     // light carried by creatures on the board (any map)
     var onMap = (enc.combatants || []).filter(function (c) { return c.mapX != null && !(c.kind === 'monster' && c.dead); })
       .map(function (c, i) { return [c, i]; }).sort(function (x, y) { return (a.lights[y[0].id] ? 1 : 0) - (a.lights[x[0].id] ? 1 : 0) || x[1] - y[1]; }).map(function (x) { return x[0]; }); // creatures carrying light first
+    h += '</div><div class="atmo-col">';
     h += '<div class="c2-lbl">Carried light</div>';
     if (!onMap.length) h += '<div class="c2-note atmo-note">Put creatures on the map to give them a torch or lantern.</div>';
     else h += '<div class="atmo-lights">' + onMap.map(function (c) {
@@ -218,13 +258,13 @@
         LIGHTS.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === t ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>';
     }).join('') + '</div>';
     if (hid) {
-      h += '<div class="c2-row"><button class="c2-btn ' + (a.mapLights !== false ? 'on' : '') + '" data-atmo-maplights="1" aria-pressed="' + (a.mapLights !== false) + '">' + (a.mapLights !== false ? '\u2611' : '\u2610') + ' Torches & fires on the map</button></div>';
+      h += '<div class="c2-row"><button class="c2-btn ' + (a.mapLights !== false ? 'on' : '') + '" data-atmo-maplights="1" aria-pressed="' + (a.mapLights !== false) + '">' + '<i class="atmo-cb" aria-hidden="true"></i> Torches & fires on the map</button></div>';
       if (walls && walls.doors && walls.doors.length) h += '<div class="c2-row">' + walls.doors.map(function (d) { var open = a.doors[d.id] != null ? !!a.doors[d.id] : !!d.open; return '<button class="c2-btn ' + (open ? 'on' : '') + '" data-atmo-door="' + E(d.id) + '" aria-pressed="' + open + '">' + E(DOOR_NAMES[d.id] || d.id) + ': ' + (open ? 'open' : 'closed') + '</button>'; }).join('') + '</div>';
       h += '<div class="c2-note atmo-note">' + (walls ? 'Walls on this Hearth map block light and cast shadows.' : 'Lava and fires on this Hearth map throw embers and light.') + '</div>';
     } else if (hasMap) h += '<div class="c2-note atmo-note">Uploaded map: weather and light cover the whole board. Wall shadows and lava embers come with Hearth\u2019s painted maps.</div>';
     h += soundHTML();
     if (isActive(a)) h += '<div class="c2-row atmo-end"><button class="c2-btn" data-atmo-reset="1">Clear weather & light</button></div>';
-    return h + '</div>';
+    return h + '</div></div>';
   }
   function paintSound() { var p = document.querySelector('[data-c2-panel="weather"] .atmo'); if (!p) return; var a = p.querySelector('#atmoSnd'), b = p.querySelector('#atmoVolRow'); if (!a || !b) return; var tmp = document.createElement('div'); tmp.innerHTML = soundHTML(); a.replaceWith(tmp.querySelector('#atmoSnd')); b.replaceWith(tmp.querySelector('#atmoVolRow')); }
 
@@ -240,6 +280,8 @@
   function bindPanel() {
     if (bound) return; bound = true;
     document.addEventListener('click', function (ev) {
+      var un = ev.target.closest && ev.target.closest('[data-atmo-unlock]');
+      if (un) { dmUnlockProjector(); return; }
       var t = ev.target.closest && ev.target.closest('[data-atmo-w],[data-atmo-t],[data-atmo-wind],[data-atmo-maplights],[data-atmo-door],[data-atmo-snd],[data-atmo-reset]');
       if (!t || !t.closest('.c2')) return;
       if (t.hasAttribute('data-atmo-snd')) { // a user gesture: allowed to start audio here
@@ -280,19 +322,37 @@
     if (P.sync) { try { P.sync.stop(); } catch (e) { } P.sync = null; }
     // keep the old controller listening a moment: the DM's 'sound off' follows the new map state and fades it out
     if (P.snd) { var ps = P.snd; P.snd = null; setTimeout(function () { try { ps.destroy(); } catch (e) { } }, FADE_MS + 300); }
-    if (r) { try { r.atm.stop(); } catch (e) { } r.atm.weatherEl.remove(); r.atm.lightEl.remove(); }
-    if (P.btn) { P.btn.remove(); P.btn = null; }
+    if (r) { try { r.atm.stop(); } catch (e) { } r.atm.weatherEl.remove(); r.atm.lightEl.remove(); if (r.cloud) r.cloud.remove(); }
+    if (P.blocked) soundButton(false);
     clearInterval(P.timer); P.timer = 0; P.key = null;
   }
+  // A projector browser may keep its audio suspended until that window gets a tap. Nothing is shown on the
+  // projector (players see only the map): the DM screen shows "Tap to enable sound", which unlocks the
+  // projector's audio directly (same-origin window) and over the channel; any tap or key on the projector
+  // window also unlocks it silently.
   function soundButton(show) {
-    if (!show) { if (P.btn) P.btn.hidden = true; return; }
-    if (!P.btn) {
-      P.btn = document.createElement('button'); P.btn.className = 'pj-snd'; P.btn.id = 'pjSnd'; P.btn.type = 'button';
-      P.btn.innerHTML = '<span aria-hidden="true">\uD83D\uDD0A</span> Tap to enable sound';
-      P.btn.addEventListener('click', function () { if (P.snd) P.snd.unlock(); setTimeout(function () { var st = P.snd && P.snd.state(); if (st && st.context === 'running') soundButton(false); }, 250); });
-      document.body.appendChild(P.btn);
+    show = !!show; if (P.blocked === show) return; P.blocked = show;
+    var ch = P.ch; if (ch) try { ch.postMessage({ type: 'hearth-atmo-snd-blocked', blocked: show }); } catch (e) { }
+    if (show && !P.armed) {
+      P.armed = true;
+      var go = function () { if (!P.snd) return; P.snd.unlock(); setTimeout(checkRunning, 250); };
+      ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) { document.addEventListener(ev, go, true); });
     }
-    P.btn.hidden = false;
+  }
+  function checkRunning() { var st = P.snd && P.snd.state(); if (st && (!st.playing || st.context === 'running')) soundButton(false); }
+  function projUnlock() { if (P.snd) { P.snd.unlock(); setTimeout(checkRunning, 250); setTimeout(checkRunning, 900); } }
+  // DM side: the projector says whether its sound is waiting for a tap
+  function dmUnlockProjector() {
+    var w = W._hearthProjWin;
+    try { if (w && !w.closed && w.HearthAtmo && w.HearthAtmo._unlock) w.HearthAtmo._unlock(); } catch (e) { }
+    var ch = channel(); if (ch) try { ch.postMessage({ type: 'hearth-atmo-unlock' }); } catch (e) { }
+  }
+  function paintUnlock() {
+    var st = document.querySelector('.c2-stage') || (grid() && grid().parentNode), el = document.getElementById('atmoUnlock');
+    var want = !!D.projBlocked && !!D.snd && D.snd.state().enabled && D.snd.state().output === 'projector';
+    if (!want) { if (el) el.remove(); var pb = document.querySelector('[data-c2-panel="weather"] .atmo-unlock-note'); if (pb) pb.remove(); return; }
+    if (!el && st) { el = document.createElement('button'); el.id = 'atmoUnlock'; el.type = 'button'; el.className = 'atmo-unlock'; el.setAttribute('data-atmo-unlock', '1');
+      el.innerHTML = (W.HearthIcons ? HearthIcons.svg('speaker') : '') + ' Tap to enable sound <small>on the projector</small>'; st.appendChild(el); }
   }
   function tokenFilters(grid, s) {
     if (!P.R) return;
@@ -309,10 +369,12 @@
     var H = W.HearthAtmosphere, key = s.cols + 'x' + s.rows + ':' + s.seed;
     if (P.key !== key) {
       projTeardown();
-      P.R = { atm: H.create({ cols: s.cols, rows: s.rows, quality: 'auto', animate: !env.reduced, dmView: false, seed: s.seed }), k: {} };
+      P.R = { atm: H.create({ cols: s.cols, rows: s.rows, quality: 'auto', animate: !env.reduced, dmView: false, seed: s.seed }), k: {}, cloud: cloudEl(document) };
       P.key = key;
       var mine = P.R.atm; mine.on('stop', function () { if (P.R && P.R.atm === mine) projTeardown(); });
       P.sync = H.sync(P.R.atm, { role: 'projector', channel: env.channel || undefined });
+      P.ch = env.channel || null; P.blocked = false;
+      if (P.ch && !P.unlockL) { P.unlockL = function (ev) { if (ev.data && ev.data.type === 'hearth-atmo-unlock') projUnlock(); }; P.ch.addEventListener('message', P.unlockL); }
       if (H.createAudio) {
         P.snd = H.createAudio(P.R.atm, { role: 'projector', channel: env.channel || undefined });
         P.snd.on('blocked', function () { soundButton(true); });
@@ -322,13 +384,15 @@
       P.timer = setInterval(function () { var g = document.getElementById('grid'); if (g && P.last && P.last.atmo) tokenFilters(g, P.last.atmo); }, 1000);
     }
     var atm = P.R.atm, base = env.after && env.after.parentNode === grid ? env.after : null;
-    grid.insertBefore(atm.weatherEl, base ? base.nextSibling : grid.firstChild);
+    grid.insertBefore(P.R.cloud, base ? base.nextSibling : grid.firstChild);
+    grid.insertBefore(atm.weatherEl, P.R.cloud.nextSibling);
     var lbl = grid.querySelector('.plbl'), fog = grid.querySelector('.pfogcv, .pfog-wrap');
     grid.insertBefore(atm.lightEl, lbl || fog || null);
     applyScene(P.R, s, { role: 'projector', meta: s.map ? env.meta : null, reduced: env.reduced, tokenPos: function (id) {
       var el = grid.isConnected ? grid.querySelector('[data-tok-id="' + id + '"]') : null; if (!el || !grid.clientWidth) return null;
       var cell = (parseFloat(grid.style.width) || grid.clientWidth) / s.cols; return { x: (el.offsetLeft + el.offsetWidth / 2) / cell, y: (el.offsetTop + el.offsetHeight / 2) / cell };
     } });
+    cloudScene(P.R, s, env, grid);
     tokenFilters(grid, s);
   }
 
@@ -336,6 +400,6 @@
     version: '1.7.0', cfg: cfg, isActive: isActive, mapState: mapState, panelHTML: panelHTML, wire: wire, ensureLib: ensureLib,
     projectorDraw: projectorDraw, mapLights: mapLights,
     get atm() { return D.R ? D.R.atm : null; }, get sound() { return D.snd; },
-    _proj: function () { return { atm: P.R ? P.R.atm : null, snd: P.snd, btn: P.btn }; }, _teardown: teardownDM
+    _proj: function () { return { atm: P.R ? P.R.atm : null, snd: P.snd, blocked: !!P.blocked }; }, _unlock: projUnlock, unlockProjector: dmUnlockProjector, _teardown: teardownDM
   };
 })(window);
