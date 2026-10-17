@@ -8519,6 +8519,10 @@ html:root .home-row { gap: var(--rs-gap); margin-bottom: var(--rs-gap); }
 html:root .home-menu-grid { gap: var(--rs-gap); }
 html:root .home-tile-side { border-radius: 0 var(--rs-r-md) var(--rs-r-md) 0; }
 html:root .home-tile-row > .home-tile { border-radius: var(--rs-r-md) 0 0 var(--rs-r-md); }
+/* a game or character row with no side button (e.g. the only game) keeps all four corners, so it doesn't read as cut off */
+html:root .home-tile-row > .home-tile:only-child { border-radius: var(--rs-r-md); }
+/* the DM and Player menus have no .home-row, so the :has() rule above missed them and left a dark band behind the list */
+html:root #content > .section.home-buttons { background: transparent; border: 0; box-shadow: none; padding: 0; }
 html:root #content > .section:has(> .home-row),
 html:root .section:has(.home-row) { background: transparent; border: 0; box-shadow: none; padding: 0; }
 html:root .home-tile-name { font-size: 18px; }
