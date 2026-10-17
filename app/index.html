@@ -1593,6 +1593,7 @@ try {
   /* UI polish — phone: one short note in place of the steps; the checkbox row is a full 44px target */
   .dm-proj-phone-note { margin: 10px 0 6px; font-size: 15px; line-height: 1.5; color: var(--ink); }
   .u-phone .dm-proj-dontshow { min-height: 44px; }
+  .dm-proj-gotit .btn { flex: 1 1 auto; min-height: 48px; }
   /* v0.21.50 — Built-in map library picker. */
   .dm-maplib-dialog { max-width: 560px; }
   .dm-maplib-scroll { max-height: 62vh; overflow-y: auto; padding-right: 4px; -webkit-overflow-scrolling: touch; }
@@ -57151,7 +57152,9 @@ function wireDMMap(enc, cell, cols, rows) {
   if (project) project.addEventListener('click', () => {
     // v0.21.49 — First time (or until dismissed), show the setup help so the
     // DM knows to use Extend (not Mirror) and fullscreen the window.
-    if (loadDmSettings().projectorHelpDismissed) { openProjectorWindow(enc); return; }
+    // UI polish — a phone can't open the window, so it always gets the short note (even if the desk dismissed the help)
+    const uPhone = !!(window.HearthUI && HearthUI.isDesk && !HearthUI.isDesk());
+    if (loadDmSettings().projectorHelpDismissed && !uPhone) { openProjectorWindow(enc); return; }
     state.ui.dmProjectorHelp = true;
     state.ui.dmProjectorHelpDontShow = false;
     render();
@@ -58112,11 +58115,13 @@ function dmProjectorHelpDialogHTML() {
           <div class="dialog-title">Show the map on your TV</div>
           <div class="dialog-helper">A quick one-time setup so players see only the board — never your DM screen.</div>
           ${steps}
-          <button class="dm-proj-dontshow ${dontShow ? 'on' : ''}" data-dm-proj-dontshow="1">${dontShow ? '☑' : '☐'} Don't show this again</button>
+          ${phone ? `<div class="dialog-actions dm-proj-gotit">
+            <button class="btn primary" data-dm-proj-cancel="1">Got it</button>
+          </div>` : `<button class="dm-proj-dontshow ${dontShow ? 'on' : ''}" data-dm-proj-dontshow="1">${dontShow ? '☑' : '☐'} Don't show this again</button>
           <div class="dialog-actions">
             <button class="btn" data-dm-proj-cancel="1">Cancel</button>
             <button class="btn primary" data-dm-proj-open="1">Open projector window</button>
-          </div>
+          </div>`}
         </div>
       </div>
   `;

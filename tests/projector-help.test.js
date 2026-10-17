@@ -25,12 +25,19 @@ function check(name, ok, info) { results.push({ ok: !!ok }); console.log((ok ? '
       check(tag + ' Win+P and HDMI still there', /Win/.test(m.t) && /HDMI/.test(m.t));
       check(tag + ' Mac line in words', m.t.includes('In System Settings, open Displays and turn off Mirror Displays.'), m.t);
       check(tag + ' no arrows in the sheet', !/→/.test(m.t));
+      check(tag + ' desk buttons unchanged: Cancel + Open projector window + Don\'t show again', ['Cancel', 'Open projector window'].every(t => m.btns.some(x => x.t === t)) && m.btns.some(x => /Don't show this again/.test(x.t)) && !m.btns.some(x => x.t === 'Got it'), m.btns);
     } else {
       check(tag + ' short note shown', m.t.includes('Open Hearth on the computer connected to your TV, then press Projector.'), m.t);
       check(tag + ' no Win+P / HDMI / Mac steps', m.steps === 0 && !/Win|HDMI|Mirror|System Settings/.test(m.t), m.t);
-      check(tag + ' buttons 44px and on screen', m.btns.every(x => x.h >= 44 && x.vis), m.btns);
-      await p.click('[data-dm-proj-cancel]'); await p.waitForTimeout(300);
-      check(tag + ' Cancel closes it', await p.evaluate(() => !document.querySelector('.dm-proj-dialog')));
+      check(tag + ' a single Got it button (no Cancel, no Open projector window)', m.btns.length === 1 && m.btns[0].t === 'Got it', m.btns);
+      check(tag + ' Got it is 44px and on screen', m.btns.every(x => x.h >= 44 && x.vis), m.btns);
+      await p.click('.dm-proj-dialog button'); await p.waitForTimeout(300);
+      check(tag + ' Got it closes it and opens no window', await p.evaluate(() => !document.querySelector('.dm-proj-dialog') && !(window._hearthProjWin && !window._hearthProjWin.closed)));
+      await p.evaluate(() => document.getElementById('dmMapProject').click()); await p.waitForTimeout(400);
+      check(tag + ' it shows again next time (no dismiss on phone)', await p.evaluate(() => !!document.querySelector('.dm-proj-dialog')));
+      await p.click('.dm-proj-dialog button'); await p.waitForTimeout(300);
+      await p.evaluate(() => { const s = loadDmSettings(); s.projectorHelpDismissed = true; saveDmSettings(s); document.getElementById('dmMapProject').click(); }); await p.waitForTimeout(400);
+      check(tag + ' note still shown when help was dismissed on the desk, and no window opens', await p.evaluate(() => !!document.querySelector('.dm-proj-dialog') && !(window._hearthProjWin && !window._hearthProjWin.closed)));
     }
     await ctx.close();
   }
