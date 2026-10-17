@@ -67,8 +67,11 @@ function hearthFogLib(root) {
     var n = this.fw * this.fh;
     this.cur = new Float32Array(n); this.to = new Float32Array(n); this.from = new Float32Array(n); this.t0 = new Float32Array(n); this.d = new Float32Array(n);
     this.noise = noise(this.fw, this.fh, 7, Math.max(4, this.cols * 1.6));
-    this.mask = null; this.raf = 0; this.anim = false; this.onFrame = o.onFrame || null;
+    this.mask = null; this.raf = 0; this.anim = false; this.onFrame = o.onFrame || null; this.tone = o.tone || 0;
   }
+  // DM look on dark maps: same 68% cover, but the indigo lifts toward a lighter blue and the hatch brightens a
+  // little (tone 0..1), so the fogged map still reads and the fog edge stays visible against dark stone.
+  FogView.prototype.setTone = function (t) { t = Math.max(0, Math.min(1, +t || 0)); if (Math.abs(t - this.tone) < 0.01) return; this.tone = t; this.paint(); };
   FogView.prototype.size = function (w, h) {
     var dpr = Math.min(2, root.devicePixelRatio || 1), sc = Math.min(dpr, Math.sqrt(4.2e6 / Math.max(1, w * h)));
     this.cv.width = Math.max(1, Math.round(w * sc)); this.cv.height = Math.max(1, Math.round(h * sc));
@@ -145,11 +148,12 @@ function hearthFogLib(root) {
       if (p.setTransform && root.DOMMatrix) p.setTransform(new DOMMatrix([k, 0, 0, k, 0, 0]));
       x.fillStyle = p; x.fillRect(0, 0, W, H);
     } else {
-      x.fillStyle = 'rgba(12,10,22,0.68)'; x.fillRect(0, 0, W, H);
+      var t = this.tone, mix = function (a, b) { return Math.round(a + (b - a) * t); };
+      x.fillStyle = 'rgba(' + mix(12, 24) + ',' + mix(10, 26) + ',' + mix(22, 48) + ',0.68)'; x.fillRect(0, 0, W, H);
       x.globalCompositeOperation = 'source-atop';
       var hp = x.createPattern(texture('dm'), 'repeat'), hk = Math.max(1, cellPx / 48);
       if (hp.setTransform && root.DOMMatrix) hp.setTransform(new DOMMatrix([hk, 0, 0, hk, 0, 0]));
-      x.fillStyle = hp; x.fillRect(0, 0, W, H);
+      x.fillStyle = hp; x.fillRect(0, 0, W, H); if (t > 0) { x.globalAlpha = t * 0.5; x.fillRect(0, 0, W, H); x.globalAlpha = 1; } // hatch up to 1.5× brighter
     }
     x.restore();
   };

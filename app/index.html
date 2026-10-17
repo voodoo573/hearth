@@ -55985,6 +55985,8 @@ function dmMapZoomMargins(z, w, h) {
 function dmMapBoardHTML(enc, cell, cols, rows, tokens, turnId) {
   const gridW = cols * cell, gridH = rows * cell;
   const MI = dmMapInteractions(); // v1.7.0 — Jenny's map interactions (C2 layout only)
+  const miWait = !MI && dmLayoutIsC2(); // C2 never falls back to the v1.6 template/fog drawing; it waits for mi.js
+  if (miWait) dmMiEnsure();
   return `
           <div class="dm-map-scroll" id="dmMapScroll">
             <div class="dm-map-zoom" id="dmMapZoom" style="transform:scale(${state.ui.dmMapZoom || 1});transform-origin:top left;width:${gridW}px;height:${gridH}px;${dmMapZoomMargins(state.ui.dmMapZoom || 1, gridW, gridH)}">
@@ -55995,10 +55997,10 @@ function dmMapBoardHTML(enc, cell, cols, rows, tokens, turnId) {
               ${MI ? MI.under(enc, cell, cols, rows) : ''}
               <svg class="dm-aoe-layer" id="dmAoeLayer" width="${gridW}" height="${gridH}" viewBox="0 0 ${gridW} ${gridH}">
                 <defs><filter id="fogWave" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="1" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="11" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
-                ${MI ? MI.aoeGroup() : (enc.aoes || []).map(a => aoeShapeSVG(a, cell, true, enc)).join('')}
+                ${MI ? MI.aoeGroup() : miWait ? '' : (enc.aoes || []).map(a => aoeShapeSVG(a, cell, true, enc)).join('')}
                 <g id="dmAoePreview"></g>
                 <g id="dmRulerLayer"></g>
-                <g id="dmFogLayer" filter="url(#fogWave)">${MI ? '' : fogLayerSVG(enc, cols, rows, cell)}</g>
+                <g id="dmFogLayer" filter="url(#fogWave)">${MI || miWait ? '' : fogLayerSVG(enc, cols, rows, cell)}</g>
               </svg>
               <div class="he-aoe-layer" id="heAoeLayer" data-cell="${cell}" aria-hidden="true"></div>
               ${MI ? MI.pathLayer(cols, rows, cell) : ''}
@@ -56051,6 +56053,25 @@ function dmMapDialogsHTML(enc) {
 // or 'classic' (the v1.6 cockpit). Switch from the ⋯ More menu or the classic header.
 function dmLayoutIsC2() { return !!(typeof window !== 'undefined' && window.HearthC2) && (loadDmSettings().dmLayout || 'c2') === 'c2'; }
 function dmMapInteractions() { return (dmLayoutIsC2() && typeof window !== 'undefined' && window.HearthMI) || null; }
+// v1.7.0 — mi-fog.js and mi.js are plain <script> tags, so normally they're in before the first render. If one
+// failed to load (flaky network, a dropped request), C2 draws no templates or fog at all instead of the v1.6
+// look, shows "Loading map tools…", and fetches them again with backoff; once in, it re-renders.
+let _miLoad = null;
+function dmMiLoading() { return !!_miLoad; }
+function dmMiEnsure() {
+  if (typeof window === 'undefined' || window.HearthMI || _miLoad) return;
+  _miLoad = { tries: 0 };
+  const add = (src) => new Promise((ok, bad) => { const s = document.createElement('script'); s.src = src + (src.includes('?') ? '&' : '?') + 'r=' + _miLoad.tries; s.onload = ok; s.onerror = bad; document.head.appendChild(s); });
+  const css = document.querySelector('link[href="dm/mi.css"]');
+  if (!css || !css.sheet) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'dm/mi.css?r=1'; document.head.appendChild(l); }
+  const go = () => {
+    _miLoad.tries++;
+    (window.HearthFogLib ? Promise.resolve() : add('dm/mi-fog.js')).then(() => window.HearthMI ? null : add('dm/mi.js')).then(() => {
+      _miLoad = null; if (window.HearthMI && typeof render === 'function') render();
+    }).catch(() => { setTimeout(go, Math.min(8000, 500 * Math.pow(2, _miLoad.tries - 1))); });
+  };
+  go();
+}
 function dmSetLayout(v) { const s = loadDmSettings(); s.dmLayout = v === 'classic' ? 'classic' : 'c2'; saveDmSettings(s); state.ui.dmMapZoomInit = false; }
 function renderDMMap() {
   const enc = assignMapPositions(assignTokens(loadEncounter()));

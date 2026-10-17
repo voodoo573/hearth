@@ -53,7 +53,11 @@ async function drag(p, a, b, n, hold) { await p.mouse.move(a.x, a.y); await p.mo
   await p.click('[data-mi-show]'); await p.waitForTimeout(150);
   const shown = await p.evaluate(() => { const a = loadEncounter().aoes.slice(-1)[0]; const st = buildMapState(loadEncounter()); return { pinned: a.pinned, inState: st.aoes.some(x => x.id === a.id), lbl: (st.aoes.find(x => x.id === a.id) || {}).lbl }; });
   check('📍 Show players sends it to the projector with a size-only label', shown.pinned && shown.inState && shown.lbl === '25 ft cube', shown);
+  const rh = () => p.evaluate(() => [...new DOMParser().parseFromString(HearthMI.historyHTML(loadEncounter()), 'text/html').querySelectorAll('.mi-rh span')].map(s => (s.classList.contains('undone') ? '~' : '') + s.textContent));
+  const rh0 = await rh();
   await p.keyboard.press('Control+z'); await p.waitForTimeout(150);
+  const rh1 = await rh();
+  check('round history is honest: undoing 📍 Show players greys out its "Shown" entry', /^📍 Shown: Cube/.test(rh0[0]) && /^~📍 Shown: Cube.*undone$/.test(rh1[0]), { rh0: rh0.slice(0, 2), rh1: rh1.slice(0, 2) });
   check('Ctrl+Z undoes the last template change', await p.evaluate(() => !loadEncounter().aoes.slice(-1)[0].pinned));
   await p.keyboard.press('Delete'); await p.waitForTimeout(150);
   check('Delete removes the selected template', await p.evaluate(() => loadEncounter().aoes.length === 1));
@@ -92,8 +96,12 @@ async function drag(p, a, b, n, hold) { await p.mouse.move(a.x, a.y); await p.mo
   check('area reveal snaps to the grid (20×15 ft) and is one step', ar.all && ar.hist === 2 && /Area 20×15 ft/.test(ar.last), ar);
   await p.keyboard.press('Control+z'); await p.waitForTimeout(300);
   check('Ctrl+Z steps the fog back', await p.evaluate(() => !loadEncounter().fog.revealed.includes('13,3') && HearthMI._hist().pos === 1));
+  const fr1 = await rh();
+  check('…and greys out that fog step in the round history', fr1.some(x => /^~☀ Area 20×15 ft/.test(x)) && fr1.some(x => /^☀ Brush clear/.test(x)), fr1.slice(0, 4));
   await p.keyboard.press('Control+Shift+Z'); await p.waitForTimeout(300);
   check('Ctrl+Shift+Z redoes it', await p.evaluate(() => loadEncounter().fog.revealed.includes('13,3') && HearthMI._hist().pos === 2));
+  const fr2 = await rh();
+  check('redo restores the history entry', fr2.some(x => /^☀ Area 20×15 ft/.test(x)) && !fr2.some(x => /^~☀ Area 20×15/.test(x)), fr2.slice(0, 4));
   // brush wobble then Esc: nothing changes
   await p.click('[data-mi-ftool="brush"]');
   const before = await p.evaluate(() => loadEncounter().fog.mask);
@@ -148,6 +156,24 @@ async function drag(p, a, b, n, hold) { await p.mouse.move(a.x, a.y); await p.mo
   const vis = await p.evaluate(() => { const id = loadEncounter().combatants.find(c => c.name === 'Adult Red Dragon').id; const r = document.querySelector(`[data-map-token="${id}"]`).getBoundingClientRect(); const R = 226 + 26 + 16 + 40; return { inView: r.top >= 0 && r.left >= 0 && r.right <= innerWidth, clear: Math.hypot(innerWidth - (r.left + r.width / 2), innerHeight - (r.top + r.height / 2)) > R * 0.9 }; });
   check('phone: the map pans so the dragon (the cone’s origin) is visible, clear of the fan', vis.inView && vis.clear, vis);
   await ctx.close();
+  // ---------- handles never cover a token (desktop and phone) ----------
+  const hdlClear = (p) => p.evaluate(() => { const toks = [...document.querySelectorAll('[data-map-token]')].map(t => t.getBoundingClientRect()); const hs = [...document.querySelectorAll('.mi-hdl')]; return { n: hs.length, on: hs.filter(h => toks.some(t => { const r = h.getBoundingClientRect(); return r.left < t.right && r.right > t.left && r.top < t.bottom && r.bottom > t.top; })).map(h => h.getAttribute('aria-label')) }; });
+  for (const [w, h, touch] of [[1440, 900, false], [412, 880, true]]) {
+    ({ ctx, p } = await open(b, w, h, {}, touch));
+    await p.evaluate(() => { const e = loadEncounter(); e.aoes.push({ id: 'aoe_cube', kind: 'square', x: 1, y: 11, len: 3, angle: 0, color: '#c0392b', pinned: false }); e.aoes.push({ id: 'aoe_ln', kind: 'line', x: 5.5, y: 9.5, len: 6, angle: -0.6, color: '#c0392b', pinned: false }); saveEncounter(e); render(); });
+    await p.evaluate(() => { const fb = [...document.querySelectorAll('.c2-atk')].find(x => /^Fire Breath/.test(x.textContent)); fb.querySelector('[data-c2-place]').click(); }); await p.waitForTimeout(900);
+    const hc = await hdlClear(p);
+    check(`${touch ? 'phone' : 'desktop'}: no template handle covers a token (cone on the dragon, circle on the goblin, line from the Ranger)`, hc.n >= 9 && hc.on.length === 0, hc);
+    if (!touch) {
+      // a handle that was slid off its point drags from where it sits: grabbing it doesn't jump the template
+      const g0 = await p.evaluate(() => { const a = loadEncounter().aoes.find(x => x.kind === 'cone' && !x.pinned) || HearthMI._x().enc.aoes.slice(-1)[0]; return { ang: a.angle, len: a.len }; });
+      const mh = await p.evaluate(() => { const h = [...document.querySelectorAll('.mi-hdl.on')].find(x => x.dataset.miH === 'aim'); const r = h.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+      await p.mouse.move(mh.x, mh.y); await p.mouse.down(); await p.mouse.move(mh.x + 1, mh.y); await p.mouse.move(mh.x, mh.y); await p.mouse.up(); await p.waitForTimeout(200);
+      const g1 = await p.evaluate(() => { const a = HearthMI._x().enc.aoes.slice(-1)[0]; return { ang: a.angle, len: a.len }; });
+      check('grabbing an offset handle keeps the template where it was (no jump)', Math.abs(g1.ang - g0.ang) < 0.27 && g1.len === g0.len, { g0, g1 });
+    }
+    await ctx.close();
+  }
   check('no page errors', errs.length === 0, errs.slice(0, 3));
   await b.close();
   const n = results.filter(r => r.ok).length; console.log(`\n${n}/${results.length} passed`); process.exit(n === results.length ? 0 : 1);

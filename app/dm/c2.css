@@ -261,3 +261,6 @@ body:has(.c2) { overflow: hidden; }
   .c2 .c2-bars { max-width: calc(100% - 20px); top: 8px; }
   .c2 .c2-dicenote { margin-left: 0; flex-basis: 100%; text-align: right; }
 }
+/* v1.7.0 — shown only if mi.js failed to load and is being fetched again (no v1.6 templates or fog stand in) */
+.c2 .c2-miwait { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); z-index: 6; padding: 6px 14px; border-radius: 999px; font-size: 12px; color: var(--ink-soft); background: color-mix(in srgb, var(--card-surface, #000) 88%, transparent); border: 1px solid var(--c2-rim); box-shadow: 0 2px 8px rgba(0,0,0,.6); pointer-events: none; }
+.c2 [data-c2-miwait] { opacity: .45; cursor: progress; }

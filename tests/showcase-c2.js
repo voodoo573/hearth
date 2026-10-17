@@ -108,7 +108,7 @@ const scrollCard = (p, re) => p.evaluate((src) => { const re = new RegExp(src); 
     await bare(p); await p.waitForTimeout(600);
     await p.evaluate(() => HearthMI.openFog()); await p.waitForTimeout(800);
     const T = await touchOf(p);
-    await tglide(p, T, await cellPt(p, 12.5, 10.5), await cellPt(p, 15.2, 6.5), 12); await p.waitForTimeout(300);
+    await tglide(p, T, await cellPt(p, 11.5, 9.8), await cellPt(p, 16.3, 7), 14); await p.waitForTimeout(300);
     await shot(p, 'fog-phone.png'); await T('touchEnd'); await p.waitForTimeout(400);
     await ctx.close(); }
   { const { ctx, p } = await page(b, 1440, 900);
@@ -116,8 +116,15 @@ const scrollCard = (p, re) => p.evaluate((src) => { const re = new RegExp(src); 
     await p.evaluate(() => HearthMI.openFog()); await p.waitForTimeout(600);
     await p.click('[data-mi-ftool="rect"]'); await area(p, 2, 5, 10, 13); await area(p, 1, 2, 8, 5);
     const pop = await projOpen(p);
+    await pop.bringToFront();
+    // slow-motion camera: the projector runs at 0.3× (CSS animations and the fog canvas clock) so the frame ~300 ms
+    // into the reveal can be caught; headless popups only paint every ~200 ms here
+    const pcdp = await pop.context().newCDPSession(pop); await pcdp.send('Animation.enable'); await pcdp.send('Animation.setPlaybackRate', { playbackRate: 0.3 });
+    await pop.evaluate(() => { const r = performance.now.bind(performance), t0 = r(); performance.now = () => t0 + (r() - t0) * 0.3; });
     const a = await cellPt(p, 10, 2), c = await cellPt(p, 18, 12); await p.mouse.move(a.x, a.y); await p.mouse.down(); await glide(p, a, c, 6); await p.mouse.up();
-    await pop.waitForTimeout(170); await pshot(pop, 'fog-projector.png');
+    const at = await pop.waitForFunction(() => { const t = document.getAnimations().filter(a => a.animationName === 'ptokRev' && a.currentTime < 600).map(a => a.currentTime); return t.length && Math.min.apply(null, t) >= 280 ? Math.round(Math.min.apply(null, t)) : 0; }, null, { timeout: 5000, polling: 'raf' }).then(h => h.jsonValue()).catch(() => 'not seen');
+    await pshot(pop, 'fog-projector.png'); // mid-fade: the area reveal dissolves over 500 ms, tokens over 600 ms
+    console.log('  fog-projector captured', at, 'ms into the token fade');
     await ctx.close(); }
   console.log(errs.length ? 'PAGE ERRORS ' + errs.slice(0, 3).join(' | ') : 'no page errors');
   await b.close();

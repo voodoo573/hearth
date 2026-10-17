@@ -17,8 +17,6 @@
   var ABIL = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
   var ABIL_FULL = { strength: 'str', dexterity: 'dex', constitution: 'con', intelligence: 'int', wisdom: 'wis', charisma: 'cha' };
   var DMG_SHORT = { piercing: 'pierc.', slashing: 'slash.', bludgeoning: 'bludg.', lightning: 'lightn.', necrotic: 'necr.', psychic: 'psych.', radiant: 'rad.', thunder: 'thund.' };
-  var ELEMENT_COLOR = { fire: '#e8552d', cold: '#4aa3df', lightning: '#f6d743', acid: '#7ac74f', poison: '#8e44ad', radiant: '#f5c542', necrotic: '#5b2c6f', force: '#c56cf0', thunder: '#95a5a6', psychic: '#e84393' };
-  var FIRE = '#e8552d'; // fixed: fire-orange templates carry meaning in every theme
 
   function blockFor(c) {
     if (!c) return null;
@@ -120,12 +118,12 @@
     var u = ui(), open = !!u.c2Fan, mi = MI();
     if (mi && mi.aoeOpen()) return mi.fanHTML();
     var inner = [
-      fanItem('aoe', 'AoE', mi ? 'data-mi-aoe-open="1"' : 'data-c2-fly="aoe"', u.c2Fly === 'aoe'),
+      fanItem('aoe', 'AoE', mi ? 'data-mi-aoe-open="1"' : 'data-c2-miwait="1" aria-disabled="true" title="Map tools are loading\u2026"', false), // no v1.6 fallback on C2
       fanItem('measure', 'Measure', 'data-ruler-tool="1"', !!u.dmRulerTool),
       fanItem('point', 'Point', 'data-pointer-tool="1"', !!u.dmPointerMode),
     ];
     var outer = [
-      fanItem('fog', 'Fog', mi ? 'data-mi-fog-open="1"' : 'data-c2-fly="fog"', u.c2Fly === 'fog' || !!(enc.fog && enc.fog.on)),
+      fanItem('fog', 'Fog', mi ? 'data-mi-fog-open="1"' : 'data-c2-miwait="1" aria-disabled="true" title="Map tools are loading\u2026"', !!mi && !!(enc.fog && enc.fog.on)),
       fanItem('group', 'Group', 'data-group-tool="1"', !!u.dmGroupMode),
       fanItem('grid', 'Grid', 'data-c2-fly="grid"', u.c2Fly === 'grid'),
       fanItem('map', 'Map', 'data-c2-fly="map"', u.c2Fly === 'map'),
@@ -171,22 +169,6 @@
     else if (u.dmFogTool) t = [(u.dmFogTool === 'reveal' ? 'Revealing fog' : 'Hiding with fog') + ' \u2014 brush on the map', 'data-fog-tool="' + u.dmFogTool + '"'];
     if (!t) return '';
     return '<div class="c2-mode"><span>' + t[0] + '</span><button class="c2-btn c2-brass" ' + t[1] + '>\u2713 Done</button></div>';
-  }
-  function aoeBars(enc) {
-    var u = ui(), out = '';
-    if (MI()) return ''; // the template fan replaces the move / aim / size bars
-    var last = u.dmAoeLastDropped ? (enc.aoes || []).find(function (a) { return a.id === u.dmAoeLastDropped; }) : null;
-    if (u.dmAoeMoving && (enc.aoes || []).some(function (a) { return a.id === u.dmAoeMoving; })) {
-      out += '<div class="c2-bar"><span>Drag \u271B to move, \u21BB to spin.</span><button class="c2-btn c2-brass" data-aoe-move-done="1">\u2713 Done</button></div>';
-    } else if (u.dmAoeAiming && (enc.aoes || []).some(function (a) { return a.id === u.dmAoeAiming; })) {
-      out += '<div class="c2-bar"><span>Tap where it should point.</span><button class="c2-btn c2-brass" data-aoe-aim-done="1">\u2713 Done</button></div>';
-    } else if (last && typeof AOE_SIZE_CHOICES !== 'undefined') {
-      var cur = Math.round((last.len || 0) * 5);
-      out += '<div class="c2-bar"><span class="c2-lbl">' + E(last.kind.charAt(0).toUpperCase() + last.kind.slice(1)) + ' ' + E(aoeSizeNoun(last.kind)) + '</span>' +
-        (AOE_SIZE_CHOICES[last.kind] || []).map(function (ft) { return '<button class="c2-btn ' + (ft === cur ? 'on' : '') + '" data-aoe-resize="' + last.id + '|' + ft + '">' + ft + ' ft</button>'; }).join('') +
-        '<button class="c2-x" data-c2-size-close="1" aria-label="Done sizing">\u2713</button></div>';
-    }
-    return out;
   }
   function helpHTML() {
     return '<button class="c2-help ' + (ui().c2Help ? 'on' : '') + '" data-c2-help="1" aria-expanded="' + (ui().c2Help ? 'true' : 'false') + '" title="How the map works">?</button>' +
@@ -407,14 +389,16 @@
     var card = u.c2Card ? (enc.combatants || []).find(function (c) { return c.id === u.c2Card.id; }) : null;
     if (u.c2Card && !card) u.c2Card = null;
     var phone = !wide();
-    var lk = (phone ? 'p' : 'd') + (card ? 1 : 0) + (phone && card && MI() && MI().aoeOpen() ? 'k' : ''); // the peek bar gives the map more height: refit
+    var tools = !!(MI() && (MI().aoeOpen() || MI().fogOpen()));
+    var mini = phone && (!!card || tools); // phone: the one-row portrait strip whenever a card or a map tool needs the room (map-interactions renders)
+    var lk = (phone ? 'p' : 'd') + (card ? 1 : 0) + (phone && card && MI() && MI().aoeOpen() ? 'k' : '') + (mini ? 'm' : ''); // the peek bar gives the map more height: refit
     if (u.c2LayoutKey !== lk) { if (u.c2LayoutKey != null && !u.c2ManualZoom) u.dmMapZoomInit = false; u.c2LayoutKey = lk; }
     var mi = MI(), miCls = mi ? (mi.aoeOpen() ? ' mi-aoe-on' : '') + (mi.fogOpen() ? ' mi-fog-on' : '') : '';
     return '<section class="dm-battle c2' + (card ? ' c2-open' : '') + (phone ? ' c2-phone' : ' c2-desk') + miCls + '">' + headHTML(ctx) + moreHTML(ctx) +
-      stripHTML(ctx, phone && !!card) +
+      stripHTML(ctx, mini) +
       '<div class="c2-body">' + (card ? cardHTML(ctx, card) : '') +
       '<div class="c2-stage dm-battle-map">' + dmMapBoardHTML(enc, ctx.cell, ctx.cols, ctx.rows, ctx.tokens, ctx.turnId) +
-      '<div class="c2-bars">' + aoeBars(enc) + modeChip() + '</div>' + helpHTML() + flyHTML(enc, ctx.cols, ctx.rows) + fanHTML(enc) + (mi ? mi.stageHTML() : '') + '</div></div>' +
+      '<div class="c2-bars">' + modeChip() + '</div>' + helpHTML() + flyHTML(enc, ctx.cols, ctx.rows) + fanHTML(enc) + (mi ? mi.stageHTML() : '<div class="c2-miwait" role="status">Loading map tools\u2026</div>') + '</div></div>' +
       dmMapDialogsHTML(enc) + '</section>';
   }
 
@@ -431,27 +415,6 @@
     hearthDiceRoll({ who: c.name || 'DM', label: label, groups: vals, total: total, crit: nat === 20 ? 'nat20' : nat === 1 ? 'nat1' : null, breakdown: bd, noAutoProject: true });
     if (typeof hearthDicePrefs === 'function' && hearthDicePrefs().anim === 'off' && typeof showToast === 'function') showToast(c.name + ' \u00b7 ' + label + ': ' + total + (nat === 20 ? ' (nat 20!)' : nat === 1 ? ' (nat 1)' : ''));
     return { sum: sum, nat: nat };
-  }
-  function placeTemplate(id, kind, ft, type, label) {
-    var enc = loadEncounter(), c = find(enc, id);
-    if (!c) return;
-    if (c.mapX == null) { showToast(c.name + ' isn\u2019t on the map yet.'); return; }
-    var sz = (typeof tokenFootprint === 'function' && typeof tokenSize === 'function') ? tokenFootprint(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss })) : 1;
-    var ox = c.mapX + sz / 2, oy = c.mapY + sz / 2;
-    // Aim at the nearest living player (or foe of this creature) on the board.
-    var foes = (enc.combatants || []).filter(function (o) { return o.id !== c.id && o.mapX != null && !o.dead && (c.kind === 'monster' ? (o.kind === 'player' || o.disposition === 'ally') : o.kind === 'monster'); });
-    var best = null, bd = Infinity;
-    foes.forEach(function (o) { var d = Math.hypot(o.mapX + 0.5 - ox, o.mapY + 0.5 - oy); if (d < bd) { bd = d; best = o; } });
-    var ang = best ? Math.atan2(best.mapY + 0.5 - oy, best.mapX + 0.5 - ox) : 0;
-    var len = Math.max(1, Math.round(ft / 5)), color = ELEMENT_COLOR[type] || FIRE;
-    var a = { id: 'aoe_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5), kind: kind, len: len, angle: ang, color: color, element: (typeof aoeElementForColor === 'function' ? aoeElementForColor(color) : null) || (type || 'fire'), pinned: true, label: label };
-    if (kind === 'cone' || kind === 'line') { a.x = ox; a.y = oy; }
-    else if (best && kind === 'circle') { a.x = best.mapX + 0.5; a.y = best.mapY + 0.5; }
-    else { a.x = ox; a.y = oy; }
-    enc.aoes = (enc.aoes || []).concat(a);
-    ui().dmAoeLastDropped = a.id;
-    saveEncounter(enc); if (typeof broadcastMap === 'function') broadcastMap(enc);
-    render();
   }
   function openCard(id, fromTap) {
     var u = ui();
@@ -515,7 +478,7 @@
     if ((el = t.closest('[data-c2-la-use]'))) { var cost = +el.getAttribute('data-c2-cost') || 1; mutate(el.getAttribute('data-c2-la-use'), function (c, s, e) { var max = 3; var bl = blockFor(c); var lm = bl && bl.srd && /can take (\d+)/i.exec(bl.srd.legDesc || ''); if (lm) max = +lm[1]; if (s.la + cost > max) { showToast('Not enough legendary actions left this round.'); return; } s.la += cost; }); return; }
     if ((el = t.closest('[data-c2-la-reset]'))) { mutate(el.getAttribute('data-c2-la-reset'), function (c, s) { s.la = 0; }); return; }
     if ((el = t.closest('[data-c2-place]')) && MI()) { if (el.classList.contains('placing')) { MI().closeAoe(false); return; } MI().placeFromCard(el.getAttribute('data-c2-place'), el.getAttribute('data-c2-kind'), +el.getAttribute('data-c2-ft'), el.getAttribute('data-c2-t'), el.getAttribute('data-c2-l'), el.getAttribute('data-c2-dc'), el.getAttribute('data-c2-key')); return; }
-    if ((el = t.closest('[data-c2-place]'))) { placeTemplate(el.getAttribute('data-c2-place'), el.getAttribute('data-c2-kind'), +el.getAttribute('data-c2-ft'), el.getAttribute('data-c2-t'), el.getAttribute('data-c2-l')); return; }
+    if (t.closest('[data-c2-miwait]') || t.closest('[data-c2-place]')) { if (typeof W.dmMiEnsure === 'function') W.dmMiEnsure(); if (typeof showToast === 'function') showToast('Map tools are still loading\u2026', 2400); return; } // never the v1.6 templates on C2
     if (t.closest('[data-map-zoom="in"],[data-map-zoom="out"]')) u.c2ManualZoom = true;
     if (t.closest('[data-map-zoom="fit"]')) u.c2ManualZoom = false;
   }

@@ -206,6 +206,8 @@
 .c2 .mi-rh b { color: var(--gold); font: 600 13px Georgia, serif; }
 .c2 .mi-rh em { color: var(--ink-faded); }
 .c2 .mi-rhr { color: var(--ink-faded); text-transform: uppercase; letter-spacing: .6px; font-size: 10px; margin-top: 4px; }
+.c2 .mi-rh span.undone { color: var(--ink-faded); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--ink-faded) 70%, transparent); opacity: .75; }
+.c2 .mi-rh span.undone small { text-decoration: none; display: inline-block; margin-left: 4px; font-size: 10px; letter-spacing: .4px; text-transform: uppercase; }
 /* phone: the stat sheet folds into a peek bar while the AoE fan is open */
 .c2 .mi-peek { flex: none; height: 99px; box-sizing: border-box; padding: 8px 10px; display: flex; flex-direction: column; gap: 7px; position: relative; z-index: 20;
   background: linear-gradient(180deg, color-mix(in srgb, var(--c2-surface) 92%, #000), var(--page-deep, var(--page))); border-top: 1px solid var(--gold-deep); border-bottom: 2px solid var(--gold-deep); box-shadow: 0 6px 16px rgba(0,0,0,.65); }

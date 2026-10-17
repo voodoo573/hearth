@@ -203,8 +203,9 @@
     (enc.combatants || []).forEach(function (c) { if (c.mapX == null) return; var s = spanOf(c); out.push([c.mapX * cell - 2, c.mapY * cell - 2, s * cell + 4, s * cell + 14]); });
     return out;
   }
-  function overlapScore(b, boxes) { var s = 0; boxes.forEach(function (q) { var ix = Math.min(b[0] + b[2], q[0] + q[2]) - Math.max(b[0], q[0]), iy = Math.min(b[1] + b[3], q[1] + q[3]) - Math.max(b[1], q[1]); if (ix > 0 && iy > 0) s += ix * iy; }); return s; }
-  function placeLabel(a, g, cell, w, h, boxes, BW, BH) {
+  function overlapScore(b, boxes) { var s = 0; boxes.forEach(function (q) { var ix = Math.min(b[0] + b[2], q[0] + q[2]) - Math.max(b[0], q[0]), iy = Math.min(b[1] + b[3], q[1] + q[3]) - Math.max(b[1], q[1]); if (ix > 0 && iy > 0) s += ix * iy * (q[4] || 1); }); return s; }
+  function placeLabel(a, g, cell, w, h, boxes, BW, BH, vis) {
+    vis = vis || [0, 0, BW, BH];
     var ox = g.x * cell, oy = g.y * cell, L = g.len * cell, c = [], cs = Math.cos(g.ang), sn = Math.sin(g.ang), gap = 8 / zoom();
     if (a.kind === 'circle') { c.push([ox, oy + L + gap + h / 2]); c.push([ox, oy - L - gap - h / 2]); c.push([ox + L + gap + w / 2, oy]); c.push([ox - L - gap - w / 2, oy]); c.push([ox + L * 0.75 + w / 2, oy + L * 0.75 + h / 2]); c.push([ox - L * 0.75 - w / 2, oy - L * 0.75 - h / 2]); }
     else if (a.kind === 'square') { c.push([ox + L / 2, oy - gap - h / 2]); c.push([ox + L / 2, oy + L + gap + h / 2]); c.push([ox + L + gap + w / 2, oy + L / 2]); c.push([ox - gap - w / 2, oy + L / 2]); }
@@ -213,13 +214,16 @@
       [0.55, 0.8, 0.3, 1].forEach(function (f) {
         var half = (a.kind === 'cone' ? L * f * 0.5 : cell * 0.5) + gap + Math.abs(sn) * w / 2 + Math.abs(cs) * h / 2;
         c.push([ox + cs * L * f - sn * half, oy + sn * L * f + cs * half]); c.push([ox + cs * L * f + sn * half, oy + sn * L * f - cs * half]);
-      });
+      });      if (a.kind === 'cone') [0.62, 0.8, 0.45].forEach(function (f) { c.push([ox + cs * L * f, oy + sn * L * f]); }); // inside the cone, as a last resort
     }
+    // every candidate is first slid inside the visible map (the map scrolls on phone), then scored on what it covers
+    var cx = function (v, lo, hi) { return hi < lo ? (lo + hi) / 2 : Math.max(lo, Math.min(hi, v)); };
     var best = null, bs = Infinity;
     for (var i = 0; i < c.length; i++) {
-      var b = [c[i][0] - w / 2, c[i][1] - h / 2, w, h], s = overlapScore(b, boxes) + i * 0.5;
-      if (b[0] < 2 || b[1] < 2 || b[0] + w > BW - 2 || b[1] + h > BH - 2) s += 1e6;
-      if (s < bs) { bs = s; best = c[i]; }
+      var p = [cx(c[i][0], vis[0] + 2 + w / 2, vis[2] - 2 - w / 2), cx(c[i][1], vis[1] + 2 + h / 2, vis[3] - 2 - h / 2)];
+      var moved = Math.abs(p[0] - c[i][0]) + Math.abs(p[1] - c[i][1]);
+      var s = overlapScore([p[0] - w / 2, p[1] - h / 2, w, h], boxes) + i * 0.5 + moved * h * 0.5;
+      if (s < bs) { bs = s; best = p; }
       if (s < 1) break;
     }
     return best || [ox, oy];
@@ -233,7 +237,9 @@
   function A() { return U().miAoe || null; }
   function aoes() { return (X && X.enc && X.enc.aoes) || []; }
   function selAoe() { var a = A(); return a && a.sel ? aoes().find(function (t) { return t.id === a.sel; }) : null; }
-  function snapAoe() { aoeUndo.push(JSON.stringify(aoes())); if (aoeUndo.length > 40) aoeUndo.shift(); }
+  function snapAoe() { aoeUndo.push(JSON.stringify(aoes())); aoeLog.push(null); if (aoeUndo.length > 40) { aoeUndo.shift(); aoeLog.shift(); } }
+  function dropSnap() { aoeUndo.pop(); aoeLog.pop(); }
+  var aoeLog = []; // the round-history entry each template undo step wrote (📍 Shown / Hidden), so undo can strike it
   function commitAoes(broadcast) { saveEncounter(X.enc); if (broadcast !== false && typeof broadcastMap === 'function') broadcastMap(X.enc); }
   function turnToken(enc) {
     var ord = typeof sortedCombatants === 'function' ? sortedCombatants(enc) : [], tid = ord.length && enc.started ? (ord[dmTurnIdx(enc, ord)] || {}).id : null;
@@ -248,17 +254,19 @@
     var g = el('miAoeG');
     var ghost = open && a.armed && a.ghost ? a.ghost : null;
     if (g) g.innerHTML = list.map(function (t) { return shapeSVG(t, cell, enc, { sel: t.id === sel, handles: open, pulse: t.id === (U().miPulse || '') }); }).join('') + (ghost ? shapeSVG(ghost, cell, enc, { ghost: true, sel: true }) : '');
-    var boxes = tokenBoxes(enc, cell), html = '', hitSet = {};
+    var boxes = tokenBoxes(enc, cell).map(function (b) { return b.concat(6); }), html = '', hitSet = {}; // covering a creature costs far more than covering a handle or the map
+    var vis = [0, 0, BW, BH];
+    if (X.scroll) { var sr0 = X.scroll.getBoundingClientRect(), gr0 = X.grid.getBoundingClientRect(); vis = [Math.max(0, (sr0.left - gr0.left) / z), Math.max(0, (sr0.top - gr0.top) / z), Math.min(BW, (sr0.right - gr0.left) / z), Math.min(BH, (sr0.bottom - gr0.top) / z)]; }
     var hs = W.innerWidth < 900 ? 44 : 26, hb = (hs + 6) / z;
-    if (open) list.forEach(function (t) { var b2 = t.id === sel ? hb : 32 / z; var g2 = geo(t, enc); handlePts(t, g2, cell, enc).forEach(function (h) { if (t.id === sel) h = thumbOff(t, g2, h); boxes.push([h.x - b2 / 2, h.y - b2 / 2, b2, b2]); }); });
+    var spots = {}; if (open) list.forEach(function (t) { var b2 = t.id === sel ? hb : 32 / z; spots[t.id] = handleSpots(t, geo(t, enc), t.id === sel, enc); spots[t.id].forEach(function (h) { boxes.push([h.x - b2 / 2, h.y - b2 / 2, b2, b2]); }); });
     list.concat(ghost ? [ghost] : []).forEach(function (t) {
       var gg = geo(t, enc), hit = hits(t, enc), isSel = t.id === sel || t === ghost, big = isSel && open;
       hit.forEach(function (c) { hitSet[c.id] = 1; });
       var txt = labelPlain(t, hit.length), w = (txt.length * (big ? 7.6 : 6.9) + 22) / z, h = (big ? 30 : 25) / z;
-      var p = placeLabel(t, gg, cell, w, h, boxes, BW, BH);
+      var p = placeLabel(t, gg, cell, w, h, boxes, BW, BH, vis);
       boxes.push([p[0] - w / 2, p[1] - h / 2, w, h]);
       html += '<div class="mi-chip' + (big ? ' big' : '') + (t === ghost ? ' ghost' : '') + '" data-mi-sel="' + E(t.id) + '" style="left:' + p[0].toFixed(1) + 'px;top:' + p[1].toFixed(1) + 'px" title="' + E((t.label ? t.label + (t.dc ? ' \u00b7 ' + t.dc : '') + ' \u2014 ' : '') + (open ? 'Select this template' : 'Edit templates')) + '">' + labelHTML(t, hit.length) + '</div>';
-      if (open && t !== ghost) handlePts(t, gg, cell, enc).map(function (hp) { return isSel ? thumbOff(t, gg, hp) : hp; }).forEach(function (hp) {
+      if (open && t !== ghost) (spots[t.id] || []).forEach(function (hp) {
         html += '<button class="mi-hdl k-' + hp.k + (isSel ? ' on' : ' sm') + (U().miDragH === t.id + hp.k ? ' active' : '') + '" data-mi-h="' + hp.k + '" data-mi-id="' + E(t.id) + '" style="left:' + hp.x.toFixed(1) + 'px;top:' + hp.y.toFixed(1) + 'px" aria-label="' + ({ move: 'Move', size: 'Resize', aim: 'Aim' })[hp.k] + ' ' + KIND[t.kind] + '">' + hp.t + '</button>';
       });
     });
@@ -389,7 +397,7 @@
   }
   function undoAoe() {
     if (!aoeUndo.length) return;
-    X.enc.aoes = JSON.parse(aoeUndo.pop()); var a = A();
+    X.enc.aoes = JSON.parse(aoeUndo.pop()); var ev = aoeLog.pop(); if (ev) ev.undone = true; var a = A();
     if (a && a.sel && !aoes().some(function (q) { return q.id === a.sel; })) { a.sel = null; a.armed = false; }
     commitAoes(true); render();
   }
@@ -427,7 +435,7 @@
       if (zf < b.z - 0.01 && X.setZoom) { X.setZoom(Math.max(0.4, zf), false); b = box(); }
       var ddx = (b.x0 + b.x1) / 2 - (sr.left + 6 + availW / 2), ddy = (b.y0 + b.y1) / 2 - (top + 34 + availH / 2);
       // then nudge sideways so the selected template's 44 px thumb handles aren't cut off by the screen edge
-      var gr2 = X.grid.getBoundingClientRect(), g2 = geo(t, X.enc), hx = handlePts(t, g2, cell, X.enc).map(function (hp) { return gr2.left + thumbOff(t, g2, hp).x * b.z; });
+      var gr2 = X.grid.getBoundingClientRect(), g2 = geo(t, X.enc), hx = handleSpots(t, g2, true).map(function (hp) { return gr2.left + hp.x * b.z; });
       var hx0 = Math.min.apply(null, hx) - 24, hx1 = Math.max.apply(null, hx) + 24;
       if (hx0 - ddx < sr.left + 4) ddx = hx0 - sr.left - 4; else if (hx1 - ddx > sr.right - 4) ddx = hx1 - sr.right + 4;
       sc.scrollTo({ left: sc.scrollLeft + ddx, top: sc.scrollTop + ddy, behavior: behavior });
@@ -446,15 +454,53 @@
     if (!u.c2ManualZoom) u.dmMapZoomInit = false; // the next render refits
   }
 
-  // Phone: the selected template's 44 px handles sit just off the point they control (out past the rim or tip,
-  // behind the origin), so the thumb doesn't hide what it is dragging. startHandle keeps the grab offset.
-  function thumbOff(t, g, hp) {
-    if (wide() || t.kind === 'circle' || t.kind === 'square') return hp;
-    var d = 30 / zoom(), a = hp.k === 'move' ? g.ang + Math.PI : hp.k === 'size' ? g.ang + HALF : g.ang;
-    var dm = dims(X.enc), r = 24 / zoom(), BW = dm.cols * X.cell, BH = dm.rows * X.cell;
-    var cl = function (v, m) { return Math.max(r, Math.min(m - r, v)); }; // keep the whole thumb target on the board
-    return { k: hp.k, t: hp.t, x: cl(hp.x + Math.cos(a) * d, BW), y: cl(hp.y + Math.sin(a) * d, BH) };
+  // Handles never cover a token. Each handle slides along its own axis (out past a rim/tip, behind an origin,
+  // along a circle's radius) to the nearest spot clear of every token and its name tag. On phone the selected
+  // template's 44 px handles also start 30 px off their point so the thumb doesn't hide it. While a handle is being
+  // dragged its template keeps the offsets it had at grab time (no jumping); startHandle keeps the grab offset.
+  function hAxis(t, g, hp) {
+    if (t.kind === 'circle') return (g.x + g.len) * X.cell <= dims(X.enc).cols * X.cell - X.cell * 0.3 ? 0 : Math.PI; // along the dashed radius, toward ◆
+    if (t.kind === 'square') return Math.PI / 4;
+    return hp.k === 'move' ? g.ang + Math.PI : hp.k === 'size' ? g.ang + HALF : g.ang;
   }
+  function placeHandle(t, g, hp, sel, boxes) {
+    var z = zoom(), big = sel && !wide(), hs = (big ? 44 : 26) / z, a = hAxis(t, g, hp), ca = Math.cos(a), sa = Math.sin(a);
+    if (hdrag && hdrag.t === t && hdrag.offs && hdrag.offs[hp.k]) { var o = hdrag.offs[hp.k]; return { k: hp.k, t: hp.t, x: hp.x + o[0], y: hp.y + o[1] }; }
+    var dm = dims(X.enc), BW = dm.cols * X.cell, BH = dm.rows * X.cell, r = hs / 2 + 4 / z;
+    var at = function (d, ax) { var c2 = ax == null ? ca : Math.cos(ax), s2 = ax == null ? sa : Math.sin(ax); return [Math.max(r, Math.min(BW - r, hp.x + c2 * d)), Math.max(r, Math.min(BH - r, hp.y + s2 * d))]; };
+    var cost = function (q) { return overlapScore([q[0] - r, q[1] - r, 2 * r, 2 * r], boxes); };
+    var d0 = big ? 30 / z : 0, step = 4 / z, max = X.cell * 3.5, best = null, bestC = Infinity;
+    // inward steps are only used where sliding back stays meaningful (rims and tips, not origins)
+    var inward = hp.k !== 'move' || t.kind === 'circle';
+    for (var k = 0; k * step <= max; k++) {
+      var ds = k === 0 ? [d0] : (inward && t.kind !== 'circle' ? [d0 + k * step, d0 - k * step] : [d0 + k * step]);
+      for (var i = 0; i < ds.length; i++) { var q = at(ds[i]), c = cost(q); if (c === 0) return { k: hp.k, t: hp.t, x: q[0], y: q[1] }; if (c < bestC) { bestC = c; best = q; } }
+    }
+    // nothing clear along its own axis (say a big origin creature against the map edge): try square to it
+    for (k = 1; k * step <= max; k++) [a + Math.PI / 2, a - Math.PI / 2].forEach(function (ax) {
+      if (bestC === 0) return; var q = at(d0 + k * step, ax), c = cost(q); if (c < bestC) { bestC = c; best = q; }
+    });
+    return { k: hp.k, t: hp.t, x: best[0], y: best[1] };
+  }
+  function handleSpots(t, g, sel, enc) {
+    var boxes = tokenBoxes(enc || X.enc, X.cell);
+    return handlePts(t, g, X.cell, enc || X.enc).map(function (hp) { return placeHandle(t, g, hp, sel, boxes); });
+  }
+  // Dark maps get a lighter, bluer DM fog (FogView.setTone). Luminance of the painted base, cached per image.
+  var lumCache = {};
+  function fogTone(tries) {
+    if (!X || !X.fog || !X.fog.setTone) return;
+    var base = el('dmPaintedBase'), m = base && /url\(["']?([^"')]+)/.exec(base.style.backgroundImage || ''), url = m && m[1];
+    if (!url) { if ((tries || 0) < 6) setTimeout(function () { fogTone((tries || 0) + 1); }, 700); return; }
+    var apply = function (lum) { if (X && X.fog) X.fog.setTone(Math.max(0, Math.min(1, (0.24 - lum) / 0.1))); };
+    if (lumCache[url] != null) return apply(lumCache[url]);
+    var im = new Image(); im.onload = function () {
+      try { var c = document.createElement('canvas'); c.width = c.height = 24; var x = c.getContext('2d'); x.drawImage(im, 0, 0, 24, 24);
+        var d = x.getImageData(0, 0, 24, 24).data, s = 0; for (var i = 0; i < d.length; i += 4) s += (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255;
+        lumCache[url] = s / (d.length / 4); apply(lumCache[url]); } catch (e) { lumCache[url] = 0.3; }
+    }; im.src = url;
+  }
+  function _fogTone() { return X && X.fog ? X.fog.tone : null; }
   // ----- gestures while the AoE fan is open
   var hdrag = null;
   function startHandle(ev, id, k) {
@@ -465,8 +511,10 @@
     if (t.attachedTo && k === 'move') { var p = resolveAoePos(t, X.enc); t.x = p.x; t.y = p.y; t.attachedTo = null; }
     var p0 = boardPt(ev), g0 = handlePts(t, geo(t, X.enc), X.cell, X.enc).find(function (q) { return q.k === k; });
     var off = g0 ? { x: g0.x / X.cell - p0.x, y: g0.y / X.cell - p0.y } : { x: 0, y: 0 };
-    if (Math.hypot(off.x, off.y) > 2) off = { x: 0, y: 0 };
-    hdrag = { t: t, k: k, pid: ev.pointerId, moved: false, off: off };
+    if (Math.hypot(off.x, off.y) > 5) off = { x: 0, y: 0 };
+    var gt = geo(t, X.enc), raw = handlePts(t, gt, X.cell, X.enc), vis = handleSpots(t, gt, true), offs = {};
+    raw.forEach(function (hp, i) { offs[hp.k] = [vis[i].x - hp.x, vis[i].y - hp.y]; });
+    hdrag = { t: t, k: k, pid: ev.pointerId, moved: false, off: off, offs: offs };
     U().miDragH = id + k;
     try { X.grid.setPointerCapture(ev.pointerId); } catch (e) {}
     if (X.scroll) X.scroll.style.touchAction = 'none';
@@ -495,7 +543,7 @@
     var h = hdrag; hdrag = null; U().miDragH = null;
     if (X.scroll) X.scroll.style.touchAction = '';
     if (!h) return;
-    if (!h.moved) aoeUndo.pop();
+    if (!h.moved) dropSnap();
     else { commitAoes(true); }
     refresh(); syncFan(); camera();
   }
@@ -517,7 +565,7 @@
     var steps = Math.round((dialAngle(ev) - dial.a0) / 6), ft = Math.max(5, Math.min(200, dial.ft0 + steps * 5));
     if (ft !== dial.last) { dial.last = ft; vibrate(6); setFt(ft, true); }
   }
-  function endDial() { if (!dial) return; var d = dial; dial = null; if (d.snapped && d.last == null) aoeUndo.pop(); syncFan(); }
+  function endDial() { if (!dial) return; var d = dial; dial = null; if (d.snapped && d.last == null) dropSnap(); syncFan(); }
 
   // =====================================================================
   // 3. Fog of war tools
@@ -547,13 +595,14 @@
     var h = H(); h.items = h.items.slice(0, h.pos); h.items.push({ label: label, before: before, after: after, fx: fx || {}, t: Date.now() }); h.pos = h.items.length;
     if (h.items.length > 60) { h.items.shift(); h.pos--; }
     saveEncounter(enc); if (typeof broadcastMap === 'function') broadcastMap(enc);
-    logEvent(label);
+    h.items[h.items.length - 1].ev = logEvent(label);
     return true;
   }
   function fogGoto(pos, speed) {
     var h = H(); pos = Math.max(0, Math.min(h.items.length, pos)); if (pos === h.pos) return;
     var back = pos < h.pos, it = back ? h.items[pos] : h.items[pos - 1], str = back ? it.before : it.after;
     h.pos = pos;
+    h.items.forEach(function (q, i) { if (q.ev) q.ev.undone = i >= pos; }); // round history greys out what was undone
     var enc = X.enc, m = FL().decode(str, dims(enc).cols * F * dims(enc).rows * F);
     fogPut(enc, m);
     var fx = Object.assign({}, it.fx || {}, { dur: Math.round(((it.fx && it.fx.dur) || 450) / 1.5), seq: ++fogFxSeq + Date.now() % 100000 });
@@ -742,12 +791,12 @@
 
   // ----- round history (moves and fog changes), listed from the ⋯ More menu
   var log = {};
-  function logEvent(txt) { var enc = X && X.enc; if (!enc) return; var L = log[enc.id] || (log[enc.id] = []); L.unshift({ r: enc.started ? (enc.round || 1) : 0, txt: txt, t: Date.now() }); if (L.length > 80) L.pop(); }
+  function logEvent(txt) { var enc = X && X.enc; if (!enc) return; var L = log[enc.id] || (log[enc.id] = []); var e = { r: enc.started ? (enc.round || 1) : 0, txt: txt, t: Date.now() }; L.unshift(e); if (L.length > 80) L.pop(); return e; }
   function historyHTML(enc) {
     var L = log[enc.id] || [];
     if (!L.length) return '<div class="mi-rh"><b>Round history</b><em>Moves, templates and fog changes this session show up here.</em></div>';
     var out = '<div class="mi-rh"><b>Round history</b>', last = null;
-    L.slice(0, 14).forEach(function (e) { if (e.r !== last) { out += '<small class="mi-rhr">' + (e.r ? 'Round ' + e.r : 'Before combat') + '</small>'; last = e.r; } out += '<span>' + E(e.txt) + '</span>'; });
+    L.slice(0, 14).forEach(function (e) { if (e.r !== last) { out += '<small class="mi-rhr">' + (e.r ? 'Round ' + e.r : 'Before combat') + '</small>'; last = e.r; } out += e.undone ? '<span class="undone" title="Undone">' + E(e.txt) + ' <small>undone</small></span>' : '<span>' + E(e.txt) + '</span>'; });
     return out + '</div>';
   }
 
@@ -947,7 +996,7 @@
     var cv = el('miFog');
     if (cv && FL()) {
       X.fog = new (FL().FogView)(cv, { look: 'dm', cols: X.cols, rows: X.rows });
-      sizeFog();
+      sizeFog(); fogTone();
       var m = curMask(), adopted = !!(prev && prev.fog && X.fog.adopt(prev.fog));
       if (!adopted) X.fog.set(m, { instant: true });
       else if (!prev.fog.mask || FL().encode(prev.fog.mask) !== FL().encode(m)) X.fog.set(m, { dur: 450 });
@@ -996,6 +1045,7 @@
         else closeAoe(false);
       }, true);
       sc.addEventListener('scroll', function () { if (A()) { cancelAnimationFrame(ghostRaf); ghostRaf = requestAnimationFrame(offHits); } }, { passive: true });
+      var lblRaf = 0; sc.addEventListener('scroll', function () { if (hdrag || !aoes().length) return; cancelAnimationFrame(lblRaf); lblRaf = requestAnimationFrame(refresh); }, { passive: true }); // keep labels inside the visible map
     }
     refresh(); fxRefresh();
     if (A()) { coverCamera(); setTimeout(camera, 20); }
@@ -1034,7 +1084,7 @@
       if (t.closest('[data-mi-undo]')) { undoAoe(); return; }
       if (t.closest('[data-mi-del]')) { deleteSel(); return; }
       if (t.closest('[data-mi-snap]')) { a.snap = a.snap === false; U().miSnap = a.snap; syncFan(); return; }
-      if (t.closest('[data-mi-show]')) { var s = selAoe(); if (s) { snapAoe(); s.pinned = !s.pinned; commitAoes(true); logEvent((s.pinned ? '\uD83D\uDCCD Shown: ' : 'Hidden: ') + KIND[s.kind] + ' ' + sizeWords(s)); } else a.show = !a.show; syncFan(); refresh(); return; }
+      if (t.closest('[data-mi-show]')) { var s = selAoe(); if (s) { snapAoe(); s.pinned = !s.pinned; commitAoes(true); aoeLog[aoeLog.length - 1] = logEvent((s.pinned ? '\uD83D\uDCCD Shown: ' : 'Hidden: ') + KIND[s.kind] + ' ' + sizeWords(s)); } else a.show = !a.show; syncFan(); refresh(); return; }
       if (t.closest('[data-mi-done]')) { closeAoe(true); return; }
     }
     if (Fg()) {
@@ -1106,7 +1156,7 @@
   W.HearthMI = {
     fogSync: fogSync, fogMask: fogMask, fogPut: fogPut, under: under, aoeGroup: aoeGroup, pathLayer: pathLayer, over: over, wire: wire, onZoom: onZoom,
     tokenDown: tokenHook, ownsPointer: ownsPointer, fanHTML: fanHTML, stageHTML: stageHTML, openAoe: openAoe, openFog: openFog, closeAoe: closeAoe,
-    placeFromCard: placeFromCard, placing: placing, projLabel: projLabel, historyHTML: historyHTML, undoMove: undoMove,
+    placeFromCard: placeFromCard, _fogTone: _fogTone, _fog: function () { return X && X.fog; }, _lum: function () { return lumCache; }, placing: placing, projLabel: projLabel, historyHTML: historyHTML, undoMove: undoMove,
     aoeOpen: function () { return !!A(); }, fogOpen: function () { return !!Fg(); },
     _hits: hits, _inside: insideG, _label: labelPlain, _stamp: stampSeg, _derived: derived, _walk: walk, _speed: speedOf, _terrain: terrainFor, _hist: H, _moves: function () { return moveUndo; }, _x: function () { return X; }
   };
