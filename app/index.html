@@ -54331,7 +54331,9 @@ function buildMapState(enc) {
         lbl: window.HearthMI ? HearthMI.projLabel(a) : null, // size only: players never see creature counts
       };
     }),
-    tokens: (enc.combatants || []).map(c => {
+    // v1.7.0 — creatures the players can't see never leave the DM screen: hidden, dead monsters, or under fog.
+    // (The projector also skips them, but the payload itself carries no name, picture or position.)
+    tokens: (enc.combatants || []).filter(c => !c.hiddenFromPlayers && !(c.kind === 'monster' && c.dead) && !(c.kind !== 'player' && _underFog(c))).map(c => {
       let mtype = null;
       if (c.kind === 'monster' && c.monsterId && typeof findMonster === 'function') {
         const m = findMonster(c.monsterId);

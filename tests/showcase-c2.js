@@ -121,7 +121,7 @@ const scrollCard = (p, re) => p.evaluate((src) => { const re = new RegExp(src); 
     // into the reveal can be caught; headless popups only paint every ~200 ms here
     const pcdp = await pop.context().newCDPSession(pop); await pcdp.send('Animation.enable'); await pcdp.send('Animation.setPlaybackRate', { playbackRate: 0.3 });
     await pop.evaluate(() => { const r = performance.now.bind(performance), t0 = r(); performance.now = () => t0 + (r() - t0) * 0.3; });
-    const a = await cellPt(p, 10, 2), c = await cellPt(p, 18, 12); await p.mouse.move(a.x, a.y); await p.mouse.down(); await glide(p, a, c, 6); await p.mouse.up();
+    const a = await cellPt(p, 10, 2), c = await cellPt(p, 14.5, 8.5); await p.mouse.move(a.x, a.y); await p.mouse.down(); await glide(p, a, c, 6); await p.mouse.up(); // the dragon's corner stays fogged
     const at = await pop.waitForFunction(() => { const t = document.getAnimations().filter(a => a.animationName === 'ptokRev' && a.currentTime < 600).map(a => a.currentTime); return t.length && Math.min.apply(null, t) >= 280 ? Math.round(Math.min.apply(null, t)) : 0; }, null, { timeout: 5000, polling: 'raf' }).then(h => h.jsonValue()).catch(() => 'not seen');
     await pshot(pop, 'fog-projector.png'); // mid-fade: the area reveal dissolves over 500 ms, tokens over 600 ms
     console.log('  fog-projector captured', at, 'ms into the token fade');

@@ -28,6 +28,7 @@ async function scene(p, sc) {
       e.mapKind = null; e.mapId = null;
     } else { e.mapKind = 'painted'; e.mapId = sc.map; e.mapImage = null; }
     const lights = {}; Object.keys(sc.lights || {}).forEach(n => { const c = e.combatants.find(x => x.name === n); if (c) lights[c.id] = sc.lights[n]; });
+    (sc.hide || []).forEach(n => { const c = e.combatants.find(x => x.name === n); if (c) c.hiddenFromPlayers = true; });
     if (sc.moves) Object.keys(sc.moves).forEach(n => { const c = e.combatants.find(x => x.name === n); if (c) { c.mapX = sc.moves[n][0]; c.mapY = sc.moves[n][1]; } });
     e.atmo = Object.assign({ w: 'none', i: 0.6, t: 'day', d: 0, wind: 0.35, mapLights: true, doors: {}, seed: 20261017 }, sc.atmo, { lights });
     saveEncounter(e); broadcastMap(e); render();
@@ -99,7 +100,7 @@ const DUNGEON = { map: 'dungeon', atmo: { t: 'night', d: 0.75 }, lights: { Range
   // 6. projector: foggy night at the camp. The main shot is sound in its normal state (off, so no button);
   //    the -tap shot sends sound to a projector browser that keeps audio suspended until it is tapped.
   if (want('atmo-projector-camp')) {
-    const CAMP = { map: 'camp', atmo: { w: 'fog', i: 0.7, t: 'night', d: 0.25, wind: 0.2 }, lights: { Ranger: 'torch' } };
+    const CAMP = { map: 'camp', atmo: { w: 'fog', i: 0.7, t: 'night', d: 0.25, wind: 0.2 }, lights: { Ranger: 'torch' }, hide: ['Adult Red Dragon'] }; // the dragon lurks, hidden from the players
     for (const tap of [false, true]) {
       const name = tap ? 'atmo-projector-camp-tap.png' : 'atmo-projector-camp.png'; if (!want(name)) continue;
       const { ctx, p } = await page(b, 1440, 900);
