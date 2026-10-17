@@ -15,7 +15,7 @@ const SHOTS = [
   ['dm', `HearthUI.go('dm')`],
   ['library', `HearthUI.go('library')`],
   ['library-content', `HearthUI.go('library');${W(100)}state.ui.uLibTab='content';try{clFetchIndex()}catch(e){};${W(2500)}render();`],
-  ['error', `HearthUI.go('library');state.ui.uLibTab='content';${W(100)}try{clUi().status='error'}catch(e){};state.ui.uLibSaved=false;render();`, null, 1],
+  ['error', `HearthUI.go('library');state.ui.uLibTab='content';state.ui.uLibSaved=false;${W(300)}render();`, null, 1],
   ['settings', `HearthUI.go('settings')`],
   ['themes-popup', THEMES],
   ['sheet', `HearthUI.go('sheet')`],
@@ -49,6 +49,7 @@ const SHOTS = [
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
     await p.goto(URL); await p.evaluate(S.SEED, seed || {}); await p.reload(); await p.waitForTimeout(900);
     await p.evaluate(S.STAGE, seed || {}); await p.waitForTimeout(400);
+    if (offline) { await ctx.setOffline(true); await p.evaluate(() => { try { clFetchIndex(true); } catch (e) {} }); await p.waitForTimeout(800); }
     try { await p.evaluate('(async()=>{' + js + '})()'); } catch (e) { errs.push('script: ' + e.message); }
     await p.waitForTimeout(wait || 700);
     await p.evaluate(() => { document.querySelectorAll('.toast,#toast,.hearth-toast').forEach(t => t.remove()); const a = document.activeElement; if (a && a.blur && !/INPUT/.test(a.tagName)) a.blur(); });
