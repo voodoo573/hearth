@@ -277,3 +277,4 @@ body:has(.c2) { overflow: hidden; }
 .c2-desk .map-token-caption { font-size: max(8.5px, calc(11.5px * var(--mi-inv, 1))); }
 /* arcane: its pale gold needs dark ink (AC numbers, turn badge, brass buttons) */
 html[data-palette="arcane"] .c2 { --c2-on-gold: #1d1633; }
+.c2 .c2-mi > svg:not(.hi) { width: 18px; height: 18px; flex: none; color: var(--gold); } /* the Weather & light item reuses the fan glyph */
