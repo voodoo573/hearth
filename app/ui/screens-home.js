@@ -111,7 +111,9 @@
     var live = '';
     if (g) { var s = gameStats(g), L = liveInfo(g); live = '<div class="card pad hstack gap3"><span class="lead round" style="color:var(--moss)">' + ic('crown') + '</span><div class="f1"><div class="hstack gap2">' + (L.live ? '<span class="dot"></span><span class="t-label" style="color:var(--moss)">Live now</span>' : '<span class="t-label">Your game</span>') + '</div><div class="t-h3" style="margin-top:4px">' + esc(g.name) + '</div><div class="t-meta">' + s.players + (s.players === 1 ? ' player' : ' players') + ' · ' + s.encs + (s.encs === 1 ? ' encounter' : ' encounters') + '</div></div>' + btn('Run', 'primary', null, 'data-home-opengame="' + esc(g.id) + '"') + '</div>'; }
     var q = '<div class="pq">' + quick().map(function (t) { return '<button type="button" class="card" ' + t[3] + '><span class="emblem">' + ic(t[0]) + '</span><div><div class="t-h3">' + t[1] + '</div><div class="t-meta">' + t[2] + '</div></div></button>'; }).join('') + '</div>';
-    return '<div class="stack gap4">' + draftCard() + nudge() + hero + live + q + '<div class="ded" style="font-size:12.5px">' + DED + '</div></div>' + U.homeModals();
+    // Hearth Maps (store flag only): phones have no sidebar, so Home carries the same "New" entry the desk sidebar shows
+    var maps = U.storeOn() ? '<button type="button" class="card pad hstack gap3 pmaps" data-u-go="store"><span class="lead">' + ic('bag') + '</span><div class="f1"><div class="hstack gap2"><span class="t-h3">Hearth Maps</span>' + tag('New') + '</div><div class="t-meta">Painted battle maps for your table</div></div>' + ic('right', 'sm') + '</button>' : '';
+    return '<div class="stack gap4">' + draftCard() + nudge() + hero + live + q + maps + '<div class="ded" style="font-size:12.5px">' + DED + '</div></div>' + U.homeModals();
   }
   function greet() { var h = 12; try { h = Number(new Date().toLocaleString('en-GB', { hour: 'numeric', hour12: false, timeZone: 'Europe/London' })); } catch (e) {} return h < 5 ? 'Good evening' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; }
   U.screens.home = {
@@ -145,7 +147,7 @@
       '.phero .por-ph{width:76px;height:76px;border-radius:16px;object-fit:cover;border:2px solid var(--gold-deep);background:var(--page-deep)}',
       '.pvit{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;grid-column:1/3}.pvit .vt{padding:9px 10px}.pvit .vt .t-num{font-size:20px;margin-top:6px}.pvit .pips-wrap{margin-top:10px}',
       '.btn.sq{width:52px;padding:0;flex:none}',
-      '.pq{display:grid;grid-template-columns:1fr 1fr;gap:12px}',
+      '.pq{display:grid;grid-template-columns:1fr 1fr;gap:12px}','.pmaps{width:100%;text-align:left;min-height:64px;color:var(--ink);cursor:pointer}.pmaps .u-lead{color:var(--gold)}',
       '.pq .card{padding:14px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-height:118px;text-align:left;color:var(--ink);font:inherit;cursor:pointer}.pq .emblem{width:44px;height:44px}.pq .emblem svg{width:22px;height:22px}',
       '.av.thin{border-width:1px}',
       '.draftbar{align-items:center}'
