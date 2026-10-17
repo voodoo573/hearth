@@ -64,3 +64,37 @@ decided or changed is written down here instead.
   engine has no cloud shadow, so ours lives in `app/dm/atmo.js`: soft shadows
   that drift with the wind under the rain. Both screens run the same loop,
   phased off the clock, so they match.
+
+## 1.7.0 QA fixes (Lee's DM-side pass, `tests/qa170.test.js`)
+- One question for every player-facing channel: `playerVisibility(enc)` in
+  `app/index.html` (hidden from players, a dead monster, or a non-player whose
+  footprint is under the soft fog). The projector map, its turn order and
+  lights, templates that follow a creature, roll cards, the live game link to
+  the phones and the weather's embers, smoke and DM sound all use it.
+  `playerVisibleName(c)` gives the name players may see (a hide-name creature
+  is only its token number; its real name is never sent).
+- A template attached to a creature the players can't see isn't sent to the
+  projector at all, so it can't trace the creature.
+- Rolls for a creature the players can't see are DM-only (`secret`): no
+  auto-project for "important" rolls in either layout, no Send-to-projector.
+- A light carried by a creature the players can't see is DM-only: it glows on
+  the DM's light layer but throws no embers or smoke, and the DM screen's own
+  sound leaves it out (left out, not just lowered: a crackle panned to where
+  nobody stands gives the ambush away). This needs one flag in Jenny's engine
+  (`dmOnly` on a light, honoured by `fireSources()` and `audioState().fires`
+  in `app/dm/atmo/hearth-atmosphere.js`), worth folding into her source copy.
+- Fog undo is a per-cell diff: undo puts back only the sub-squares that step
+  changed and that still hold its result, so later changes (classic Hide all,
+  the classic brush, darkvision reveals) survive. Fog, template and move undo
+  and the round history are kept in `sessionStorage`: they survive a reload,
+  and go when the tab closes (the fog history says so).
+- Cones and lines from a Large or bigger creature start on the edge of its
+  space, facing the aim (the apex slides round the footprint as it's aimed).
+  Medium and smaller casters are unchanged (centre of their square). A template
+  dragged off the creature keeps its own point.
+- The DM's template label counts hidden creatures too, marked:
+  "3 creatures (1 hidden)". The projector label is still size only.
+- Measure counts squares like the move chip (a diagonal square is 5 ft); a drag
+  is charged along its cheapest route, as the reach shading assumes.
+- The build still says v1.6.0 (`APP_VERSION`, `CACHE_VERSION`) on purpose: the
+  combined release sets both.
