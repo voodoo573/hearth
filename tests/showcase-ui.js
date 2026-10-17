@@ -2,6 +2,7 @@
 // node tests/showcase-ui.js 8816 [outdir] [only-regex]
 const { chromium } = require(process.env.PW_MODULE || 'playwright-core');
 const S = require('./ui-seed.js');
+const FS = require('./forge-seed.js');
 const PORT = process.argv[2] || '8816', OUT = process.argv[3] || '/workspace/ui-polish/shots', ONLY = process.argv[4] ? new RegExp(process.argv[4]) : null;
 const URL = `http://127.0.0.1:${PORT}/app/index.html`;
 const W = (ms) => `await new Promise(r=>setTimeout(r,${ms}));`;
@@ -22,7 +23,7 @@ const SHOTS = [
   ['themes-popup', THEMES],
   ['sheet', `HearthUI.go('sheet')`],
   ['gear', `HearthUI.go('gear')`],
-  ['forge', `HearthUI.go('forge')`],
+  ['forge', `(${FS.FORGE.toString()})();HearthUI.go('forge');`],
   ['reference', `HearthUI.go('reference');${W(200)}HearthUI.isDesk()?document.querySelector('[data-v=Bless]').click():HearthUI.actions['ref-sel']({dataset:{v:'Bless'}});`],
   ['builder', BUILD],
   ['dice', ROLL, null, 0, 7000],
