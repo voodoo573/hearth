@@ -101,13 +101,15 @@ const STRIP = () => { const e = loadEncounter(); e.aoes = []; e.fog = { on: true
   {
     const { ctx, p, I } = await boot();
     await p.evaluate((I) => { const e = loadEncounter(); e.combatants.find(c => c.id === I['Adult Red Dragon']).hiddenFromPlayers = true; e.aoes = []; saveEncounter(e);
-      state.prefs.diceProjector = 'important'; state.prefs.diceAnim = 'off'; dmSetLayout('classic'); render(); }, I);
+      state.prefs.diceProjector = 'ask'; state.prefs.diceAnim = 'off'; dmSetLayout('classic'); render(); }, I);
     await p.waitForTimeout(700);
     const pop = await projector(ctx, p);
     await p.evaluate(() => { window.__realRollDie = rollDie; rollDie = () => 20; });
-    const save = async (id) => { await p.evaluate((id) => { state.ui.dmSaveFor = id; state.ui.dmSaveResult = null; render(); }, id); await p.waitForTimeout(350); await p.click('[data-dm-save-roll="dex"]'); await pop.waitForTimeout(1000); return pop.evaluate(() => window.__msgs.filter(m => m.type === 'hearth-dice').map(m => m.label + ' ' + m.total)); };
+    const save = async (id) => { await p.evaluate((id) => { state.ui.dmSaveFor = id; state.ui.dmSaveResult = null; render(); }, id); await p.waitForTimeout(350); await p.click('[data-dm-save-roll="dex"]'); await p.waitForTimeout(150);
+      // UI polish (release): dice never go up by themselves any more ('important' became 'ask'), so the DM taps Show for the roll
+      await p.evaluate(() => { _hearthDiceCurrentEntry = rollFeedLoad()[0] || null; hearthDiceOnProjector(); }); await pop.waitForTimeout(1000); return pop.evaluate(() => window.__msgs.filter(m => m.type === 'hearth-dice').map(m => m.label + ' ' + m.total)); };
     let dice = await save(I['Adult Red Dragon']);
-    check('P1-03 classic layout, "important rolls": hidden dragon\u2019s nat-20 DEX save never projected', dice.length === 0, dice);
+    check('P1-03 classic layout: hidden dragon\u2019s nat-20 DEX save never projected, even when the DM taps Show', dice.length === 0, dice);
     const conc = await p.evaluate((id) => { const e = loadEncounter(); const r = []; const ch = getMapChannel(); const orig = ch.postMessage.bind(ch); ch.postMessage = (m) => { r.push(m.type); return orig(m); };
       const ok1 = hearthDiceSendToProjector({ id: 'x', label: 'secret', secret: true, total: '1' });
       _hearthDiceCurrentEntry = { id: 'y', label: 'secret', secret: true }; hearthDiceOnProjector(); ch.postMessage = orig; return { ok1, posted: r }; }, I['Adult Red Dragon']);
@@ -117,7 +119,7 @@ const STRIP = () => { const e = loadEncounter(); e.aoes = []; e.fog = { on: true
     await p.evaluate(() => { window.__msgs = []; }); await pop.evaluate(() => { window.__msgs = []; });
     await p.evaluate((I) => { const e = loadEncounter(); e.combatants.find(c => c.id === I['Adult Red Dragon']).hiddenFromPlayers = false; saveEncounter(e); render(); }, I);
     dice = await save(I['Adult Red Dragon']);
-    check('P1-03 control: the same nat 20 for the visible dragon still goes up', dice.length === 1 && /Adult Red Dragon DEX save/.test(dice[0]), dice);
+    check('P1-03 control: the same nat 20 for the visible dragon goes up when the DM taps Show', dice.length === 1 && /Adult Red Dragon DEX save/.test(dice[0]), dice);
     // fogged counts as hidden too
     await pop.evaluate(() => { window.__msgs = []; });
     await p.evaluate(() => { const e = loadEncounter(); e.fog = { on: true, revealed: [] }; for (let x = 0; x < 12; x++) for (let y = 0; y < 15; y++) e.fog.revealed.push(x + ',' + y); saveEncounter(e); render(); });
