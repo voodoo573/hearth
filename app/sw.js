@@ -33,6 +33,7 @@ const APP_SHELL = [
   './ui/screens-settings.js',
   './ui/screens-sheet.js',
   './ui/screens-store.js',
+  './ui/screens-onboarding.js',
   './manifest.json',
   '/manifest.webmanifest',
   '/icons/icon-192-v75.png',
