@@ -67,7 +67,12 @@
     html: function () {
       var c = ch(), desk = U.isDesk();
       if (!c) return '<div class="empty" style="padding:60px 0"><span class="emblem">' + ic('pack', 'xl') + '</span><div class="t-h1">No character yet</div><div class="t-body">The catalogue is still here to browse.</div></div>' + catCard(desk);
-      return desk ? '<div class="g gear-g"><div class="stack gap4" style="min-height:0">' + acCard(c) + invCard(c, desk) + '</div>' + catCard(desk) + '</div>' : '<div class="stack gap4">' + acCard(c) + invCard(c, desk) + catCard(desk) + '</div>';
+      return desk ? '<div class="g gear-g"><div class="stack gap4" style="min-height:0">' + acCard(c) + invCard(c, desk) + '</div>' + catCard(desk) + '</div>' : (function () {
+        // phone: Inventory / Catalogue segmented control (Jenny's gear-phone); one pane at a time
+        var pane = state.ui.uGearPane === 'cat' ? 'cat' : 'inv';
+        var seg = '<div class="seg gpseg" role="tablist" aria-label="Gear">' + [['inv', 'Inventory'], ['cat', 'Catalogue']].map(function (x) { return '<button type="button" role="tab" class="' + (x[0] === pane ? 'on' : '') + '" aria-selected="' + (x[0] === pane) + '" data-u-act="gear-pane" data-v="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
+        return '<div class="stack gap4">' + seg + (pane === 'cat' ? catCard(desk) : acCard(c) + invCard(c, desk)) + '</div>';
+      })();
     },
     meta: function () {
       var c = ch(), n = c ? invRows(c).length : 0;
@@ -89,10 +94,12 @@
       '.tr{padding:8px 12px;min-height:52px}.tr+.tr{border-top:1px solid var(--hair)}.tr .u-btn{justify-self:end}',
       '.lead.sm{width:32px;height:32px}',
       '.u-phone .tr{grid-template-columns:36px minmax(0,1fr) 44px}.u-phone .tb{max-height:none}.u-phone .catc{padding:16px}',
+      '.u-phone .gpseg>button{height:44px!important;font-size:14px!important}.u-phone .gpseg{padding:4px}',
       '.btn.sq{width:44px;padding:0}.addsp{width:44px}'
     ].join('\n')
   };
   var A = U.actions;
+  A['gear-pane'] = function (t) { state.ui.uGearPane = t.dataset.v === 'cat' ? 'cat' : null; render(); try { window.scrollTo(0, 0); } catch (e) {} };
   A['gear-sub'] = function (t) { state.ui.uGearSub = t.dataset.v === 'all' ? null : t.dataset.v; render(); };
   A['gear-manage'] = function (t) { var c = ch(); if (!c) { U.go('characters'); return; } state.activeCharId = c.id; state.ui.gearPopup = true; state.ui._gearScroll = 0; if (t && t.dataset.d) state.ui.gearDialog = t.dataset.d; U.go('sheet'); };
   A['gear-add-weapon'] = function (t) { var c = ch(); if (!c) { U.go('characters'); return; } state.activeCharId = c.id; state.ui.gearPopup = true; state.ui.gearDialog = 'add_weapon'; state.ui.weaponDetail = { base: t.dataset.id }; U.go('sheet'); };
