@@ -204,10 +204,19 @@
     return out;
   }
   function overlapScore(b, boxes) { var s = 0; boxes.forEach(function (q) { var ix = Math.min(b[0] + b[2], q[0] + q[2]) - Math.max(b[0], q[0]), iy = Math.min(b[1] + b[3], q[1] + q[3]) - Math.max(b[1], q[1]); if (ix > 0 && iy > 0) s += ix * iy * (q[4] || 1); }); return s; }
-  function placeLabel(a, g, cell, w, h, boxes, BW, BH, vis) {
+  // how much of a label box (board px) lies inside other templates: sampled on a 5x3 grid.
+  // A template that holds this one (a line drawn inside a cone) counts a tenth: its label can't avoid it.
+  function inOthers(bx, others, cell) {
+    if (!others || !others.length) return 0; var n = 0, k = 0;
+    for (var j = 0; j < 3; j++) for (var i = 0; i < 5; i++) { k++; var px = (bx[0] + bx[2] * (i + 0.5) / 5) / cell, py = (bx[1] + bx[3] * (j + 0.5) / 3) / cell;
+      others.forEach(function (g) { if (insideG(g, px, py)) n += g.holds ? 0.1 : 1; }); }
+    return n / k;
+  }
+  function placeLabel(a, g, cell, w, h, boxes, BW, BH, vis, others) {
     vis = vis || [0, 0, BW, BH];
     var ox = g.x * cell, oy = g.y * cell, L = g.len * cell, c = [], cs = Math.cos(g.ang), sn = Math.sin(g.ang), gap = 8 / zoom();
-    if (a.kind === 'circle') { c.push([ox, oy + L + gap + h / 2]); c.push([ox, oy - L - gap - h / 2]); c.push([ox + L + gap + w / 2, oy]); c.push([ox - L - gap - w / 2, oy]); c.push([ox + L * 0.75 + w / 2, oy + L * 0.75 + h / 2]); c.push([ox - L * 0.75 - w / 2, oy - L * 0.75 - h / 2]); }
+    // a circle's label goes just below its own circle (centred, then nudged sideways), above it only if that's blocked
+    if (a.kind === 'circle') { c.push([ox, oy + L + gap + h / 2]); c.push([ox - w * 0.35, oy + L * 0.97 + gap + h / 2]); c.push([ox + w * 0.35, oy + L * 0.97 + gap + h / 2]); c.push([ox - w * 0.6, oy + L * 0.88 + gap + h / 2]); c.push([ox + w * 0.6, oy + L * 0.88 + gap + h / 2]); c.push([ox, oy - L - gap - h / 2]); c.push([ox + L + gap + w / 2, oy]); c.push([ox - L - gap - w / 2, oy]); c.push([ox + L * 0.75 + w / 2, oy + L * 0.75 + h / 2]); c.push([ox - L * 0.75 - w / 2, oy - L * 0.75 - h / 2]); }
     else if (a.kind === 'square') { c.push([ox + L / 2, oy - gap - h / 2]); c.push([ox + L / 2, oy + L + gap + h / 2]); c.push([ox + L + gap + w / 2, oy + L / 2]); c.push([ox - gap - w / 2, oy + L / 2]); }
     else {
       var tip = L + gap + Math.abs(cs) * w / 2 + Math.abs(sn) * h / 2; c.push([ox + cs * tip, oy + sn * tip]);
@@ -222,7 +231,8 @@
     for (var i = 0; i < c.length; i++) {
       var p = [cx(c[i][0], vis[0] + 2 + w / 2, vis[2] - 2 - w / 2), cx(c[i][1], vis[1] + 2 + h / 2, vis[3] - 2 - h / 2)];
       var moved = Math.abs(p[0] - c[i][0]) + Math.abs(p[1] - c[i][1]);
-      var s = overlapScore([p[0] - w / 2, p[1] - h / 2, w, h], boxes) + i * 0.5 + moved * h * 0.5;
+      var lb = [p[0] - w / 2, p[1] - h / 2, w, h];
+      var s = overlapScore(lb, boxes) + inOthers(lb, others, cell) * w * h * 40 + i * 0.5 + moved * h * 0.5; // never inside another template
       if (s < bs) { bs = s; best = p; }
       if (s < 1) break;
     }
@@ -268,7 +278,9 @@
       var gg = geo(t, enc), hit = hits(t, enc), isSel = t.id === sel || t === ghost, big = isSel && open;
       hit.forEach(function (c) { hitSet[c.id] = 1; });
       var txt = labelPlain(t, hit.length), w = (txt.length * (big ? 7.6 : 6.9) + 22) / z, h = (big ? 30 : 25) / z;
-      var p = placeLabel(t, gg, cell, w, h, boxes, BW, BH, vis);
+      var mid = gg.kind === 'circle' ? [gg.x, gg.y] : gg.kind === 'square' ? [gg.x + gg.len / 2, gg.y + gg.len / 2] : [gg.x + Math.cos(gg.ang) * gg.len / 2, gg.y + Math.sin(gg.ang) * gg.len / 2];
+      var others = list.concat(ghost ? [ghost] : []).filter(function (q) { return q !== t; }).map(function (q) { var o = geo(q, enc); o.holds = insideG(o, mid[0], mid[1]); return o; });
+      var p = placeLabel(t, gg, cell, w, h, boxes, BW, BH, vis, others);
       boxes.push([p[0] - w / 2, p[1] - h / 2, w, h]);
       html += '<div class="mi-chip' + (big ? ' big' : '') + (t === ghost ? ' ghost' : '') + '" data-mi-sel="' + E(t.id) + '" style="left:' + p[0].toFixed(1) + 'px;top:' + p[1].toFixed(1) + 'px" title="' + E((t.label ? t.label + (t.dc ? ' \u00b7 ' + t.dc : '') + ' \u2014 ' : '') + (open ? 'Select this template' : 'Edit templates')) + '">' + labelHTML(t, hit.length) + '</div>';
       if (open && t !== ghost) (spots[t.id] || []).forEach(function (hp) {
@@ -429,7 +441,10 @@
     var inZone = function (dx, dy) { return b.pts.some(function (p) { return Math.hypot(cx - (p[0] - dx), cy - (p[1] - dy)) < R; }); };
     var behavior = reduced() ? 'auto' : 'smooth';
     if (wide()) {
-      // the board already fills the width: pan up only, inside the map's edges (the scroller clamps; no padding)
+      // every template and every token (with its badges and name tag) must sit fully in view on the stage, below the
+      // strip: zoom out from the full-bleed fit only as far as that needs; the space around shows the map blurred
+      if (frameAll()) { b = box(); }
+      // then pan up only, inside the map's edges, if the fan would cover the template (the scroller clamps)
       if (!inZone(0, 0)) return;
       var dy = 0; while (dy < sc.scrollHeight && inZone(0, dy)) dy += 12;
       var maxY = sc.scrollHeight - sc.clientHeight - sc.scrollTop;
@@ -481,6 +496,37 @@
     }
     setTimeout(offHits, reduced() ? 0 : 320);
   }
+  // Desktop: the box (board px) of all templates, their labels and all tokens with their badges and name tags.
+  function sceneBox() {
+    var enc = X.enc, cell = X.cell, d = dims(enc), xs = [], ys = [];
+    var add = function (x, y) { xs.push(x); ys.push(y); };
+    aoes().forEach(function (t) {
+      var g = geo(t, enc);
+      if (t.kind === 'circle') { add(g.x - g.len, g.y - g.len); add(g.x + g.len, g.y + g.len + 0.9); } // + its label below
+      else if (t.kind === 'square') { add(g.x, g.y - 0.2); add(g.x + g.len, g.y + g.len + 0.9); }
+      else { var Lc = t.kind === 'cone' ? g.len / Math.cos(HALF) : g.len, hh = t.kind === 'cone' ? HALF : 0.04; add(g.x, g.y); add(g.x + Math.cos(g.ang - hh) * Lc, g.y + Math.sin(g.ang - hh) * Lc); add(g.x + Math.cos(g.ang + hh) * Lc, g.y + Math.sin(g.ang + hh) * Lc); }
+    });
+    (enc.combatants || []).forEach(function (c) { if (c.mapX == null) return; var sp = spanOf(c); add(c.mapX - 0.15, c.mapY - 0.4); add(c.mapX + sp + 0.15, c.mapY + sp + 0.7); });
+    if (!xs.length) return null;
+    var cl = function (v, hi) { return Math.max(0, Math.min(hi, v)); };
+    return { x0: cl(Math.min.apply(null, xs), d.cols) * cell, x1: cl(Math.max.apply(null, xs), d.cols) * cell, y0: cl(Math.min.apply(null, ys), d.rows) * cell, y1: cl(Math.max.apply(null, ys), d.rows) * cell };
+  }
+  // Zoom out (never in) so the scene box fits the stage, then centre it inside the map's edges. True if it zoomed.
+  function frameAll() {
+    var sc = X.scroll, q = sceneBox(); if (!q || !X.setZoom) return false;
+    var pad = 14, cw = sc.clientWidth, ch = sc.clientHeight, z = zoom();
+    var zf = Math.min((cw - 2 * pad) / (q.x1 - q.x0), (ch - 2 * pad) / (q.y1 - q.y0));
+    var zoomed = false;
+    if (zf < z - 0.005) { X.setZoom(Math.max(0.3, zf), false); z = zoom(); zoomed = true; }
+    var stg = sc.closest('.c2-stage'), url = baseImageURL(); if (stg) stg.style.setProperty('--c2-mapbg', zoomed && url ? 'url("' + url + '")' : 'none');
+    // centre the box (the scroller clamps to the map's edges; a board narrower than the stage is centred by CSS)
+    // (only when something is out of view, so editing a template doesn't keep moving the board)
+    var off = function (a0, a1, s0, n) { return a0 * z < s0 + pad - 1 || a1 * z > s0 + n - pad + 1; };
+    if (zoomed || off(q.x0, q.x1, sc.scrollLeft, cw) || off(q.y0, q.y1, sc.scrollTop, ch)) {
+      sc.scrollLeft = Math.max(0, (q.x0 + q.x1) / 2 * z - cw / 2); sc.scrollTop = Math.max(0, (q.y0 + q.y1) / 2 * z - ch / 2);
+    }
+    return zoomed;
+  }
   // Desktop: while the fan is open the map fills the pane's width, edge to edge (it pans vertically only).
   function coverCamera() {
     if (!X || !X.scroll || !wide() || !X.setZoom) return;
@@ -491,6 +537,7 @@
   function restoreCamera() {
     var u = U();
     if (!u.c2ManualZoom) u.dmMapZoomInit = false; // the next render refits
+    var stg = document.querySelector('.c2-stage'); if (stg) stg.style.removeProperty('--c2-mapbg');
   }
 
   // Handles never cover a token. Each handle slides along its own axis (out past a rim/tip, behind an origin,
@@ -1219,6 +1266,6 @@
     tokenDown: tokenHook, ownsPointer: ownsPointer, fanHTML: fanHTML, stageHTML: stageHTML, openAoe: openAoe, openFog: openFog, closeAoe: closeAoe,
     placeFromCard: placeFromCard, _fogTone: _fogTone, _fog: function () { return X && X.fog; }, _lum: function () { return lumCache; }, placing: placing, projLabel: projLabel, historyHTML: historyHTML, undoMove: undoMove,
     aoeOpen: function () { return !!A(); }, fogOpen: function () { return !!Fg(); },
-    _hits: hits, _inside: insideG, _label: labelPlain, _stamp: stampSeg, _derived: derived, _walk: walk, _speed: speedOf, _terrain: terrainFor, _hist: H, _moves: function () { return moveUndo; }, _x: function () { return X; }
+    _hits: hits, _inside: insideG, _geo: geo, _label: labelPlain, _stamp: stampSeg, _derived: derived, _walk: walk, _speed: speedOf, _terrain: terrainFor, _hist: H, _moves: function () { return moveUndo; }, _x: function () { return X; }
   };
 })();

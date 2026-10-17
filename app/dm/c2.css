@@ -83,8 +83,11 @@ body:has(.c2) { overflow: hidden; }
 .c2 .c2-next { padding: 10px 16px; border-radius: 9px; border: 1px solid var(--gold-deep); box-shadow: 0 2px 6px rgba(0,0,0,.5); }
 /* body */
 .c2 .c2-body { flex: 1; min-height: 0; display: flex; position: relative; }
-.c2 .c2-stage { flex: 1; min-width: 0; position: relative; overflow: hidden; display: block; padding: 0; margin: 0; background: none; border: 0; }
-.c2 .c2-stage .dm-map-scroll { position: absolute; inset: 0; padding: 0; display: flex; justify-content: flex-start; align-items: flex-start; overflow: auto; flex: none; scrollbar-width: none; }
+.c2 .c2-stage { flex: 1; min-width: 0; position: relative; overflow: hidden; display: block; padding: 0; margin: 0; background: none; border: 0; isolation: isolate; }
+/* while a template is being placed the board may zoom out to fit every template and token; the space around it shows
+   the same map, blurred and dimmed (never dark side bars) */
+.c2 .c2-stage::before { content: ''; position: absolute; inset: -40px; z-index: -1; pointer-events: none; background: var(--c2-mapbg, none) center / cover no-repeat; filter: blur(22px) brightness(.5) saturate(.9); }
+.c2 .c2-stage .dm-map-scroll { position: absolute; inset: 0; padding: 0; display: flex; justify-content: safe center; align-items: safe center; overflow: auto; flex: none; scrollbar-width: none; }
 .c2 .c2-stage .dm-map-scroll::-webkit-scrollbar { display: none; }
 .c2 .c2-stage .dm-map-zoom { flex: none; }
 .c2 .c2-stage .dm-map-grid { border-radius: 0; box-shadow: none; border: 0; outline: 0; } /* full-bleed: no frame, no side bars */

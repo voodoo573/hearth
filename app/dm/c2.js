@@ -383,7 +383,7 @@
     var proj = projOn();
     var head = '<div class="c2-sbhead">' +
       '<div class="c2-chead"><span class="c2-cface">' + face(c, 44) + '</span><span class="c2-ctitle">' + nameRow + '<small>' + sub + '</small></span>' +
-      (isTurn ? '<span class="c2-turn">Its turn</span>' : '') +
+      (isTurn ? '<span class="c2-turn">Now acting</span>' : '') +
       '<button class="c2-pin ' + (card.pinned ? 'on' : '') + '" data-c2-pin="1" aria-pressed="' + (card.pinned ? 'true' : 'false') + '" title="' + (card.pinned ? 'Pinned: stays open when the turn moves on' : 'Pin: keep this card open when the turn moves on') + '"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M10.5 1.5l4 4-2 1-2.5 2.5.5 3-1.5 1.5-2.6-2.6L3 14.3 1.7 13l3.4-3.4L2.5 7 4 5.5l3 .5L9.5 3.5z" fill="currentColor"/></svg></button>' +
       '<button class="c2-x" data-c2-close="1" aria-label="Close card">\u2715</button></div>' +
       '<div class="c2-stats"><div class="c2-stat">' + svgShield('c2-ac-big', c.ac) + '<small>AC \u00b7 ' + E(acSub) + '</small></div>' +

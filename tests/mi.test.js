@@ -165,6 +165,21 @@ async function drag(p, a, b, n, hold) { await p.mouse.move(a.x, a.y); await p.mo
     const hc = await hdlClear(p);
     check(`${touch ? 'phone' : 'desktop'}: no template handle covers a token (cone on the dragon, circle on the goblin, line from the Ranger)`, hc.n >= 9 && hc.on.length === 0, hc);
     if (!touch) {
+      // labels: never inside another template; the circle's sits just below its own circle
+      const lb = await p.evaluate(() => {
+        const X = HearthMI._x(), enc = X.enc, gr = X.grid.getBoundingClientRect(), u = gr.width / (X.cell * 20) * X.cell;
+        const tl = enc.aoes, out = [];
+        // a template drawn inside another (the line inside the cone) can't keep its label out of it
+        const holds = (q, a) => { const g = HearthMI._geo(a, enc), m = g.kind === 'circle' ? [g.x, g.y] : g.kind === 'square' ? [g.x + g.len / 2, g.y + g.len / 2] : [g.x + Math.cos(g.ang) * g.len / 2, g.y + Math.sin(g.ang) * g.len / 2]; return HearthMI._inside(HearthMI._geo(q, enc), m[0], m[1]); };
+        document.querySelectorAll('#miTpl .mi-chip').forEach(ch => {
+          const a = tl.find(q => q.id === ch.dataset.miSel); if (!a) return; const r = ch.getBoundingClientRect();
+          const bx = [(r.left - gr.left) / u, (r.top - gr.top) / u, r.width / u, r.height / u]; let bad = 0;
+          for (let j = 0; j < 3; j++) for (let i = 0; i < 5; i++) { const x = bx[0] + bx[2] * (i + .5) / 5, y = bx[1] + bx[3] * (j + .5) / 3; if (tl.some(q => q !== a && !holds(q, a) && HearthMI._inside(HearthMI._geo(q, enc), x, y))) bad++; }
+          const g = HearthMI._geo(a, enc); out.push({ k: a.kind, bad, below: a.kind === 'circle' ? (bx[1] >= g.y + g.len * 0.6 && bx[1] <= g.y + g.len + 0.8 && bx[0] < g.x + g.len && bx[0] + bx[2] > g.x - g.len) : true });
+        });
+        return out;
+      });
+      check('desktop: no template label sits inside another template (unless its own template lies inside that one), and the Circle label is just below its own circle', lb.length >= 4 && lb.every(l => l.bad === 0 && l.below), lb);
       // a handle that was slid off its point drags from where it sits: grabbing it doesn't jump the template
       const g0 = await p.evaluate(() => { const a = loadEncounter().aoes.find(x => x.kind === 'cone' && !x.pinned) || HearthMI._x().enc.aoes.slice(-1)[0]; return { ang: a.angle, len: a.len }; });
       const mh = await p.evaluate(() => { const h = [...document.querySelectorAll('.mi-hdl.on')].find(x => x.dataset.miH === 'aim'); const r = h.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
