@@ -90,9 +90,28 @@ const noToast = p => p.evaluate(() => document.querySelectorAll('.toast, #toast,
       saveEncounter(e2); render();
     });
     await p.waitForTimeout(600);
-    if (tag === 'phone') await p.evaluate(() => { const fit = [...document.querySelectorAll('button')].find(x => /fit board/i.test(x.textContent)); fit && fit.click(); });
+    await p.evaluate(() => { const fit = [...document.querySelectorAll('button')].find(x => /fit board/i.test(x.textContent)); fit && fit.click(); });
     await p.waitForTimeout(400);
-    await p.evaluate((tag) => { { const g = document.getElementById('dmMapGrid'); g && g.scrollIntoView({ block: 'center' }); } }, tag);
+    await p.evaluate((tag) => { if (tag === 'phone') { const g = document.getElementById('dmMapGrid'); g && g.scrollIntoView({ block: 'center' }); } else (() => {
+      // Desktop: bring the whole board into view with a toolbar-row edge (not half a row) under the header,
+      // and keep the sticky sidebar's top clear of the header.
+      const b = document.querySelector('.dm-battle'), g = document.getElementById('dmMapGrid'), tr = document.querySelector('.dm-battle-track');
+      if (b) window.scrollBy(0, b.getBoundingClientRect().top);
+      if (tr) tr.scrollTop = 0;
+      if (!g) return;
+      const head = () => document.querySelector('.dm-map-top').getBoundingClientRect().bottom;
+      const col = document.querySelector('.dm-battle-map');
+      const rows = [...col.children].filter(e => e.getBoundingClientRect().bottom <= g.getBoundingClientRect().top + 1).map(e => e.getBoundingClientRect().top);
+      const cands = [0, ...rows.map(top => top - head())].filter(s => s >= 0).sort((x, y) => x - y);
+      for (const s of cands) {
+        window.scrollTo(0, window.scrollY + s);
+        const okBoard = g.getBoundingClientRect().bottom <= innerHeight - 8;
+        const okSide = !tr || tr.getBoundingClientRect().top >= head() + 7;
+        window.scrollTo(0, window.scrollY - s);
+        if (okBoard && okSide) { window.scrollTo(0, window.scrollY + s); window.__deskScroll = s; return; }
+      }
+      window.__deskScroll = 'none';
+    })(); }, tag);
     await p.waitForTimeout(900); await noToast(p);
     await p.screenshot({ path: OUT + `map-badges-aoe-${tag}.png` });
     await p.evaluate(() => { state.ui.dmMapMode = false; render(); });
@@ -132,7 +151,26 @@ const noToast = p => p.evaluate(() => document.querySelectorAll('.toast, #toast,
     });
     await p.waitForTimeout(700);
     if (tag === 'phone') { await p.evaluate(() => { const fit = [...document.querySelectorAll('button')].find(x => /fit board/i.test(x.textContent)); fit && fit.click(); }); await p.waitForTimeout(400); await p.evaluate(() => { const g = document.getElementById('dmMapGrid'); g && g.scrollIntoView({ block: 'center' }); }); }
-    else await p.evaluate(() => { const g = document.getElementById('dmMapGrid'); g && g.scrollIntoView({ block: 'center' }); });
+    else await p.evaluate(() => (() => {
+      // Desktop: bring the whole board into view with a toolbar-row edge (not half a row) under the header,
+      // and keep the sticky sidebar's top clear of the header.
+      const b = document.querySelector('.dm-battle'), g = document.getElementById('dmMapGrid'), tr = document.querySelector('.dm-battle-track');
+      if (b) window.scrollBy(0, b.getBoundingClientRect().top);
+      if (tr) tr.scrollTop = 0;
+      if (!g) return;
+      const head = () => document.querySelector('.dm-map-top').getBoundingClientRect().bottom;
+      const col = document.querySelector('.dm-battle-map');
+      const rows = [...col.children].filter(e => e.getBoundingClientRect().bottom <= g.getBoundingClientRect().top + 1).map(e => e.getBoundingClientRect().top);
+      const cands = [0, ...rows.map(top => top - head())].filter(s => s >= 0).sort((x, y) => x - y);
+      for (const s of cands) {
+        window.scrollTo(0, window.scrollY + s);
+        const okBoard = g.getBoundingClientRect().bottom <= innerHeight - 8;
+        const okSide = !tr || tr.getBoundingClientRect().top >= head() + 7;
+        window.scrollTo(0, window.scrollY - s);
+        if (okBoard && okSide) { window.scrollTo(0, window.scrollY + s); window.__deskScroll = s; return; }
+      }
+      window.__deskScroll = 'none';
+    })());
     await p.waitForTimeout(900); await noToast(p);
     await p.screenshot({ path: OUT + `map-tokens-${tag}.png` });
     if (tag === 'phone') { await p.evaluate(() => { state.ui.tokenImageFor = loadEncounter().combatants[1].id; render(); }); await p.waitForTimeout(800); await p.screenshot({ path: OUT + 'token-picker-library-phone.png' }); }
