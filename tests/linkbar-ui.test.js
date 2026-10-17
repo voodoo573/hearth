@@ -31,6 +31,16 @@ function check(name, ok, info) { results.push({ ok: !!ok }); console.log((ok ? '
     check(tag + ' no emoji, no monster HP or AC', !m.emoji && !/AC \d|\d+\/\d+ HP|Goblin[^\n]*HP/.test(m.txt), m.txt);
     if (w >= 1600) check(tag + ' clear of the sheet centre column', !m.overCentre, m); // below 1600 the sheet is two columns edge to edge
     if (w < 1280) check(tag + ' sits above the tab bar', !m.overTabs, m);
+    if (w === 1440 || w === 412) {
+      const vis = () => p.evaluate(() => { const b = document.getElementById('hearthLinkBar'); return !!b && getComputedStyle(b).display !== 'none'; });
+      await p.evaluate(() => document.querySelector('.u-cs-roll.u-hit').click()); await p.waitForTimeout(300);
+      check(tag + ' bar steps aside while the roll dialog is open', !(await vis()));
+      await p.evaluate(() => document.querySelector('.roll-dialog [data-roll-line="0"]').click()); await p.waitForTimeout(7500);
+      check(tag + ' and while the roll result is open', !(await vis()));
+      await p.evaluate(() => { const c = document.getElementById('rollOutcomeClose'); if (c) c.click(); }); await p.waitForTimeout(400);
+      await p.evaluate(() => { const c = document.getElementById('rollDialogCancel') || document.getElementById('rollDialogDone'); if (c) c.click(); }); await p.waitForTimeout(400);
+      check(tag + ' and comes back when they close', await vis(), await p.evaluate(() => [...document.querySelectorAll('.dialog-backdrop,.roll-outcome-dialog,.u-layer')].map(e => e.className)));
+    }
     await ctx.close();
   }
   await b.close();

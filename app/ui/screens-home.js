@@ -295,4 +295,9 @@
     '.!hearth-link-bar-btns .!btn{flex:1;min-height:44px;border-radius:var(--r-md)!important;background:var(--tex),var(--u-raised,var(--u-surface))!important;border:1px solid var(--rim)!important;color:var(--ink)!important;font:600 14px var(--sans)!important}',
     '#hearthLinkBar .!btn.!danger{color:var(--danger,#e07a6a)!important;border-color:color-mix(in srgb,var(--danger,#e07a6a) 55%,transparent)!important}'
   ].join('\n'));
+  // The bar sits under any open dialog (roll dialog, roll result, pickers, polish modals) so it never covers
+  // their buttons; it comes back when the dialog closes. Raw CSS: :has() on body can't go through pxCss.
+  (function () { var st = document.createElement('style'); st.id = 'u-ui-linkbar-raw';
+    st.textContent = 'body:has(.dialog-backdrop, .skills-dialog-backdrop, .skill-choice-backdrop, .death-outcome-backdrop, .roll-outcome-dialog, .u-layer) #hearthLinkBar{display:none!important}';
+    document.head.appendChild(st); })();
 })();
