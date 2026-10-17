@@ -78,6 +78,11 @@ const SHOTS = [
       pop.on('pageerror', e => errs.push('projector: ' + e.message));
       await pop.setViewportSize({ width: 1920, height: 1080 }); await p.waitForTimeout(500); await p.evaluate(() => broadcastMap(loadEncounter())); await pop.waitForTimeout(2500);
       await pop.screenshot({ path: `${OUT}/${file}.png` });
+      await pop.close(); await p.bringToFront();
+      // and the desk setup sheet (full steps) the DM sees before the window opens
+      await p.evaluate(() => { const s = loadDmSettings(); s.projectorHelpDismissed = false; saveDmSettings(s); document.getElementById('dmMapProject').click(); }); await p.waitForTimeout(700);
+      await p.evaluate(() => document.querySelectorAll('.toast,#toast,.hearth-toast').forEach(t => t.remove()));
+      await p.screenshot({ path: `${OUT}/projector-setup-desk.png` });
     } else {
       await p.evaluate(() => { const s = loadDmSettings(); s.projectorHelpDismissed = false; saveDmSettings(s); document.getElementById('dmMapProject').click(); }); await p.waitForTimeout(700);
       await p.evaluate(() => document.querySelectorAll('.toast,#toast,.hearth-toast').forEach(t => t.remove()));

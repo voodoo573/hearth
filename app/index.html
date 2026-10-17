@@ -1590,6 +1590,9 @@ try {
     color: var(--ink-faded); font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace; font-size: 11px; cursor: pointer;
     padding: 6px 0 2px; }
   .dm-proj-dontshow.on { color: var(--gold); }
+  /* UI polish — phone: one short note in place of the steps; the checkbox row is a full 44px target */
+  .dm-proj-phone-note { margin: 10px 0 6px; font-size: 15px; line-height: 1.5; color: var(--ink); }
+  .u-phone .dm-proj-dontshow { min-height: 44px; }
   /* v0.21.50 — Built-in map library picker. */
   .dm-maplib-dialog { max-width: 560px; }
   .dm-maplib-scroll { max-height: 62vh; overflow-y: auto; padding-right: 4px; -webkit-overflow-scrolling: touch; }
@@ -58092,18 +58095,23 @@ function wireDMMap(enc, cell, cols, rows) {
 function dmProjectorHelpDialogHTML() {
   if (!state.ui.dmProjectorHelp) return '';
   const dontShow = state.ui.dmProjectorHelpDontShow;
+  // Jenny: a phone can't drive a TV, so it gets one short note instead of the Win+P / HDMI steps.
+  const phone = !!(window.HearthUI && HearthUI.isDesk && !HearthUI.isDesk());
+  const steps = phone
+    ? `<p class="dm-proj-phone-note">Open Hearth on the computer connected to your TV, then press <strong>Projector</strong>.</p>`
+    : `<ol class="dm-proj-steps">
+            <li>Connect the TV or projector by HDMI.</li>
+            <li>Set your screens to <strong>Extend</strong>, not Mirror: press <kbd>⊞ Win</kbd> + <kbd>P</kbd> and choose <strong>Extend</strong>.<br/><span class="dm-proj-note">On a Mac: In System Settings, open Displays and turn off Mirror Displays.</span></li>
+            <li>Click <strong>Open projector window</strong> below.</li>
+            <li>Drag that window onto the TV.</li>
+            <li>Press <strong>Fullscreen</strong> (or the <kbd>F</kbd> key). The button and cursor fade away on their own.</li>
+          </ol>`;
   return `
       <div class="dialog-backdrop" id="dialogBackdrop">
         <div class="dialog dm-proj-dialog">
           <div class="dialog-title">Show the map on your TV</div>
           <div class="dialog-helper">A quick one-time setup so players see only the board — never your DM screen.</div>
-          <ol class="dm-proj-steps">
-            <li>Connect the TV or projector by HDMI.</li>
-            <li>Set your screens to <strong>Extend</strong>, not Mirror: press <kbd>⊞ Win</kbd> + <kbd>P</kbd> and choose <strong>Extend</strong>.<br/><span class="dm-proj-note">On a Mac: System Settings → Displays → turn <em>off</em> “Mirror Displays”.</span></li>
-            <li>Click <strong>Open projector window</strong> below.</li>
-            <li>Drag that window onto the TV.</li>
-            <li>Press <strong>Fullscreen</strong> (or the <kbd>F</kbd> key). The button and cursor fade away on their own.</li>
-          </ol>
+          ${steps}
           <button class="dm-proj-dontshow ${dontShow ? 'on' : ''}" data-dm-proj-dontshow="1">${dontShow ? '☑' : '☐'} Don't show this again</button>
           <div class="dialog-actions">
             <button class="btn" data-dm-proj-cancel="1">Cancel</button>
