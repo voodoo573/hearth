@@ -14,39 +14,42 @@
         ['crown', 'For DMs', 'A battle map, initiative and monster sheets, plus a projector view.'],
         ['link', 'For the table', 'A live link so everyone sees the same game on their own phone.']] },
     { label: 'Try it', title: 'Have a look round', icon: 'd20',
-      desk: 'Start your own hero, or load a ready-made sample first. Samples are marked \u201cSample:\u201d and you can remove them any time in Settings.',
-      phone: 'Make your own hero, or load a sample first. Samples are marked and easy to remove.',
-      cards: [['user', 'Make a character', 'Build a hero step by step, or roll a random one. Sample: Sir Oswin, a level 3 paladin.', 'Try a sample character', 'try-character'],
-        ['map', 'Run an encounter', 'Initiative, monsters on a painted map, fog and spell areas. Sample: an ambush on the Goblin Road.', 'Try a sample encounter', 'try-encounter'],
-        ['link', 'Join a friend\u2019s game', 'Make your hero first, then open the link or scan the QR code your DM shares.']] },
+      desk: 'Start your own hero, or load a ready-made sample first. Samples are marked *Sample:* and you can remove them any time in Settings.',
+      phone: 'Start your own hero, or load a ready-made sample first. Samples are marked *Sample:* and you can remove them any time in Settings.',
+      cards: [['user', 'Make a character', 'Build a hero step by step, or roll a random one. Sample: Sir Oswin, a level 3 paladin.', 'Try a sample character', 'try-character', 'Build a hero step by step, or roll a random one.'],
+        ['map', 'Run an encounter', 'Initiative, monsters on a painted map, fog and spell areas. Sample: an ambush on the Goblin Road.', 'Try a sample encounter', 'try-encounter', 'Initiative, monsters on a painted map, fog and spell areas.'],
+        ['link', 'Join a friend\u2019s game', 'Make your hero first, then open the link or scan the QR code your DM shares.', 'Enter a game code', 'join', 'Make your hero first, then open the link your DM shares.']] },
     { label: 'Your data', title: 'Keep your adventures safe', icon: 'shield',
       desk: 'Hearth saves on this device only. Nothing is sent anywhere unless you choose to.',
       phone: 'Hearth saves on this device only. Nothing is sent anywhere unless you choose to.',
-      cards: [['download', 'Back up', 'Every so often, export a backup file: Settings \u2192 Back up & export.'],
+      cards: [['download', 'Back up', 'Every so often, export a backup file in Settings, under Back up & export.'],
         ['cloud', 'Sync (optional)', 'Sign in with Google to carry your characters to your other devices.'],
         ['clock', 'Snapshots', 'Hearth keeps a copy of your data before each update.']] }
   ];
   var step = 0, prevFocus = null, wrap = null;
+  // No one-word last lines: tie the last two words with a no-break space. *Sample:* is shown as the sample tag
+  // the app prints on sample content (no quote marks).
+  function tx(str) { var t = esc(String(str)).replace(/ (\S+)$/, '\u00a0$1'); return t.replace(/\*([^*]+)\*/g, '<b class="obs">$1</b>'); }
   function crest(size) { return '<span class="crest !home-brand-icon" aria-hidden="true" style="width:' + size + 'px;height:' + size + 'px;flex:0 0 ' + size + 'px"></span>'; }
   function dots() { return '<div class="dots" aria-hidden="true">' + STEPS.map(function (_, k) { return '<i class="' + (k === step ? 'on' : '') + '"></i>'; }).join('') + '</div>'; }
   function cardBtn(c) { return c[3] ? btn(c[3], 'sm', null, 'data-tour="' + c[4] + '"') : ''; }
   function html() {
     var desk = U.isDesk(), s = STEPS[step], n = STEPS.length, last = step === n - 1;
     var count = desk ? s.label + ' \u00b7 step ' + (step + 1) + ' of ' + n : 'Step ' + (step + 1) + ' of ' + n;
-    var art = s.crest ? crest(desk ? 132 : 112) : '<span class="obic" aria-hidden="true">' + ic(s.icon) + '</span>';
+    var art = '<div class="obart">' + (s.crest ? crest(desk ? 112 : 96) : '<span class="obic" aria-hidden="true">' + ic(s.icon) + '</span>') + '</div>';
     var big = desk ? 'primary lg' : 'primary lg block';
     var next = last ? btn('Start using Hearth', big, null, 'data-tour="done"') : btn('Next', big, null, 'data-tour="next"', 'right');
     var back = step > 0 ? btn('Back', 'ghost', 'left', 'data-tour="back"') : '';
     if (desk) {
       return '<div class="ob" data-step="' + step + '">' + art + '<div class="t-label">' + count + '</div>' +
-        '<h2 class="t-display obt" id="hearthTourTitle" tabindex="-1">' + esc(s.title) + '</h2><div class="t-body obb">' + esc(s.desk) + '</div>' +
-        '<div class="of">' + s.cards.map(function (c) { return '<div class="card"><span class="lead">' + ic(c[0]) + '</span><div class="t-h3">' + esc(c[1]) + '</div><div class="t-meta" style="margin-top:4px">' + esc(c[2]) + '</div>' + (c[3] ? '<div class="obcb">' + cardBtn(c) + '</div>' : '') + '</div>'; }).join('') + '</div>' +
+        '<h2 class="t-display obt" id="hearthTourTitle" tabindex="-1">' + esc(s.title) + '</h2><div class="t-body obb">' + tx(s.desk) + '</div>' +
+        '<div class="of">' + s.cards.map(function (c) { return '<div class="card"><span class="lead">' + ic(c[0]) + '</span><div class="t-h3">' + esc(c[1]) + '</div><div class="t-meta" style="margin-top:4px">' + tx(c[2]) + '</div>' + (c[3] ? '<div class="obcb">' + cardBtn(c) + '</div>' : '') + '</div>'; }).join('') + '</div>' +
         '<div class="obf">' + (last ? back : btn('Skip tour', 'ghost', null, 'data-tour="skip"')) + dots() + '<div class="hstack gap2">' + (last ? '' : back) + next + '</div></div></div>';
     }
     return '<header class="obh">' + (step > 0 ? U.ibtn('left', 'data-tour="back"', true, 'Back') : '<span></span>') + (last ? '<span></span>' : btn('Skip', 'ghost sm', null, 'data-tour="skip"')) + '</header>' +
       '<div class="ob obp" data-step="' + step + '" data-u-scroll>' + art + '<div class="t-label" style="margin-top:10px">' + count + '</div>' +
-      '<h2 class="t-display obt" id="hearthTourTitle" tabindex="-1">' + esc(s.title) + '</h2><div class="t-body obb">' + esc(s.phone) + '</div>' +
-      '<div class="pill3">' + s.cards.map(function (c) { return '<div class="pill"><span class="lead">' + ic(c[0]) + '</span><span class="f1"><b>' + esc(c[1]) + '.</b> <span class="faded">' + esc(c[2]) + '</span>' + (c[3] ? '<span class="obcb">' + cardBtn(c) + '</span>' : '') + '</span></div>'; }).join('') + '</div></div>' +
+      '<h2 class="t-display obt" id="hearthTourTitle" tabindex="-1">' + esc(s.title) + '</h2><div class="t-body obb">' + tx(s.phone) + '</div>' +
+      '<div class="pill3">' + s.cards.map(function (c) { return '<div class="pill"><span class="lead">' + ic(c[0]) + '</span><span class="f1"><b>' + esc(c[1]) + '.</b> <span class="faded">' + tx(c[5] || c[2]) + '</span>' + (c[3] ? '<span class="obcb">' + cardBtn(c) + '</span>' : '') + '</span></div>'; }).join('') + '</div></div>' +
       '<div class="obfoot">' + dots() + next + '</div>';
   }
   function paint(focus) {
@@ -94,6 +97,7 @@
       else if (a === 'back') go(step - 1);
       else if (a === 'try-character') { close(); hearthLoadSampleCharacter(); }
       else if (a === 'try-encounter') { close(); hearthLoadSampleEncounter(); }
+      else if (a === 'join') { close(); if (typeof linkOpenJoinOverlay === 'function') linkOpenJoinOverlay(); }
     });
     D.addEventListener('keydown', key, true);
     paint();
@@ -107,7 +111,15 @@
     '.obl{z-index:2600}',
     '.obd{padding:40px 44px 32px}.obl > .obd{left:50%!important;max-width:calc(100vw - 48px)!important}',
     '.ob{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}',
-    '.ob .crest{border-radius:30px;border:1px solid var(--gold-deep);background-size:cover;background-position:center;box-shadow:0 0 0 6px rgba(0,0,0,.35),0 0 60px color-mix(in srgb,var(--ember) 45%,transparent)!important}',
+    '.ob .crest{border-radius:30px;border:1px solid var(--gold-deep);background-size:cover;background-position:center}',
+    // dim bevel (Jenny's mockup), beating the Hearth palette's bright gold ring on .home-brand-icon
+    '#hearthTour .crest{box-shadow:inset 0 1px 0 color-mix(in srgb,var(--gold) 18%,transparent),0 0 0 5px rgba(0,0,0,.35),0 0 0 6px color-mix(in srgb,var(--gold-deep) 35%,transparent),0 0 48px color-mix(in srgb,var(--ember) 30%,transparent)!important;border-color:color-mix(in srgb,var(--gold-deep) 70%,transparent)!important}',
+    '.obart{height:124px;display:flex;align-items:center;justify-content:center;flex:none}.obphone .obart{height:108px}',
+    '.obs{font-weight:600;color:var(--gold)}',
+    '.obt,.obb{text-wrap:balance}.of .t-meta,.pill3 .faded{text-wrap:pretty}',
+    // locked height: the art, title and dots sit in the same place on every step
+    '.obl > .obd{height:min(664px,calc(100vh - 48px));display:flex;flex-direction:column}.obd>.ob{flex:1;min-height:0}.obd .obf{margin-top:auto}',
+    '.obd .of{flex:none}',
     '.obphone .ob .crest{border-radius:26px}',
     '.obic{width:112px;height:112px;border-radius:30px;display:flex;align-items:center;justify-content:center;color:var(--gold);background:var(--well);border:1px solid var(--gold-deep);box-shadow:0 0 0 6px rgba(0,0,0,.35),0 0 60px color-mix(in srgb,var(--ember) 35%,transparent)}',
     '.obic svg{width:52px;height:52px}.obphone .obic{width:96px;height:96px;border-radius:26px}',
@@ -116,14 +128,14 @@
     '.of{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:10px 0 6px;text-align:left;width:100%}',
     '.of .card{padding:18px;display:flex;flex-direction:column}.of .lead{margin-bottom:10px}',
     '.obcb{margin-top:auto;padding-top:12px;display:block}.obcb .u-btn{width:100%}',
-    '.obf{display:flex;align-items:center;gap:12px;width:100%;margin-top:8px}.obf .dots{margin:0 auto}',
+    '.obf{display:flex;align-items:center;gap:12px;width:100%;margin-top:8px;position:relative;justify-content:space-between}.obf .dots{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}',
     '.dots{display:flex;gap:8px}.dots i{width:8px;height:8px;border-radius:4px;background:var(--rim)}.dots i.on{width:26px;background:var(--brass-grad)}',
     '.obsheet{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;background:var(--tex-page),var(--page)}',
     '.obh{display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 8px;flex:none}',
-    '.obp{flex:1;overflow:auto;justify-content:center;padding:0 22px 12px}',
+    '.obp{flex:1;overflow:auto;justify-content:flex-start;padding:min(6vh,48px) 22px 12px;gap:12px}',
     '.pill3{display:flex;flex-direction:column;gap:10px;width:100%;text-align:left;margin-top:6px}',
-    '.pill3 .pill{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:12px;background:var(--well);border:1px solid var(--hair);font-size:14px;line-height:1.45;color:var(--ink)}',
-    '.pill3 .faded{color:var(--ink-faded)}.pill3 .obcb{padding-top:10px}',
+    '.pill3 .pill{display:flex;gap:12px;align-items:center;padding:10px 14px;border-radius:12px;background:var(--well);border:1px solid var(--hair);font-size:14px;line-height:1.45;color:var(--ink)}',
+    '.pill3 .faded{color:var(--ink-faded)}.pill3 .obcb{padding-top:8px}.pill3 .obcb .u-btn{min-height:44px}',
     '.obfoot{flex:none;display:flex;flex-direction:column;align-items:center;gap:18px;padding:12px 18px 28px}'
   ].join('\n'));
 })();
