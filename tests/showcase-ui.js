@@ -7,6 +7,8 @@ const URL = `http://127.0.0.1:${PORT}/app/index.html`;
 const W = (ms) => `await new Promise(r=>setTimeout(r,${ms}));`;
 const ROLL = `HearthUI.go('sheet');${W(300)}document.querySelector('.u-cs-roll.u-hit').click();${W(300)}document.querySelector('.roll-dialog [data-roll-line="0"]').click();`;
 const BUILD = `startNewCharacterFromMenu();${W(300)}const n=document.getElementById('nameInput');n.value='Aria';n.dispatchEvent(new Event('input',{bubbles:true}));for(let i=0;i<2;i++){const b=document.getElementById('nextBtn');b&&b.click();${W(200)}const r=document.querySelector('[data-race]');if(r&&!state.draft.race){r.click();${W(200)}}};const pc=document.querySelector('[data-class=paladin]');pc&&pc.click();`;
+// a player linked to a live game (the DM's turn order reaches the phone as the shared player-visible list)
+const PVIEW = `const ch=loadCharacters()[0];HearthLink.join={status:'linked',code:'hearth-7K2Q-9MXD',token:'t',charId:ch.id,game:'The Sunken Crypt',combat:{started:true,round:2,yourTurn:false,order:[{n:'Elowen',i:18,k:'p',turn:true},{n:'Goblin',i:16,k:'m'},{n:ch.name,i:14,k:'p',you:true},{n:'Wolf',i:13,k:'m'},{n:'Thessaly',i:12,k:'p'},{n:'Goblin Archer',i:11,k:'m'}]}};HearthUI.go('sheet');${W(300)}HearthLink.ui.barOpen=true;linkRefreshPlayer();`;
 const THEMES = `state.ui.homePanel='settings';render();${W(200)}document.querySelector('[data-u-act=themes]').click();${W(300)}`;
 const SHOTS = [
   ['home', `HearthUI.go('home')`],
@@ -28,6 +30,7 @@ const SHOTS = [
   ['export', `HearthUI.go('home');${W(200)}HearthUI.actions.export({dataset:{}});`],
   ['confirm', `HearthUI.go('characters');${W(300)}HearthUI.openDeleteChar(loadCharacters()[4].id);`],
   ['onboarding', `HearthUI.go('characters');${W(200)}hearthOpenTour();`, { noChars: true, noGames: true }],
+  ['player-view', PVIEW],
   ['store', `localStorage.setItem('hearth.flag.store','1');HearthUI.go('store');`],
   // palette proofs (Jenny's extra pngs)
   ['home-%-arcane', `HearthUI.go('home')`, { palette: 'arcane' }],
@@ -54,6 +57,31 @@ const SHOTS = [
     await p.waitForTimeout(wait || 700);
     await p.evaluate(() => { document.querySelectorAll('.toast,#toast,.hearth-toast').forEach(t => t.remove()); const a = document.activeElement; if (a && a.blur && !/INPUT/.test(a.tagName)) a.blur(); });
     await p.screenshot({ path: `${OUT}/${file}.png` });
+    done.push(file + (errs.length ? '  ERR ' + errs.join(' | ').slice(0, 200) : ''));
+    await ctx.close();
+  }
+  // projector: desk = the projector window itself (1920x1080) on the staged C2 scene; phone = the phone DM's
+  // Projector flow on the live Battle Map (the one-time setup sheet before the window opens)
+  const C2 = require('./c2-stage.js');
+  for (const kind of ['desk', 'phone']) {
+    const file = `projector-${kind}`; if (ONLY && !ONLY.test(file)) continue;
+    const desk = kind === 'desk', errs = [];
+    const ctx = await b.newContext({ viewport: desk ? { width: 1920, height: 1080 } : { width: 412, height: 892 }, deviceScaleFactor: desk ? 1 : 2, serviceWorkers: 'block', hasTouch: !desk });
+    const p = await ctx.newPage(); p.on('pageerror', e => errs.push(e.message));
+    await p.goto(URL); await p.evaluate(C2.SEED); await p.reload(); await p.waitForTimeout(900);
+    await p.waitForFunction(() => window.HearthMI && window.HearthC2, null, { timeout: 10000 }).catch(() => {});
+    await p.evaluate(C2.STAGE, { turn: 'Ranger' }); await p.waitForTimeout(1500);
+    await p.evaluate(() => { const e = loadEncounter(); e.aoes = []; saveEncounter(e); state.ui.c2Card = null; render(); }); await p.waitForTimeout(500);
+    if (desk) {
+      const [pop] = await Promise.all([ctx.waitForEvent('page'), p.evaluate(() => openProjectorWindow(loadEncounter()))]);
+      pop.on('pageerror', e => errs.push('projector: ' + e.message));
+      await pop.setViewportSize({ width: 1920, height: 1080 }); await p.waitForTimeout(500); await p.evaluate(() => broadcastMap(loadEncounter())); await pop.waitForTimeout(2500);
+      await pop.screenshot({ path: `${OUT}/${file}.png` });
+    } else {
+      await p.evaluate(() => { const s = loadDmSettings(); s.projectorHelpDismissed = false; saveDmSettings(s); document.getElementById('dmMapProject').click(); }); await p.waitForTimeout(700);
+      await p.evaluate(() => document.querySelectorAll('.toast,#toast,.hearth-toast').forEach(t => t.remove()));
+      await p.screenshot({ path: `${OUT}/${file}.png` });
+    }
     done.push(file + (errs.length ? '  ERR ' + errs.join(' | ').slice(0, 200) : ''));
     await ctx.close();
   }

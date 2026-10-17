@@ -273,4 +273,24 @@
   if (typeof window.exportAllBackup === 'function' && !window.exportAllBackup._u) {
     var eab = window.exportAllBackup; window.exportAllBackup = function () { try { localStorage.setItem('hearth.ui.lastBackupAt', String(Date.now())); } catch (e) {} return eab.apply(this, arguments); }; window.exportAllBackup._u = true;
   }
+  // Player in a live game: the app's link bar (turn, initiative, My sheet / Leave) in the polish look. Desk: a
+  // card in the bottom-right corner, clear of the sheet's centre column; phone: just above the tab bar.
+  // Content is unchanged: it is the shared player-visible order (playerVisibility), never monster HP or AC.
+  window.HearthUI.addCss('u-ui-linkbar', [
+    '.!hearth-link-bar{background:var(--tex),var(--u-surface)!important;color:var(--ink)!important;border:1px solid var(--gold-deep)!important;border-radius:var(--r-lg)!important;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--gold) 14%,transparent),var(--sh2)!important;font:500 14px var(--sans)!important}',
+    '.!hearth-link-bar.!your-turn{border-color:var(--gold)!important;box-shadow:var(--glow),var(--sh2)!important}',
+    '.u-desk .!hearth-link-bar{left:auto!important;right:24px!important;bottom:24px!important;transform:none!important;width:340px!important}',
+    '.u-phone .!hearth-link-bar{bottom:calc(96px + var(--hearth-safe-bottom,0px))!important;width:calc(100vw - 24px)!important}',
+    '.!hearth-link-bar-main{min-height:48px;padding:10px 14px!important;color:var(--ink)!important}',
+    '.!hearth-link-head{font-weight:600}.!hearth-link-head strong{color:var(--gold)}.!hearth-link-caret{color:var(--gold)}',
+    '.!hearth-link-dot{background:var(--good,#5fae6e)!important;box-shadow:0 0 6px color-mix(in srgb,var(--good,#5fae6e) 60%,transparent)}',
+    '.!hearth-link-bar-body{padding:0 14px 14px!important;border-top:1px solid var(--hair);padding-top:10px!important}',
+    '.!hearth-link-me{color:var(--ink-faded);opacity:1!important}',
+    '.!hearth-link-order li{display:flex;align-items:center;gap:10px;padding:7px 10px!important;border-radius:var(--r-sm);color:var(--ink);margin:0 0 2px}',
+    '.!hearth-link-order li.!turn{background:color-mix(in srgb,var(--gold) 14%,transparent);box-shadow:inset 0 0 0 1px var(--gold-deep)}',
+    '.!hearth-link-order li.!you{color:var(--gold);font-weight:600}',
+    '.!hearth-link-init{font-family:var(--serif);color:var(--gold);opacity:1!important;min-width:24px!important}',
+    '.!hearth-link-bar-btns .!btn{flex:1;min-height:44px;border-radius:var(--r-md)!important;background:var(--tex),var(--u-raised,var(--u-surface))!important;border:1px solid var(--rim)!important;color:var(--ink)!important;font:600 14px var(--sans)!important}',
+    '#hearthLinkBar .!btn.!danger{color:var(--danger,#e07a6a)!important;border-color:color-mix(in srgb,var(--danger,#e07a6a) 55%,transparent)!important}'
+  ].join('\n'));
 })();
