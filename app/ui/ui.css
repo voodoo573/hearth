@@ -302,3 +302,5 @@ html:root body.u2.u2.u2 .u-field.u-field input:is([type], :not([type])), html:ro
 body.u2.u-modal-open { overflow: hidden; }
 .u2 .u-emo { display: inline-flex; vertical-align: -0.15em; width: 1.05em; height: 1.05em; margin-right: .3em; }
 .u2 .u-emo svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+/* the palette layer styles any [aria-pressed=true] / .selected control with its own glow; selected chips keep Jenny's brass */
+html:root body.u2.u2.u2 .u-chip.u-chip:is(.u-on, [aria-pressed="true"]) { background: var(--brass-grad); color: var(--on-gold); border-color: transparent; }

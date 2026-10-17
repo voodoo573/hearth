@@ -174,14 +174,17 @@
     }
     return true;
   }
-  function paintShell(r, meta) {
+  function paintShell(r, meta, fresh) {
     var desk = isDesk(); lastMode = desk;
     D.body.classList.toggle('u-desk', desk); D.body.classList.toggle('u-phone', !desk);
     D.body.dataset.uRoute = r;
-    sideEl.innerHTML = desk ? px(sideHTML(r)) : '';
-    tabbarEl.innerHTML = desk ? '' : px(tabbarHTML(r));
-    topEl.innerHTML = desk ? px(topHTML(meta)) : '';
-    abarEl.innerHTML = desk ? '' : px(abarHTML(meta));
+    // the shell is painted fresh before the app renders (so the app's own wiring binds once to buttons such as
+    // data-home-act in the top bar), and after it only where the markup changed
+    function put(el, html) { if (fresh || el._uHtml !== html) { el._uHtml = html; el.innerHTML = html; } }
+    put(sideEl, desk ? px(sideHTML(r)) : '');
+    put(tabbarEl, desk ? '' : px(tabbarHTML(r)));
+    put(topEl, desk ? px(topHTML(meta)) : '');
+    put(abarEl, desk ? '' : px(abarHTML(meta)));
     D.body.classList.toggle('u-noshell', r === 'rules');
     D.body.classList.toggle('u-notabs', !!meta.noTabs);
   }
@@ -296,7 +299,10 @@
   function boot() {
     if (!W.render || W.render._u) return;
     var origRender = W.render;
-    W.render = function () { var out = origRender.apply(this, arguments); try { afterRender(); } catch (e) { console.warn('ui shell', e); } return out; };
+    W.render = function () {
+      try { if (ensureShell()) { var r0 = route(), s0 = screens[r0]; paintShell(r0, (s0 && s0.meta && s0.meta()) || legacyMeta(r0), true); } } catch (e) { console.warn('ui pre-shell', e); }
+      var out = origRender.apply(this, arguments); try { afterRender(); } catch (e) { console.warn('ui shell', e); } return out;
+    };
     W.render._u = true;
     ['renderCharacter', 'renderPlay', 'renderGear', 'renderForge', 'renderReference', 'renderBuild'].forEach(function (n) { hook(n); });
     var st = D.createElement('style'); st.id = 'u2-screen-css'; D.head.appendChild(st);
