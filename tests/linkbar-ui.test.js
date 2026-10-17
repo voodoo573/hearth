@@ -8,7 +8,7 @@ const results = []; const errs = [];
 function check(name, ok, info) { results.push({ ok: !!ok }); console.log((ok ? 'PASS ' : 'FAIL ') + name + (info !== undefined && !ok ? '  ' + JSON.stringify(info).slice(0, 600) : '')); }
 const JOIN = () => { const ch = loadCharacters()[0];
   HearthLink.join = { status: 'linked', code: 'hearth-7K2Q-9MXD', token: 't', charId: ch.id, game: 'Crypt', combat: { started: true, round: 2, yourTurn: false, order: [{ n: 'Elowen', i: 18, k: 'p', turn: true }, { n: 'Goblin', i: 16, k: 'm' }, { n: ch.name, i: 14, k: 'p', you: true }, { n: 'Wolf', i: 13, k: 'm' }, { n: 'Thessaly', i: 12, k: 'p' }] } };
-  HearthLink.ui.barOpen = true; linkRefreshPlayer(); };
+  linkRefreshPlayer(); };
 // every visible sheet card / tile / row the bar could cover, checked against the bar's box
 const OVERLAP = () => {
   const bar = document.getElementById('hearthLinkBar'); if (!bar) return { bar: false };
@@ -28,6 +28,18 @@ const OVERLAP = () => {
     await p.evaluate(S.STAGE, {});
     await p.evaluate(async () => { HearthUI.go('sheet'); await new Promise(r => setTimeout(r, 300)); }); await p.evaluate(JOIN); await p.waitForTimeout(200);
     const tag = `${w}px:`;
+    { const d = await p.evaluate(() => ({ open: !!document.querySelector('#hearthLinkBar .hearth-link-bar-body'), h: Math.round(document.getElementById('hearthLinkBar').getBoundingClientRect().height) }));
+      if (w >= 1280) check(tag + ' desk: opens expanded', d.open, d);
+      else {
+        check(tag + ' phone/tablet: opens collapsed to its one-line bar', !d.open && d.h <= 60, d);
+        await p.click('#hearthLinkBar [data-link-bar="toggle"]'); await p.waitForTimeout(200);
+        const o = await p.evaluate(() => !!document.querySelector('#hearthLinkBar .hearth-link-bar-body'));
+        check(tag + ' phone/tablet: tap expands it', o);
+        await p.evaluate(() => render()); await p.waitForTimeout(250);
+        const o2 = await p.evaluate(() => !!document.querySelector('#hearthLinkBar .hearth-link-bar-body'));
+        check(tag + ' phone/tablet: stays expanded after a re-render once tapped', o2);
+      } }
+    await p.evaluate(() => { HearthLink.ui._uTouched = true; HearthLink.ui.barOpen = true; linkRefreshPlayer(); }); await p.waitForTimeout(150);
     const m = await p.evaluate(() => { const bar = document.getElementById('hearthLinkBar'); const cs = getComputedStyle(bar);
       return { bg: cs.backgroundColor, btns: [...bar.querySelectorAll('button')].map(x => Math.round(x.getBoundingClientRect().height)), txt: bar.textContent,
         emoji: /[\u{1F300}-\u{1FAFF}]/u.test(bar.textContent), turn: !!bar.querySelector('li.turn'), you: (bar.querySelector('li.you') || {}).textContent }; });

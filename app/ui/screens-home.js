@@ -324,9 +324,12 @@
     var lrp = window.linkRefreshPlayer;
     window.linkRefreshPlayer = function () {
       // a docked bar lives inside #content; hand it back to the app's own lookup by id (unchanged), then re-dock
+      // Opens expanded on the desk and collapsed to its one-line bar on phone (Jenny), until the player taps it
+      try { if (!HearthLink.ui._uTouched) HearthLink.ui.barOpen = !!window.HearthUI.isDesk(); } catch (e) {}
       var r = lrp.apply(this, arguments); dockLinkBar(); return r;
     };
-    window.linkRefreshPlayer._uDock = true; window.linkRefreshPlayer._orig = lrp;
+    window.linkRefreshPlayer._uDock = true;
+    document.addEventListener('click', function (e) { var t = e.target.closest && e.target.closest('[data-link-bar="toggle"]'); if (t) try { HearthLink.ui._uTouched = true; } catch (er) {} }, true); window.linkRefreshPlayer._orig = lrp;
   }
   (function () {
     var c = document.getElementById('content'); if (!c || !window.MutationObserver) return;
