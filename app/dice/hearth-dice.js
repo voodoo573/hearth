@@ -275,6 +275,11 @@ css.textContent='@keyframes hdin{from{opacity:0}to{opacity:1}}.hd-ov{animation:h
 '.hd-n1 .hd-flash{background:radial-gradient(circle,rgba(200,10,10,.55),rgba(80,0,0,.5) 60%,rgba(20,0,0,.6))}.hd-n20 .hd-num{color:#ffd55a;text-shadow:0 0 30px #ffb000,0 0 60px #ff9000,0 2px 0 #000}.hd-n1 .hd-num{color:#ff4a3a;text-shadow:0 0 24px #900,0 2px 0 #000}'+
 '.hd-crack{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;transition:opacity .15s}.hd-shake{animation:hdshake .45s}@keyframes hdshake{20%{transform:translate(-10px,6px)}40%{transform:translate(9px,-7px)}60%{transform:translate(-6px,-4px)}80%{transform:translate(4px,5px)}}'+
 '.hd-proj{margin-top:14px;padding:10px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.5);background:rgba(20,16,10,.8);color:#fff;font:600 15px system-ui,sans-serif;opacity:0;transition:opacity .3s}.hd-proj.on{opacity:1}.hd-ov.compact .hd-proj{font-size:11px;padding:5px 8px;margin-top:6px}'+
+// v1.6.0: the result sits on a solid card and the sheet behind is dimmed near-opaque, so nothing reads through.
+'.hd-ov:not(.compact) .hd-txt{left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);box-sizing:border-box;padding:14px 30px 16px;border-radius:20px;background:rgba(23,17,11,0);border:1px solid rgba(243,213,138,0);box-shadow:none;transition:background-color .25s,border-color .25s,box-shadow .25s}'+
+'.hd-ov:not(.compact) .hd-txt.on{background:#17110b;border-color:rgba(243,213,138,.4);box-shadow:0 14px 44px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,240,200,.08)}'+
+'.hd-ov.hd-n20:not(.compact) .hd-txt.on{border-color:rgba(255,213,90,.75);box-shadow:0 14px 44px rgba(0,0,0,.65),0 0 34px rgba(255,176,0,.35)}.hd-ov.hd-n1:not(.compact) .hd-txt.on{border-color:rgba(255,90,70,.7)}'+
+'.hd-ov:not(.compact) .hd-proj{background:#2a2016}'+
 '.hd-toast{position:fixed;left:50%;bottom:18%;transform:translateX(-50%);z-index:99999;background:rgba(10,8,6,.85);color:#fff;font:bold 44px Georgia,serif;padding:10px 26px;border-radius:14px;transition:opacity .3s}';
 document.head.appendChild(css); }
 
@@ -365,7 +370,7 @@ function roll(opts){
     document.body.appendChild(ov);
     var W=compact?150:innerWidth, Hc=compact?120:innerHeight;
     renderer.setSize(W,Hc,false); cv.style.width=W+'px'; cv.style.height=Hc+'px';
-    if(!compact) ov.style.background='rgba(0,0,0,'+(big?0.55:0.45)+')';
+    if(!compact) ov.style.background='rgba(8,6,4,'+(big?0.86:0.8)+')';
     // plan with physics, then remap faces so the resting face = result
     var arena=arenaFor(W,Hc,compact), cam=arena.cam, units=unitsOf(list);
     var early=false, cancelled=false, meshesReady=false, hold=0;
@@ -421,9 +426,11 @@ function roll(opts){
     }
     function showVals(){
       var seen={}; meshes.forEach(function(m){ var u=m.userData.unit; if(seen[u.d]) return; seen[u.d]=1;
-        var p=m.position.clone(); p.z+=R*1.5; p.y=0; p.project(cam);
+        // v1.6.0: pin the value chip to the die's own lower-right rim (in screen px), so it can't read as a neighbour's.
+        var c=m.position.clone().project(cam), e=m.position.clone(); e.x+=R; e=e.project(cam);
+        var cx=(c.x+1)/2*W, cy=(1-c.y)/2*Hc, rpx=Math.abs((e.x-c.x)/2*W);
         var ch=document.createElement('span'); ch.className='hd-chip'; ch.textContent=list[u.d].value;
-        ch.style.left=((p.x+1)/2*W)+'px'; ch.style.top=((1-p.y)/2*Hc)+'px'; vals.appendChild(ch); }); }
+        ch.style.left=(cx+rpx*0.85)+'px'; ch.style.top=(cy+rpx*0.85)+'px'; vals.appendChild(ch); }); }
     function finish(){
       cancelAnimationFrame(raf); pose(NF-1);
       var lab=[], k=0; list.forEach(function(d){ var n=d.type==='d100'?2:1, l=[]; for(var j=0;j<n;j++,k++){var m=meshes[k];l.push(landedLabelQ(m.userData.type,m.userData.tens,m.userData.perm,m.quaternion));} lab.push(l); });

@@ -27,6 +27,16 @@ const noToast = p => p.evaluate(() => document.querySelectorAll('.toast, #toast,
     await ctx.close(); }
 
   { const { ctx, p } = await page(b, 1366, 900);
+    await p.evaluate(HERO); await p.evaluate(() => { setActiveTab('play'); render(); window.scrollTo(0, 0); });
+    await p.evaluate(async () => { const r = hearthDiceRoll({ label: 'warm-up', groups: [{ sides: 20, values: [3] }], total: 3 }); await new Promise(z => setTimeout(z, 400)); HearthDice.skip(); await r; localStorage.removeItem('hearth.rollFeed.v1'); });
+    await p.waitForTimeout(500); await noToast(p);
+    const rp = p.evaluate(() => hearthDiceRoll({ label: 'Longsword damage', groups: [{ sides: 8, values: [6] }, { sides: 6, values: [2, 5] }], total: '16 slashing' }).then(() => 1)).catch(() => 0);
+    await p.waitForFunction(() => document.querySelector('.hd-num.on'), null, { timeout: 15000 }); await p.waitForTimeout(450);
+    await p.screenshot({ path: OUT + 'dice-3-landed-desktop.png' });
+    await p.evaluate(() => HearthDice.skip()); await rp;
+    await ctx.close(); }
+
+  { const { ctx, p } = await page(b, 1366, 900);
     await p.evaluate(() => { setActiveTab('dm'); render(); dmEncounterAddCustomMonster('Ogre', 59, 11, -1, ''); hearthDiceSetPref('diceProjector', 'important'); });
     const [proj] = await Promise.all([ctx.waitForEvent('page'), p.evaluate(() => openProjectorWindow(loadEncounter()))]);
     await proj.setViewportSize({ width: 1280, height: 720 }); await proj.waitForTimeout(700);
