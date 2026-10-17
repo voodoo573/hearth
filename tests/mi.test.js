@@ -50,15 +50,18 @@ async function drag(p, a, b, n, hold) { await p.mouse.move(a.x, a.y); await p.mo
   const z = await p.evaluate(() => state.ui.dmMapZoom);
   await drag(p, hd, { x: hd.x + 34 * z * 2, y: hd.y + 34 * z * 2 }, 8); await p.waitForTimeout(200);
   check('dragging ◆ resizes the cube (and the fan’s value follows)', await p.evaluate(() => { const a = loadEncounter().aoes.slice(-1)[0]; return a.len === 5 && /25 ft/.test(document.querySelector('[data-mi-dial]').textContent); }));
-  await p.click('[data-mi-show]'); await p.waitForTimeout(150);
+  // v1.7.3 (Tom): a dropped template is shown to players straight away; 📍 hides it
   const shown = await p.evaluate(() => { const a = loadEncounter().aoes.slice(-1)[0]; const st = buildMapState(loadEncounter()); return { pinned: a.pinned, inState: st.aoes.some(x => x.id === a.id), lbl: (st.aoes.find(x => x.id === a.id) || {}).lbl }; });
-  check('📍 Show players sends it to the projector with a size-only label', shown.pinned && shown.inState && shown.lbl === '25 ft cube', shown);
+  check('a dropped template is on the projector at once, with a size-only label', shown.pinned && shown.inState && shown.lbl === '25 ft cube', shown);
+  await p.click('[data-mi-show]'); await p.waitForTimeout(150);
+  const hid = await p.evaluate(() => { const a = loadEncounter().aoes.slice(-1)[0]; return { pinned: a.pinned, inState: buildMapState(loadEncounter()).aoes.some(x => x.id === a.id) }; });
+  check('📍 hides it from players', !hid.pinned && !hid.inState, hid);
   const rh = () => p.evaluate(() => [...new DOMParser().parseFromString(HearthMI.historyHTML(loadEncounter()), 'text/html').querySelectorAll('.mi-rh span')].map(s => (s.classList.contains('undone') ? '~' : '') + s.textContent));
   const rh0 = await rh();
   await p.keyboard.press('Control+z'); await p.waitForTimeout(150);
   const rh1 = await rh();
-  check('round history is honest: undoing Show players greys out its "Shown" entry', /^Shown to players: Cube/.test(rh0[0]) && /^~Shown to players: Cube.*undone$/.test(rh1[0]), { rh0: rh0.slice(0, 2), rh1: rh1.slice(0, 2) });
-  check('Ctrl+Z undoes the last template change', await p.evaluate(() => !loadEncounter().aoes.slice(-1)[0].pinned));
+  check('round history is honest: undoing Hide greys out its "Hidden" entry', /^Hidden from players: Cube/.test(rh0[0]) && /^~Hidden from players: Cube.*undone$/.test(rh1[0]), { rh0: rh0.slice(0, 2), rh1: rh1.slice(0, 2) });
+  check('Ctrl+Z undoes the last template change (shown again)', await p.evaluate(() => !!loadEncounter().aoes.slice(-1)[0].pinned));
   await p.keyboard.press('Delete'); await p.waitForTimeout(150);
   check('Delete removes the selected template', await p.evaluate(() => loadEncounter().aoes.length === 1));
   await p.click('[data-mi-done]'); await p.waitForTimeout(300);

@@ -11076,7 +11076,8 @@ html[data-texture]:not([data-palette]):not([data-theme="dark"]):not([data-textur
   .hf142-expanded-note { font-size: 12px; margin-top: 4px; }
   .gear-card:has(.hf142-attune-inline) { flex-wrap: wrap; }
   .hf142-attune-inline { flex: 1 1 100%; width: 100%; margin: 8px 0 0; box-sizing: border-box; }
-  .hearth-roll-toast-card[data-hf-open-rolllog] { pointer-events: auto; cursor: pointer; }
+  /* v1.7.3: the roll toast is display-only; a tappable toast swallowed taps on the buttons under it for ~3 s (QA). Recent rolls: the sheet's dice button. */
+  .hearth-roll-toast, .hearth-roll-toast * { pointer-events: none !important; }
   .hf142-rolllog-body { max-height: min(60vh, 520px); overflow-y: auto; }
   .roll-log-entry { padding: 8px 4px; border-bottom: 1px solid var(--border, rgba(0,0,0,0.12)); }
   .roll-log-entry:last-child { border-bottom: 0; }

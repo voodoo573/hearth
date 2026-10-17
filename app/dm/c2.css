@@ -80,6 +80,12 @@ body:has(.c2) { overflow: hidden; }
 .c2 .c2-ci > * { width: 16px !important; height: 16px !important; }
 .c2 .c2-ci-more { font-size: 10px; color: var(--ink-faded); align-items: center; }
 .c2 .c2-strip-end { margin-left: auto; align-self: center; flex: none; padding-left: 6px; position: sticky; right: 0; }
+/* v1.7.3 — under 1280 (Fold on its side) the turn cards share the width so they fit beside Next; with many
+   combatants they bottom out at 116px and the strip scrolls, Next on a dark fade rather than over a card */
+@media (max-width: 1279px) {
+  .c2 .c2-strip:not(.mini) .c2-pc { flex: 1 1 0; width: auto; min-width: 116px; max-width: 168px; }
+  .c2 .c2-strip-end { align-self: stretch; display: flex; align-items: center; margin-right: -12px; padding: 0 12px 0 20px; background: linear-gradient(90deg, transparent, rgba(12,8,5,.92) 18px); }
+}
 .c2 .c2-next { padding: 10px 16px; border-radius: 9px; border: 1px solid var(--gold-deep); box-shadow: 0 2px 6px rgba(0,0,0,.5); }
 /* body */
 .c2 .c2-body { flex: 1; min-height: 0; display: flex; position: relative; }

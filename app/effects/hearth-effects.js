@@ -175,7 +175,7 @@
       cx.globalCompositeOperation = 'source-over';
       // element accents
       var cxm = shape === 'cube' ? ox + L / 2 : ox, cym = shape === 'cube' ? oy + L / 2 : oy;
-      if (st === 'rings') { for (var r = 0; r < 3; r++) { var ph = ((t * .7 + r / 3) % 1); cx.strokeStyle = rgba(E[0], .45 * (1 - ph)); cx.lineWidth = gp * .12;
+      if (st === 'rings') { for (var r = 0; r < 3; r++) { var ph = (((t * .7 + r / 3) % 1) + 1) % 1; // v1.7.3: JS % keeps the sign; a negative t drew a negative-radius arc (canvas error) cx.strokeStyle = rgba(E[0], .45 * (1 - ph)); cx.lineWidth = gp * .12;
         cx.beginPath(); cx.arc(cxm, cym, ph * L * 1.5, 0, 7); cx.stroke(); } }
       if (st === 'rays') { cx.save(); cx.translate(cxm, cym); cx.rotate(t * .15); for (var q = 0; q < 12; q++) { cx.rotate(Math.PI / 6);
         var g = cx.createLinearGradient(0, 0, L * 1.4, 0); g.addColorStop(0, rgba(E[0], .35)); g.addColorStop(1, rgba(E[0], 0));
@@ -185,7 +185,7 @@
         var x = rnd(a + 10, fr) * bw, y = rnd(a + 20, fr) * bh; cx.moveTo(x, y);
         for (var k2 = 0; k2 < 7; k2++) { x += (rnd(a * 31 + k2, fr) - .5) * gp * 1.4; y += (rnd(a * 17 + k2 + 50, fr) - .5) * gp * 1.4; cx.lineTo(x, y); } cx.stroke(); cx.shadowBlur = 0; } }
       if (st === 'bubble' || st === 'rise') { var n = Math.round(bw * bh / (gp * gp) * 1.2);
-        for (var b = 0; b < n; b++) { var life = (t * (st === 'rise' ? .9 : .4) + hash(b, 3, 5)) % 1, bx = hash(b, 1, 5) * bw, by = hash(b, 2, 5) * bh - (st === 'rise' ? life * gp : 0);
+        for (var b = 0; b < n; b++) { var life = (((t * (st === 'rise' ? .9 : .4) + hash(b, 3, 5)) % 1) + 1) % 1, bx = hash(b, 1, 5) * bw, by = hash(b, 2, 5) * bh - (st === 'rise' ? life * gp : 0);
           cx.fillStyle = rgba(E[0], .5 * Math.sin(life * Math.PI)); cx.beginPath(); cx.arc(bx, by, gp * (st === 'rise' ? .04 : .07) * (0.5 + life), 0, 7); cx.fill(); } }
       if (st === 'runes') { cx.save(); cx.translate(cxm, cym); cx.rotate(t * .25); cx.strokeStyle = rgba(E[0], .4); cx.lineWidth = gp * .04;
         var rr = shape === 'sphere' || shape === 'cylinder' || shape === 'cube' ? (shape === 'cube' ? L * .42 : L * .82) : gp * .8;
