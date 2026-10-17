@@ -56,7 +56,7 @@ async function open(b, w, h, opts) {
     pr.diceProjector = 'off'; pr.diceAnim = 'on'; savePrefs(pr); render();
     return { c2, held, other, crit: !!state.ui.c2Crit };
   });
-  check('a nat 20 from the card never auto-projects, even with "important" on (other screens keep the setting)', proj.c2 === 0 && proj.held === 0 && proj.other === 1, proj);
+  check('a nat 20 from the card never auto-projects, even with an old "important" pref saved (and nothing else auto-projects either)', proj.c2 === 0 && proj.held === 0 && proj.other === 0, proj);
   check('More menu: dice-on-projector toggle, off by default', await p.evaluate(() => { const t = document.querySelector('[data-c2-proj-dice]'); const off = t.getAttribute('aria-checked') === 'false'; t.click(); const on = hearthDicePrefs().projector === 'ask'; document.querySelector('[data-c2-proj-dice]').click(); return off && on && hearthDicePrefs().projector === 'off' && /projector off/.test(document.querySelector('.c2-dicenote').textContent); }));
   // recharge, LR pips, legendary pips
   const rech = await p.evaluate(() => {
