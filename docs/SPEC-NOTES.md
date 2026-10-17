@@ -96,8 +96,8 @@ decided or changed is written down here instead.
   "3 creatures (1 hidden)". The projector label is still size only.
 - Measure counts squares like the move chip (a diagonal square is 5 ft); a drag
   is charged along its cheapest route, as the reach shading assumes.
-- The build still says v1.6.0 (`APP_VERSION`, `CACHE_VERSION`) on purpose: the
-  combined release sets both.
+- The combined release (UI polish + 1.5.1 merge + C2 QA fixes) sets
+  `APP_VERSION`, `HEARTH_VERSION` and both `CACHE_VERSION`s to 1.7.0.
 
 ### Follow-ups from the QA-170 screenshots (`tests/qa170.test.js`, "Follow-up")
 
