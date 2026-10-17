@@ -38100,7 +38100,7 @@ function renderPlay() {
           ${ch.photo
             ? `<img class="play-photo" src="${escape(ch.photo)}" alt="${escape(ch.name)}" />`
             : `<div class="play-photo placeholder">${escape((ch.name || '?').charAt(0).toUpperCase())}</div>`}
-          <span class="play-photo-badge" aria-hidden="true">📷</span>
+          <span class="play-photo-badge" aria-hidden="true"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3.5 8h3.5l2-3h6l2 3h3.5v11.5h-17z"/><circle cx="12" cy="13.5" r="3.5"/></svg></span>
         </button>
         <div class="play-top-left">
           <div class="play-name">${escape(ch.name)}</div>
@@ -51494,23 +51494,46 @@ function wirePlay(ch) {
   // Character photo: tap to change. Uses a hidden file input.
   const photoBtn = document.getElementById('playPhotoBtn');
   const photoInput = document.getElementById('playPhotoInput');
-  if (photoBtn && photoInput) {
-    photoBtn.addEventListener('click', () => photoInput.click());
-    photoInput.addEventListener('change', () => {
-      const file = photoInput.files && photoInput.files[0];
-      if (!file) return;
-      // Cap photos at ~600px max edge to keep localStorage under control.
-      compressImageToDataUrl(file, 600, 0.85).then(dataUrl => {
-        ch.photo = dataUrl;
-        saveCharacter(ch);
-        render();
-      }).catch(err => {
-        console.warn('Photo load failed:', err);
-        showToast('Could not read that image.');
-      });
+  if (photoBtn) {
+    // v1.7.2 — the redesign keeps this sheet markup in a hidden holder that is rebuilt on every render, so the
+    // picker now lives on <body> (hearthPickPhoto) and saves by character id. On the redesign the button opens
+    // Change photo / Take photo / Remove photo.
+    photoBtn.addEventListener('click', () => {
+      if (window.HearthUI && HearthUI.actions && HearthUI.actions['cs-photo']) HearthUI.actions['cs-photo']();
+      else hearthPickPhoto(ch.id, false);
     });
   }
 }
+
+// v1.7.2 — one persistent pair of file inputs on <body> (never inside re-rendered or hidden markup).
+// capture=true asks for the camera: Android Chrome and the Android app (Capacitor's file chooser) open the
+// camera for it, and the gallery / files picker without it.
+function hearthPickPhoto(charId, capture) {
+  const id = capture ? 'hearthPhotoCam' : 'hearthPhotoPick';
+  let inp = document.getElementById(id);
+  if (!inp) {
+    inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.id = id;
+    if (capture) inp.setAttribute('capture', 'user');
+    inp.setAttribute('aria-hidden', 'true'); inp.tabIndex = -1;
+    inp.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;';
+    document.body.appendChild(inp);
+    inp.addEventListener('change', () => {
+      const file = inp.files && inp.files[0], cid = inp._hearthCharId; inp.value = '';
+      if (!file || !cid) return;
+      // Cap photos at ~600px max edge to keep localStorage under control.
+      compressImageToDataUrl(file, 600, 0.85).then(dataUrl => {
+        const c = getCharacter(cid); if (!c) return;
+        c.photo = dataUrl; saveCharacter(c); render(); showToast('Photo updated.');
+      }).catch(err => {
+        console.warn('Photo load failed:', err);
+        showToast('Could not read that image. Try a JPEG or PNG.');
+      });
+    });
+  }
+  inp._hearthCharId = charId;
+  inp.click();
+}
+function hearthRemovePhoto(charId) { const c = getCharacter(charId); if (!c) return; c.photo = null; saveCharacter(c); render(); }
 
 // Compress an image File into a small data URL.
 // Resizes so the longest edge is `maxEdge` px, encodes as JPEG.

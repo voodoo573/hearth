@@ -75,18 +75,34 @@
   U.actions['cs-menu'] = function () {
     var c = ch() || {};
     var items = [['#notesBtn', 'Notes', 'pencil'], ['#hfRollLogBtn', 'Roll log', 'd20'], ['#quickFeaturesBtn', 'Features and proficiencies', 'scroll'],
-      ['#playPhotoBtn', 'Change portrait', 'camera'], ['[data-open-skills-safe]', 'Edit skills', 'list'], ['#inspToggle', c.inspiration ? 'Remove inspiration' : 'Give inspiration', 'sparkle'],
+ ['[data-open-skills-safe]', 'Edit skills', 'list'], ['#inspToggle', c.inspiration ? 'Remove inspiration' : 'Give inspiration', 'sparkle'],
       ['[data-hp-inline="custom"]', 'More HP options', 'heart'], ['#levelModeToggleBtn', 'Levelling: ' + txt(app('#levelModeToggleBtn')), 'levelup'],
       ['[data-rest="short"]', 'Short rest', 'clock'], ['[data-rest="long"]', 'Long rest', 'moon'],
       ['#switchCharacterBtn', 'Switch character', 'swap'], ['#newCharacterMenuBtn', 'New character', 'userplus'], ['#exportCharacterBtn', 'Export this character', 'upload'],
       ['#importCharacterBtn', 'Import a character', 'download'], ['#backupAllBtn', 'Back up everything', 'download'], ['#restoreAllBtn', 'Restore everything', 'refresh'],
       ['#helpMenuBtn', 'How Hearth works', 'help'], ['#deleteCharacterMenuBtn', 'Delete character', 'trash']];
+    items.splice(3, 0, ['@photo', 'Change photo', 'camera']);
     openM = U.modal({ id: 'cs-menu', cls: 'csdlg csmenu', label: 'Sheet menu', width: 420, html: function () {
-      return '<div class="t-label" style="margin:0 0 8px">' + esc(c.name || 'Character') + '</div><div class="list">' + items.filter(function (x) { return app(x[0]); }).map(function (x) {
+      return '<div class="t-label" style="margin:0 0 8px">' + esc(c.name || 'Character') + '</div><div class="list">' + items.filter(function (x) { return x[0] === '@photo' || app(x[0]); }).map(function (x) {
+        if (x[0] === '@photo') return '<button type="button" class="row cs-mrow" data-u-act="cs-photo">' + ic(x[2]) + '<span class="grow">' + esc(x[1]) + '</span></button>';
         return px(x[0], ic(x[2]) + '<span class="grow">' + esc(x[1]) + '</span>', 'row cs-mrow' + (x[0] === '#deleteCharacterMenuBtn' ? ' cs-danger' : ''));
       }).join('') + '</div>';
     } });
   };
+  // v1.7.2 — portrait: tap the avatar (or the menu's Change photo) for Choose photo / Take photo / Remove photo
+  U.actions['cs-photo'] = function () {
+    var c = ch(); if (!c) return; closeM();
+    openM = U.modal({ id: 'cs-photo', cls: 'csdlg csmenu', label: 'Character photo', width: 380, html: function () {
+      var row = function (act, icn, label, cls) { return '<button type="button" class="row cs-mrow ' + (cls || '') + '" data-u-act="' + act + '">' + ic(icn) + '<span class="grow">' + label + '</span></button>'; };
+      return '<div class="t-label" style="margin:0 0 8px">' + esc(c.name || 'Character') + '</div><div class="list">' +
+        row('cs-photo-pick', 'image', 'Choose photo') + row('cs-photo-cam', 'camera', 'Take photo') +
+        (c.photo ? row('cs-photo-rm', 'trash', 'Remove photo', 'cs-danger') : '') + row('cs-photo-switch', 'swap', 'Switch character') + '</div>';
+    } });
+  };
+  U.actions['cs-photo-pick'] = function () { var c = ch(); closeM(); if (c) hearthPickPhoto(c.id, false); };
+  U.actions['cs-photo-cam'] = function () { var c = ch(); closeM(); if (c) hearthPickPhoto(c.id, true); };
+  U.actions['cs-photo-rm'] = function () { var c = ch(); closeM(); if (c) hearthRemovePhoto(c.id); };
+  U.actions['cs-photo-switch'] = function () { closeM(); U.actions['switch'](); };
   U.actions['sheet-rest'] = function (t) { proxy('[data-rest="' + t.dataset.v + '"]'); };
   U.actions['sheet-levelup'] = function () { proxy('#xpLevelUpBtn'); };
 
@@ -273,7 +289,7 @@
       var line = [U.classLine(c), U.subLine(c), U.raceName(c), c.background && typeof BACKGROUNDS !== 'undefined' && BACKGROUNDS[c.background] ? BACKGROUNDS[c.background].name : ''].filter(Boolean).map(esc).join(' \u00b7 ');
       return { title: esc(c.name || 'Unnamed'), meta: line, lead: true,
         actions: btn('Short rest', '', 'clock', 'data-u-act="sheet-rest" data-v="short"') + btn('Long rest', '', 'moon', 'data-u-act="sheet-rest" data-v="long"') + (up ? btn('Level up', 'primary', 'levelup', 'data-u-act="sheet-levelup"') : '') + ibtn('more', 'data-u-act="cs-menu"', false, 'Sheet menu'),
-        pleft: '<button type="button" class="cs-pav" data-u-act="switch" aria-label="Switch character">' + U.avatar(c, 40, 'thin') + '</button>',
+        pleft: '<button type="button" class="cs-pav" data-u-act="cs-photo" aria-label="Change photo">' + U.avatar(c, 40, 'thin') + '<span class="cs-pav-cam" aria-hidden="true">' + ic('camera') + '</span></button>',
         ptitle: esc(c.name || 'Unnamed'), psub: esc([U.classLine(c), U.subLine(c)].filter(Boolean).join(' \u00b7 ')),
         pright: ibtn('d20', 'data-u-act="cs-px" data-v="#hfRollLogBtn"', true, 'Roll log') + ibtn('morev', 'data-u-act="cs-menu"', true, 'Sheet menu') };
     },
@@ -422,6 +438,7 @@
       '.u-phone .cs-feat>.row{min-height:44px}',
       '.cs-boost{height:30px}',
       '.cs-pav{border:0;background:none;padding:2px;margin-right:2px;display:flex;width:44px;height:44px;align-items:center;justify-content:center}',
+      '.cs-pav{position:relative;cursor:pointer}.cs-pav-cam{position:absolute;right:-1px;bottom:-1px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--card-surface);border:1px solid var(--gold-deep);color:var(--gold)}.cs-pav-cam svg{width:11px;height:11px}',
       '.csmenu .cs-mrow{width:100%;border:0;background:none;text-align:left;font:500 15px var(--sans);color:var(--ink);cursor:pointer;min-height:48px}',
       '.csmenu .cs-mrow .i{color:var(--gold)}.csmenu .cs-danger,.csmenu .cs-danger .i{color:var(--crimson-ink)}',
       '.cs-coins{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:14px}',

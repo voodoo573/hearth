@@ -96,7 +96,7 @@ async function open(b, w, h, pal) {
     const menuSel = w > 1000 ? '.u-top [data-u-act="cs-menu"]' : '.u-abar [data-u-act="cs-menu"]';
     await p.click(menuSel); await p.waitForTimeout(200);
     const items = await p.$$eval('[data-u-modal="cs-menu"] .u-cs-mrow', r => r.map(x => x.textContent.trim()));
-    check(tag + ' sheet menu keeps every old header/menu action reachable', ['Notes', 'Roll log', 'Switch character', 'New character', 'Export this character', 'Import a character', 'Back up everything', 'Restore everything', 'How Hearth works', 'Delete character', 'Change portrait'].every(n => items.includes(n)), items);
+    check(tag + ' sheet menu keeps every old header/menu action reachable', ['Notes', 'Roll log', 'Switch character', 'New character', 'Export this character', 'Import a character', 'Back up everything', 'Restore everything', 'How Hearth works', 'Delete character', 'Change photo'].every(n => items.includes(n)), items);
     await p.keyboard.press('Escape'); await p.waitForTimeout(150);
     if (w < 1000) {
       check(tag + ' Stats tab: abilities, skills, conditions, rests', await p.evaluate(() => document.querySelectorAll('.u-cs-abx').length === 6 && !!document.querySelector('.u-cs-skl') && !!document.querySelector('.u-cs-cond') && !!document.querySelector('[data-u-act="sheet-rest"]')));
