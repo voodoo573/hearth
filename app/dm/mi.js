@@ -200,7 +200,7 @@
   // ----- label placement: just outside the shape, clear of tokens, handles and other labels
   function tokenBoxes(enc, cell) {
     var out = [];
-    (enc.combatants || []).forEach(function (c) { if (c.mapX == null) return; var s = spanOf(c); out.push([c.mapX * cell - 2, c.mapY * cell - 2, s * cell + 4, s * cell + 14]); });
+    (enc.combatants || []).forEach(function (c) { if (c.mapX == null) return; var s = spanOf(c); var bd = (c.statuses && c.statuses.length) || c.concentrating ? 9 : 0; out.push([c.mapX * cell - 2, c.mapY * cell - 2 - bd, s * cell + 4 + bd, s * cell + 14 + bd]); }); // status badges sit on the top-right rim
     return out;
   }
   function overlapScore(b, boxes) { var s = 0; boxes.forEach(function (q) { var ix = Math.min(b[0] + b[2], q[0] + q[2]) - Math.max(b[0], q[0]), iy = Math.min(b[1] + b[3], q[1] + q[3]) - Math.max(b[1], q[1]); if (ix > 0 && iy > 0) s += ix * iy * (q[4] || 1); }); return s; }

@@ -120,12 +120,28 @@
     var enc = D.enc, cols = (enc && enc.mapCols) || 20, cell = (parseFloat(g.style.width) || g.clientWidth) / cols || 1;
     return { x: (el.offsetLeft + el.offsetWidth / 2) / cell, y: (el.offsetTop + el.offsetHeight / 2) / cell };
   }
-  function teardownDM() {
+  // Sound never outlives the board: Jenny's controller cuts dead on destroy(), so we turn it off first
+  // (a ~0.15 s fade on whichever screen is playing, shared to the other), then destroy once it is quiet.
+  var FADE_MS = 700;
+  function retire(snd) { if (!snd) return; try { snd.enable(false); } catch (e) { } setTimeout(function () { try { snd.destroy(); } catch (e) { } }, FADE_MS); }
+  // keepOn: a rebuild or "Clear" (the DM's sound choice is kept for the next scene); otherwise the sound is switched off
+  function teardownDM(keepOn) {
     var r = D.R; D.R = null; D.key = null;
+    if (D.watch) { clearInterval(D.watch); D.watch = null; }
     if (D.sync) { try { D.sync.stop(); } catch (e) { } D.sync = null; }
     if (D.hello) { try { D.hello(); } catch (e) { } D.hello = null; }
-    if (D.snd) { try { D.snd.destroy(); } catch (e) { } D.snd = null; }
+    if (D.snd) { var was = U().atmoSnd ? Object.assign({}, U().atmoSnd) : null, snd = D.snd; D.snd = null; retire(snd);
+      if (was) { U().atmoSnd = was; if (!keepOn) U().atmoSnd.enabled = false; } paintSound(); }
     if (r) { try { r.atm.stop(); } catch (e) { } r.atm.weatherEl.remove(); r.atm.lightEl.remove(); }
+  }
+  // leaving the board (another tab, closing the encounter) doesn't call us, so watch for the layers falling out of the page
+  function watchBoard() {
+    if (D.watch) return; var misses = 0;
+    D.watch = setInterval(function () {
+      if (!D.R) { clearInterval(D.watch); D.watch = null; return; }
+      if (D.R.atm.lightEl.isConnected && grid()) { misses = 0; return; }
+      if (++misses >= 2) teardownDM(false);
+    }, 150);
   }
   function channel() { return typeof getMapChannel === 'function' ? getMapChannel() : null; }
   function reduced() { try { return !!(W.hearthReducedMotion && W.hearthReducedMotion()); } catch (e) { return false; } }
@@ -139,29 +155,33 @@
   function wire(enc) {
     D.enc = enc;
     var s = mapState(enc, false), g = grid();
-    if (!s || !g || !(typeof dmLayoutIsC2 === 'function' && dmLayoutIsC2())) { if (D.R) teardownDM(); bindPanel(); return; }
+    var lay = typeof dmLayoutIsC2 === 'function' && dmLayoutIsC2() ? 'c2' : 'classic';
+    // switching layout silences the sound (classic has no sound controls); the weather and light carry on
+    if (D.layout && D.layout !== lay && D.snd && D.snd.state().enabled) { var sw = D.snd; U().atmoSnd = Object.assign({}, sw.state(), { enabled: false }); try { sw.enable(false); } catch (e) { } }
+    D.layout = lay;
+    if (!s || !g) { if (D.R) teardownDM(!!g); bindPanel(); return; }
     if (!libReady()) {
       if (!D.loading) { D.loading = true; ensureLib('dm/').then(function () { D.loading = false; if (grid()) wire(encNow()); }, function () { D.loading = false; if (typeof showToast === 'function') showToast('Weather couldn\u2019t load \u2014 check the connection', 3000); }); }
       bindPanel(); return;
     }
     var key = s.cols + 'x' + s.rows + ':' + s.seed;
     if (D.key !== key) {
-      teardownDM();
+      teardownDM(true);
       var H = W.HearthAtmosphere;
       D.R = { atm: H.create({ cols: s.cols, rows: s.rows, quality: 'auto', animate: !reduced(), dmView: true, seed: s.seed }), k: {} };
       D.key = key;
-      var mine = D.R.atm; mine.on('stop', function () { if (D.R && D.R.atm === mine) teardownDM(); }); // it stops itself after 60 s off screen
+      var mine = D.R.atm; mine.on('stop', function () { if (D.R && D.R.atm === mine) teardownDM(false); }); // it stops itself after 60 s off screen
       var ch = channel();
       D.sync = H.sync(D.R.atm, { role: 'dm', channel: ch || undefined });
       if (H.createAudio) {
         D.snd = H.createAudio(D.R.atm, { role: 'dm', channel: ch || undefined, volume: (U().atmoSnd && U().atmoSnd.volume) || 0.6, output: (U().atmoSnd && U().atmoSnd.output) || 'dm' });
-        D.snd.on('change', function (st) { U().atmoSnd = { enabled: st.enabled, output: st.output, volume: st.volume }; paintSound(); });
+        var snd0 = D.snd; D.snd.on('change', function (st) { if (D.snd !== snd0) return; U().atmoSnd = { enabled: st.enabled, output: st.output, volume: st.volume }; paintSound(); });
         if (U().atmoSnd && U().atmoSnd.enabled) D.snd.enable(true);
         // a projector that opens later learns the sound settings when it says hello
         if (ch) { var onHello = function (ev) { var d = ev.data; if (d && d.type === 'hearth-atmos-hello' && d.from === 'projector' && D.snd) D.snd.setVolume(D.snd.state().volume); }; ch.addEventListener('message', onHello); D.hello = function () { ch.removeEventListener('message', onHello); }; }
       }
     }
-    mount(g);
+    mount(g); watchBoard();
     applyScene(D.R, s, { role: 'dm', meta: metaFor(enc), tokenPos: tokenPosDM, reduced: reduced() });
     bindPanel();
   }
@@ -258,7 +278,8 @@
   function projTeardown() {
     var r = P.R; P.R = null;
     if (P.sync) { try { P.sync.stop(); } catch (e) { } P.sync = null; }
-    if (P.snd) { try { P.snd.destroy(); } catch (e) { } P.snd = null; }
+    // keep the old controller listening a moment: the DM's 'sound off' follows the new map state and fades it out
+    if (P.snd) { var ps = P.snd; P.snd = null; setTimeout(function () { try { ps.destroy(); } catch (e) { } }, FADE_MS + 300); }
     if (r) { try { r.atm.stop(); } catch (e) { } r.atm.weatherEl.remove(); r.atm.lightEl.remove(); }
     if (P.btn) { P.btn.remove(); P.btn = null; }
     clearInterval(P.timer); P.timer = 0; P.key = null;

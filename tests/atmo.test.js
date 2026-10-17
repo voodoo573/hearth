@@ -133,8 +133,8 @@ const waitPainted = (p, id) => p.waitForFunction((id) => { const b = document.ge
 
   // ---- 7. classic layout keeps working; clearing tears everything down
   await p.evaluate(() => { dmSetLayout('classic'); render(); }); await p.waitForTimeout(800);
-  const cl = await p.evaluate(() => ({ c2: !!document.querySelector('.c2'), layers: document.querySelectorAll('.hatm').length, saved: loadEncounter().atmo.w, grid: !!document.getElementById('dmMapGrid') }));
-  check('classic layout: no atmosphere layers on the DM board (settings kept for the projector)', !cl.c2 && cl.grid && cl.layers === 0 && cl.saved === 'rain', cl);
+  const cl = await p.evaluate(() => ({ c2: !!document.querySelector('.c2'), layers: document.querySelectorAll('#dmMapGrid .hatm').length, saved: loadEncounter().atmo.w, w: HearthAtmo.atm && HearthAtmo.atm.state().weather, grid: !!document.getElementById('dmMapGrid') }));
+  check('classic layout: the DM board shows the same rain and light as the projector', !cl.c2 && cl.grid && cl.layers === 2 && cl.saved === 'rain' && cl.w === 'rain', cl);
   await p.evaluate(() => { dmSetLayout('c2'); render(); }); await p.waitForTimeout(800);
   check('back to C2: the scene comes straight back', await p.evaluate(() => document.querySelectorAll('#dmMapGrid .hatm').length === 2 && HearthAtmo.atm.state().weather === 'rain'));
   await p.evaluate(() => { state.ui.c2Fly = 'weather'; render(); }); await p.waitForTimeout(400);

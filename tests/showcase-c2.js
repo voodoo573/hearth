@@ -57,7 +57,7 @@ const scrollCard = (p, re) => p.evaluate((src) => { const re = new RegExp(src); 
   for (const pal of ['hearth', 'arcane', 'scott-ultramarine']) {
     const { ctx, p } = await page(b, 1440, 900);
     if (pal !== 'hearth') await p.evaluate((pal) => { document.documentElement.setAttribute('data-palette', pal); render(); }, pal);
-    await p.evaluate(() => { const e = loadEncounter(); e.aoes.push({ id: 'aoe_cube', kind: 'square', x: 1, y: 11, len: 3, angle: 0, color: '#c0392b', pinned: false }); saveEncounter(e); render(); });
+    await p.evaluate(() => { const e = loadEncounter(); e.aoes.push({ id: 'aoe_cube', kind: 'square', x: 16, y: 2, len: 3, angle: 0, color: '#c0392b', pinned: false }); saveEncounter(e); render(); });
     await placeCone(p); await p.waitForTimeout(300);
     await p.evaluate(() => { state.ui.c2Card = null; render(); }); await p.waitForTimeout(1100);
     await shot(p, `tmpl-desk${pal === 'hearth' ? '' : '-' + pal}.png`);

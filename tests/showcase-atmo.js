@@ -96,18 +96,34 @@ const DUNGEON = { map: 'dungeon', atmo: { t: 'night', d: 0.75 }, lights: { Range
     await shot(p, 'atmo-phone-panel.png');
     await ctx.close();
   }
-  // 6. projector: foggy night at the camp, sound sent to the projector, which asks for its one tap
+  // 6. projector: foggy night at the camp. The main shot is sound in its normal state (off, so no button);
+  //    the -tap shot sends sound to a projector browser that keeps audio suspended until it is tapped.
   if (want('atmo-projector-camp')) {
+    const CAMP = { map: 'camp', atmo: { w: 'fog', i: 0.7, t: 'night', d: 0.25, wind: 0.2 }, lights: { Ranger: 'torch' } };
+    for (const tap of [false, true]) {
+      const name = tap ? 'atmo-projector-camp-tap.png' : 'atmo-projector-camp.png'; if (!want(name)) continue;
+      const { ctx, p } = await page(b, 1440, 900);
+      await scene(p, CAMP);
+      const pop = await projector(p, 1920, 1080, tap ? () => {
+        let tapped = false; document.addEventListener('pointerdown', () => { tapped = true; }, true);
+        const AC = window.AudioContext; window.AudioContext = function (o) { const c = new AC(o); c.suspend(); const r = c.resume.bind(c); c.resume = () => tapped ? r() : new Promise(() => {}); return c; };
+      } : null);
+      if (tap) { await p.bringToFront(); await p.evaluate(() => { state.ui.c2Fly = 'weather'; render(); }); await p.waitForTimeout(500);
+        await p.click('[data-atmo-snd="projector"]'); await p.waitForTimeout(1500); await pop.bringToFront(); await pop.waitForTimeout(1500); }
+      const btn = await pop.evaluate(() => { const b = document.getElementById('pjSnd'); return !!b && !b.hidden; });
+      if (btn !== tap) errs.push(name + ': tap button ' + (btn ? 'showing' : 'missing'));
+      await pop.screenshot({ path: OUT + name }); console.log('shot', name, btn ? '(tap button showing)' : '(no sound button)');
+      await ctx.close();
+    }
+  }
+  // 7. classic layout: the DM board shows the same weather and light the projector gets
+  if (want('atmo-desk-classic')) {
     const { ctx, p } = await page(b, 1440, 900);
-    await scene(p, { map: 'camp', atmo: { w: 'fog', i: 0.7, t: 'night', d: 0.25, wind: 0.2 }, lights: { Ranger: 'torch' } });
-    const pop = await projector(p, 1920, 1080, () => { // a real projector browser keeps audio suspended until it is tapped
-      let tapped = false; document.addEventListener('pointerdown', () => { tapped = true; }, true);
-      const AC = window.AudioContext; window.AudioContext = function (o) { const c = new AC(o); c.suspend(); const r = c.resume.bind(c); c.resume = () => tapped ? r() : new Promise(() => {}); return c; };
-    });
-    await p.bringToFront(); await p.evaluate(() => { state.ui.c2Fly = 'weather'; render(); }); await p.waitForTimeout(500);
-    await p.click('[data-atmo-snd="projector"]'); await p.waitForTimeout(1500);
-    await pop.bringToFront(); await pop.waitForTimeout(1500);
-    await pop.screenshot({ path: OUT + 'atmo-projector-camp.png' }); console.log('shot', 'atmo-projector-camp.png');
+    await scene(p, Object.assign({}, DUNGEON, { atmo: { w: 'rain', i: 0.6, t: 'night', d: 0.75 } }));
+    await p.evaluate(() => { dmSetLayout('classic'); render(); });
+    await p.waitForFunction(() => !document.querySelector('.c2') && document.querySelectorAll('#dmMapGrid .hatm').length === 2, null, { timeout: 10000 });
+    await p.evaluate(() => document.getElementById('dmMapGrid').scrollIntoView({ block: 'center' })); await p.waitForTimeout(2000);
+    await shot(p, 'atmo-desk-classic.png');
     await ctx.close();
   }
   console.log(errs.length ? 'ERRORS ' + errs.join(' | ') : 'no page errors');
