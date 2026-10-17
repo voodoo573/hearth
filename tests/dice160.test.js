@@ -30,7 +30,7 @@ const flat = (landed) => [].concat(...(landed || []).map(x => Array.isArray(x) ?
 
   // ---- versions + offline cache list ----
   const v = await p.evaluate(async () => ({ app: HEARTH_VERSION, sw: await (await fetch('/app/sw.js')).text(), root: await (await fetch('/sw.js')).text(), landing: await (await fetch('/')).text() }));
-  check('version 1.7.1 (app, sw cache tags, landing labels)', v.app === '1.7.1' && v.sw.includes("'hearth-v1.7.1'") && v.root.includes("'hearth-site-v1.7.1'") && (v.landing.match(/v1\.7\.1/g) || []).length >= 2 && !/v1\.7\.0</.test(v.landing));
+  check('version 1.7.2 (app, sw cache tags, landing labels)', v.app === '1.7.2' && v.sw.includes("'hearth-v1.7.2'") && v.root.includes("'hearth-site-v1.7.2'") && (v.landing.match(/v1\.7\.2/g) || []).length >= 2 && !/v1\.7\.1</.test(v.landing));
   check('app sw precaches dice files', ['three.min.js', 'cannon-es.js', 'hearth-dice.js', 'dice-worker.js'].every(f => v.sw.includes(`'./dice/${f}'`)));
   check('dice scripts not loaded at start (lazy)', await p.evaluate(() => !window.HearthDice && !window.THREE));
 
@@ -255,7 +255,7 @@ const flat = (landed) => [].concat(...(landed || []).map(x => Array.isArray(x) ?
   const ctx2 = await b.newContext({ viewport: { width: 412, height: 860 } });
   const o = await ctx2.newPage();
   await o.goto(URL); await o.evaluate(() => { localStorage.setItem('hearth.welcomeSeen', '1'); });
-  const cached = await o.waitForFunction(async () => { const n = await caches.keys(); if (!n.includes('hearth-v1.7.1')) return false; const c = await caches.open('hearth-v1.7.1'); return !!(await c.match(new URL('dice/three.min.js', location.href).href)) && !!(await c.match(new URL('dice/dice-worker.js', location.href).href)); }, null, { timeout: 30000, polling: 500 }).then(() => true).catch(() => false);
+  const cached = await o.waitForFunction(async () => { const n = await caches.keys(); if (!n.includes('hearth-v1.7.2')) return false; const c = await caches.open('hearth-v1.7.2'); return !!(await c.match(new URL('dice/three.min.js', location.href).href)) && !!(await c.match(new URL('dice/dice-worker.js', location.href).href)); }, null, { timeout: 30000, polling: 500 }).then(() => true).catch(() => false);
   check('dice files precached by /app/sw.js', cached);
   const controlled = await o.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 15000 }).then(() => true).catch(() => false);
   check('app page controlled by /app/sw.js', controlled);
