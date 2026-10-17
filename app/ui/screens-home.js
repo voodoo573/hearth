@@ -22,11 +22,12 @@
     return { players: (g.players || []).length, encs: encs.length, enc: enc, foes: foes };
   }
   function liveInfo(g) {
-    var h = (typeof HearthLink !== 'undefined' && HearthLink.host) || null;
-    var live = !!(h && (h.gameId ? h.gameId === g.id : true) && (h.status === 'open' || h.status === 'live' || h.open || (h.peers && Object.keys(h.peers).length)));
-    var conn = h && h.peers ? Object.keys(h.peers).length : 0;
-    return { live: live, connected: conn };
+    var h = (typeof HearthLink !== 'undefined' && HearthLink.host) || null, gc = games();
+    var live = !!(h && h.status === 'live' && g && g.id === gc.activeGameId);
+    var devs = h && h.devices ? Object.keys(h.devices).map(function (k) { return h.devices[k]; }).filter(function (d) { return !d.kicked; }) : [];
+    return { live: live, connected: devs.filter(function (d) { return d.online; }).length, known: devs.length, code: h && h.code };
   }
+  U.liveInfo = liveInfo; U.rel = rel; U.games = games; U.gameStats = gameStats;
   function vt(l, v, s) { return '<div class="vt"><div class="t-label">' + l + '</div><div class="t-num">' + v + (s ? '<small>' + s + '</small>' : '') + '</div></div>'; }
   function vtSlots(ch, label) {
     var s = U.slotInfo(ch);
@@ -96,7 +97,7 @@
     return '<div class="wrap g home-g">' + draftCard() + nudge() + heroDesk(ch) + gameDesk() + q +
       '<div class="card listcard" style="grid-column:span 6"><div class="lc-h">' + sec('Your characters', all ? 'See all ' + all : '', 'data-home-menu="player"') + '</div><div class="list">' + rows + '</div></div>' +
       '<div class="card listcard" style="grid-column:span 6"><div class="lc-h">' + sec('Hearth maps', 'Open library', 'data-home-panel="library"') + '</div><div class="list">' + mapsList(4) + '</div></div>' +
-      '<div class="ded" style="grid-column:span 12">' + DED + '</div></div>';
+      '<div class="ded" style="grid-column:span 12">' + DED + '</div></div>' + U.homeModals();
   }
   function homePhone() {
     var ch = U.current(), gc = games(), g = gc.games.find(function (x) { return x.id === gc.activeGameId; }) || gc.games[0];
@@ -110,7 +111,7 @@
     var live = '';
     if (g) { var s = gameStats(g), L = liveInfo(g); live = '<div class="card pad hstack gap3"><span class="lead round" style="color:var(--moss)">' + ic('crown') + '</span><div class="f1"><div class="hstack gap2">' + (L.live ? '<span class="dot"></span><span class="t-label" style="color:var(--moss)">Live now</span>' : '<span class="t-label">Your game</span>') + '</div><div class="t-h3" style="margin-top:4px">' + esc(g.name) + '</div><div class="t-meta">' + s.players + (s.players === 1 ? ' player' : ' players') + ' · ' + s.encs + (s.encs === 1 ? ' encounter' : ' encounters') + '</div></div>' + btn('Run', 'primary', null, 'data-home-opengame="' + esc(g.id) + '"') + '</div>'; }
     var q = '<div class="pq">' + quick().map(function (t) { return '<button type="button" class="card" ' + t[3] + '><span class="emblem">' + ic(t[0]) + '</span><div><div class="t-h3">' + t[1] + '</div><div class="t-meta">' + t[2] + '</div></div></button>'; }).join('') + '</div>';
-    return '<div class="stack gap4">' + draftCard() + nudge() + hero + live + q + '<div class="ded" style="font-size:12.5px">' + DED + '</div></div>';
+    return '<div class="stack gap4">' + draftCard() + nudge() + hero + live + q + '<div class="ded" style="font-size:12.5px">' + DED + '</div></div>' + U.homeModals();
   }
   function greet() { var h = 12; try { h = Number(new Date().toLocaleString('en-GB', { hour: 'numeric', hour12: false, timeZone: 'Europe/London' })); } catch (e) {} return h < 5 ? 'Good evening' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; }
   U.screens.home = {
@@ -143,7 +144,7 @@
       '.phero{padding:16px;display:grid;grid-template-columns:76px 1fr;gap:14px;align-items:center}',
       '.phero .por-ph{width:76px;height:76px;border-radius:16px;object-fit:cover;border:2px solid var(--gold-deep);background:var(--page-deep)}',
       '.pvit{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;grid-column:1/3}.pvit .vt{padding:9px 10px}.pvit .vt .t-num{font-size:20px;margin-top:6px}.pvit .pips-wrap{margin-top:10px}',
-      '.btn.sq{width:52px;padding:0}',
+      '.btn.sq{width:52px;padding:0;flex:none}',
       '.pq{display:grid;grid-template-columns:1fr 1fr;gap:12px}',
       '.pq .card{padding:14px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-height:118px;text-align:left;color:var(--ink);font:inherit;cursor:pointer}.pq .emblem{width:44px;height:44px}.pq .emblem svg{width:22px;height:22px}',
       '.av.thin{border-width:1px}',
@@ -217,7 +218,7 @@
   }
   U.screens.characters = {
     owns: true, nav: 'play',
-    html: function () { var n = U.chars().length; return n ? (U.isDesk() ? charsDesk() : charsPhone()) : (U.isDesk() ? emptyDesk() : emptyPhone()); },
+    html: function () { var n = U.chars().length; return (n ? (U.isDesk() ? charsDesk() : charsPhone()) : (U.isDesk() ? emptyDesk() : emptyPhone())) + U.homeModals(); },
     meta: function () {
       var n = U.chars().length, g = (typeof HearthGoogle !== 'undefined' && HearthGoogle.user);
       return n ? { title: 'Characters', meta: n + (n === 1 ? ' hero' : ' heroes') + ' on this device' + (g ? ' · synced' : ''), search: 'Search characters…', extra: seg(),

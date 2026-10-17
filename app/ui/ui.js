@@ -10,7 +10,12 @@
   function isDesk() { return (W.innerWidth || D.documentElement.clientWidth) >= DESK; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   // class prefixer: class="btn primary !tab" -> class="u-btn u-primary tab"
+  // \u0001...\u0002 marks raw app markup that must keep its own class names (see raw())
+  function raw(html) { return '\u0001' + html + '\u0002'; }
   function px(html) {
+    return String(html).split(/(\u0001[\s\S]*?\u0002)/).map(function (part) { return part.charAt(0) === '\u0001' ? part.slice(1, -1) : pxPart(part); }).join('');
+  }
+  function pxPart(html) {
     return String(html).replace(/class="([^"]*)"/g, function (m, c) {
       return 'class="' + c.split(/\s+/).filter(Boolean).map(function (k) { return k.charAt(0) === '!' ? k.slice(1) : 'u-' + k; }).join(' ') + '"';
     });
@@ -111,7 +116,7 @@
   // ---------- shell ----------
   var shell, sideEl, topEl, abarEl, tabbarEl, lastMode = null;
   function sideHTML(r) {
-    var nk = navKey(r);
+    var nk = /^(dm|encounter|library|store|settings)$/.test(r) ? null : navKey(r);
     var nav = NAV.map(function (n) { return '<button type="button" class="nav-a' + (n[0] === nk ? ' on' : '') + '" data-tab="' + n[0] + '">' + ic(n[2]) + '<span>' + n[1] + '</span></button>'; }).join('');
     var tbl = [['dm', 'Dungeon Master', 'crown', r === 'dm' || r === 'encounter'], ['library', 'Library', 'map', r === 'library']];
     if (storeOn()) tbl.push(['store', 'Hearth Maps', 'bag', r === 'store', true]);
@@ -258,7 +263,14 @@
     Object.keys(screens).forEach(function (k) { if (screens[k].css) addCss('u2-css-' + k, screens[k].css); });
     render();
   }
-  W.HearthUI = { screens: screens, px: px, pxCss: pxCss, addCss: addCss, ic: ic, btn: btn, ibtn: ibtn, tag: tag, sec: sec, hpbar: hpbar, pips: pips, esc: esc,
+  // the Home overlays the app draws inside its Home markup (One-shot, Export/Import, Ruleset, AI Core).
+  // Owned Home-family screens include them so those panels keep working.
+  function homeModals() {
+    var p = (state.ui || {}).homePanel, f = { ruleset: 'homePanelRuleset', aicore: 'homePanelAiCore', transfer: 'homePanelTransfer', oneshot: 'homePanelOneShot' }[p];
+    if (!f || typeof W[f] !== 'function' || typeof W.homeModalWrap !== 'function') return '';
+    try { return raw(W.homeModalWrap(p === 'aicore' ? W[f](current()) : W[f]())); } catch (e) { return ''; }
+  }
+  W.HearthUI = { homeModals: homeModals, raw: raw, screens: screens, px: px, pxCss: pxCss, addCss: addCss, ic: ic, btn: btn, ibtn: ibtn, tag: tag, sec: sec, hpbar: hpbar, pips: pips, esc: esc,
     chars: chars, current: current, hpOf: hpOf, acOf: acOf, classLine: classLine, subLine: subLine, raceName: raceName, avatar: avatar, slotInfo: slotInfo,
     route: route, go: go, isDesk: isDesk, actions: actions, withMarkup: withMarkup, storeOn: storeOn, boot: boot };
 })();
