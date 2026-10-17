@@ -11026,6 +11026,87 @@ html[data-palette="scott-ultramarine"][data-texture]:not([data-texture="brushed"
 html[data-palette="scott-marine"][data-texture]:not([data-texture="none"]) { --tex-grain: rgba(255, 235, 210, .04); --tex-shade: rgba(0, 0, 0, .2); }
 html[data-texture]:not([data-palette]):not([data-theme="dark"]):not([data-texture="parchment"]) { --tex-wash: rgba(227, 207, 159, .78); }
 </style>
+<style id="hearthFix142-builder">
+  /* v1.4.2 fix1 - builder & levelling */
+  /* 15: review stat tiles */
+  .quick-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+  .quick-stat { background: var(--parchment-dark); border: 1px solid var(--parchment-darker); border-radius: 4px; padding: 9px 4px 8px; text-align: center; min-width: 0; }
+  .quick-stat-label { font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink-faded); margin-bottom: 4px; }
+  .quick-stat-value { font-family: Georgia, 'Times New Roman', serif; font-size: 22px; font-weight: 600; line-height: 1.1; color: var(--ink); overflow-wrap: anywhere; }
+  /* 14: level-up header buttons */
+  .btn.small.hf142-lvl-btn { white-space: nowrap; min-height: 36px; flex: 0 0 auto; width: auto; padding: 6px 12px; }
+  /* 18: touch targets (point buy +/-, starting level +/-, builder hint close) */
+  .ability-btn { width: 36px; height: 36px; font-size: 18px; flex: 0 0 36px; }
+  .ability-controls { gap: 4px; }
+  .ability { padding-left: 4px; padding-right: 4px; min-width: 0; }
+  .builder-hint { padding-right: 46px; }
+  .builder-hint-close { width: 36px; height: 36px; top: 4px; right: 4px; font-size: 15px; }
+  /* 17: three score modes + standard array selects */
+  .stat-mode-toggle.hf142-mode3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .stat-mode-toggle.hf142-mode3 .stat-mode-btn { padding: 10px 4px; min-height: 40px; letter-spacing: 0.8px; }
+  .hf142-std-select { min-height: 36px; max-width: 100%; padding: 2px 4px; font-family: Georgia, 'Times New Roman', serif; font-size: 18px; font-weight: 600; background: var(--parchment); color: var(--ink); border: 1px solid var(--ink-faded); border-radius: 0; }
+  .hf142-std-select:focus { outline: none; border-color: var(--crimson); }
+  /* 7: manual score validation */
+  .manual-score-input.hf142-invalid { border-color: var(--crimson); box-shadow: 0 0 0 1px var(--crimson); }
+  .hf142-score-hint { margin-top: 8px; text-align: center; font-size: 12.5px; line-height: 1.45; color: var(--crimson); }
+  .hf142-score-hint:empty { display: none; }
+  /* 9: racial cantrip tag */
+  .spell-source-tag.racial { background: rgba(123, 138, 90, .18); color: var(--ink-soft); border-color: rgba(123, 138, 90, .4); }
+</style>
+<style id="hearthFix142-sheet">
+  .hf142-lock-hp { display: flex; gap: 6px; align-items: stretch; margin: 6px 0 6px; }
+  .hf142-lock-hp .hp-input { flex: 1 1 auto; min-width: 0; width: auto; text-align: center; font-size: 16px; min-height: 40px; }
+  .hf142-lock-hp .hp-btn { flex: 0 0 auto; min-height: 40px; padding: 0 12px; }
+  .hf142-dead-note { font-size: 13px; margin: 8px 0; opacity: 0.85; text-align: center; }
+  #hearthReviveBtn { margin-top: 4px; }
+  .hf142-shape-banner { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; margin: 8px 0 4px; padding: 10px 12px; border: 1px solid var(--moss, #4a5d2a); border-left: 4px solid var(--moss, #4a5d2a); border-radius: 10px; background: rgba(74, 93, 42, 0.12); color: var(--ink, inherit); font: inherit; cursor: pointer; }
+  .hf142-shape-title { font-size: 15px; }
+  .hf142-shape-meta { font-size: 12px; opacity: 0.85; }
+  .hf142-shape-cta { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; }
+  .hf142-shape-note { margin: 0 0 10px; padding: 8px 10px; border-radius: 8px; border: 1px dashed var(--moss, #4a5d2a); font-size: 13px; }
+  .hf142-nocast [data-cast], .hf142-nocast [data-ritual-cast], .hf142-nocast [data-free-cast] { opacity: 0.45; }
+  .hf142-beast-btns { display: flex; flex-direction: column; gap: 6px; }
+  [data-hf-open-shape].resource-name { cursor: pointer; text-decoration: underline dotted; }
+  .hf142-sacred { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .hf142-end-chip { font: inherit; font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 2px 10px; min-height: 28px; border-radius: 999px; border: 1px solid var(--crimson, #7a1e1a); background: transparent; color: var(--crimson, #7a1e1a); cursor: pointer; }
+  .hf142-expanded-note { font-size: 12px; margin-top: 4px; }
+  .gear-card:has(.hf142-attune-inline) { flex-wrap: wrap; }
+  .hf142-attune-inline { flex: 1 1 100%; width: 100%; margin: 8px 0 0; box-sizing: border-box; }
+  .hearth-roll-toast-card[data-hf-open-rolllog] { pointer-events: auto; cursor: pointer; }
+  .hf142-rolllog-body { max-height: min(60vh, 520px); overflow-y: auto; }
+  .roll-log-entry { padding: 8px 4px; border-bottom: 1px solid var(--border, rgba(0,0,0,0.12)); }
+  .roll-log-entry:last-child { border-bottom: 0; }
+  .hf142-rl-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+  .hf142-rl-label { font-weight: 700; overflow-wrap: anywhere; }
+  .hf142-rl-total { font-weight: 800; font-size: 18px; white-space: nowrap; }
+  .hf142-rl-detail { font-size: 12px; opacity: 0.85; overflow-wrap: anywhere; }
+  .hf142-rl-time { font-size: 11px; opacity: 0.6; }
+  .hf142-flex-note { flex-basis: 100%; font-size: 11px; opacity: 0.8; margin-top: 2px; }
+</style>
+<style id="hearthFix142-forge">
+@media (pointer: coarse) {
+  .enemy-cr-filters .enemy-cr-chip { min-height: 36px; min-width: 44px; padding-top: 0; padding-bottom: 0; display: inline-flex; align-items: center; justify-content: center; }
+  .os-chips .os-chip { min-height: 36px; display: inline-flex; align-items: center; }
+  .os-step .os-stepbtn { width: 38px; height: 38px; }
+}
+</style>
+<style id="hearthFix142-map">
+  /* v1.4.2 — Point and Group own touch drags on the map (like Measure/Fog), so the page doesn't scroll instead. */
+  .dm-map-grid.point-active, .dm-map-grid.group-active { touch-action: none; }
+  /* v1.4.2 — captions never wider than their token, so neighbours don't overprint; full name on hover/selection/drag. */
+  .dm-map-grid .map-token-caption { max-width: calc(100% + 4px); padding: 1px 2px; letter-spacing: 0; box-sizing: border-box; }
+  .dm-map-grid .map-token:hover, .dm-map-grid .map-token.token-highlight { z-index: 8; }
+  .dm-map-grid .map-token:hover .map-token-caption, .dm-map-grid .map-token.token-highlight .map-token-caption,
+  .dm-map-grid .map-token.dragging .map-token-caption { max-width: 160px; padding: 1px 4px; z-index: 2; }
+  /* v1.4.2 — Battle Map header on narrow (folded) screens: back + title on one row, tools on the next. */
+  @media (max-width: 560px) {
+    .dm-map-top { flex-wrap: wrap; row-gap: 8px; column-gap: 10px; padding: 10px 12px; }
+    .dm-map-top > .dm-map-exit { white-space: nowrap; flex: none; padding: 0; }
+    .dm-map-top > .dm-map-title { white-space: nowrap; flex: 1 1 auto; text-align: right; }
+    .dm-map-top > div:last-child { flex: 1 1 100%; flex-wrap: wrap; justify-content: flex-end; row-gap: 6px; }
+    .dm-map-top > div:last-child > * { white-space: nowrap; }
+  }
+</style>
 <script src="effects/hearth-effects.js"></script>
 <script src="tokens/hearth-tokens.js"></script>
 <link rel="stylesheet" href="dm/c2.css">
@@ -11343,6 +11424,7 @@ const RACES = {
         name: 'High Elf',
         bonuses: { int: 1 },
         spellAbility: 'int',
+        languages: ['Common', 'Elvish', '+1 of choice'], // v1.4.2 - Extra Language
         racialCantripChoice: { from: 'wizard', count: 1 },
         traits: [
           { name: 'Elf Weapon Training', desc: 'Proficiency with longsword, shortsword, shortbow, and longbow.' },
@@ -14925,6 +15007,63 @@ function shouldHaveFightingStyle(d) {
   }
   return false;
 }
+// v1.4.2 - every Fighting Style the character is owed, in slot order:
+// slot 0 = ch.fightingStyle (main class first, else the first class that
+// grants one - e.g. Wizard 5 / Fighter 1 gets the Fighter list), then one
+// slot per further granting class (Paladin 2 / Fighter 1 gets two), then
+// Champion 10 "Additional Fighting Style". Slots 1+ live in ch.extraFightingStyles.
+function fightingStyleGrants(ch) {
+  const out = [];
+  if (!ch) return out;
+  const lv = (typeof featureClassLevels === 'function') ? featureClassLevels(ch) : (ch.classLevels || (ch.klass ? { [ch.klass]: ch.level || 1 } : {}));
+  const order = [];
+  if (ch.klass && lv[ch.klass]) order.push(ch.klass);
+  Object.keys(lv).forEach(k => { if (!order.includes(k)) order.push(k); });
+  order.forEach(k => {
+    const pl = fightingStylePickLevel(k);
+    if (pl != null && (lv[k] || 0) >= pl) out.push({ klass: k, level: pl, extra: false });
+  });
+  const edition = (typeof characterEdition === 'function') ? characterEdition(ch) : '5e';
+  if (edition !== '5.5e' && (lv.fighter || 0) >= 10 && typeof subclassIdFor === 'function' && subclassIdFor(ch, 'fighter') === 'champion') {
+    out.push({ klass: 'fighter', level: 10, extra: true });
+  }
+  return out;
+}
+function fightingStyleAt(ch, slot) {
+  if (!ch) return null;
+  if (slot === 0) return ch.fightingStyle || null;
+  return (Array.isArray(ch.extraFightingStyles) ? ch.extraFightingStyles[slot - 1] : null) || null;
+}
+function setFightingStyleAt(ch, slot, id) {
+  if (slot === 0) { ch.fightingStyle = id || null; return; }
+  if (!Array.isArray(ch.extraFightingStyles)) ch.extraFightingStyles = [];
+  while (ch.extraFightingStyles.length < slot - 1) ch.extraFightingStyles.push(null);
+  ch.extraFightingStyles[slot - 1] = id || null;
+}
+function characterFightingStyleIds(ch) {
+  const out = [];
+  if (!ch) return out;
+  const n = Math.max(1, fightingStyleGrants(ch).length);
+  for (let i = 0; i < n; i++) { const id = fightingStyleAt(ch, i); if (id && FIGHTING_STYLES[id] && !out.includes(id)) out.push(id); }
+  return out;
+}
+function characterFightingStyles(ch) {
+  if (!ch || !shouldHaveFightingStyle(ch)) return ch && ch.fightingStyle && FIGHTING_STYLES[ch.fightingStyle] ? [FIGHTING_STYLES[ch.fightingStyle]] : [];
+  return characterFightingStyleIds(ch).map(id => FIGHTING_STYLES[id]);
+}
+function hasFightingStyle(ch, id) {
+  if (!ch || !shouldHaveFightingStyle(ch)) return false;
+  return characterFightingStyleIds(ch).includes(id);
+}
+function nextFightingStyleGrant(ch) {
+  const grants = fightingStyleGrants(ch);
+  for (let i = 0; i < grants.length; i++) if (!fightingStyleAt(ch, i)) return { ...grants[i], slot: i };
+  return null;
+}
+function fightingStyleSourceClass(d) {
+  const g = fightingStyleGrants(d)[0];
+  return g ? g.klass : (d && d.klass);
+}
 function availableFightingStyles(klass) {
   const ids = FIGHTING_STYLE_OPTIONS[klass] || [];
   return ids.map(id => FIGHTING_STYLES[id]).filter(Boolean);
@@ -16322,7 +16461,7 @@ const SUBCLASSES = {
       levelFeatures: {
         2: [
           { name: 'Evocation Savant', desc: 'Time and gold cost to copy evocation spells into your spellbook is halved.' },
-          { name: 'Sculpt Spells', desc: 'When you cast an evocation that affects others, protect (Cha mod + 1) creatures. They auto-succeed saves and take no damage.' }
+          { name: 'Sculpt Spells', desc: 'When you cast an evocation spell that affects other creatures you can see, choose a number of them equal to 1 + the spell\u2019s level (as cast). They automatically succeed on their saves and take no damage where a successful save would normally mean half damage.' }
         ],
         6: [{ name: 'Potent Cantrip', desc: 'Targets that succeed on saves vs your cantrips still take half damage.' }],
         10: [{ name: 'Empowered Evocation', desc: 'Add Int mod to one damage roll of any wizard evocation spell you cast.' }],
@@ -17302,6 +17441,10 @@ function dmFlexBurnSlot(ch, slotLevel) {
   const pool = sorceryPointPool(ch);
   if (!pool) return false;
   // Don't exceed max SP (core rules: you regain SP, can't bank beyond max).
+  if (gain > pool.used) { // v1.4.2 — never silently waste sorcery points
+    if (typeof showToast === 'function') showToast(`Only room for ${pool.used} more sorcery point${pool.used === 1 ? '' : 's'} — burning a level ${slotLevel} slot would waste ${gain - pool.used}.`);
+    return false;
+  }
   const gainCapped = Math.min(gain, pool.used); // can only "un-spend" up to used
   // If no SP are currently spent, there's nothing to regain into.
   if (gainCapped <= 0) return false;
@@ -19411,6 +19554,17 @@ function classEntriesForCharacter(ch) {
   return Object.entries(levels).filter(([klass, lvl]) => CLASSES[klass] && (lvl || 0) > 0).map(([klass, lvl]) => ({ klass, level: lvl || 0, subclass: subclassIdFor(ch, klass) }));
 }
 
+// v1.4.2 — spell names the warlock's patron adds to the warlock list.
+function hfWarlockExpandedNames(ch) {
+  if (!ch) return [];
+  let lvl = 0, sub = null;
+  try { lvl = classLevelFor(ch, 'warlock'); } catch (e) { lvl = 0; }
+  if (!lvl && ch.klass === 'warlock') lvl = ch.level || 1;
+  try { sub = subclassIdFor(ch, 'warlock'); } catch (e) { sub = null; }
+  if (!sub && ch.klass === 'warlock') sub = ch.subclass || null;
+  if (!lvl || !sub) return [];
+  return FEATURE_SPELL_GRANTS.filter(g => g.klass === 'warlock' && g.subclass === sub && /Expanded$/.test(g.source || '')).map(g => g.spell);
+}
 function featureSpellGrantsForCharacter(ch) {
   if (!ch) return [];
   const out = [];
@@ -19423,6 +19577,7 @@ function featureSpellGrantsForCharacter(ch) {
       // terrain. Until the player picks one, no terrain grants fire (which is
       // correct — they don't get any Circle Spells until they choose).
       if (g.terrain && ch.druidCircleTerrain !== g.terrain) return;
+      if (g.klass === 'warlock' && /Expanded$/.test(g.source || '')) return; // v1.4.2 — learnable options, not free spells
       const spell = SPELLS.find(s => s.name === g.spell);
       if (!spell) return;
       out.push({ ...g, spellName: spell.name, level: spell.level, classLevel: entry.level, sourceClass: entry.klass });
@@ -23511,12 +23666,12 @@ const MAGIC_ITEMS = {
   ring_protection:      { name: 'Ring of Warding',   type: 'ring',     rarity: 'uncommon', attune: true,  desc: 'You gain a +1 bonus to AC and saving throws while wearing this ring.', mech: { acBonus: 1, saveBonus: 1 } },
   amulet_health:        { name: 'Amulet of Vigour',  type: 'wondrous', rarity: 'uncommon', attune: true,  desc: 'Your hit-point maximum increases by 5 while you wear this amulet.', mech: { hpBonus: 5 } },
   boots_striding:       { name: 'Boots of Striding', type: 'wondrous', rarity: 'uncommon', attune: true,  desc: 'Your walking speed becomes 30 (or +5 if already higher), and your jump distance is tripled. You also have advantage on saves against being knocked prone.' },
-  bag_holding:          { name: 'Bag of Carrying',   type: 'wondrous', rarity: 'uncommon', attune: false, desc: 'This bag has an interior space far larger than its outside dimensions. It can hold up to 500 lb, not exceeding 64 cubic feet. The bag weighs 15 lb regardless of contents.' },
+  bag_holding:          { name: 'Bag of Holding',    type: 'wondrous', rarity: 'uncommon', attune: false, desc: 'The inside of this bag is far larger than the outside: it holds up to 500 lb in a space of up to 64 cubic feet, yet the bag always weighs 15 lb. Pulling out an item takes an action. If the bag is overloaded, pierced or torn, it ruptures and its contents scatter on the Astral Plane. A breathing creature inside can survive for 10 minutes divided by the number of creatures inside (minimum 1 minute), then begins to suffocate. Placing the bag inside an extradimensional space (or vice versa) destroys both and opens a gate to the Astral Plane.' },
   potion_of_health:     { name: 'Potion of Healing', type: 'potion',   rarity: 'uncommon', attune: false, desc: 'As an action, drink to regain 4d4 + 4 HP.' },
   bracers_archery:      { name: 'Archer\'s Bracers', type: 'wondrous', rarity: 'uncommon', attune: true,  desc: 'You gain proficiency with longbows and shortbows, and you deal an extra 2 damage with ranged weapon attacks made with such bows.' },
   cloak_elvenkind:      { name: 'Twilight Cloak',    type: 'wondrous', rarity: 'uncommon', attune: true,  desc: 'While you wear this cloak with the hood up, Wisdom (Perception) checks made to see you have disadvantage, and you have advantage on Dexterity (Stealth) checks made to hide.' },
   boots_elvenkind:      { name: 'Whisper-Step Boots',type: 'wondrous', rarity: 'uncommon', attune: false, desc: 'While you wear these boots, your steps make no sound, regardless of the surface you are moving across. You also have advantage on Dexterity (Stealth) checks that rely on moving silently.' },
-  immovable_rod:        { name: 'Anchor Rod',        type: 'rod',      rarity: 'uncommon', attune: false, desc: 'A flat iron rod with a button. As an action, press the button to fix the rod magically in place. Until you or another creature presses the button again, the rod doesn\'t move, even if defying gravity. It can hold up to 8,000 lb of weight before falling.' },
+  immovable_rod:        { name: 'Immovable Rod',     type: 'rod',      rarity: 'uncommon', attune: false, desc: 'A flat iron rod with a button on one end. As an action, press the button and the rod becomes magically fixed where it is, even in midair, until a creature presses the button again (also an action). It holds up to 8,000 lb before it switches off and falls. A creature can push it up to 10 ft with an action and a successful DC 30 Strength check.' },
   goggles_night:        { name: 'Nightseer Goggles', type: 'wondrous', rarity: 'uncommon', attune: false, desc: 'While wearing these goggles, you have darkvision out to a range of 60 ft. If you already have darkvision, its range increases by 60 ft.' },
   gauntlets_ogre:       { name: 'Gauntlets of Strength', type: 'wondrous', rarity: 'uncommon', attune: true, desc: 'Your Strength score becomes 19 while you wear these gauntlets. They have no effect on you if your Strength is already 19 or higher.', setScore: { ability: 'str', value: 19 },},
   hat_disguise:         { name: 'Hat of Borrowed Faces', type: 'wondrous', rarity: 'uncommon', attune: true,  desc: 'While wearing this hat, you can cast Disguise Self at will (no spell slot required). The hat must be worn for the disguise to persist.' },
@@ -23788,7 +23943,15 @@ const STARTING_EQUIPMENT_5E = {
       ]},
       { id: 'instrument', label: 'Instrument', options: [
         { label: 'Lute', items: [{ name: 'Lute', qty: 1 }] },
-        { label: 'Any musical instrument', items: [{ name: 'Musical instrument (choice)', qty: 1 }] },
+        { label: 'Bagpipes', items: [{ name: 'Bagpipes', qty: 1 }] },
+        { label: 'Drum', items: [{ name: 'Drum', qty: 1 }] },
+        { label: 'Dulcimer', items: [{ name: 'Dulcimer', qty: 1 }] },
+        { label: 'Flute', items: [{ name: 'Flute', qty: 1 }] },
+        { label: 'Horn', items: [{ name: 'Horn', qty: 1 }] },
+        { label: 'Lyre', items: [{ name: 'Lyre', qty: 1 }] },
+        { label: 'Pan flute', items: [{ name: 'Pan flute', qty: 1 }] },
+        { label: 'Shawm', items: [{ name: 'Shawm', qty: 1 }] },
+        { label: 'Viol', items: [{ name: 'Viol', qty: 1 }] },
       ]},
     ],
     fixed: { armor: 'leather', weapons: ['dagger'] },
@@ -23932,7 +24095,11 @@ const STARTING_EQUIPMENT_5E = {
       ]},
       { id: 'focus', label: 'Focus', options: [
         { label: 'Component pouch', items: [{ name: 'Component pouch', qty: 1 }] },
-        { label: 'Arcane focus', items: [{ name: 'Arcane focus (choice)', qty: 1 }] },
+        { label: 'Arcane focus — crystal', items: [{ name: 'Crystal (arcane focus)', qty: 1 }] },
+        { label: 'Arcane focus — orb', items: [{ name: 'Orb (arcane focus)', qty: 1 }] },
+        { label: 'Arcane focus — rod', items: [{ name: 'Rod (arcane focus)', qty: 1 }] },
+        { label: 'Arcane focus — staff', items: [{ name: 'Staff (arcane focus)', qty: 1 }] },
+        { label: 'Arcane focus — wand', items: [{ name: 'Wand (arcane focus)', qty: 1 }] },
       ]},
       { id: 'pack', label: 'Pack', options: [
         { label: "Dungeoneer's Pack", pack: 'dungeoneers' },
@@ -23950,7 +24117,11 @@ const STARTING_EQUIPMENT_5E = {
       ]},
       { id: 'focus', label: 'Focus', options: [
         { label: 'Component pouch', items: [{ name: 'Component pouch', qty: 1 }] },
-        { label: 'Arcane focus', items: [{ name: 'Arcane focus (choice)', qty: 1 }] },
+        { label: 'Arcane focus — crystal', items: [{ name: 'Crystal (arcane focus)', qty: 1 }] },
+        { label: 'Arcane focus — orb', items: [{ name: 'Orb (arcane focus)', qty: 1 }] },
+        { label: 'Arcane focus — rod', items: [{ name: 'Rod (arcane focus)', qty: 1 }] },
+        { label: 'Arcane focus — staff', items: [{ name: 'Staff (arcane focus)', qty: 1 }] },
+        { label: 'Arcane focus — wand', items: [{ name: 'Wand (arcane focus)', qty: 1 }] },
       ]},
       { id: 'pack', label: 'Pack', options: [
         { label: "Scholar's Pack", pack: 'scholars' },
@@ -23972,7 +24143,11 @@ const STARTING_EQUIPMENT_5E = {
       ]},
       { id: 'focus', label: 'Focus', options: [
         { label: 'Component pouch', items: [{ name: 'Component pouch', qty: 1 }] },
-        { label: 'Arcane focus', items: [{ name: 'Arcane focus (choice)', qty: 1 }] },
+        { label: 'Arcane focus — crystal', items: [{ name: 'Crystal (arcane focus)', qty: 1 }] },
+        { label: 'Arcane focus — orb', items: [{ name: 'Orb (arcane focus)', qty: 1 }] },
+        { label: 'Arcane focus — rod', items: [{ name: 'Rod (arcane focus)', qty: 1 }] },
+        { label: 'Arcane focus — staff', items: [{ name: 'Staff (arcane focus)', qty: 1 }] },
+        { label: 'Arcane focus — wand', items: [{ name: 'Wand (arcane focus)', qty: 1 }] },
       ]},
       { id: 'pack', label: 'Pack', options: [
         { label: "Scholar's Pack", pack: 'scholars' },
@@ -25129,6 +25304,7 @@ function loadEncounter() {
     hiddenPlayers,
     fog: enc.fog || null,
     turnIdx: enc.turnIdx || 0, round: enc.round || 1, tieBreaks: enc.tieBreaks || {},
+    turnId: enc.turnId || null, // v1.4.2
     // v0.91.3 — combat has started (Start combat / Run it / Next turn). Older
     // encounters already mid-fight count as started.
     started: !!enc.started || (enc.round || 1) > 1 || (enc.turnIdx || 0) > 0,
@@ -25151,6 +25327,7 @@ function loadEncounter() {
 // encounter. Player edits to NAME propagate (shared); init/statuses are
 // per-encounter.
 function saveEncounter(runtime) {
+  if (runtime && Array.isArray(runtime.combatants)) { try { dmNormalizeTurn(runtime); } catch (e) {} } // v1.4.2
   const coll = loadGames();
   const g = activeGame(coll);
   const encIdx = g.encounters.findIndex(e => e.id === (runtime.id || g.activeEncounterId));
@@ -25176,6 +25353,7 @@ function saveEncounter(runtime) {
     hiddenPlayers: hiddenIds,
     fog: keepFog,
     turnIdx: runtime.turnIdx || 0,
+    turnId: runtime.turnId || null,
     round: runtime.round || 1,
     tieBreaks: runtime.tieBreaks || {},
     started: runtime.started !== undefined ? !!runtime.started : !!g.encounters[ti].started,
@@ -25265,13 +25443,23 @@ function loadNotesWin() {
   return { x: 36, y: 96, w: 420, h: 480 };
 }
 function saveNotesWin(w) { if (!w || !(w.w > 200) || !(w.h > 150)) return; try { localStorage.setItem('hearth_notes_win', JSON.stringify(w)); } catch (e) {} }
-function dmNotesWindowHTML() {
+// v1.4.2 — fit the saved window into the current viewport (folded phone): size
+// first, then position, so the close X and resize handle stay on screen. The
+// saved size is untouched, so a bigger screen gets it back.
+function dmNotesGeom() {
   const win = loadNotesWin();
+  const vw = window.innerWidth || 800, vh = window.innerHeight || 600;
+  const w = Math.max(200, Math.min(win.w, Math.floor(vw * 0.96)));
+  const h = Math.max(150, Math.min(win.h, Math.floor(vh * 0.94)));
+  const x = Math.max(0, Math.min(win.x, vw - w));
+  const y = Math.max(0, Math.min(win.y, vh - h));
+  return { x, y, w, h };
+}
+function dmNotesWindowHTML() {
+  const geo = dmNotesGeom();
   const editing = !!state.ui.dmNoteEdit;
-  const x = Math.max(0, Math.min(win.x, (window.innerWidth || 800) - 120));
-  const y = Math.max(0, Math.min(win.y, (window.innerHeight || 600) - 44));
   return `
-    <div class="dm-notes-window" id="dmNotesWindow" style="left:${x}px;top:${y}px;width:${win.w}px;height:${win.h}px;">
+    <div class="dm-notes-window" id="dmNotesWindow" style="left:${geo.x}px;top:${geo.y}px;width:${geo.w}px;height:${geo.h}px;">
       <div class="dm-notes-titlebar" id="dmNotesTitlebar">
         <span class="dm-notes-tb-label">📓 ${editing ? (state.ui.dmNoteEdit === 'new' ? 'New note' : 'Edit note') : 'Campaign Notes'}</span>
         <span class="dm-notes-tb-actions">${!editing ? '<button class="dm-notes-tb-btn" data-dm-note-new="1">+ New</button>' : ''}<button class="dm-notes-close" data-dm-notes-close="1" aria-label="Close">\u2715</button></span>
@@ -25296,7 +25484,7 @@ function dmNotesListBody() {
             <span class="dm-note-date">${fmtDate(nt.updated || nt.created)}</span>
           </div>
           ${nt.body ? `<div class="dm-note-snippet">${escape((nt.body || '').slice(0, 120))}${(nt.body || '').length > 120 ? '\u2026' : ''}</div>` : ''}
-        </div>`).join('') : `<div class="empty-state" style="padding:24px;">${q ? 'No notes match your search.' : 'No notes yet. Tap \u201c+ New note\u201d to start your campaign notebook \u2014 NPCs, plot threads, what happened last session.'}</div>`}
+        </div>`).join('') : `<div class="empty-state" style="padding:24px;">${q ? 'No notes match your search.' : 'No notes yet. Tap \u201c+ New\u201d to start your campaign notebook \u2014 NPCs, plot threads, what happened last session.'}</div>`}
     </div>`;
 }
 function dmNotesEditorBody() {
@@ -25381,10 +25569,43 @@ function dmSetEncounterOrder(orderedIds) {
 // turn must not sit on a dead or hidden combatant, so it starts on the first
 // live one. Mid-round the stored index is used as-is (killing the active monster
 // keeps the marker on it until Next turn).
+// v1.4.2 — the turn is held as a combatant id (enc.turnId) so changing initiative,
+// adding/removing or killing someone never moves it. turnIdx is kept in step as
+// the creature's slot: if the creature itself is removed, the turn moves to the
+// next live one after that slot. Old saves (index only) still read as before.
+function dmResolveTurn(enc, order) {
+  const n = order.length;
+  const k = order.findIndex(c => c.id === enc.turnId);
+  if (k >= 0) return { idx: k, wrapped: false };
+  const slot = Math.max(0, enc.turnIdx || 0);
+  for (let s = 0; s < n; s++) {
+    const c = order[(slot + s) % n];
+    if (c && !c.hiddenFromPlayers && !c.dead) return { idx: (slot + s) % n, wrapped: slot + s >= n };
+  }
+  return { idx: slot % n, wrapped: slot >= n };
+}
+function dmNormalizeTurn(enc) {
+  const started = enc.started !== undefined ? !!enc.started : !!enc.turnId;
+  if (!started) { enc.turnId = null; return; }
+  const order = sortedCombatants(enc);
+  const n = order.length;
+  if (!n) { enc.turnId = null; enc.turnIdx = 0; return; }
+  if (!enc.turnId) {
+    // Not advanced yet this fight: round 1 follows the top live combatant.
+    if ((enc.turnIdx || 0) === 0 && (enc.round || 1) === 1) return;
+    const k0 = dmTurnIdx(enc, order);
+    enc.turnIdx = k0; enc.turnId = order[k0].id;
+    return;
+  }
+  const r = dmResolveTurn(enc, order);
+  if (r.wrapped) enc.round = (enc.round || 1) + 1;
+  enc.turnIdx = r.idx; enc.turnId = order[r.idx].id;
+}
 function dmTurnIdx(enc, order) {
   order = order || sortedCombatants(enc);
   const n = order.length;
   if (!n) return 0;
+  if (enc.turnId) return dmResolveTurn(enc, order).idx;
   const idx = ((enc.turnIdx || 0) % n + n) % n;
   if (idx !== 0 || (enc.round || 1) !== 1) return idx;
   const first = order.findIndex(c => !c.hiddenFromPlayers && !c.dead);
@@ -25400,9 +25621,10 @@ function dmAdvanceTurn(enc) {
     idx += 1;
     if (idx >= n) { idx = 0; enc.round = (enc.round || 1) + 1; }
     const c = order[idx];
-    if (!anyLive || (c && !c.hiddenFromPlayers && !c.dead)) { enc.turnIdx = idx; return; }
+    if (!anyLive || (c && !c.hiddenFromPlayers && !c.dead)) { enc.turnIdx = idx; enc.turnId = c ? c.id : null; return; }
   }
   enc.turnIdx = idx;
+  enc.turnId = order[((idx % n) + n) % n] ? order[((idx % n) + n) % n].id : null;
 }
 function dmSwitchEncounter(id) {
   const coll = loadGames();
@@ -25436,7 +25658,7 @@ function dmRandomEncounter(opts) {
   const coll = loadGames();
   const g = activeGame(coll);
   const level = g.level || 1;
-  const playerCount = Math.max(1, (g.players || []).length || enc.combatants.filter(c => c.kind === 'player').length || 1);
+  const playerCount = Math.max(1, enc.combatants.filter(c => c.kind === 'player').length); // v1.4.2 — same count as the difficulty label
   const th = partyThresholds(level, playerCount);
   const targetBand = opts.difficulty || 'medium';
   // Aim for the middle of the chosen band (between its floor and the
@@ -25506,6 +25728,17 @@ function dmRandomEncounter(opts) {
     const sc = score(list);
     if (sc < best) { best = sc; toAdd = list; }
   }
+  if (best >= 10) {
+    const byCr = {}; pool.forEach(m => { (byCr[m.cr] = byCr[m.cr] || []).push(m); });
+    const reps = Object.keys(byCr).map(k => byCr[k][Math.floor(Math.random() * byCr[k].length)]).sort(() => Math.random() - 0.5);
+    for (let i = 0; i < reps.length && best >= 10; i++) {
+      for (let j = i; j < reps.length; j++) {
+        const list = fill(i === j ? [reps[i]] : [reps[i], reps[j]]);
+        const sc = score(list);
+        if (sc < best) { best = sc; toAdd = list; if (best < 10) break; }
+      }
+    }
+  }
   if (!toAdd || !toAdd.length) toAdd = [weighted[0]];
 
   toAdd.forEach(m => {
@@ -25556,7 +25789,7 @@ function assignTokens(enc) {
   return enc;
 }
 function tokenLabel(c) {
-  if (c.isBoss) return 'BOSS';
+  if (c.isBoss) return c.bossNum > 1 ? 'BOSS ' + c.bossNum : 'BOSS';
   if (c.kind === 'player') return c.name || 'PC';
   return (typeof c.token === 'number') ? String(c.token) : '?';
 }
@@ -25641,6 +25874,9 @@ function dmEncounterAddCharacter(charId) {
   if (!ch) return loadEncounter();
   const enc = loadEncounter();
   if (enc.combatants.some(c => c.kind === 'player' && c.fromCharId === charId)) return enc; // no dupes
+  // v1.4.2 — already in the game but sitting this fight out: bring them back.
+  const outP = (activeGame().players || []).find(p => p.fromCharId === charId && (enc.hiddenPlayers || []).some(h => h.id === p.id));
+  if (outP) { dmUnhidePlayerInEncounter(outP.id); return loadEncounter(); }
   const maxOrder = enc.combatants.reduce((m, c) => Math.max(m, c.order || 0), 0);
   const hp = (typeof maxHp === 'function') ? maxHp(ch) : null;
   const armor = (typeof ac === 'function') ? ac(ch) : null;
@@ -25723,7 +25959,18 @@ function dmDuplicateCombatant(id) {
   copy.hp = copy.maxHp; copy.init = null; copy.statuses = []; copy.conditions = [];
   copy.mapX = null; copy.mapY = null; copy.deathSaves = null; copy.dead = false;
   copy.hiddenFromPlayers = false; copy.order = maxOrder + 1;
+  // v1.4.2 — the copy is its own creature: next free name number, own token
+  // number, not concentrating, and a duplicated boss gets its own BOSS label.
+  copy.concentrating = null;
+  const dupBase = String(c.name || 'Monster').trim().replace(/\s+\d+$/, '') || 'Monster';
+  const dupRe = new RegExp('^' + dupBase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:\\s+(\\d+))?$');
+  let dupMax = 0;
+  enc.combatants.forEach(x => { const mm = dupRe.exec(String(x.name || '').trim()); if (mm) dupMax = Math.max(dupMax, mm[1] ? parseInt(mm[1], 10) : 1); });
+  copy.name = dupBase + ' ' + (dupMax + 1);
+  delete copy.token;
+  if (copy.isBoss) copy.bossNum = enc.combatants.filter(x => x.isBoss).reduce((m, x) => Math.max(m, x.bossNum || 1), 0) + 1;
   enc.combatants.push(copy);
+  if (!copy.isBoss && enc.combatants.some(x => x.kind === 'monster' && typeof x.token === 'number')) assignTokens(enc);
   saveEncounter(enc);
 }
 
@@ -25935,6 +26182,8 @@ function dmCharPickerHTML() {
   const chars = loadCharacters();
   const enc = loadEncounter();
   const linked = new Set(enc.combatants.filter(c => c.kind === 'player' && c.fromCharId).map(c => c.fromCharId));
+  const outIds = new Set((enc.hiddenPlayers || []).map(h => h.id));
+  const sittingOut = new Set((activeGame().players || []).filter(p => p.fromCharId && outIds.has(p.id)).map(p => p.fromCharId));
   const rows = chars.length ? chars.map(ch => {
     const hp = (typeof maxHp === 'function') ? maxHp(ch) : null;
     const armor = (typeof ac === 'function') ? ac(ch) : null;
@@ -25944,7 +26193,7 @@ function dmCharPickerHTML() {
     return `
       <div class="dm-enc-picker-row ${already ? 'active' : ''}">
         <button class="dm-enc-picker-open" data-dm-char-add="${ch.id}" ${already ? 'disabled' : ''}>
-          <div class="dm-enc-picker-name">${escape(ch.name || 'Unnamed')}${already ? ' ·  added' : ''}</div>
+          <div class="dm-enc-picker-name">${escape(ch.name || 'Unnamed')}${already ? ' ·  added' : (sittingOut.has(ch.id) ? ' · sitting out \u2014 tap to bring back' : '')}</div>
           <div class="dm-enc-picker-meta">${sub}</div>
         </button>
       </div>`;
@@ -26025,8 +26274,9 @@ function dmSpawnBoss(bossId) {
 function dmClearCombat() {  const enc = loadEncounter();
   enc.combatants = enc.combatants
     .filter(c => c.kind === 'player')
-    .map(c => ({ ...c, init: null, statuses: [] }));
+    .map(c => ({ ...c, init: null, statuses: [], concentrating: null }));
   enc.turnIdx = 0;
+  enc.turnId = null;
   enc.round = 1;
   enc.tieBreaks = {}; // v0.21.0 — fresh ties next fight
   enc.started = false; // v0.92.0 — back to "Not started" so the next fight needs ⚔ Start combat
@@ -26167,11 +26417,28 @@ function draftSummary(saved) {
   bits.push('Step ' + ((Number(saved.wizardStep) || 0) + 1) + ' of ' + WIZARD_STEPS.length);
   return bits.join(' · ');
 }
+// v1.4.2 - samples added before 1.4.2 carried Entertainer data on a Soldier.
+function hearthRepairSampleSoldier(ch) {
+  const bg = BACKGROUNDS.soldier;
+  if (!bg) return;
+  ch.backgroundFeature = bg.feature ? { ...bg.feature } : null;
+  ch.backgroundEquipment = ['Insignia of rank', 'Trophy from a fallen enemy', 'Dice set', 'Common clothes'];
+  if (!ch.bgChoices) ch.bgChoices = { tools: ['Dice set'], equipment: { 2: 'Dice set' } };
+  if (!ch.alignment) ch.alignment = 'LG';
+  if (ch.inventory && Array.isArray(ch.inventory.items)) {
+    const old = ['Musical instrument', 'Costume', "Admirer's favour"];
+    ch.inventory.items = ch.inventory.items.filter(it => !(it && it.source === 'background' && old.includes(it.name)));
+    ch.backgroundEquipment.forEach((name, i) => {
+      if (!ch.inventory.items.some(it => it && it.name === name)) ch.inventory.items.push({ id: 'bg_sample_' + i, name, qty: 1, notes: 'Background equipment', source: 'background' });
+    });
+  }
+}
 function getCharacter(id) {
   const ch = loadCharacters().find(c => c.id === id);
   if (ch && (ch.xp == null || ch.xp === undefined)) ch.xp = XP_THRESHOLDS[ch.level] || 0;
   if (ch && !ch.preparedSpells) ch.preparedSpells = [];
   if (ch) normaliseCharacterSpellLists(ch);
+  if (ch && ch.sample && ch.background === 'soldier' && ch.backgroundFeature && ch.backgroundFeature.name === 'By Popular Demand') hearthRepairSampleSoldier(ch); // v1.4.2
   if (ch && !ch.resourcesUsed) ch.resourcesUsed = {};
   if (ch && !ch.invocations) ch.invocations = [];
   if (ch && !Array.isArray(ch.companions)) ch.companions = [];  // v0.20.89
@@ -26524,6 +26791,10 @@ function activeEffectObjects(ch) {
   return ch.activeEffects.map(e => ({ ...(TIMED_EFFECTS[e.id] || { name: e.id, meta: 'Timed effect' }), ...e })).filter(e => e.id);
 }
 
+function hfSacredWeaponBonus(ch) { // v1.4.2 — SRD: + CHA mod to attack rolls (minimum +1)
+  if (!isEffectActive(ch, 'sacred_weapon')) return 0;
+  return Math.max(1, mod(finalScores(ch).cha));
+}
 function isEffectActive(ch, id) {
   return !!(ch && Array.isArray(ch.activeEffects) && ch.activeEffects.some(e => e.id === id));
 }
@@ -26707,7 +26978,7 @@ function permanentBoosts(ch) {
   // Fighting Style: Defense — +1 AC while wearing armor.
   // Other styles (Archery, Dueling, GWF, Two-Weapon, Protection) are situational
   // and surface in features/text rather than as flat numerical boosts.
-  if (ch.fightingStyle === 'defense' && shouldHaveFightingStyle(ch)) {
+  if (hasFightingStyle(ch, 'defense')) {
     const inv = ch.inventory || {};
     if (inv.armor) {
       boosts.push({
@@ -27095,7 +27366,7 @@ function b55Ac(ch) {
   const armorMagic = (inv.armor && Number(inv.armor.magicBonus)) || 0; // v0.23.1 magic armour bonus
   if (inv.armor && ARMOR[inv.armor.id]) {
     const a = ARMOR[inv.armor.id];
-    const dexBonus = a.dexCap == null ? dexMod : Math.min(a.dexCap, dexMod);
+    const dexBonus = (a.cat === 'heavy' || a.dexCap === 0) ? 0 : a.dexCap == null ? dexMod : Math.min(a.dexCap, dexMod); // v1.4.2
     return a.baseAc + dexBonus + shield + armorMagic;
   }
   // Unarmored Defense (e.g. Barbarian: 10 + Dex + Con). Shield still allowed.
@@ -27131,6 +27402,10 @@ function b55MaxHp(ch) {
 // stored on the character so it persists. Added once here so every AC readout
 // (vital tile, subtitle, quick-stat) stays consistent across both editions.
 function ac(d) {
+  if (d && typeof isWildShaped === 'function' && isWildShaped(d)) { // v1.4.2
+    const hfB = activeShapeBeast(d);
+    if (hfB && typeof hfB.ac === 'number') return hfB.ac + (Number(d && d.manualAcBonus) || 0);
+  }
   return acBase(d) + (Number(d && d.manualAcBonus) || 0);
 }
 function acBase(d) {
@@ -27163,7 +27438,7 @@ function acBase(d) {
   if (inv.armor) {
     const armorData = ARMOR[inv.armor.id] || inv.armor; // custom armor passes the data directly
     const cap = armorData.dexCap;
-    const dexBonus = cap == null ? dexMod : Math.min(cap, dexMod);
+    const dexBonus = (armorData.cat === 'heavy' || cap === 0) ? 0 : cap == null ? dexMod : Math.min(cap, dexMod); // v1.4.2
     return armorData.baseAc + dexBonus + shield + armorMagic + activeAcBonus(d) + permanentAcBonus(d) + itemAc;
   }
 
@@ -27231,7 +27506,7 @@ function spellSourceClasses(ch, spell) {
   const featureGrant = featureSpellGrantInfo(ch, spell.name);
   const casters = casterClassesOf(ch);
   const out = casters
-    .filter(cc => spell.classes.includes(cc.klass))
+    .filter(cc => spell.classes.includes(cc.klass) || (cc.klass === 'warlock' && hfWarlockExpandedNames(ch).includes(spell.name)))
     .map(cc => cc.klass);
   if (featureGrant && featureGrant.sourceClass && !out.includes(featureGrant.sourceClass)) out.push(featureGrant.sourceClass);
   if (out.length) return out;
@@ -27397,7 +27672,9 @@ function spellByLowerName(n) {
     _spellLowerIdx = new Map(); SPELLS.forEach(s => { if (s && s.name) _spellLowerIdx.set(s.name.toLowerCase(), s); });
     _spellLowerIdxLen = SPELLS.length;
   }
-  return _spellLowerIdx.get(String(n || '').trim().toLowerCase()) || null;
+  const _k = String(n || '').trim().toLowerCase().replace(/[\u2018\u2019]/g, "'");
+  // v1.4.2 - legacy saves: the removed non-SRD duplicate maps to the SRD spell.
+  return _spellLowerIdx.get(_k) || (/^tasha'?s hideous laughter$/.test(_k) ? _spellLowerIdx.get('hideous laughter') : null) || null;
 }
 function canonicalSpellName(n) {
   if (typeof n !== 'string') return n;
@@ -27426,6 +27703,13 @@ function prepCap(ch) {
     });
     return total;
   }
+  // v1.4.2 - one casting class in a multiclass: its own level and ability.
+  const _solo = singleCasterClassInfo(ch);
+  if (_solo) {
+    const sm = SPELL_PREP_MODEL[_solo.klass];
+    if (!sm || sm.type !== 'prepared') return 0;
+    return sm.prepCap(_solo.klassLevel, mod(finalScores(ch)[_solo.c.spellAbility] || 10));
+  }
   const m = prepModel(ch.klass, ch);
   if (!m || m.type !== 'prepared') return 0;
   const abilMod = spellMod(ch) || 0;
@@ -27444,9 +27728,19 @@ function knownCap(ch) {
     });
     return total;
   }
+  const _solo = singleCasterClassInfo(ch);
+  if (_solo) {
+    const sm = SPELL_PREP_MODEL[_solo.klass];
+    if (!sm || sm.type !== 'known') return 0;
+    let t = sm.knownCount[_solo.klassLevel] || 0;
+    if (hasAdditionalMagicalSecrets(ch)) t += 2;
+    return t;
+  }
   const m = prepModel(ch.klass, ch);
   if (!m || m.type !== 'known') return 0;
-  let total = m.knownCount[ch.level] || 0;
+  // v1.4.2 — a single caster class inside a multiclass (e.g. Warlock 3 / Fighter 2) uses that class's level.
+  const hfKnownLvl = (!isBattleCaster(ch) && ch.classLevels && ch.classLevels[ch.klass]) ? ch.classLevels[ch.klass] : ch.level;
+  let total = m.knownCount[hfKnownLvl] || 0;
   if (hasAdditionalMagicalSecrets(ch)) total += 2; // Lore L6: 2 extra any-class spells
   return total;
 }
@@ -27764,7 +28058,7 @@ function spellPool(ch) {
         pool = SPELLS.filter(s => (ch.spells || []).includes(s.name) && s.classes.includes('wizard') && s.level > 0 && s.level <= maxLvl);
       } else {
         // House rule: wizard/bard/etc lists are added together and capped by slot level.
-        pool = SPELLS.filter(s => s.classes.includes(cc.klass) && s.level > 0 && s.level <= maxLvl);
+        pool = SPELLS.filter(s => (s.classes.includes(cc.klass) || (cc.klass === 'warlock' && (ch.spells || []).includes(s.name) && hfWarlockExpandedNames(ch).includes(s.name))) && s.level > 0 && s.level <= maxLvl);
       }
       pool.forEach(s => { if (!seen.has(s.name)) { seen.add(s.name); out.push(s); } });
     });
@@ -27776,7 +28070,7 @@ function spellPool(ch) {
   if (m.type === 'known') {
     let base = castableSpellsForClass(ch.klass, ch.level, false, ch);
     // Magical Secrets: off-list spells the bard learned cast as bard spells.
-    if (ch.klass === 'bard' && (hasMagicalSecrets(ch) || hasAdditionalMagicalSecrets(ch))) {
+    if ((ch.klass === 'bard' && (hasMagicalSecrets(ch) || hasAdditionalMagicalSecrets(ch))) || (ch.klass === 'warlock' && hfWarlockExpandedNames(ch).length)) { // v1.4.2 — + learned patron spells
       const have = new Set(base.map(sp => sp.name));
       const msMax = highestSpellLevel(ch);
       (ch.spells || []).forEach(n => {
@@ -28286,6 +28580,50 @@ function wildShapeMaxHp(beast) {
 function isWildShaped(ch) {
   return !!(ch && ch.activeShape && ch.activeShape.beastId);
 }
+// v1.4.2 — while in Wild Shape the beast's STR/DEX/CON replace the druid's
+// (INT/WIS/CHA and proficiencies stay the druid's, per the SRD).
+function hfShapeScores(ch) {
+  const f = finalScores(ch);
+  const b = (typeof activeShapeBeast === 'function') ? activeShapeBeast(ch) : null;
+  if (!b || !b.abilities) return f;
+  return Object.assign({}, f, { str: b.abilities.str, dex: b.abilities.dex, con: b.abilities.con });
+}
+function hfBeastSpeedText(b) {
+  const parts = [];
+  if (b && b.speed) {
+    if (b.speed.walk) parts.push(`${b.speed.walk} ft`);
+    ['fly', 'swim', 'climb', 'burrow'].forEach(k => { if (b.speed[k]) parts.push(`${k} ${b.speed[k]} ft`); });
+  }
+  return parts.join(', ');
+}
+function hfShapeBlocksSpells(ch) {
+  return isWildShaped(ch) && (typeof druidLevelFor !== 'function' || druidLevelFor(ch) < 18);
+}
+function hfRenderBeastActions(ch) {
+  const b = activeShapeBeast(ch);
+  if (!b) return '';
+  const cast18 = !hfShapeBlocksSpells(ch);
+  return `
+    <div class="tab-header-bar"><div class="tab-header-title">🐾 ${escape(b.name)} — attacks &amp; actions</div></div>
+    <div class="weapon-card-hint" style="margin-bottom:8px;">You're in Wild Shape: use the beast's attacks. ${cast18 ? 'Beast Spells: you can cast spells (verbal/somatic, no costly materials).' : "Your weapons and spells are unavailable — druids can't cast spells in Wild Shape until level 18."}</div>
+    ${(b.attacks || []).map((a, idx) => `
+      <div class="action-card weapon-card">
+        <div class="action-card-main">
+          <div class="action-card-name">${escape(a.name)}</div>
+          <div class="action-card-meta">${a.toHit != null ? `atk +${a.toHit}` : ''}${a.reach ? ` · ${escape(a.reach)}` : ''}${a.damage ? ` · ${escape(a.damage)}${a.damageType ? ' ' + escape(a.damageType) : ''}` : ''}</div>
+          ${a.desc ? `<div class="action-card-desc">${escape(a.desc)}</div>` : ''}
+          ${a.save ? `<div class="weapon-card-hint">Save: DC ${a.save.dc} ${escape(String(a.save.ability || '').toUpperCase())} — ${escape(a.save.effect || '')}</div>` : ''}
+        </div>
+        ${wildShapeActionCanRoll(a) ? `<div class="hf142-beast-btns">
+          ${a.toHit != null ? `<button class="action-roll-btn" data-shape-attack="${idx}" data-shape-roll-type="attack" data-roll-mode="normal">Attack</button>` : ''}
+          ${(containsDiceText(a.damage) || containsDiceText(a.desc) || containsDiceText(a.save && a.save.effect)) ? `<button class="action-roll-btn" data-shape-attack="${idx}" data-shape-roll-type="damage">${a.toHit != null ? 'Damage' : 'Roll'}</button>` : ''}
+        </div>` : ''}
+      </div>
+    `).join('')}
+    <button class="btn" data-hf-open-shape="1" style="width:100%;margin-top:8px;">🐾 Open ${escape(b.name)} stat block</button>
+    ${cast18 ? renderHfActionsTabFull(ch) : ''}
+  `;
+}
 
 function activeShapeBeast(ch) {
   if (!isWildShaped(ch)) return null;
@@ -28368,6 +28706,12 @@ function restoreResource(ch, resource, amount = 1) {
 // Reset resources on a rest. type = 'short'|'long'|'day'
 function applyRestToResources(ch, restType) {
   try { hbClearStates(ch); } catch (x) {}
+  // v1.4.2 — every TIMED_EFFECTS entry lasts 10 minutes at most, so a rest
+  // (1 hour+) always outlasts it: Sacred Weapon, Rage, Bladesong, etc. end.
+  if ((restType === 'short' || restType === 'long' || restType === 'day') && Array.isArray(ch.activeEffects)) {
+    if (ch.activeRage || ch.activeEffects.some(e => e.id === 'rage' || e.id === 'frenzy')) endRage(ch);
+    ch.activeEffects = ch.activeEffects.filter(e => !(e && TIMED_EFFECTS[e.id]));
+  }
   // Walk every available resource for this character (now multiclass-aware
   // and includes subclass resources like Omen Dice). characterResources()
   // already handles class/subclass merging.
@@ -28500,15 +28844,39 @@ function pickUpFromDeathSaves(ch) {
 }
 function surviveDeathSavesAtOneHp(ch) {
   if (!ch) return false;
-  ch.currentHp = 1;
-  state.ui.deathSaves = null;
-  setSurvivalOutcome(getNextReviveLine());
-  logRoll('Death Saves', '1 HP', 'Three successes - survived and returned to 1 HP.');
+  ch.currentHp = 0;
+  state.ui.deathSaves = { successes: 3, failures: 0 }; // stable marker (lock resolves, no more saves)
+  state.ui.deathOutcome = { type: 'survived', stable: true, title: 'STABLE', icon: '🛡' };
+  logRoll('Death Saves', 'Stable', 'Three successes — stable at 0 HP (unconscious). Regains 1 HP after 1d4 hours.');
   saveCharacter(ch);
   return true;
 }
 function setDeathOutcome(outcome) {
   state.ui.deathOutcome = outcome;
+}
+// v1.4.2 — dead means 0 HP with three failed death saves (or killed outright).
+// The character stays dead until someone deliberately revives them.
+function hearthIsDead(ch) {
+  if (!ch || ch.currentHp == null || ch.currentHp > 0) return false;
+  const ds = (state.ui && state.ui._sheetCharId === ch.id) ? state.ui.deathSaves : ch.deathSaves;
+  return !!(ds && ds.failures >= 3);
+}
+// v1.4.2 — stable (SRD): 0 HP after three successful death saves.
+function hfIsStable(ch) {
+  if (!ch || ch.currentHp == null || ch.currentHp > 0) return false;
+  const ds = (state.ui && state.ui._sheetCharId === ch.id) ? state.ui.deathSaves : ch.deathSaves;
+  return !!(ds && ds.successes >= 3 && !(ds.failures >= 3));
+}
+function hearthReviveCharacter(ch) {
+  if (!ch) return false;
+  ch.currentHp = 1;
+  ch.deathAcknowledged = false;
+  ch.deathCause = null;
+  state.ui.deathSaves = null;
+  state.ui.deathOutcome = null;
+  logRoll('Revived', '1 HP', 'Brought back to life at 1 HP.');
+  saveCharacter(ch);
+  return true;
 }
 
 function applyDeathSaveRoll(ch, roll) {
@@ -28544,7 +28912,7 @@ function applyDeathSaveRoll(ch, roll) {
 function promptConcentrationSave(ch, amount) {
   if (!ch || !state.ui.concentration || state.ui._sheetCharId !== ch.id) return;
   if (!(amount > 0) || (ch.currentHp || 0) <= 0) return;
-  const f = finalScores(ch);
+  const f = hfShapeScores(ch); // v1.4.2 — beast CON in Wild Shape, druid proficiency
   const bonus = mod(f.con) + (isProficient(ch, 'save', 'con') ? profBonus(ch.level) : 0) + auraOfProtectionBonus(ch) + itemBonuses(ch).save;
   state.ui.concSaveDialog = {
     spell: state.ui.concentration,
@@ -28580,6 +28948,7 @@ function renderConcSaveDialog(ch) {
 function handleHpDamage(ch, amount) {
   let dmg = Math.max(0, Number(amount) || 0);
   if (dmg <= 0) return;
+  if (hearthIsDead(ch)) return; // v1.4.2 — already dead
   const rawDamage = dmg;
   if (ch.tempHp > 0) {
     const absorbed = Math.min(ch.tempHp, dmg);
@@ -28605,6 +28974,7 @@ function handleHpDamage(ch, amount) {
   }
   const hpAtHit = ch.currentHp || 0;
   ch.currentHp = Math.max(0, ch.currentHp - dmg);
+  if (hpAtHit > 0) { ch.deathCause = null; ch.deathAcknowledged = false; }
   if (ch.currentHp === 0) {
     state.ui.deathOutcome = null;
     const ds = ensureDeathSaves();
@@ -28615,9 +28985,12 @@ function handleHpDamage(ch, amount) {
     if (hpAtHit > 0 && (dmg - hpAtHit) >= mx) {
       ds.failures = 3;
       logRoll('Massive damage', '☠', `${dmg - hpAtHit} damage left over ≥ ${mx} HP maximum — killed outright.`);
+      ch.deathCause = 'massive';
       setDeathOutcome('dead');
     } else if (hpAtHit <= 0 && dmg > 0) {
+      if (ds.successes >= 3 && !(ds.failures >= 3)) { ds.successes = 0; ds.failures = 0; } // v1.4.2 — damage while stable restarts death saves
       ds.failures = dmg >= mx ? 3 : Math.min(3, ds.failures + 1);
+      if (dmg >= mx) ch.deathCause = 'massive';
       logRoll('Hit while down', dmg >= mx ? '☠' : '1 fail', dmg >= mx ? 'Damage ≥ HP maximum — killed outright.' : `${ds.failures}/3 failed`);
       if (ds.failures >= 3) setDeathOutcome('dead');
     }
@@ -28631,6 +29004,10 @@ function handleHpDamage(ch, amount) {
 function handleHpHeal(ch, amount) {
   const val = Math.max(0, Number(amount) || 0);
   if (val <= 0) return;
+  if (hearthIsDead(ch)) {
+    if (typeof showToast === 'function') showToast(`${ch.name} is dead — healing can't help. Use Revive if magic brings them back.`);
+    return;
+  }
   // Wild Shape: healing goes to the BEAST first while transformed (core rules:
   // "Hit points gained while the druid is transformed go to the beast." —
   // and Moon's bonus-action HP regain is meant to keep the form alive).
@@ -28688,9 +29065,24 @@ function multiclassCasterLevel(ch) {
     if (k === 'warlock') return; // pact handled separately
     if (c.spellcastingType === 'full') total += lvl;
     else if (c.spellcastingType === 'half') total += Math.floor(lvl / 2);
+    else if (c.spellcastingType === 'third') total += Math.floor(lvl / 3);
     // 'third' would go here when EK/AT subclass is modeled per-class.
   });
   return total;
+}
+
+// v1.4.2 - the one spellcasting class of a multiclass character that has
+// exactly one (null for single-class characters, several casters, or the
+// homebrew Battle Caster path). Its own level drives slots and caps.
+function singleCasterClassInfo(ch) {
+  if (!ch || !ch.classLevels || isBattleCaster(ch)) return null;
+  const entries = Object.entries(ch.classLevels).filter(([k, l]) => l > 0);
+  if (entries.length < 2) return null;
+  const casters = casterClassesOf(ch);
+  if (casters.length !== 1) return null;
+  const cc = casters[0];
+  if (!(cc.klassLevel >= 1) || cc.klassLevel > (ch.level || 99)) return null;
+  return cc;
 }
 
 // Warlock class level alone (for the parallel pact slot pool).
@@ -28720,6 +29112,25 @@ function getSpellSlots(d) {
     const wlPact = wlLvl > 0 ? PACT_SLOTS[wlLvl] : null;
     return { multiclass: true, flat, pact: wlPact ? { level: wlPact.level, count: wlPact.count } : null };
   }
+  // v1.4.2 - SRD: with only one spellcasting class, that class's own level
+  // (not the character level) decides the slots, e.g. Wizard 5 / Fighter 1
+  // has Wizard-5 slots (4/3/2), Fighter 5 / Paladin 3 has Paladin-3 slots.
+  const _soloCaster = singleCasterClassInfo(d);
+  if (_soloCaster) {
+    const t = _soloCaster.c.spellcastingType, L = _soloCaster.klassLevel;
+    const _pad = (a) => { const o = [...a]; while (o.length < 9) o.push(0); return o; };
+    if (!c.spellcaster) {
+      // Keep the multiclass shape (and its spent-slot keys) for a caster dip
+      // under a non-casting main class.
+      if (t === 'pact') { const p = PACT_SLOTS[L]; return { multiclass: true, flat: [0,0,0,0,0,0,0,0,0], pact: p ? { level: p.level, count: p.count } : null }; }
+      if (t === 'full') return { multiclass: true, flat: _pad(FULL_CASTER_SLOTS[L] || []), pact: null };
+      if (t === 'half') return { multiclass: true, flat: _pad(HALF_CASTER_SLOTS[L] || []), pact: null };
+    } else {
+      if (t === 'full') return FULL_CASTER_SLOTS[L] || [0,0,0,0,0,0,0,0,0];
+      if (t === 'half') return HALF_CASTER_SLOTS[L] || [0,0,0,0,0];
+      if (t === 'pact') { const p = PACT_SLOTS[L]; return p ? { pact: true, count: p.count, level: p.level } : null; }
+    }
+  }
   if (!c.spellcaster) {
     // Single-class non-caster, but maybe has a caster dip via classLevels
     if (d.classLevels) {
@@ -28737,7 +29148,7 @@ function getSpellSlots(d) {
   if (c.spellcastingType === 'full') return FULL_CASTER_SLOTS[d.level] || [0,0,0,0,0,0,0,0,0];
   if (c.spellcastingType === 'half') return HALF_CASTER_SLOTS[d.level] || [0,0,0,0,0];
   if (c.spellcastingType === 'pact') {
-    const p = PACT_SLOTS[d.level];
+    const p = PACT_SLOTS[warlockClassLevel(d) || d.level]; // v1.4.2 — warlock level, not character level
     if (!p) return null;
     return { pact: true, count: p.count, level: p.level };
   }
@@ -29220,6 +29631,31 @@ function rollToastDiceChips(detail) {
   return chips.length ? `<div class="roll-breakdown">${chips.slice(0, 12).join('')}</div>` : '';
 }
 
+// v1.4.2 — lightweight roll history (the last 12 rolls in state.ui.rollLog).
+function hfRenderRollLog(ch) {
+  const log = (state.ui && Array.isArray(state.ui.rollLog)) ? state.ui.rollLog : [];
+  const t = (ts) => { try { return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }); } catch (e) { return ''; } };
+  return `
+    <div class="dialog-backdrop" id="hfRollLogBackdrop">
+      <div class="dialog roll-log" role="dialog" aria-label="Recent rolls">
+        <div class="dialog-title">🎲 Recent rolls</div>
+        <div class="dialog-helper">The last ${log.length || 0} roll${log.length === 1 ? '' : 's'} this session, newest first.</div>
+        <div class="dialog-body hf142-rolllog-body">
+          ${log.length ? log.map(r => `
+            <div class="roll-log-entry">
+              <div class="hf142-rl-top"><span class="hf142-rl-label">${escape(String(r.label || 'Roll'))}</span><span class="hf142-rl-total">${escape(String(r.total == null || r.total === '' ? '—' : r.total))}</span></div>
+              ${r.detail ? `<div class="hf142-rl-detail">${escape(String(r.detail))}</div>` : ''}
+              <div class="hf142-rl-time">${escape(t(r.ts))}</div>
+            </div>`).join('') : `<div class="small-note" style="padding:10px;">No rolls yet. Roll something and it shows up here.</div>`}
+        </div>
+        <div class="dialog-actions">
+          <button class="btn" id="hfRollLogClear" ${log.length ? '' : 'disabled'}>Clear</button>
+          <button class="btn primary" id="hfRollLogClose">Close</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
 function renderRollToast() {
   if (state.tab !== 'play') return '';
   const r = state.ui.rollLog && state.ui.rollLog[0];
@@ -29229,7 +29665,7 @@ function renderRollToast() {
   const critClass = /crit|nat\s*20/i.test(`${total} ${detail}`) ? ' roll-toast-crit' : '';
   return `
     <div class="hearth-roll-toast${critClass}" aria-live="polite">
-      <div class="hearth-roll-toast-card">
+      <div class="hearth-roll-toast-card" data-hf-open-rolllog="1" title="Tap for recent rolls">
         <div class="hearth-roll-toast-label">${escape(r.label || 'Roll')}</div>
         <div class="hearth-roll-toast-total">${escape(total)}</div>
         ${detail ? `<div class="hearth-roll-toast-detail">${escape(detail)}</div>` : ''}
@@ -29883,13 +30319,13 @@ function rollWeaponAttack(ch, weapon, mode = 'normal') {
   const ab = weaponAbility(weapon, ch);
   const abMod = mod(f[ab]);
   // Fighting Style: Archery — +2 to ranged attack rolls
-  const archeryBonus = (ch.fightingStyle === 'archery' && shouldHaveFightingStyle(ch) && weapon.kind === 'ranged') ? 2 : 0;
+  const archeryBonus = (hasFightingStyle(ch, 'archery') && weapon.kind === 'ranged') ? 2 : 0;
   // v0.21.57 — per-weapon magic bonus (+1/+2/+3 weapons). Applies to THIS
   // weapon's attack and damage only (set on the weapon itself in Gear).
   const magicBonus = weapon.magicBonus || 0;
   // Fighting Style: Dueling — +2 damage when wielding a single melee weapon (no other weapon)
   let duelingBonus = 0;
-  if (ch.fightingStyle === 'dueling' && shouldHaveFightingStyle(ch) && weapon.kind === 'melee') {
+  if (hasFightingStyle(ch, 'dueling') && weapon.kind === 'melee') {
     const equipped = ((ch.inventory || {}).weapons || []).filter(w => w.equipped !== false);
     const isTwoHanded = (weapon.props || []).includes('two-handed');
     if (equipped.length <= 1 && !isTwoHanded) duelingBonus = 2;
@@ -29904,7 +30340,7 @@ function rollWeaponAttack(ch, weapon, mode = 'normal') {
   // Damage
   let dmgRolls = rollDice(weapon.damage.count, weapon.damage.sides);
   // Fighting Style: Great Weapon Fighting — reroll 1s and 2s once on two-handed/versatile melee
-  const gwfActive = ch.fightingStyle === 'great_weapon' && shouldHaveFightingStyle(ch) && weapon.kind === 'melee'
+  const gwfActive = hasFightingStyle(ch, 'great_weapon') && weapon.kind === 'melee'
     && ((weapon.props || []).includes('two-handed') || (weapon.props || []).includes('versatile'));
   if (gwfActive) {
     dmgRolls = dmgRolls.map(r => (r === 1 || r === 2) ? rollDie(weapon.damage.sides) : r);
@@ -30148,6 +30584,11 @@ function computeSpellScale(ch, spell, slotLevel) {
 // character has any applicable metamagics they could spend.
 // Otherwise behaves as a direct call to openCastRollDialog.
 function beginCast(ch, spell, slotLevel, freeCast, freeCastInfo, castingClass) {
+  if (hfShapeBlocksSpells(ch)) { // v1.4.2
+    state.ui.castDialog = null;
+    if (typeof showToast === 'function') showToast("You can't cast spells in Wild Shape (until druid level 18). End Wild Shape first.");
+    return;
+  }
   // Free casts (from invocations / racial / item) bypass metamagic — RAW
   // says sorcery points can't be spent on free casts; in practice the
   // resource isn't being spent on a slot so the SP economy doesn't apply.
@@ -30233,9 +30674,10 @@ function openCastRollDialog(ch, spell, slotLevel, freeCast = false, freeCastInfo
     if (sculptOk) {
       // 1 + spell level (cantrip = 1) allies in the area take no damage
       // on save and half damage on fail.
-      const allies = 1 + Math.max(0, spell.level);
+      const hfCastLvl = spell.level > 0 ? Math.max(spell.level, Number(slotLevel) || spell.level) : 0; // v1.4.2 — level as cast
+      const allies = 1 + hfCastLvl;
       lines.push({ label: 'Sculpt Spells', static: true,
-        displayValue: `Up to ${allies} ally${allies > 1 ? 'ies' : ''} auto-save, half on fail` });
+        displayValue: `Choose up to ${allies} creature${allies > 1 ? 's' : ''} you can see: they automatically succeed on the save and take no damage` });
     }
     if (potentCantripOk) {
       lines.push({ label: 'Potent Cantrip', static: true,
@@ -30971,7 +31413,7 @@ function hearthCloseTour() {
 }
 
 // ---------- Sample data (bundled, clearly labelled "Sample:", easy to delete) ----------
-const HEARTH_SAMPLE_CHARACTER = {"id":"sample_char_oswin","name":"Sample: Sir Oswin","race":"human","subrace":null,"klass":"paladin","level":3,"targetLevel":3,"photo":null,"raceAbilityBonuses":{},"background":"soldier","alignment":null,"backstory":"A sample character bundled with Hearth so you can try the sheet. Delete it any time from Player (⋯ → Delete) or Settings → Remove sample data.","base":{"str":15,"dex":10,"con":14,"int":8,"wis":12,"cha":15},"statMode":"pointbuy","skills":["athletics","persuasion"],"spells":[],"cantrips":[],"pack":"priests","startingWeapons":["longsword","javelin"],"startingArmor":"chain_mail","startingShield":true,"preparedSpells":["Bless","Cure Wounds","Shield of Faith"],"subclass":"devotion","fightingStyle":"defense","resourcesUsed":{},"invocations":[],"pactBoon":null,"pendingAsi":0,"activeRage":false,"frenzyActive":false,"activeEffects":[],"inventory":{"weapons":[{"id":"longsword_1791621393077_uy4","weaponId":"longsword","name":"Longsword","damage":{"count":1,"sides":8},"type":"slashing","props":["versatile"],"kind":"melee","cat":"martial","equipped":true,"source":"starter"},{"id":"javelin_1791621393077_1b6","weaponId":"javelin","name":"Javelin","damage":{"count":1,"sides":6},"type":"piercing","props":["thrown"],"kind":"melee","cat":"simple","equipped":true,"source":"starter"}],"armor":{"id":"chain_mail","name":"Chain Mail","cat":"heavy","baseAc":16,"dexCap":0,"str":13,"stealthDisadv":true},"shield":true,"items":[{"id":"i_1791621393077_atr","name":"Backpack","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_ldi","name":"Blanket","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_680","name":"Candle","qty":10,"notes":"","source":"pack"},{"id":"i_1791621393077_tso","name":"Tinderbox","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_rrg","name":"Alms box","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_hg3","name":"Block of incense","qty":2,"notes":"","source":"pack"},{"id":"i_1791621393077_f83","name":"Censer","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_c1j","name":"Vestments","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_tsy","name":"Rations (1 day)","qty":2,"notes":"","source":"pack"},{"id":"i_1791621393077_n95","name":"Waterskin","qty":1,"notes":"","source":"pack"},{"id":"bg_1791621393077_58j","name":"Musical instrument","qty":1,"notes":"Background equipment","source":"background"},{"id":"bg_1791621393077_q16","name":"Costume","qty":1,"notes":"Background equipment","source":"background"},{"id":"bg_1791621393077_aow","name":"Admirer's favour","qty":1,"notes":"Background equipment","source":"background"}],"currency":{"cp":0,"sp":0,"ep":0,"gp":15,"pp":0}},"weapons":null,"currentHp":28,"tempHp":0,"xp":0,"spentSlots":{},"conditions":[],"inspiration":false,"feats":[],"bondedWeapons":[],"runicInscriptions":[],"maneuversKnown":[],"activeReckless":false,"activeAssassinUnacted":false,"activeAssassinSurprise":false,"hexWarriorWeaponId":null,"hexWarriorChangeAvailable":true,"pactWeaponId":null,"companions":[],"notes":"","createdAt":0,"startingEquipmentPreset":"paladin","backgroundFeature":{"name":"By Popular Demand","desc":"You can usually find a place to perform, earning modest lodging and food."},"backgroundEquipment":["Musical instrument","Costume","Admirer's favour"],"classLevels":{"paladin":3},"sample":true,"updatedAt":"2026-10-10T08:36:33.080Z","freeCastUses":{},"hitDiceSpent":0};
+const HEARTH_SAMPLE_CHARACTER = {"id":"sample_char_oswin","name":"Sample: Sir Oswin","race":"human","subrace":null,"klass":"paladin","level":3,"targetLevel":3,"photo":null,"raceAbilityBonuses":{},"background":"soldier","alignment":"LG","backstory":"A sample character bundled with Hearth so you can try the sheet. Delete it any time from Player (⋯ → Delete) or Settings → Remove sample data.","base":{"str":15,"dex":10,"con":14,"int":8,"wis":12,"cha":15},"statMode":"pointbuy","skills":["athletics","persuasion"],"spells":[],"cantrips":[],"pack":"priests","startingWeapons":["longsword","javelin"],"startingArmor":"chain_mail","startingShield":true,"preparedSpells":["Bless","Cure Wounds","Shield of Faith"],"subclass":"devotion","fightingStyle":"defense","resourcesUsed":{},"invocations":[],"pactBoon":null,"pendingAsi":0,"activeRage":false,"frenzyActive":false,"activeEffects":[],"inventory":{"weapons":[{"id":"longsword_1791621393077_uy4","weaponId":"longsword","name":"Longsword","damage":{"count":1,"sides":8},"type":"slashing","props":["versatile"],"kind":"melee","cat":"martial","equipped":true,"source":"starter"},{"id":"javelin_1791621393077_1b6","weaponId":"javelin","name":"Javelin","damage":{"count":1,"sides":6},"type":"piercing","props":["thrown"],"kind":"melee","cat":"simple","equipped":true,"source":"starter"}],"armor":{"id":"chain_mail","name":"Chain Mail","cat":"heavy","baseAc":16,"dexCap":0,"str":13,"stealthDisadv":true},"shield":true,"items":[{"id":"i_1791621393077_atr","name":"Backpack","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_ldi","name":"Blanket","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_680","name":"Candle","qty":10,"notes":"","source":"pack"},{"id":"i_1791621393077_tso","name":"Tinderbox","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_rrg","name":"Alms box","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_hg3","name":"Block of incense","qty":2,"notes":"","source":"pack"},{"id":"i_1791621393077_f83","name":"Censer","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_c1j","name":"Vestments","qty":1,"notes":"","source":"pack"},{"id":"i_1791621393077_tsy","name":"Rations (1 day)","qty":2,"notes":"","source":"pack"},{"id":"i_1791621393077_n95","name":"Waterskin","qty":1,"notes":"","source":"pack"},{"id":"bg_1791621393077_58j","name":"Insignia of rank","qty":1,"notes":"Background equipment","source":"background"},{"id":"bg_1791621393077_q16","name":"Trophy from a fallen enemy","qty":1,"notes":"Background equipment","source":"background"},{"id":"bg_1791621393077_aow","name":"Dice set","qty":1,"notes":"Background equipment","source":"background"},{"id":"bg_1791621393077_cc1","name":"Common clothes","qty":1,"notes":"Background equipment","source":"background"}],"currency":{"cp":0,"sp":0,"ep":0,"gp":10,"pp":0}},"weapons":null,"currentHp":28,"tempHp":0,"xp":0,"spentSlots":{},"conditions":[],"inspiration":false,"feats":[],"bondedWeapons":[],"runicInscriptions":[],"maneuversKnown":[],"activeReckless":false,"activeAssassinUnacted":false,"activeAssassinSurprise":false,"hexWarriorWeaponId":null,"hexWarriorChangeAvailable":true,"pactWeaponId":null,"companions":[],"notes":"","createdAt":0,"startingEquipmentPreset":"paladin","backgroundFeature":{"name":"Military Rank","desc":"Soldiers loyal to your former organisation recognise your authority and influence."},"backgroundEquipment":["Insignia of rank","Trophy from a fallen enemy","Dice set","Common clothes"],"bgChoices":{"tools":["Dice set"],"equipment":{"2":"Dice set"}},"classLevels":{"paladin":3},"sample":true,"updatedAt":"2026-10-10T08:36:33.080Z","freeCastUses":{},"hitDiceSpent":0};
 function hearthIsSample(x) { return !!(x && (x.sample === true || (typeof x.id === 'string' && x.id.indexOf('sample_') === 0))); }
 function hearthBuildSampleGame() {
   const mon = (id, monsterId, name, hp, init, order, x, y) => ({ id, kind: 'monster', monsterId, name, init, hp, maxHp: hp, statuses: [], order, mapX: x, mapY: y });
@@ -33034,6 +33476,44 @@ function confirmDialog(message, onYes, opts) {
   wrap.addEventListener('click', e => { if (e.target === wrap) close(); });
 }
 
+// v1.4.2 — app-wide Escape: close the top-most dialog. The 0 HP death-save
+// lock and the death outcome are deliberately excluded.
+function hfTopBackdrop() {
+  const els = [...document.querySelectorAll('.dialog-backdrop, #deathLockBackdrop, .death-outcome-backdrop, .gear-popup-backdrop')]
+    .filter(el => el.isConnected && el.getClientRects().length && getComputedStyle(el).display !== 'none' && getComputedStyle(el).visibility !== 'hidden');
+  if (!els.length) return null;
+  let top = null, topZ = -Infinity;
+  els.forEach(el => { const z = parseInt(getComputedStyle(el).zIndex, 10); const zz = isNaN(z) ? 0 : z; if (zz >= topZ) { top = el; topZ = zz; } });
+  return top;
+}
+function hfEscClose(e) {
+  if (!e || (e.key !== 'Escape' && e.key !== 'Esc') || e.defaultPrevented) return;
+  if (e.target && e.target.isConnected === false) return; // a dialog already handled its own Esc and removed itself
+  if (e.target && e.target.matches && e.target.matches('input, textarea, select') && !e.target.closest('.dialog-backdrop')) return;
+  const top = hfTopBackdrop();
+  if (!top) return;
+  if (top.id === 'deathLockBackdrop' || top.classList.contains('death-outcome-backdrop') || top.closest('#deathLockBackdrop')) return;
+  const sels = ['[data-confirm-no]', '#rollDialogCancel', '#hfRollLogClose', '#dialogClose', '[data-dialog-close]', '[data-close]'];
+  let btn = null;
+  for (const sel of sels) { const b = top.querySelector(sel); if (b && !b.disabled && b.getClientRects().length) { btn = b; break; } }
+  if (!btn) btn = [...top.querySelectorAll('button')].find(b => !b.disabled && b.getClientRects().length && /^(cancel|close|stay|not now|dismiss|back|×|✕)$/i.test((b.innerText || b.textContent || '').trim()));
+  if (!btn) { const dc = top.querySelector('.dialog-close'); if (dc && !dc.disabled && /^(close|cancel|done|×|✕)$/i.test((dc.innerText || dc.textContent || '').trim())) btn = dc; }
+  e.preventDefault();
+  if (btn) { btn.click(); return; }
+  top.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })); // same as a backdrop tap
+}
+function hfRollLogClick(e) {
+  const t = e.target;
+  if (!t || !t.closest) return;
+  if (t.closest('[data-hf-open-rolllog]')) { e.preventDefault(); state.ui.hfRollLogOpen = true; render(); return; }
+  if (t.closest('#hfRollLogClose') || t.id === 'hfRollLogBackdrop') { state.ui.hfRollLogOpen = false; render(); return; }
+  if (t.closest('#hfRollLogClear')) { state.ui.rollLog = []; state.ui.rollToastUntil = 0; render(); }
+}
+if (typeof document !== 'undefined' && !window.__hfEscWired) {
+  window.__hfEscWired = true;
+  document.addEventListener('keydown', hfEscClose);
+  document.addEventListener('click', hfRollLogClick);
+}
 // v0.21.158 — lightweight transient toast. Body-appended so it survives a re-render,
 // auto-dismisses after a few seconds, and clears early on tap. Only one shows at a time.
 let _hearthToastTimer = null;
@@ -33673,7 +34153,13 @@ function wireDMEncounter() {
     b.addEventListener('click', () => { dmCreateGame(); state.ui.dmGameListOpen = false; render(); });
   });
   document.querySelectorAll('[data-dm-game-delete]').forEach(b => {
-    b.addEventListener('click', (e) => { e.stopPropagation(); dmDeleteGame(b.dataset.dmGameDelete); render(); });
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const gid = b.dataset.dmGameDelete;
+      const gm = loadGames().games.find(x => x.id === gid);
+      const nm = gm ? (gm.name || 'this game') : 'this game';
+      confirmDialog(`Delete “${nm}”? Its party, all its encounters (monsters, maps, fog) and its campaign notes are removed. This cannot be undone.`, () => { dmDeleteGame(gid); render(); }, { title: 'Delete game?', yes: 'Delete', danger: true });
+    });
   });
   document.querySelectorAll('[data-dm-game-rename]').forEach(b => {
     b.addEventListener('click', (e) => {
@@ -33808,6 +34294,8 @@ function wireDMEncounter() {
       });
       row.addEventListener('pointerup', commit);
       row.addEventListener('pointercancel', commit);
+      // v1.4.2 — a quick swipe (before the 300 ms hold) still scrolls the list.
+      row.addEventListener('touchmove', (ev) => { if (activated && dragEl === row && ev.cancelable) ev.preventDefault(); }, { passive: false });
     });
   })();
   document.querySelectorAll('[data-dm-enc-switch]').forEach(b => {
@@ -33828,8 +34316,11 @@ function wireDMEncounter() {
   document.querySelectorAll('[data-dm-enc-delete]').forEach(b => {
     b.addEventListener('click', (e) => {
       e.stopPropagation();
-      dmDeleteEncounter(b.dataset.dmEncDelete);
-      render();
+      const eid = b.dataset.dmEncDelete;
+      const ge = activeGame(); const en = (ge.encounters || []).find(x => x.id === eid);
+      const nm = en ? (en.name || 'this encounter') : 'this encounter';
+      const mc = en && Array.isArray(en.monsters) ? en.monsters.length : 0;
+      confirmDialog(`Delete “${nm}”? Its ${mc} monster${mc === 1 ? '' : 's'}, map, fog and AoE templates are removed. Players stay in the game. This cannot be undone.`, () => { dmDeleteEncounter(eid); render(); }, { title: 'Delete encounter?', yes: 'Delete', danger: true });
     });
   });
   // v0.33.0 — export/import an encounter as a JSON file (move between devices).
@@ -34126,6 +34617,29 @@ function wireDMEncounter() {
       render();
     });
   });
+  // v1.4.2 — close the tie dialog without resolving (fix a mistyped number);
+  // it comes back on Start combat / Next turn.
+  const dmTieDismiss = () => {
+    const bd = document.querySelector('.dm-tie-backdrop');
+    if (!bd) return;
+    state.ui.dmTieDismissed = bd.getAttribute('data-dm-tie-key');
+    state.ui.dmTiePicks = null;
+    render();
+  };
+  document.querySelectorAll('[data-dm-tie-cancel]').forEach(b => b.addEventListener('click', dmTieDismiss));
+  document.querySelectorAll('.dm-tie-backdrop').forEach(bd => bd.addEventListener('click', (e) => { if (e.target === bd) dmTieDismiss(); }));
+  if (!window.__hearthTieEscBound) {
+    window.__hearthTieEscBound = true;
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || !document.querySelector('.dm-tie-backdrop')) return;
+      if (document.querySelector('.confirm-backdrop')) return;
+      e.preventDefault();
+      const bd = document.querySelector('.dm-tie-backdrop');
+      state.ui.dmTieDismissed = bd.getAttribute('data-dm-tie-key');
+      state.ui.dmTiePicks = null;
+      render();
+    });
+  }
   document.querySelectorAll('[data-dm-tie-reset]').forEach(b => {
     b.addEventListener('click', () => {
       state.ui.dmTiePicks = null;
@@ -34146,7 +34660,7 @@ function wireDMEncounter() {
       const max = c.maxHp != null ? c.maxHp : Infinity;
       const cur = c.hp != null ? c.hp : (c.maxHp != null ? c.maxHp : 0);
       if (kind === 'dmg') { c.hp = Math.max(0, cur - amt); dmNoteDamage(c, Math.min(amt, cur)); }
-      else if (kind === 'heal') c.hp = Math.min(max, cur + amt);
+      else if (kind === 'heal') { c.hp = Math.min(max, cur + amt); if (c.hp > 0) c.dead = false; }
       saveEncounter(enc);
       render();
     });
@@ -34170,7 +34684,8 @@ function wireDMEncounter() {
       const c = enc.combatants.find(x => x.id === id);
       if (c && c.link) {
         // v1.1.0 — linked player: max HP comes from their sheet; set current HP on it.
-        const v = parseInt(String(hpSetInput.value).split('/')[0], 10);
+        let v = parseInt(String(hpSetInput.value).split('/')[0], 10);
+        if (Number.isFinite(v)) v = Math.max(0, c.maxHp != null ? Math.min(c.maxHp, v) : v); // v1.4.2
         if (Number.isFinite(v) && v !== c.hp) dmLinkApply(id, 'set', v, null, false);
       } else if (c) {
         const hpBefore = c.hp != null ? c.hp : c.maxHp;
@@ -34181,8 +34696,12 @@ function wireDMEncounter() {
           // v0.91.2 — a single number sets current HP only; max HP is kept (it is
           // only set too when there was no max yet, or the new value exceeds it).
           c.hp = parts[0];
-          if (c.maxHp == null || parts[0] > c.maxHp) c.maxHp = parts[0];
+          if (c.maxHp == null) c.maxHp = Math.max(1, parts[0]);
         }
+        // v1.4.2 — current HP stays within 0..max; max is at least 1.
+        if (c.maxHp != null) c.maxHp = Math.max(1, c.maxHp);
+        if (c.hp != null) c.hp = Math.max(0, c.maxHp != null ? Math.min(c.maxHp, c.hp) : c.hp);
+        if (c.hp > 0) c.dead = false;
         if (hpBefore != null && c.hp != null && c.hp < hpBefore) dmNoteDamage(c, hpBefore - c.hp);
         saveEncounter(enc);
       }
@@ -34322,20 +34841,33 @@ function wireDMEncounter() {
       const offX = ev.clientX - rect.left, offY = ev.clientY - rect.top;
       try { nBar.setPointerCapture(ev.pointerId); } catch (e) {}
       const onMove = (mv) => {
-        let x = Math.max(0, Math.min(mv.clientX - offX, window.innerWidth - 120));
-        let y = Math.max(0, Math.min(mv.clientY - offY, window.innerHeight - 44));
+        let x = Math.max(0, Math.min(mv.clientX - offX, window.innerWidth - nWin.offsetWidth));
+        let y = Math.max(0, Math.min(mv.clientY - offY, window.innerHeight - nWin.offsetHeight));
         nWin.style.left = x + 'px'; nWin.style.top = y + 'px';
       };
       const onUp = () => {
         nBar.removeEventListener('pointermove', onMove);
         nBar.removeEventListener('pointerup', onUp);
         const r = nWin.getBoundingClientRect();
-        saveNotesWin({ x: r.left, y: r.top, w: r.width, h: r.height });
+        const old = loadNotesWin(); // v1.4.2 — a move keeps the saved size (it may be clamped here)
+        saveNotesWin({ x: r.left, y: r.top, w: old.w, h: old.h });
       };
       nBar.addEventListener('pointermove', onMove);
       nBar.addEventListener('pointerup', onUp);
       ev.preventDefault();
     });
+    // v1.4.2 — re-fit on resize / fold / rotation.
+    if (!window.__hearthNotesFitBound) {
+      window.__hearthNotesFitBound = true;
+      const refit = () => {
+        const el = document.getElementById('dmNotesWindow');
+        if (!el) return;
+        const geo = dmNotesGeom();
+        el.style.left = geo.x + 'px'; el.style.top = geo.y + 'px'; el.style.width = geo.w + 'px'; el.style.height = geo.h + 'px';
+      };
+      window.addEventListener('resize', refit);
+      window.addEventListener('orientationchange', () => setTimeout(refit, 120));
+    }
     const nRes = document.getElementById('dmNotesResize');
     if (nRes) {
       nRes.addEventListener('pointerdown', (ev) => {
@@ -34382,7 +34914,7 @@ function wireDMEncounter() {
       state.ui.dmHighlightMon = wasHi ? null : id;
       document.querySelectorAll('[data-dm-tile]').forEach(cc => cc.classList.toggle('dm-tile-highlight', cc.dataset.dmTile === state.ui.dmHighlightMon));
       document.querySelectorAll('[data-map-token]').forEach(tt => tt.classList.toggle('token-highlight', tt.dataset.mapToken === state.ui.dmHighlightMon));
-      if (!wasHi) { const tok = document.querySelector('[data-map-token="' + id + '"]'); if (tok) tok.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+      if (!wasHi) { const tok = document.querySelector('[data-map-token="' + id + '"]'); if (tok) dmScrollTokenIntoView(tok); }
     });
   });
   document.querySelectorAll('[data-dm-vision]').forEach(b => {
@@ -34556,7 +35088,7 @@ function wireDMEncounter() {
       const id = b.dataset.dmTileStats;
       const enc = loadEncounter();
       const c = (enc.combatants || []).find(x => x.id === id);
-      if (!c || !c.monsterId || !findMonster(c.monsterId)) {
+      if (!c || !((c.monsterId && findMonster(c.monsterId)) || (c.isBoss && c.bossStat))) {
         showToast('No statblock available for this combatant.');
         return;
       }
@@ -34591,6 +35123,7 @@ function wireDMEncounter() {
   document.querySelectorAll('[data-dm-turn]').forEach(b => {
     b.addEventListener('click', () => {
       const enc = loadEncounter();
+      state.ui.dmTieDismissed = null; // v1.4.2 — an unresolved tie asks again
       // v0.91.3 — 'Start combat' begins on the first combatant without advancing.
       if (b.dataset.dmTurn === 'start') enc.started = true;
       else { enc.started = true; dmAdvanceTurn(enc); }
@@ -34632,7 +35165,7 @@ function wireDMEncounter() {
   // v0.51.0 — Reset encounter / remove the whole party.
   document.querySelectorAll('[data-dm-reset-enc]').forEach(b => {
     b.addEventListener('click', () => {
-      confirmDialog('Reset this encounter? Monsters return to full HP and alive, all HP and statuses reset, initiative is cleared, tokens clear off the map, and fog and AoE templates are wiped. The monster lineup and map stay.', () => {
+      confirmDialog('Reset this encounter? Monsters return to full HP and alive, all HP, statuses and concentration reset, initiative is cleared, tokens clear off the map, and fog and AoE templates are wiped. The monster lineup and map stay; hidden monsters stay hidden and players sitting out stay out.', () => {
         dmResetEncounter();
         // v0.91.1 — same reset from Battle Forge or the battle map: drop any
         // map-tool state that pointed at the old board.
@@ -34653,8 +35186,11 @@ function wireDMEncounter() {
   // Clear combat
   document.querySelectorAll('[data-dm-clear]').forEach(b => {
     b.addEventListener('click', () => {
-      dmClearCombat();
-      render();
+      const mc = loadEncounter().combatants.filter(c => c.kind === 'monster').length;
+      confirmDialog(`Clear combat? ${mc ? `All ${mc} monster${mc === 1 ? ' is' : 's are'} removed from this encounter. ` : ''}Players stay, but their initiative, statuses and concentration are cleared and the round resets. This cannot be undone.`, () => {
+        dmClearCombat();
+        render();
+      }, { title: 'Clear combat?', yes: 'Clear', danger: true });
     });
   });
 }
@@ -34992,6 +35528,12 @@ function renderEnemyPicker() {
 // battle-map cockpit can both render the same HP/damage/status tiles from
 // one source. Handlers are wired by wireDMEncounter() via document-level
 // selectors, so the same markup works wherever it's mounted.
+// v1.4.2 — sitting-out banner, also drawn when the board is empty.
+function dmSitOutBannerHTML(encH) {
+  const hiddenH = Array.isArray(encH && encH.hiddenPlayers) ? encH.hiddenPlayers : [];
+  return hiddenH.length ? `
+        <div class="dm-hidden-banner"><span class="dm-hidden-label">Sitting out:</span>${hiddenH.map(h => `<button class="dm-hidden-chip" data-dm-unhide="${h.id}">${escape(h.name || 'Player')} <span class="dm-hidden-add">+ back</span></button>`).join('')}</div>` : '';
+}
 function dmEncListHTML(order, turnId) {
   const encH = loadEncounter();
   const hiddenH = Array.isArray(encH.hiddenPlayers) ? encH.hiddenPlayers : [];
@@ -35008,7 +35550,7 @@ function dmEncListHTML(order, turnId) {
             // customs and players don't. At 0 HP a monster can be marked
             // dead (toggle), which greys the tile but keeps it on the
             // board until Clear Combat.
-            const hasStatblock = c.kind === 'monster' && c.monsterId && findMonster(c.monsterId);
+            const hasStatblock = c.kind === 'monster' && ((c.monsterId && findMonster(c.monsterId)) || (c.isBoss && c.bossStat));
             const atZero = c.kind === 'monster' && c.maxHp != null && (c.hp != null ? c.hp : c.maxHp) <= 0;
             const isDead = !!c.dead;
             return `
@@ -35075,10 +35617,10 @@ function dmTieDialogHTML(enc) {
   // sequence badge and grey out. Once all are picked the order is
   // committed automatically.
   const tie = findUnresolvedTie(enc);
-  if (!tie) return '';
+  if (!tie || state.ui.dmTieDismissed === tie.key) return '';
   const picks = state.ui.dmTiePicks || [];
   return `
-    <div class="dialog-backdrop" id="dialogBackdrop">
+    <div class="dialog-backdrop dm-tie-backdrop" id="dialogBackdrop" data-dm-tie-key="${escape(tie.key)}">
       <div class="dialog">
         <div class="dialog-title">Initiative Tie — ${tie.init}</div>
         <div class="dialog-helper">${tie.members.length} combatants tied on ${tie.init}. Tap each name in the order they act — first tap goes first.</div>
@@ -35096,6 +35638,7 @@ function dmTieDialogHTML(enc) {
           }).join('')}
         </div>
         <div class="dialog-actions">
+          <button class="btn" data-dm-tie-cancel="1">Cancel</button>
           <button class="btn" data-dm-tie-reset="1">Start over</button>
         </div>
       </div>
@@ -35227,17 +35770,19 @@ function homePanelDM() {
   const enc = loadEncounter();
   const coll = loadEncounterCollection();
   const order = sortedCombatants(enc);
-  const turnId = order.length ? (order[dmTurnIdx(enc, order)] || {}).id : null;
+  const turnId = (enc.started && order.length) ? (order[dmTurnIdx(enc, order)] || {}).id : null; // v1.4.2 — no turn edge before Start
   // v0.21.9 — Encounter XP. Total = every catalogue monster on the
   // board; Earned = only those killed. Custom monsters (no monsterId)
   // have no CR/XP and are skipped. Per-player divides by player count.
-  const monsterCombatants = enc.combatants.filter(c => c.kind === 'monster' && c.monsterId);
+  // v1.4.2 — legendary bosses count too (XP from their tier's CR).
+  const monsterCombatants = enc.combatants.filter(c => c.kind === 'monster' && (c.monsterId || (c.isBoss && c.bossStat)));
   const playerCount = enc.combatants.filter(c => c.kind === 'player').length;
-  const totalXP = monsterCombatants.reduce((s, c) => s + monsterXP(findMonster(c.monsterId)), 0);
-  const earnedXP = monsterCombatants.filter(c => c.dead).reduce((s, c) => s + monsterXP(findMonster(c.monsterId)), 0);
+  const xpOfC = (c) => c.monsterId ? monsterXP(findMonster(c.monsterId)) : monsterXP(c.bossStat);
+  const totalXP = monsterCombatants.reduce((s, c) => s + xpOfC(c), 0);
+  const earnedXP = monsterCombatants.filter(c => c.dead).reduce((s, c) => s + xpOfC(c), 0);
   const perPlayer = playerCount > 0 ? Math.floor(totalXP / playerCount) : 0;
   const earnedPerPlayer = playerCount > 0 ? Math.floor(earnedXP / playerCount) : 0;
-  const difficulty = rateEncounter(totalXP, monsterCombatants.length, enc.gameLevel || 1, playerCount);
+  const difficulty = rateEncounter(totalXP, monsterCombatants.length, enc.gameLevel || 1, Math.max(1, playerCount)); // v1.4.2 — same party size as the roller
   const fmtXP = (n) => n.toLocaleString('en-US');
   return `
     <section class="section dm-encounter">
@@ -35277,6 +35822,7 @@ function homePanelDM() {
         <button class="dm-diff-btn deadly" data-dm-random-diff="deadly">Deadly</button>
       </div>
       ${order.length === 0 ? `
+        ${dmSitOutBannerHTML(enc)}
         <div class="empty-state">No combatants yet. Add players (shared across this game's encounters) and monsters, or hit 🎲 Random to fill the board.</div>
       ` : `
         <div class="dm-enc-roundbar">
@@ -35355,7 +35901,7 @@ function homePanelDM() {
           <div class="dialog-backdrop" id="dialogBackdrop">
             <div class="dialog">
               <div class="dialog-title">Encounters</div>
-              <div class="dialog-helper">Each encounter is a separate game with its own players and monsters. Tap to switch · drag the ⠿ grip (or press &amp; hold a row) to reorder.</div>
+              <div class="dialog-helper">Each encounter is a separate fight with its own monsters, map and turn order; players are shared across the game. Tap to switch · drag the ⠿ grip (or press &amp; hold a row) to reorder.</div>
               <div class="dm-enc-picker-list">
                 ${c.encounters.map((e, idx) => {
                   const isActive = e.id === c.activeId;
@@ -35390,8 +35936,8 @@ function homePanelDM() {
       })() : ''}
       ${state.ui.dmTileStatsFor ? (() => {
         const c = enc.combatants.find(x => x.id === state.ui.dmTileStatsFor);
-        if (!c || !c.monsterId) return '';
-        const m = findMonster(c.monsterId);
+        if (!c) return '';
+        const m = c.monsterId ? findMonster(c.monsterId) : (c.isBoss ? c.bossStat : null); // v1.4.2 — boss stat block
         if (!m) return '';
         return `
           <div class="dialog-backdrop" id="dialogBackdrop">
@@ -36137,7 +36683,7 @@ function renderBuild() {
     <div class="stepper">
       ${WIZARD_STEPS.map((stepName, i) => {
         // Skip dots for steps that won't apply
-        if (stepName === 'spells' && state.draft.klass && !CLASSES[state.draft.klass].spellcaster) return '';
+        if (stepName === 'spells' && state.draft.klass && wizardSkipsSpellsStep(state.draft)) return '';
         if (stepName === 'subclass' && state.draft.klass) {
           const pickLvl = subclassPickLevel(state.draft.klass);
           if (!pickLvl || state.draft.level < pickLvl) return '';
@@ -36165,8 +36711,9 @@ function renderBuild() {
       <button class="btn" id="backBtn" ${state.wizardStep === 0 ? 'disabled' : ''}>Back</button>
       <button class="btn primary" id="nextBtn">${state.wizardStep === WIZARD_STEPS.length - 1 ? 'Save & Play' : 'Next'}</button>
     </div>
-    ${(stepName === 'abilities' && state.draft && state.draft.statMode !== 'manual' && !canAdvance()) ? (() => { const left = TOTAL_POINTS - pointsSpent(state.draft.base); return `<div class="small-note" id="nextBlockedHint" style="margin-top:8px;text-align:center;">${left > 0 ? `Spend all ${TOTAL_POINTS} points to continue (${left} left).` : `You've spent ${-left} too many points.`}</div>`; })() : ''}
-    ${state.wizardStep > 0 ? '<button class="btn ghost" id="cancelBtn" style="margin-top:10px;width:100%;">Cancel — discard character</button>' : ''}
+    ${(stepName === 'abilities' && state.draft && state.draft.statMode === 'standard' && !canAdvance()) ? '<div class="small-note" id="nextBlockedHint" style="margin-top:8px;text-align:center;">Place all six standard-array values to continue.</div>' : ''}
+    ${(stepName === 'abilities' && state.draft && state.draft.statMode !== 'manual' && state.draft.statMode !== 'standard' && !canAdvance()) ? (() => { const left = TOTAL_POINTS - pointsSpent(state.draft.base); return `<div class="small-note" id="nextBlockedHint" style="margin-top:8px;text-align:center;">${left > 0 ? `Spend all ${TOTAL_POINTS} points to continue (${left} left).` : `You've spent ${-left} too many points.`}</div>`; })() : ''}
+    ${state.wizardStep > 0 ? (isEditingExistingCharacter(state.draft) ? '<button class="btn ghost" id="cancelBtn" style="margin-top:10px;width:100%;">Cancel — discard changes</button>' : '<button class="btn ghost" id="cancelBtn" style="margin-top:10px;width:100%;">Cancel — discard character</button>') : ''}
   `;
   wireWizardNav();
 }
@@ -36183,7 +36730,7 @@ function stepTip(stepName) {
     subclass: 'A subclass is a specialty within your class. Tap one to see what it does.',
     style: 'A fighting style is a small permanent bonus to how you fight. Pick the one that suits your weapon.',
     background: 'Your background is where your hero came from — it grants a couple of skills and some flavour.',
-    abilities: 'These six scores power everything. Point Buy spends a budget for balance; switch to Rolled/Manual to type your own. Racial bonuses are added for you.',
+    abilities: 'These six scores power everything. Point Buy spends a budget for balance, Standard Array gives you six set scores to place, and Rolled/Manual lets you type your own. Racial bonuses are added for you.',
     skills: 'Skills are what your hero is trained in. Pick the number shown — your class and background decide how many.',
     spells: 'Pick the spells shown for each section. The counter tells you how many you can choose — you\'ll learn more as you level up.',
     equipment: 'Choose your starting gear and weapons. You can add, swap, or buy more from the Gear tab later.',
@@ -36202,7 +36749,7 @@ function wizardStepNumber(stepName) {
   for (const st of WIZARD_STEPS) {
     if (st === 'subclass') { const pl = d.klass ? subclassPickLevel(d.klass) : null; if (!pl || (d.level || 1) < pl) continue; }
     if (st === 'style' && !(d.klass && shouldHaveFightingStyle(d))) continue;
-    if (st === 'spells' && !(d.klass && CLASSES[d.klass] && CLASSES[d.klass].spellcaster)) continue;
+    if (st === 'spells' && wizardSkipsSpellsStep(d)) continue;
     if (st === 'bgchoices' && !bgChoiceInfo(d)) continue;
     if (st === 'review') continue;
     n++;
@@ -36239,6 +36786,8 @@ function canAdvance() {
   if (step === 'abilities') {
     // v0.92.1 — a levelled character's scores include ASIs, so point-buy totals
     // don't apply when editing; don't trap the player on this step.
+    if (d.manualPending && Object.keys(d.manualPending).length) return false; // v1.4.2
+    if (d.statMode === 'standard' && !isEditingExistingCharacter(d)) return standardArrayComplete(d);
     if (isEditingExistingCharacter(d)) return ABILITIES.every(a => Number.isFinite(Number(d.base[a])) && d.base[a] >= 1 && d.base[a] <= 30);
     if (d.statMode === 'manual') return ABILITIES.every(a => Number.isFinite(Number(d.base[a])) && d.base[a] >= 3 && d.base[a] <= 18);
     return pointsSpent(d.base) === TOTAL_POINTS;
@@ -36246,7 +36795,7 @@ function canAdvance() {
   if (step === 'skills') return d.skills.length === CLASSES[d.klass].skillCount || (isEditingExistingCharacter(d) && d.skills.length >= CLASSES[d.klass].skillCount);
   if (step === 'spells') return true;
   if (step === 'equipment') return !!d.pack || isEditingExistingCharacter(d);
-  if (step === 'identity') return !!d.alignment;
+  if (step === 'identity') return true; // v1.4.2 - alignment is optional
   return true;
 }
 
@@ -36488,7 +37037,7 @@ function wireWizardNav() {
         // Skip fighting-style step if class doesn't get one (or not yet at pick level)
         if (WIZARD_STEPS[nextStep] === 'style' && !shouldHaveFightingStyle(state.draft)) nextStep++;
         if (WIZARD_STEPS[nextStep] === 'bgchoices' && !bgChoiceInfo(state.draft)) nextStep++;
-        if (WIZARD_STEPS[nextStep] === 'spells' && !CLASSES[state.draft.klass].spellcaster) nextStep++;
+        if (WIZARD_STEPS[nextStep] === 'spells' && wizardSkipsSpellsStep(state.draft)) nextStep++;
         state.wizardStep = nextStep;
         saveDraftProgress();
         render();
@@ -36499,7 +37048,7 @@ function wireWizardNav() {
     back.addEventListener('click', () => {
       if (state.wizardStep === 0) return;
       let prev = state.wizardStep - 1;
-      if (WIZARD_STEPS[prev] === 'spells' && !CLASSES[state.draft.klass].spellcaster) prev--;
+      if (WIZARD_STEPS[prev] === 'spells' && wizardSkipsSpellsStep(state.draft)) prev--;
       if (WIZARD_STEPS[prev] === 'bgchoices' && !bgChoiceInfo(state.draft)) prev--;
       if (WIZARD_STEPS[prev] === 'style' && !shouldHaveFightingStyle(state.draft)) prev--;
       if (WIZARD_STEPS[prev] === 'subclass') {
@@ -36513,7 +37062,7 @@ function wireWizardNav() {
   }
   if (cancel) {
     cancel.addEventListener('click', () => {
-      confirmDialog('Discard this character?', () => {
+      confirmDialog(isEditingExistingCharacter(state.draft) ? 'Discard changes? Your saved character stays as it was.' : 'Discard this character?', () => {
         discardDraftPermanently();
         setActiveTab('character');
         render();
@@ -36529,6 +37078,7 @@ function renderStepName() {
       <div class="section-helper">What shall the bard sing of you?</div>
       <input class="name-input" id="nameInput" placeholder="Your character's name…" value="${escape(state.draft.name)}" maxlength="40" />
     </section>
+    ${isEditingExistingCharacter(state.draft) ? renderEditLevelNote(state.draft) : `
     <section class="section">
       <div class="section-label">Campaign Starting Level</div>
       <div class="ability">
@@ -36540,8 +37090,26 @@ function renderStepName() {
         <div class="ability-mod">Build starts at level 1, then guided level-up takes you to ${state.draft.targetLevel || 1}</div>
       </div>
       <div class="small-note">Cleaner for higher-level characters: make the level-1 foundation first, then the app walks you through HP, subclass, ASI, multiclass and class unlocks one level at a time. Barbarian brain-proof, allegedly.</div>
-    </section>
+    </section>`}
   `;
+}
+// v1.4.2 - editing keeps the character's level; show it instead of "start at 1".
+function editClassLevelText(d) {
+  const cl = (d.classLevels && Object.keys(d.classLevels).length) ? d.classLevels : { [d.klass]: d.level || 1 };
+  const parts = Object.entries(cl).filter(([, l]) => l > 0).map(([k, l]) => `${(CLASSES[k] || {}).name || k} ${l}`);
+  if (parts.length <= 1) return `${(CLASSES[d.klass] || {}).name || d.klass} · Level ${d.level || 1}`;
+  return `${parts.join(' / ')} · Level ${d.level || 1}`;
+}
+function renderEditLevelNote(d) {
+  return `
+    <section class="section">
+      <div class="section-label">Level</div>
+      <div class="ability">
+        <div class="ability-value">${d.level || 1}</div>
+        <div class="ability-mod">${escape(editClassLevelText(d))}</div>
+      </div>
+      <div class="small-note">Editing keeps your current level. Use Level Up on the character sheet to gain levels.</div>
+    </section>`;
 }
 function renderStepRace() {
   const d = state.draft;
@@ -36718,16 +37286,20 @@ function subclassFeaturesUpToHelper(d, sc) {
 
 function renderStepStyle() {
   const d = state.draft;
-  const klass = CLASSES[d.klass];
-  const pickLvl = fightingStylePickLevel(d.klass);
+  // v1.4.2 - the style comes from the class that grants it (Wizard 5 / Fighter 1
+  // picks from the Fighter list), not always from the main class.
+  const srcKlass = fightingStyleSourceClass(d) || d.klass;
+  const klass = CLASSES[srcKlass] || CLASSES[d.klass];
+  const pickLvl = fightingStylePickLevel(srcKlass);
   if (!shouldHaveFightingStyle(d)) {
     return `<div class="empty-state">Fighting Styles are chosen at level ${pickLvl || '?'} for this class. Click Next to continue.</div>`;
   }
-  const options = availableFightingStyles(d.klass);
+  const _taken = (Array.isArray(d.extraFightingStyles) ? d.extraFightingStyles : []).filter(Boolean);
+  const options = availableFightingStyles(srcKlass).filter(s => !_taken.includes(s.id) || d.fightingStyle === s.id);
   return `
     <section class="section">
       <div class="section-label">Step ${wizardStepNumber('style')} — Fighting Style</div>
-      <div class="section-helper">Your ${klass.name}'s combat specialty. Picked at level ${pickLvl}.</div>
+      <div class="section-helper">Your ${klass.name}'s combat specialty. Picked at ${klass.name} level ${pickLvl}.</div>
       <div class="card-grid" style="grid-template-columns: 1fr;">
         ${options.map(s => `
           <button class="card ${d.fightingStyle === s.id ? 'selected' : ''}" data-style="${s.id}" style="text-align:left;">
@@ -36837,19 +37409,60 @@ function renderStepBgChoices() {
     </section>`;
 }
 
+// v1.4.2 - ability step: Point Buy, Standard Array (15,14,13,12,10,8 assigned by
+// the player) or Rolled/Manual. Manual inputs update their modifier live, an
+// over-the-limit score is visibly clamped (with a note) and an empty/too-low
+// entry is kept as typed (Next stays disabled) instead of silently becoming 3.
+function standardArrayValues() { return [15, 14, 13, 12, 10, 8]; }
+function standardArrayComplete(d) {
+  const asg = (d && d.stdAssign) || {};
+  const vals = ABILITIES.map(a => asg[a]);
+  if (vals.some(v => !Number.isFinite(v))) return false;
+  return vals.slice().sort((x, y) => y - x).join(',') === standardArrayValues().join(',') && ABILITIES.every(a => Number(d.base[a]) === asg[a]);
+}
+function manualScoreLimits(d) {
+  return isEditingExistingCharacter(d) ? { min: 1, max: 30 } : { min: 3, max: 18 };
+}
+function manualScoreHintText(d) {
+  const lim = manualScoreLimits(d);
+  const out = [];
+  const pend = (d && d.manualPending) || {};
+  const clamped = (d && d.manualClamped) || {};
+  ABILITIES.forEach(a => {
+    if (Object.prototype.hasOwnProperty.call(pend, a)) out.push(`${ABILITY_SHORT[a]}: ${String(pend[a]).trim() === '' ? 'empty' : escape(String(pend[a])) + ' is too low'} — enter ${lim.min}–${lim.max}.`);
+    else if (clamped[a] != null) out.push(`${ABILITY_SHORT[a]}: ${escape(String(clamped[a]))} is above ${lim.max}, so it was set to ${lim.max}.`);
+  });
+  return out.join(' ');
+}
+function abilityModLabel(d, a) {
+  const final = finalScores(d);
+  const base = Number(d.base[a]) || 8;
+  const m = mod(final[a]);
+  const racialBonus = final[a] - base;
+  return { text: `${fmtMod(m)}${racialBonus ? ' · base ' + base : ''}`, cls: m > 0 ? 'positive' : m < 0 ? 'negative' : '' };
+}
 function renderStepAbilities() {
   const d = state.draft;
   if (!d.statMode) d.statMode = 'pointbuy';
   const spent = pointsSpent(d.base);
   const remaining = TOTAL_POINTS - spent;
   const final = finalScores(d);
-  const manual = d.statMode === 'manual';
+  let manual = d.statMode === 'manual';
+  let standard = d.statMode === 'standard';
+  // A saved standard-array character whose scores later rose (ASIs) is edited as typed scores.
+  if (standard && isEditingExistingCharacter(d) && Object.keys(d.stdAssign || {}).length === 6 && !standardArrayComplete(d)) { standard = false; manual = true; }
+  const pointbuy = !manual && !standard;
+  const lim = manualScoreLimits(d);
+  const pend = d.manualPending || {};
+  const asg = d.stdAssign || {};
+  const stdLeft = standardArrayValues().filter(v => !Object.values(asg).includes(v));
   return `
     <section class="section">
       <div class="section-label">Step ${wizardStepNumber('abilities')} — Ability Scores</div>
-      <div class="section-helper">Choose point buy, or switch to rolled/manual stats and type your own scores. Racial bonuses are still applied automatically.</div>
-      <div class="stat-mode-toggle">
-        <button class="stat-mode-btn ${!manual ? 'active' : ''}" data-stat-mode="pointbuy">27 Point Buy</button>
+      <div class="section-helper">Choose point buy, the standard array, or rolled/manual stats you type in. Racial bonuses are still applied automatically.</div>
+      <div class="stat-mode-toggle hf142-mode3">
+        <button class="stat-mode-btn ${pointbuy ? 'active' : ''}" data-stat-mode="pointbuy">27 Point Buy</button>
+        <button class="stat-mode-btn ${standard ? 'active' : ''}" data-stat-mode="standard">Standard Array</button>
         <button class="stat-mode-btn ${manual ? 'active' : ''}" data-stat-mode="manual">Rolled / Manual</button>
       </div>
       <div class="ability-grid">
@@ -36859,13 +37472,31 @@ function renderStepAbilities() {
           const m = mod(finalVal);
           const racialBonus = finalVal - base;
           if (manual) {
+            const isPending = Object.prototype.hasOwnProperty.call(pend, a);
+            const lbl = abilityModLabel(d, a);
             return `
               <div class="ability">
                 <div class="ability-label">${ABILITY_SHORT[a]}</div>
                 <div class="ability-controls">
-                  <input class="manual-score-input" type="number" min="3" max="18" inputmode="numeric" data-manual-ability="${a}" value="${base}" />
+                  <input class="manual-score-input ${isPending ? 'hf142-invalid' : ''}" type="number" min="${lim.min}" max="${lim.max}" inputmode="numeric" data-manual-ability="${a}" value="${isPending ? escape(String(pend[a])) : base}" aria-label="${ABILITY_SHORT[a]} score" />
                 </div>
-                <div class="ability-mod ${m > 0 ? 'positive' : m < 0 ? 'negative' : ''}">${fmtMod(m)}${racialBonus ? ' · base ' + base : ''}</div>
+                <div class="ability-mod ${isPending ? '' : lbl.cls}" data-manual-mod="${a}">${isPending ? '—' : lbl.text}</div>
+              </div>
+            `;
+          }
+          if (standard) {
+            const cur = asg[a];
+            const has = Number.isFinite(cur);
+            return `
+              <div class="ability">
+                <div class="ability-label">${ABILITY_SHORT[a]}</div>
+                <div class="ability-controls">
+                  <select class="hf142-std-select" data-std-ability="${a}" aria-label="${ABILITY_SHORT[a]} score">
+                    <option value="" ${has ? '' : 'selected'}>—</option>
+                    ${standardArrayValues().map(v => { const owner = ABILITIES.find(o => o !== a && asg[o] === v); return `<option value="${v}" ${cur === v ? 'selected' : ''}>${v}${owner ? ' (' + ABILITY_SHORT[owner] + ')' : ''}</option>`; }).join('')}
+                  </select>
+                </div>
+                <div class="ability-mod ${has ? (m > 0 ? 'positive' : m < 0 ? 'negative' : '') : ''}">${has ? fmtMod(m) + (racialBonus ? ' · total ' + finalVal : '') : 'pick a value'}</div>
               </div>
             `;
           }
@@ -36875,9 +37506,9 @@ function renderStepAbilities() {
             <div class="ability">
               <div class="ability-label">${ABILITY_SHORT[a]}</div>
               <div class="ability-controls">
-                <button class="ability-btn" data-ability="${a}" data-delta="-1" ${canDec ? '' : 'disabled'}>−</button>
+                <button class="ability-btn" data-ability="${a}" data-delta="-1" ${canDec ? '' : 'disabled'} aria-label="Lower ${ABILITY_SHORT[a]}">−</button>
                 <div class="ability-value">${finalVal}</div>
-                <button class="ability-btn" data-ability="${a}" data-delta="1" ${canInc ? '' : 'disabled'}>+</button>
+                <button class="ability-btn" data-ability="${a}" data-delta="1" ${canInc ? '' : 'disabled'} aria-label="Raise ${ABILITY_SHORT[a]}">+</button>
               </div>
               <div class="ability-mod ${m > 0 ? 'positive' : m < 0 ? 'negative' : ''}">${fmtMod(m)}${racialBonus ? ' · base ' + base : ''}</div>
             </div>
@@ -36885,8 +37516,11 @@ function renderStepAbilities() {
         }).join('')}
       </div>
       ${manual
-        ? `<div class="points-remaining">Manual scores: type your rolled/base stats before racial bonuses. Valid range <strong>3–18</strong>.</div>`
-        : `<div class="points-remaining">Points remaining: <strong>${remaining}</strong> of ${TOTAL_POINTS}</div>`}
+        ? `<div class="points-remaining">Manual scores: type your rolled/base stats before racial bonuses. Valid range <strong>${lim.min}–${lim.max}</strong>.</div>
+           <div class="hf142-score-hint" id="manualScoreHint" role="status" aria-live="polite">${manualScoreHintText(d)}</div>`
+        : standard
+          ? `<div class="points-remaining">Standard array: give each ability one of <strong>15, 14, 13, 12, 10, 8</strong>. ${stdLeft.length ? 'Still to place: <strong>' + stdLeft.join(', ') + '</strong>' : 'All placed.'}</div>`
+          : `<div class="points-remaining">Points remaining: <strong>${remaining}</strong> of ${TOTAL_POINTS}</div>`}
     </section>
   `;
 }
@@ -36941,13 +37575,20 @@ function draftSpellPickCaps(d) {
   else if (pm && pm.type === 'prepared') spells = pm.prepCap(1, mod(finalScores(d)[c.spellAbility] || 10));
   return { cantrips, spells };
 }
+// v1.4.2 - no Spells step for non-casters or when the class has nothing to pick at level 1.
+function wizardSkipsSpellsStep(d) {
+  if (!d || !d.klass || !CLASSES[d.klass]) return true;
+  if (!CLASSES[d.klass].spellcaster) return true;
+  const caps = draftSpellPickCaps(d);
+  return !caps.cantrips && !caps.spells;
+}
 function renderStepSpells() {
   const d = state.draft;
   const c = CLASSES[d.klass];
   if (!c.spellcaster) return `<div class="empty-state">No spells for this class. Click Next.</div>`;
   const caps = draftSpellPickCaps(d);
   if (!caps.cantrips && !caps.spells) return `<div class="empty-state">${c.name}s gain spellcasting at level 2 — no spells to pick yet. Click Next.</div>`;
-  const availableSpells = SPELLS.filter(s => s.classes.includes(d.klass));
+  const availableSpells = SPELLS.filter(s => s.classes.includes(d.klass) || (d.klass === 'warlock' && hfWarlockExpandedNames(d).includes(s.name)));
   const cantripsAvailable = caps.cantrips ? availableSpells.filter(s => s.level === 0) : [];
   const leveledAvailable = caps.spells ? availableSpells.filter(s => s.level > 0 && s.level <= Math.min(3, Math.ceil(d.level / 2))) : [];
   const cantripsKnown = caps.cantrips;
@@ -37076,7 +37717,7 @@ function renderStepEquipment() {
     <section class="section">
       <div class="section-label">Step ${wizardStepNumber('equipment')} — Starting Equipment</div>
       <div class="section-helper">Each line follows your class's 2014 equipment list - pick one option per line. An "any simple/martial" line adds a second menu for the exact weapon.</div>
-      <button class="primary-btn" data-apply-recommended-equipment="1" style="margin-top:8px;width:100%;">Use Recommended</button>
+      <button class="btn primary" data-apply-recommended-equipment="1" style="margin-top:8px;width:100%;">Use Recommended</button>
       <div class="small-note" style="margin-top:8px;">Fills every line with a sensible default. Change anything you like.</div>
     </section>
 
@@ -37093,7 +37734,7 @@ function renderStepEquipment() {
         ${extras.length ? extras.map(x => `<span class="se-extra-chip">${escape(x)}</span>`).join('') : '<span class="trait-desc">-</span>'}
         ${bg ? `<span class="se-extra-chip se-extra-bg">${escape(bgName)} gear${bg.gold ? ` &middot; ${bg.gold} gp` : ''}</span>` : ''}
       </div>
-      ${bg && (bg.equipment || []).length ? `<div class="small-note" style="margin-top:6px;">Background: ${escape((bg.equipment || []).join(', '))}.</div>` : ''}
+      ${bg && (bg.equipment || []).length ? `<div class="small-note" style="margin-top:6px;">Background: ${escape((bg.equipment || []).map((n, i) => ((d.bgChoices && d.bgChoices.equipment) || {})[i] || n).join(', '))}.</div>` : ''}
     </section>
   `;
 }
@@ -37154,7 +37795,7 @@ function renderStepReview() {
       <div class="section-label">Final Step — Review</div>
       <div class="play-header" style="margin-bottom:16px;">
         <div class="play-name" style="color:var(--ink);text-shadow:none;">${escape(d.name)}</div>
-        <div class="play-subtitle" style="color:var(--ink-faded);">${race.name} · ${klass.name} · Level 1 foundation${(d.targetLevel || 1) > 1 ? ' → guided start Level ' + d.targetLevel : ''}${bg ? ' · ' + bg.name : ''}${align ? ' · ' + align.name : ''}</div>
+        <div class="play-subtitle" style="color:var(--ink-faded);">${race.name} · ${editingExisting ? escape(editClassLevelText(d)) : klass.name + ' · Level 1 foundation' + ((d.targetLevel || 1) > 1 ? ' → guided start Level ' + d.targetLevel : '')}${bg ? ' · ' + bg.name : ''}${align ? ' · ' + align.name : ''}</div>
       </div>
       <div class="quick-stats" style="margin-bottom:14px;">
         <div class="quick-stat"><div class="quick-stat-label">HP</div><div class="quick-stat-value">${maxHp(d)}</div></div>
@@ -37179,7 +37820,7 @@ function renderStepReview() {
       <div class="trait"><strong>Weapons.</strong> <span class="trait-desc">${weapons.length ? weapons.join(', ') : 'None — unarmed strikes only.'}</span></div>
       <div class="trait"><strong>Armor.</strong> <span class="trait-desc">${armorName || 'None'}${(editingExisting ? (preview.inventory && preview.inventory.shield) : preview.startingShield) ? ' · Shield' : ''}</span></div>
       <div class="trait"><strong>Pack.</strong> <span class="trait-desc">${packName || '—'}</span></div>
-      ${bg ? `<div class="trait"><strong>Background.</strong> <span class="trait-desc">${bg.name} · ${bg.gold} gp · ${bg.equipment.join(', ')}</span></div>` : ''}
+      ${bg ? `<div class="trait"><strong>Background.</strong> <span class="trait-desc">${bg.name} · ${bg.gold} gp · ${escape((bg.equipment || []).map((n, i) => ((d.bgChoices && d.bgChoices.equipment) || {})[i] || n).join(', '))}</span></div>` : ''}
     </section>
 
     ${d.backstory && d.backstory.trim() ? `
@@ -37420,7 +38061,7 @@ function renderPlay() {
     state.ui._sheetCharId = ch.id;
     state.ui.concentration = ch.concentration || null;
     state.ui.deathSaves = ch.deathSaves ? { successes: ch.deathSaves.successes || 0, failures: ch.deathSaves.failures || 0 } : null;
-    state.ui.deathOutcome = (ch.currentHp != null && ch.currentHp <= 0 && state.ui.deathSaves && state.ui.deathSaves.failures >= 3) ? 'dead' : null;
+    state.ui.deathOutcome = (ch.currentHp != null && ch.currentHp <= 0 && state.ui.deathSaves && state.ui.deathSaves.failures >= 3 && !ch.deathAcknowledged) ? 'dead' : null;
     state.ui.concSaveDialog = null;
   }
   if (ch.currentHp != null && ch.currentHp <= 0 && !state.ui.deathSaves) {
@@ -37430,7 +38071,8 @@ function renderPlay() {
   const klass = classDataFor(ch);
   const race = raceDataFor(ch);
   const slots = slotsRemaining(ch);
-  const hpPct = Math.max(0, (ch.currentHp / maxHp(ch)) * 100);
+  const hfBeast = activeShapeBeast(ch); // v1.4.2
+  const hpPct = hfBeast ? Math.max(0, (ch.activeShape.beastHp / Math.max(1, ch.activeShape.beastHpMax)) * 100) : Math.max(0, (ch.currentHp / maxHp(ch)) * 100);
   const passivePerc = 10 + skillBonus(ch, 'perception');
 
   content.innerHTML = `
@@ -37451,6 +38093,7 @@ function renderPlay() {
       </div>
       <div class="play-top-actions">
         <button class="back-btn" id="notesBtn" title="Player notes">📝${ch.notes && ch.notes.trim() ? '<span class="notes-dot"></span>' : ''}</button>
+        <button class="back-btn" id="hfRollLogBtn" data-hf-open-rolllog="1" title="Recent rolls" aria-label="Recent rolls">🎲</button>
         <button class="back-btn" id="quickFeaturesBtn">Features</button>
         <div class="hearth-top-menu" id="hearthTopMenu">
           <button class="hearth-menu-btn" id="hearthMenuBtn" title="Menu" aria-label="Menu">⋮</button>
@@ -37476,11 +38119,11 @@ function renderPlay() {
     <div class="vitals">
       <div class="vital-hp">
         <div class="vital-hp-readout">
-          <span class="hp-label">HP</span>
+          <span class="hp-label">${hfBeast ? '🐾 HP' : 'HP'}</span>
           <div class="vital-hp-numbers">
-            <span class="hp-current">${ch.currentHp}</span>
+            <span class="hp-current">${hfBeast ? ch.activeShape.beastHp : ch.currentHp}</span>
             <span class="hp-slash">/</span>
-            <span class="hp-max">${maxHp(ch)}</span>
+            <span class="hp-max">${hfBeast ? ch.activeShape.beastHpMax : maxHp(ch)}</span>
             ${ch.tempHp ? `<span class="hp-temp-pip" title="Temporary hit points"><span class="hp-temp-pip-mark">⊕</span> ${ch.tempHp} TEMP</span>` : ''}
           </div>
         </div>
@@ -37500,14 +38143,14 @@ function renderPlay() {
         </div>
         <div class="hp-controls" aria-label="Adjust hit points">
           <button class="hp-btn damage" data-hp-inline="damage">− Damage</button>
-          <input class="hp-input" id="hpAdjustInput" type="number" min="0" inputmode="numeric" placeholder="0" aria-label="HP amount" />
+          <input class="hp-input" id="${deathSaveLockActive(ch) ? 'hpAdjustInputSheet' : 'hpAdjustInput'}" type="number" min="0" inputmode="numeric" placeholder="0" aria-label="HP amount" />
           <button class="hp-btn heal" data-hp-inline="heal">+ Heal</button>
           <button class="hp-btn more" data-hp-inline="custom" title="More HP options" aria-label="More HP options">⋯</button>
         </div>
       </div>
       <div class="vital-stats">
         ${vitalStatHtml('AC',      ((ch.manualAcBonus || 0) !== 0 ? '<span style="color:var(--gold);">' + ac(ch) + '</span>' : String(ac(ch))), 'shield', true, null, 'data-ac-tile="1" aria-label="Long-press to set a manual AC modifier"')}
-        ${vitalStatHtml('Speed',   `${race.speed + activeSpeedBonus(ch)}<span class="vital-stat-suffix">ft</span>`, 'boot',      false)}
+        ${vitalStatHtml('Speed',   `${hfBeast ? ((hfBeast.speed && hfBeast.speed.walk) || 0) : race.speed + activeSpeedBonus(ch)}<span class="vital-stat-suffix">ft</span>`, 'boot',      false)}
         ${(() => {
           // v0.20.81 — Initiative is the dex mod, plus +5 if the
           // character has the Alert feat. Tile is tappable; tap to roll
@@ -37515,7 +38158,7 @@ function renderPlay() {
           // sat in the cream slab below the stats grid.
           // v0.21.39 — Swashbuckler's Rakish Audacity adds CHA to initiative.
           const rakish = subclassIdFor(ch, 'rogue') === 'swashbuckler' && classLevelFor(ch, 'rogue') >= 3;
-          const initMod = mod(final.dex) + (hasFeat(ch, 'alert') ? 5 : 0) + (rakish ? mod(final.cha) : 0);
+          const initMod = mod(hfBeast ? hfBeast.abilities.dex : final.dex) + (hasFeat(ch, 'alert') ? 5 : 0) + (rakish ? mod(final.cha) : 0);
           // v0.21.103 — a standalone stat must always show a value, including
           // +0 (fmtMod returns '' for 0, which is right for formulas but would
           // leave this tile blank). Show an explicit signed number here.
@@ -37525,8 +38168,14 @@ function renderPlay() {
         ${vitalStatHtml('Passive', passivePerc,                                               'glass',     false)}
         ${vitalStatHtml('Prof',    `+${profBonus(ch.level)}`,                                 'star',      false)}
       </div>
-      ${otherSpeedsLineHtml(ch)}
+      ${hfBeast ? '' : otherSpeedsLineHtml(ch)}
     </div>
+    ${hfBeast ? `
+      <button type="button" class="hf142-shape-banner" data-hf-open-shape="1" aria-label="Open the ${escape(hfBeast.name)} stat block">
+        <span class="hf142-shape-title">🐾 Wild Shape: <strong>${escape(hfBeast.name)}</strong></span>
+        <span class="hf142-shape-meta">Beast HP ${ch.activeShape.beastHp}/${ch.activeShape.beastHpMax} · AC ${hfBeast.ac} · ${escape(hfBeastSpeedText(hfBeast))} · STR ${hfBeast.abilities.str} DEX ${hfBeast.abilities.dex} CON ${hfBeast.abilities.con} · Druid HP ${ch.currentHp}/${maxHp(ch)}</span>
+        <span class="hf142-shape-cta">Stat block ›</span>
+      </button>` : ''}
 
     <!-- XP strip — moved below everything, rarely used during combat -->
 
@@ -37651,7 +38300,7 @@ function renderPlay() {
       `).join('')}
     </div>
 
-    <div class="action-content">
+    <div class="action-content ${hfShapeBlocksSpells(ch) ? 'hf142-nocast' : ''}">
       ${renderActionContent(ch)}
     </div>
 
@@ -37764,6 +38413,7 @@ function renderPlay() {
     ${state.ui.fightingStyleDialog ? renderFightingStyleDialog(ch) : ''}
     ${state.ui.cdChooserDialog ? renderChannelDivinityDialog(ch) : ''}
     ${deathSaveLockActive(ch) ? renderDeathLockDialog(ch) : ''}
+    ${state.ui.hfRollLogOpen ? hfRenderRollLog(ch) : ''}
     
     ${state.ui.xpDialog ? renderXpDialog(ch) : ''}
     ${state.ui.asiDialog ? renderAsiDialog(ch) : ''}
@@ -38447,7 +39097,7 @@ function renderResourceItem(ch, r) {
     return `
       <div class="resource-item">
         <div class="resource-info">
-          <div class="resource-name" data-resource-info="${r.id}">${r.name}${rageOn ? (ch.frenzyActive ? ' — Frenzy active' : ' — Active') : (wildShapeOn ? ` — ${escape(ch.activeShape.beastName || 'transformed')}` : '')}</div>
+          <div class="resource-name" ${wildShapeOn ? 'data-hf-open-shape="1"' : `data-resource-info="${r.id}"`}>${r.name}${rageOn ? (ch.frenzyActive ? ' — Frenzy active' : ' — Active') : (wildShapeOn ? ` — ${escape(ch.activeShape.beastName || 'transformed')}` : '')}</div>
           <div class="resource-meta">Unlimited</div>
         </div>
         <div class="resource-action-row">
@@ -38481,7 +39131,7 @@ function renderResourceItem(ch, r) {
     return `
       <div class="resource-item ${remaining <= 0 && !rageOn && !wildShapeOn && !cdActive ? 'resource-spent' : ''}">
         <div class="resource-info">
-          <div class="resource-name" data-resource-info="${r.id}">${r.name}${spMetaFlag}${rageOn ? (ch.frenzyActive ? ' — Frenzy active' : ' — Active') : (wildShapeOn ? ` — ${escape(ch.activeShape.beastName || 'transformed')}` : (cdActive ? ` — ${TIMED_EFFECTS[cdActiveEffect.id]?.name || 'active'}` : ''))}</div>
+          <div class="resource-name" ${wildShapeOn ? 'data-hf-open-shape="1"' : `data-resource-info="${r.id}"`}>${r.name}${spMetaFlag}${rageOn ? (ch.frenzyActive ? ' — Frenzy active' : ' — Active') : (wildShapeOn ? ` — ${escape(ch.activeShape.beastName || 'transformed')}` : (cdActive ? ` — ${TIMED_EFFECTS[cdActiveEffect.id]?.name || 'active'}` : ''))}</div>
           <div class="resource-meta">${remaining}/${max} · ${recLabel}</div>
         </div>
         <div class="resource-action-row">
@@ -38544,7 +39194,7 @@ function renderBrowseSpellsDialog(ch) {
     const useSlotMax = multiclassSpellSelectionUsesHighestSlot();
     const slotMax = highestSpellLevel(ch);
     return casterClasses.some(cc => {
-      if (!s.classes.includes(cc.klass)) return false;
+      if (!s.classes.includes(cc.klass) && !(cc.klass === 'warlock' && hfWarlockExpandedNames(ch).includes(s.name))) return false;
       if (s.level === 0) return true;
       const sct = cc.c.spellcastingType;
       const maxForClass = useSlotMax ? slotMax : ((HIGHEST_SPELL_LEVEL[sct] || {})[cc.klassLevel] || 0);
@@ -38585,7 +39235,7 @@ function renderBrowseSpellsDialog(ch) {
     const status = statusForSpell(s);
     if (status === 'always') return { type: 'noop', label: 'Always', disabled: true };
     if (s.level === 0) {
-      if (status === 'known') return { type: 'forget_cantrip', label: 'Forget' };
+      if (status === 'known') return isRacialCantrip(ch, s.name) ? { type: 'noop', label: 'Racial', disabled: true } : { type: 'forget_cantrip', label: 'Forget' };
       const atCap = classCantripCount(ch) >= cantripCap;
       return { type: 'learn_cantrip', label: atCap ? 'Full' : 'Learn', disabled: atCap };
     }
@@ -38637,6 +39287,7 @@ function renderBrowseSpellsDialog(ch) {
       <div class="dialog browse-dialog">
         <div class="dialog-title">Browse Spells</div>
         <div class="dialog-helper">${headerKlassName} · max spell level ${maxLvl} · learned spells ${learnedCap ? `${learnedCount}/${learnedCap}` : 'not capped'} · tap a button to learn, prepare, unprepare, or forget</div>
+        ${hfWarlockExpandedNames(ch).length ? `<div class="dialog-helper hf142-expanded-note">Your patron's expanded spells (${escape(hfWarlockExpandedNames(ch).filter(n => { const sp = SPELLS.find(x => x.name === n); return sp && sp.level <= maxLvl; }).join(', ') || 'none at your level yet')}) are added to your warlock list — learn them like any other warlock spell; they count toward spells known.</div>` : ''}
         <div class="dialog-body browse-body">
           <div class="browse-section-head">Cantrips · ${classCantripCount(ch)}/${cantripCap}</div>
   `;
@@ -38719,7 +39370,7 @@ function renderResourceInfoDialog(ch) {
 // STATS BAR — permanent strip above action tabs
 // ============================================================
 function renderStatsBar(ch) {
-  const f = finalScores(ch);
+  const f = hfShapeScores(ch);
   const prof = profBonus(ch.level);
 
   return `
@@ -38765,7 +39416,7 @@ function renderStatsBar(ch) {
 function renderStatEditDialog(ch) {
   const a = state.ui.statEditDialog;
   if (!a) return '';
-  const f = finalScores(ch);
+  const f = hfShapeScores(ch);
   const score = f[a];
   const baseScore = ch.base[a] || 8;
   const racialBonus = score - baseScore;
@@ -38986,6 +39637,10 @@ function bonusSkillGrants(ch) {
   // Bard Expertise (L3 and L10): two proficient skills each.
   if (classLevelFor(ch, 'bard') >= 3) out.push({ field: 'bardExpertise3', title: 'Expertise', source: 'Bard level 3', count: 2, options: null, mode: 'expertise' });
   if (classLevelFor(ch, 'bard') >= 10) out.push({ field: 'bardExpertise10', title: 'Expertise', source: 'Bard level 10', count: 2, options: null, mode: 'expertise' });
+  // v1.4.2 - Rogue Expertise (L1 and L6): two proficient skills, or one of them
+  // and thieves' tools.
+  if (classLevelFor(ch, 'rogue') >= 1) out.push({ field: 'rogueExpertise1', title: 'Expertise', source: 'Rogue level 1', count: 2, options: null, mode: 'expertise', tools: true });
+  if (classLevelFor(ch, 'rogue') >= 6) out.push({ field: 'rogueExpertise6', title: 'Expertise', source: 'Rogue level 6', count: 2, options: null, mode: 'expertise', tools: true });
   const rl = classLevelFor(ch, 'ranger');
   if (rl >= 1) {
     const taken = (keys) => keys.flatMap(k => ch[k] || []);
@@ -39004,12 +39659,25 @@ function bonusSkillGrants(ch) {
   }
   return out;
 }
+// v1.4.2 - thieves' tools picked for Rogue Expertise (in another grant than `exceptField`).
+function rogueToolExpertise(ch, exceptField) {
+  return ['rogueExpertise1', 'rogueExpertise6'].some(f => f !== exceptField && Array.isArray(ch && ch[f]) && ch[f].includes('thieves_tools'));
+}
+function bonusGrantPickName(g, k) {
+  if (g.mode === 'list') return RANGER_CHOICE_ITEMS[k] || k;
+  if (k === 'thieves_tools') return "Thieves' tools";
+  return SKILLS[k] ? SKILLS[k].name : k;
+}
 function bonusSkillGrantPending(ch) {
   return bonusSkillGrants(ch).find(g => !Array.isArray(ch[g.field])) || null;
 }
 function bonusSkillGrantOptions(ch, g) {
   if (g.mode === 'list') return g.items || [];
-  if (g.mode === 'expertise') return Object.keys(SKILLS).filter(k => skillProfMultiplier(ch, k) === 1);
+  if (g.mode === 'expertise') {
+    const sk = Object.keys(SKILLS).filter(k => skillProfMultiplier(ch, k) === 1);
+    if (g.tools && !rogueToolExpertise(ch, g.field)) sk.push('thieves_tools');
+    return sk;
+  }
   return (g.options || Object.keys(SKILLS)).filter(k => SKILLS[k] && skillProfMultiplier(ch, k) < 1);
 }
 // v0.92.0 — Favored Enemy / Natural Explorer on the Features tab: a Choose / Change
@@ -39035,9 +39703,9 @@ function renderLoreSkillsDialog(ch) {
     <div class="dialog-backdrop" id="loreSkillsBackdrop" style="display:flex;">
       <div class="dialog">
         <div class="dialog-title">${escape(g.title)}</div>
-        <div class="dialog-helper">${escape(g.source)}: ${g.mode === 'list' ? `choose ${need}` : `choose ${need} skill${need === 1 ? '' : 's'} ${g.mode === 'expertise' ? 'to gain Expertise in (double proficiency bonus)' : 'to gain proficiency in'}`} (${picks.length}/${need}).</div>
+        <div class="dialog-helper">${escape(g.source)}: ${g.mode === 'list' ? `choose ${need}` : `choose ${need} skill${need === 1 ? '' : 's'} ${g.mode === 'expertise' ? 'to gain Expertise in (double proficiency bonus)' : 'to gain proficiency in'}`}${g.tools ? " Thieves' tools can be one of the picks" : ''} (${picks.length}/${need}).</div>
         <div class="skill-choice-buttons" style="flex-wrap:wrap;">
-          ${options.map(k => `<button type="button" class="skill-choice-btn ${picks.includes(k) ? 'active' : ''}" data-lore-skill="${k}">${escape(g.mode === 'list' ? (RANGER_CHOICE_ITEMS[k] || k) : SKILLS[k].name)}</button>`).join('')}
+          ${options.map(k => `<button type="button" class="skill-choice-btn ${picks.includes(k) ? 'active' : ''}" data-lore-skill="${k}">${escape(bonusGrantPickName(g, k))}</button>`).join('')}
         </div>
         <div class="dialog-actions" style="margin-top:14px;">
           ${state.ui.loreSkillsManual ? `<button class="btn" id="loreSkillsCancel">Cancel</button>` : ''}
@@ -39146,11 +39814,14 @@ function renderDeathSaves(ch) {
   const isStable = ds.successes >= 3;
   return `
     <div class="death-saves-strip ${isDead ? 'dead' : isStable ? 'stable' : ''}">
-      <div class="death-saves-title">${isDead ? '☠ DEAD' : isStable ? '🎉 Survived' : '💀 Death Saving Throws'}</div>
+      <div class="death-saves-title">${isDead ? '☠ DEAD' : isStable ? '🛡 Stable at 0 HP' : '💀 Death Saving Throws'}</div>
       ${!isDead && !isStable ? renderDeathSaveBoard(ch, true) : isStable ? `
-        <button class="ds-roll-btn" id="dsResetBtn">Picked up to 1 HP</button>
+        <div class="hf142-dead-note">Unconscious but stable — no more death saves. Healing works as normal (use + Heal). Taking damage restarts death saves.</div>
+        <button class="ds-roll-btn" id="hfStableWakeBtn">1d4 hours later → 1 HP</button>
       ` : `
         <div class="death-saves-hint">☠️ DEAD ☠️</div>
+        <div class="hf142-dead-note">${ch.deathCause === 'massive' ? 'Killed outright by massive damage.' : 'Three failed death saves.'} Healing and rests can't help — only magic like Revivify or the DM.</div>
+        <button class="ds-roll-btn" id="hearthReviveBtn">Revive (e.g. Revivify) · 1 HP</button>
       `}
     </div>
   `;
@@ -39173,7 +39844,12 @@ function renderDeathLockDialog(ch) {
             <button class="death-lock-feature-btn" data-ds-hit="1">Hit while down · 1 fail</button>
             <button class="death-lock-feature-btn" data-ds-hit="2">Crit / melee within 5 ft · 2 fails</button>
           </div>
-          <div class="death-lock-helper" style="margin:0 0 10px;">Damage at 0 HP counts as failed saves. If one hit deals damage equal to your HP maximum, you die outright.</div>
+          <div class="hf142-lock-hp" aria-label="Damage or heal while at 0 HP">
+            <button class="hp-btn damage" data-hp-inline="damage">− Damage</button>
+            <input class="hp-input" id="hpAdjustInput" type="number" min="0" inputmode="numeric" placeholder="0" aria-label="Damage or healing amount" />
+            <button class="hp-btn heal" data-hp-inline="heal">+ Heal</button>
+          </div>
+          <div class="death-lock-helper" style="margin:0 0 10px;">Healing sets HP to the amount healed and clears death saves. Damage at 0 HP counts as a failed save; one hit dealing damage equal to your HP maximum kills outright.</div>
           ${opts.length ? opts.map(o => `
             <div class="death-lock-feature">
               <div class="death-lock-feature-name">${escape(o.name)}</div>
@@ -39199,13 +39875,24 @@ function dismissDeathOutcome(event) {
   // The old bug was a zombie overlay: the visible card flashed away, but the
   // backdrop or the state render brought it straight back. So we clear state,
   // clear death-save residue, remove every matching overlay, then render once.
+  const wasDead = state.ui.deathOutcome === 'dead' || !!(state.ui.deathOutcome && state.ui.deathOutcome.type === 'dead');
   state.ui.deathOutcome = null;
-  state.ui.deathSaves = null;
-
   const ch = getCharacter(state.activeCharId);
-  if (ch) {
-    if ((ch.currentHp || 0) <= 0) ch.currentHp = 1;
+  if (ch && wasDead && (ch.currentHp || 0) <= 0) {
+    // v1.4.2 — dead stays dead: 0 HP, three failures, until a deliberate Revive.
+    const dsDead = ensureDeathSaves();
+    dsDead.failures = 3;
+    ch.deathAcknowledged = true;
     saveCharacter(ch);
+  } else if (ch && hfIsStable(ch)) {
+    // v1.4.2 — stable (SRD): stays at 0 HP, unconscious, no more death saves.
+    saveCharacter(ch);
+  } else {
+    state.ui.deathSaves = null;
+    if (ch) {
+      if ((ch.currentHp || 0) <= 0) ch.currentHp = 1;
+      saveCharacter(ch);
+    }
   }
 
   hearthRemoveDeathOutcomeDom();
@@ -39234,7 +39921,7 @@ function hearthSyncDeathOutcomeModal() {
   const title = dead ? 'DEAD' : escape((outcome && outcome.title) || '🔥 BACK IN THE FIGHT');
   const icon = dead ? '☠️' : escape((outcome && outcome.icon) || '🔥');
   const nat20 = !!(outcome && outcome.nat20);
-  const helper = dead ? `${escape(ch.name)} has failed three death saves.` : `${escape(ch.name)} is back on 1 HP.`;
+  const helper = dead ? `${escape(ch.name)} ${ch.deathCause === 'massive' ? 'was killed outright by massive damage.' : 'has failed three death saves.'}` : (outcome && outcome.stable) ? `${escape(ch.name)} is stable at 0 HP — unconscious, no more death saves. Regains 1 HP after 1d4 hours, or when healed.` : `${escape(ch.name)} is back on 1 HP.`;
   const classes = `${dead ? 'dead' : 'comeback'} ${nat20 ? 'nat20' : ''}`;
 
   const wrap = document.createElement('div');
@@ -39247,7 +39934,7 @@ function hearthSyncDeathOutcomeModal() {
       <div class="death-outcome-icon">${icon}</div>
       <div class="death-outcome-title ${dead ? 'dead' : ''}">${title}</div>
       <div class="death-outcome-helper">${helper}</div>
-      <button type="button" class="death-outcome-btn" id="deathOutcomeCloseBtn" data-death-outcome-close>${dead ? 'Acknowledge' : 'Get back in the fight'}</button>
+      <button type="button" class="death-outcome-btn" id="deathOutcomeCloseBtn" data-death-outcome-close>${dead ? 'Acknowledge' : (outcome && outcome.stable) ? 'OK' : 'Get back in the fight'}</button>
     </div>
   `;
   document.body.appendChild(wrap);
@@ -39261,7 +39948,7 @@ function renderDeathOutcomeDialog(ch) {
   const title = dead ? 'DEAD' : escape((outcome && outcome.title) || '🔥 BACK IN THE FIGHT');
   const icon = dead ? '☠️' : escape((outcome && outcome.icon) || '🔥');
   const nat20 = !!(outcome && outcome.nat20);
-  const helper = dead ? `${escape(ch.name)} has failed three death saves.` : `${escape(ch.name)} is back on 1 HP.`;
+  const helper = dead ? `${escape(ch.name)} ${ch.deathCause === 'massive' ? 'was killed outright by massive damage.' : 'has failed three death saves.'}` : (outcome && outcome.stable) ? `${escape(ch.name)} is stable at 0 HP — unconscious, no more death saves. Regains 1 HP after 1d4 hours, or when healed.` : `${escape(ch.name)} is back on 1 HP.`;
   const classes = `${dead ? 'dead' : 'comeback'} ${nat20 ? 'nat20' : ''}`;
   return `
     <div class="death-outcome-backdrop">
@@ -39269,7 +39956,7 @@ function renderDeathOutcomeDialog(ch) {
         <div class="death-outcome-icon">${icon}</div>
         <div class="death-outcome-title ${dead ? 'dead' : ''}">${title}</div>
         <div class="death-outcome-helper">${helper}</div>
-        <button type="button" class="death-outcome-btn" id="deathOutcomeCloseBtn" data-death-outcome-close onclick="dismissDeathOutcome(event)">${dead ? 'Acknowledge' : 'Get back in the fight'}</button>
+        <button type="button" class="death-outcome-btn" id="deathOutcomeCloseBtn" data-death-outcome-close onclick="dismissDeathOutcome(event)">${dead ? 'Acknowledge' : (outcome && outcome.stable) ? 'OK' : 'Get back in the fight'}</button>
       </div>
     </div>
   `;
@@ -39326,7 +40013,8 @@ function renderWildShapePicker(ch) {
   const groupOrder = Object.keys(byCR).sort((a, b) => {
     if (a.startsWith('Elemental')) return 1;
     if (b.startsWith('Elemental')) return -1;
-    return a.localeCompare(b, undefined, { numeric: true });
+    const crN = v => typeof v === 'number' ? v : (String(v).includes('/') ? Number(String(v).split('/')[0]) / Number(String(v).split('/')[1]) : (Number(v) || 0));
+    return crN(byCR[a][0].cr) - crN(byCR[b][0].cr); // v1.4.2 numeric CR sort
   });
 
   return `
@@ -40470,6 +41158,12 @@ function classCantripCount(ch) {
     .forEach(() => { racialBonusCount++; });
   return Math.max(0, list.length - racialBonusCount);
 }
+// v1.4.2 - a cantrip granted by race (High Elf choice or racialSpells).
+function isRacialCantrip(ch, name) {
+  if (!ch || !name) return false;
+  if (ch.highElfCantrip && ch.highElfCantrip === name) return true;
+  return (typeof racialSpellsForCharacter === 'function' ? racialSpellsForCharacter(ch) : []).some(rs => rs.level === 0 && rs.spell === name);
+}
 // v0.91.2 — Magical Secrets picks that are still open. Those known-spell slots are
 // kept free for the Magical Secrets panel, so the bard-list browser can't fill them.
 function bardSecretsReserved(ch) {
@@ -40562,8 +41256,10 @@ function openNextLevelChoice(ch, opts) {
     return true;
   }
   // Fighting Style — fighter L1 (created), paladin L2, ranger L2; if not picked yet, prompt.
-  if (classGetsFightingStyle(ch.klass) && shouldHaveFightingStyle(ch) && !ch.fightingStyle) {
+  const _fsNext = nextFightingStyleGrant(ch);
+  if (_fsNext) {
     state.ui.fightingStyleDialog = true;
+    state.ui.fightingStyleSlot = _fsNext.slot;
     return true;
   }
   if (classLevelFor(ch, 'warlock') >= 3 && !ch.pactBoon) {
@@ -40854,7 +41550,8 @@ function renderLevelUpDialog(ch) {
   // Fighting style at this step?
   const fsLvl = fightingStylePickLevel(stepClass);
   const willPickFs = (fsLvl != null && stepClassLvl === fsLvl &&
-                       (stepClass === ch.klass ? !ch.fightingStyle : false));
+                       true) ||
+                     (stepClass === 'fighter' && stepClassLvl === 10 && subclassIdFor(ch, 'fighter') === 'champion');
   // Pact boon for warlock 3
   const willPickPact = (stepClass === 'warlock' && stepClassLvl === 3 && !ch.pactBoon);
   // First level in a new class triggers multiclass entry profs
@@ -40871,8 +41568,8 @@ function renderLevelUpDialog(ch) {
             <div class="dialog-helper">${escape(klass.name)} L${stepClassLvl} · ${currentLvl} → ${targetLvl}${remainingAfterThis > 0 ? ` · ${remainingAfterThis} more after this` : ''}</div>
           </div>
           ${showClassPicker
-            ? `<button class="saved-action" id="levelupBackToClassPick" style="border:1px solid var(--ink-faded);padding:7px 9px;white-space:nowrap;">← Change class</button>`
-            : `<button class="saved-action" id="levelupOpenClassPick" style="border:1px solid var(--ink-faded);padding:7px 9px;white-space:nowrap;">+ Multiclass</button>`}
+            ? `<button class="btn small hf142-lvl-btn" id="levelupBackToClassPick">← Change class</button>`
+            : `<button class="btn small hf142-lvl-btn" id="levelupOpenClassPick">+ Multiclass</button>`}
         </div>
         <div class="dialog-body">
           <div class="levelup-stats">
@@ -41088,7 +41785,7 @@ function playerGearHTML(ch) {
             <div class="attune-count ${aCount >= ATTUNEMENT_LIMIT ? 'full' : ''}">Attuned ${aCount}/${ATTUNEMENT_LIMIT}</div>
             ${parts.length ? `<div class="attune-bonuses">Active: ${parts.join(' · ')}</div>` : `<div class="attune-bonuses muted">${equippable.length ? 'No bonuses active' : 'Add a magic item to attune'}</div>`}
           </div>
-          ${state.ui.attuneMsg ? `<div class="attune-warn">${escape(state.ui.attuneMsg)}</div>` : ''}
+          ${state.ui.attuneMsg && !state.ui.attuneMsgItem ? `<div class="attune-warn">${escape(state.ui.attuneMsg)}</div>` : ''}
         `;
       })()}
       ${(inv.items || []).length === 0 ? `<div class="gear-empty">No items</div>` : ''}
@@ -41171,6 +41868,7 @@ function playerGearHTML(ch) {
             `}
             <button class="item-delete" data-item-delete="${item.id}">×</button>
           </div>
+          ${state.ui.attuneMsg && state.ui.attuneMsgItem === item.id ? `<div class="attune-warn hf142-attune-inline" role="alert">${escape(state.ui.attuneMsg)}</div>` : ''}
         </div>
       `;}).join('')}
       <button class="gear-add-btn" id="addItemBtn">+ Add Item</button>
@@ -41336,7 +42034,7 @@ function renderWeaponInventoryCard(ch, w, isEquipped) {
   // v0.93.1 — include the bonus of an item bound to this weapon (e.g. a staff's quarterstaff).
   const cwv = isEquipped ? characterWeapons(ch).find(x => x.invId === w.id) : null;
   const mag = cwv ? (cwv.magicBonus || 0) : (w.magicBonus || 0);
-  const atkBonus = mod(f[ab]) + profBonus(ch.level) + mag + ((ch.fightingStyle === 'archery' && shouldHaveFightingStyle(ch) && w.kind === 'ranged') ? 2 : 0);
+  const atkBonus = mod(f[ab]) + profBonus(ch.level) + mag + ((hasFightingStyle(ch, 'archery') && w.kind === 'ranged') ? 2 : 0);
   const dmgMod = mod(f[ab]) + mag + ((cwv && cwv.itemDamageExtra) || 0);
   // v0.21.155 — show the monk's effective Unarmed Strike die (Martial Arts),
   // matching the Play tab, instead of the stored 1d1. Same upgrade characterWeapons
@@ -42241,13 +42939,16 @@ function wireGear(ch) {
       } else {
         if (attunedCount(ch) >= ATTUNEMENT_LIMIT) {
           state.ui.attuneMsg = `Attunement limit reached — you can be attuned to ${ATTUNEMENT_LIMIT} items at once. Break one first.`;
+          state.ui.attuneMsgItem = id; // v1.4.2 — show it beside this item's button
+          if (typeof showToast === 'function') showToast(state.ui.attuneMsg);
           render();
+          requestAnimationFrame(() => { const hfW = document.querySelector('.hf142-attune-inline'); if (hfW && hfW.scrollIntoView) hfW.scrollIntoView({ block: 'nearest' }); });
           return;
         }
         item.attuned = true;
         item.equipped = true; // attuning means it's worn/held
       }
-      state.ui.attuneMsg = '';
+      state.ui.attuneMsg = ''; state.ui.attuneMsgItem = null;
       saveCharacter(ch);
       render();
     });
@@ -42661,12 +43362,16 @@ function wireSpellFilters() {
   apply();
 }
 
+function renderHfActionsTabFull(ch) {
+  renderActionsTab._hfFull = true;
+  try { return renderActionsTab(ch); } finally { renderActionsTab._hfFull = false; }
+}
 function renderActionContent(ch) {
   const tab = state.ui.actionTab;
   if (tab === 'actions') return renderActionsTab(ch);
   if (tab === 'bonus') return renderBonusTab(ch);
   if (tab === 'reaction') return renderReactionTab(ch);
-  if (tab === 'spells') return renderAllSpellsTab(ch);
+  if (tab === 'spells') return (hfShapeBlocksSpells(ch) ? `<div class="hf142-shape-note">🐾 In Wild Shape — you can't cast spells until druid level 18.</div>` : '') + renderAllSpellsTab(ch);
   if (tab === 'features') {
     // v0.20.75 — Features tab can crash on certain characters
     // (suspected per-build bug, reported during play-testing where the
@@ -42769,6 +43474,7 @@ function renderActionsTab(ch) {
       ${spellSection}
     `;
   }
+  if (isWildShaped(ch) && activeShapeBeast(ch) && !renderActionsTab._hfFull) return hfRenderBeastActions(ch); // v1.4.2
   const klass = CLASSES[ch.klass];
   const weapons = characterWeapons(ch);
   // v0.26.4 — Mindblade: the primary Psychic Blade is the Attack action (shown here).
@@ -42827,8 +43533,9 @@ function renderActionsTab(ch) {
       const f = finalScores(ch);
       const mag = w.magicBonus || 0;
       // v0.91.2 — include the Archery fighting style, as the roll does.
-      const archery = (ch.fightingStyle === 'archery' && shouldHaveFightingStyle(ch) && w.kind === 'ranged') ? 2 : 0;
-      const atkBonus = mod(f[ab]) + profBonus(ch.level) + mag + archery;
+      const archery = (hasFightingStyle(ch, 'archery') && w.kind === 'ranged') ? 2 : 0;
+      const hfSacred = hfSacredWeaponBonus(ch); // v1.4.2
+      const atkBonus = mod(f[ab]) + profBonus(ch.level) + mag + archery + hfSacred;
       const dmgBonus = mod(f[ab]) + rageDamageBonus(ch, w) + mag + (w.itemDamageExtra || 0);
       const rageHint = rageDamageBonus(ch, w) ? ` · rage +${rageDamageBonus(ch, w)}` : '';
       const showHint = hintText && (w.kind === 'melee' || hasSneak);
@@ -42836,7 +43543,8 @@ function renderActionsTab(ch) {
         <div class="action-card weapon-card">
           <div class="action-card-main"${((ch.inventory || {}).weapons || []).some(x => x.id === (w.invId || w.id)) ? ` data-weapon-detail="${escape(w.invId || w.id)}"` : ''}>
             <div class="action-card-name">${w.name}${mag ? ` <span class="weapon-magic-tag">+${mag}</span>` : ''}</div>
-            <div class="action-card-meta">${w.kind} · ${w.damage.count}d${w.damage.sides}${fmtMod(dmgBonus)} ${w.type}${w.grip ? ' (' + w.grip + ')' : ''}${rageHint} · atk ${fmtMod(atkBonus)}${archery ? ' (Archery +2)' : ''}</div>
+            <div class="action-card-meta">${w.kind} · ${w.damage.count}d${w.damage.sides}${fmtMod(dmgBonus)} ${w.type}${w.grip ? ' (' + w.grip + ')' : ''}${rageHint} · atk ${fmtMod(atkBonus)}${archery ? ' (Archery +2)' : ''}${hfSacred ? ` (Sacred Weapon +${hfSacred})` : ''}</div>
+            ${hfSacred && w.kind === 'melee' ? `<div class="weapon-card-hint hf142-sacred">✦ Sacred Weapon active: +${hfSacred} to hit, counts as magical, bright light 20 ft · 1 minute <button class="hf142-end-chip" data-end-effect="sacred_weapon">End</button></div>` : ''}
             ${w.versatile ? (w.gripLocked
               ? `<div class="grip-row"><span class="grip-locked">⛨ one-handed — shield equipped</span></div>`
               : `<div class="grip-row"><span class="grip-label">Grip</span><div class="grip-toggle"><button class="grip-opt ${w.grip === 'two-handed' ? 'active' : ''}" data-grip-toggle="${w.invId || w.id}|2h">Two-handed</button><button class="grip-opt ${w.grip === 'one-handed' ? 'active' : ''}" data-grip-toggle="${w.invId || w.id}|1h">One-handed</button></div></div>`
@@ -43152,7 +43860,7 @@ function renderBonusTab(ch) {
       const off = offhandEligibleWeapons(ch);
       if (off.length === 0) return '';
       const fsX = finalScores(ch);
-      const twf = ch.fightingStyle === 'two_weapon' && (typeof shouldHaveFightingStyle !== 'function' || shouldHaveFightingStyle(ch));
+      const twf = hasFightingStyle(ch, 'two_weapon');
       return `
         <div class="section-mini">✦ Off-Hand Attack</div>
         ${off.map(w => {
@@ -43335,7 +44043,7 @@ function getIntrinsicReactions(ch) {
   // v0.20.25 — Protection Fighting Style. Reaction: with a shield
   // wielded, when a creature attacks a target other than you within
   // 5 ft, impose disadvantage on the attack.
-  if (ch.fightingStyle === 'protection' && shouldHaveFightingStyle(ch)) {
+  if (hasFightingStyle(ch, 'protection')) {
     const hasShield = !!(ch.inventory && ch.inventory.shield);
     list.push({
       id: 'protection_style',
@@ -43434,7 +44142,7 @@ function renderReactionDialog(ch) {
           const f = finalScores(ch);
           const ab = weaponAbility(w, ch);
           const mag = w.magicBonus || 0;
-          const atkBonus = mod(f[ab]) + profBonus(ch.level) + mag + ((ch.fightingStyle === 'archery' && shouldHaveFightingStyle(ch) && w.kind === 'ranged') ? 2 : 0);
+          const atkBonus = mod(f[ab]) + profBonus(ch.level) + mag + ((hasFightingStyle(ch, 'archery') && w.kind === 'ranged') ? 2 : 0);
           const dmgMod = mod(f[ab]) + mag + (w.itemDamageExtra || 0);
           return `<button class="dialog-option" data-react-weapon="${w.id}">
             <span>${w.name}</span>
@@ -43613,7 +44321,7 @@ function spellDetailManageButtons(ch, spell) {
   const out = [];
   const st = 'style="width:100%;margin-top:8px;"';
   if (spell.level === 0) {
-    if ((ch.cantrips || []).includes(spell.name)) out.push(`<button class="btn" data-forget-cantrip="${n}" data-from-detail="1" ${st}>Forget cantrip</button>`);
+    if ((ch.cantrips || []).includes(spell.name) && !isRacialCantrip(ch, spell.name)) out.push(`<button class="btn" data-forget-cantrip="${n}" data-from-detail="1" ${st}>Forget cantrip</button>`);
   } else {
     const m = prepModel(ch.klass, ch);
     const prepared = (ch.preparedSpells || []).includes(spell.name);
@@ -43802,7 +44510,7 @@ function renderAllSpellsTab(ch) {
     : SPELLS.filter(s => s.level === 0 && _isCantripAvail(s));
   const knownCantrips = allCantripsForClass.filter(s => ch.cantrips.includes(s.name));
   const unknownCantrips = allCantripsForClass.filter(s => !ch.cantrips.includes(s.name));
-  const cantripsAtCap = knownCantrips.length >= cantripCap;
+  const cantripsAtCap = classCantripCount(ch) >= cantripCap;
   // v0.92.1 — cantrips granted by a feature (e.g. a subclass's Mage Hand) are
   // listed with your cantrips but don't count against the cantrip cap.
   const _knownCantripNames = new Set(knownCantrips.map(s => s.name));
@@ -43845,7 +44553,7 @@ function renderAllSpellsTab(ch) {
     <div class="prep-status ${overCap ? 'over' : ''}">
       <div class="prep-status-row">
         <span class="prep-status-label">Cantrips</span>
-        <span class="prep-status-count">${knownCantrips.length}/${cantripCap}</span>
+        <span class="prep-status-count">${classCantripCount(ch)}/${cantripCap}</span>
       </div>
       <div class="prep-status-row">
         <span class="prep-status-label">Leveled spells (${m.type === 'prepared' ? (noPrep ? 'ready' : 'prepared') : 'known'})</span>
@@ -44019,7 +44727,7 @@ function renderSpellCard(ch, s, opts = {}) {
   const sourceClasses = spellSourceClasses(ch, s);
   const sourceLabels = sourceClasses.map(k => CLASSES[k]?.name || k);
   const featureTag = featureSpellTagHtml(featureInfo);
-  const sourceTagHtml = sourceClasses.map(k => `<span class="spell-source-tag ${escape(k)}">${escape(CLASSES[k]?.name || k)}</span>`).join('') + (featureTag ? ' ' + featureTag : '');
+  const sourceTagHtml = sourceClasses.map(k => `<span class="spell-source-tag ${escape(k)}">${escape(CLASSES[k]?.name || k)}</span>`).join('') + (featureTag ? ' ' + featureTag : '') + ((isCantrip && isRacialCantrip(ch, s.name)) ? ` <span class="spell-source-tag racial" title="Racial cantrip — doesn't count toward your class cantrips">${ch.highElfCantrip === s.name ? 'High Elf · racial' : 'Racial'}</span>` : '');
   const castClassHint = sourceLabels.length > 1 ? ` · ${sourceLabels.join('/')}` : (sourceLabels.length === 1 ? ` · ${sourceLabels[0]}` : '');
 
   // Determine right-side button content
@@ -44059,7 +44767,7 @@ function renderSpellCard(ch, s, opts = {}) {
   // Forget/unprepare button on known spells
   let unprepHtml = '';
   if (!isUnprepared && !isScribe && expanded) {
-    if (isCantrip && ch.cantrips.includes(s.name)) {
+    if (isCantrip && ch.cantrips.includes(s.name) && !isRacialCantrip(ch, s.name)) {
       unprepHtml = `<button class="spell-unprep-btn" data-forget-cantrip="${escape(s.name)}">Forget cantrip</button>`;
     } else if (s.level > 0 && m) {
       if (opts.alwaysPrepared) {
@@ -44348,7 +45056,8 @@ function renderSorcererFeatureBlock(ch) {
         ${FONT_OF_MAGIC_TABLE.map(row => {
           const canCreate = pool && pool.remaining >= row.sp;
           const slot = slotsNow.find(s => s.level === row.slotLevel && !s.pact);
-          const canBurn = slot && slot.remaining > 0 && pool && pool.used > 0;
+          const hfRoom = pool ? pool.used : 0; // v1.4.2 — SP the pool can take back
+          const canBurn = slot && slot.remaining > 0 && pool && hfRoom >= spGainedFromSlot(row.slotLevel);
           // Only offer slot levels the character can actually have.
           const hasThisLevel = !!slot || canCreate;
           if (!hasThisLevel && !slot) return '';
@@ -44357,7 +45066,8 @@ function renderSorcererFeatureBlock(ch) {
               <div class="flex-cast-lvl">L${row.slotLevel} slot <span class="flex-cast-cost">· ${row.sp} SP</span></div>
               <div class="flex-cast-btns">
                 <button class="flex-cast-btn create" data-flex-create="${row.slotLevel}" ${canCreate ? '' : 'disabled'}>+ Make slot (−${row.sp} SP)</button>
-                <button class="flex-cast-btn burn" data-flex-burn="${row.slotLevel}" ${canBurn ? '' : 'disabled'}>Burn slot (+${spGainedFromSlot(row.slotLevel)} SP)</button>
+                <button class="flex-cast-btn burn" data-flex-burn="${row.slotLevel}" ${canBurn ? '' : 'disabled'} ${slot && slot.remaining > 0 && !canBurn ? `title="Only room for ${hfRoom} more SP — burning would waste points"` : ''}>Burn slot (+${spGainedFromSlot(row.slotLevel)} SP)</button>
+                ${slot && slot.remaining > 0 && !canBurn && pool ? `<div class="hf142-flex-note">Only room for ${hfRoom} SP — burning this slot would waste ${spGainedFromSlot(row.slotLevel) - hfRoom}.</div>` : ''}
               </div>
             </div>
           `;
@@ -44410,7 +45120,8 @@ function renderFlexCastDialog(ch) {
           ${FONT_OF_MAGIC_TABLE.map(row => {
             const canCreate = pool.remaining >= row.sp;
             const slot = slotsNow.find(s => s.level === row.slotLevel && !s.pact);
-            const canBurn = slot && slot.remaining > 0 && pool.used > 0;
+            const hfRoom = pool.used; // v1.4.2 — SP the pool can take back
+            const canBurn = slot && slot.remaining > 0 && hfRoom >= spGainedFromSlot(row.slotLevel);
             if (!slot && !canCreate) return '';
             const slotStr = slot ? `${slot.remaining}/${slot.total}` : '0/0';
             return `
@@ -44418,7 +45129,8 @@ function renderFlexCastDialog(ch) {
                 <div class="flex-cast-lvl">L${row.slotLevel} <span class="flex-cast-cost">${slotStr} slots · ${row.sp} SP</span></div>
                 <div class="flex-cast-btns">
                   <button class="flex-cast-btn create" data-flex-create="${row.slotLevel}" ${canCreate ? '' : 'disabled'}>+ Slot (−${row.sp})</button>
-                  <button class="flex-cast-btn burn" data-flex-burn="${row.slotLevel}" ${canBurn ? '' : 'disabled'}>Burn (+${spGainedFromSlot(row.slotLevel)})</button>
+                  <button class="flex-cast-btn burn" data-flex-burn="${row.slotLevel}" ${canBurn ? '' : 'disabled'} ${slot && slot.remaining > 0 && !canBurn ? `title="Only room for ${hfRoom} more SP — burning would waste points"` : ''}>Burn (+${spGainedFromSlot(row.slotLevel)})</button>
+                  ${slot && slot.remaining > 0 && !canBurn ? `<div class="hf142-flex-note">Room for ${hfRoom} SP — would waste ${spGainedFromSlot(row.slotLevel) - hfRoom}</div>` : ''}
                 </div>
               </div>
             `;
@@ -44756,7 +45468,7 @@ function collectCharacterProficiencies(ch) {
   return {
     armour: cleanArmour.map(prettyProfName),
     weapons: cleanWeapons.map(prettyProfName),
-    tools: [...toolMap.values()],
+    tools: [...toolMap.values()].map(t => (/^thieves' tools$/i.test(t) && rogueToolExpertise(ch)) ? t + ' (expertise)' : t),
     saves: [...saves].map(a => ABILITY_SHORT[a] || a.toUpperCase()),
     skills: [...skills].map(k => SKILLS[k]?.name || prettyProfName(k))
   };
@@ -44829,8 +45541,8 @@ function renderQuickFeaturesDialog(ch) {
   const feats = characterFeats(ch);
   if (feats.length) groups.push({ title: 'Feats', items: feats.map(f => ({ name: f.name, desc: f.desc })) });
 
-  const fs = characterFightingStyle(ch);
-  if (fs) groups.push({ title: 'Fighting Style', items: [{ name: fs.name, desc: fs.desc }] });
+  const _fsList = characterFightingStyles(ch);
+  if (_fsList.length) groups.push({ title: _fsList.length > 1 ? 'Fighting Styles' : 'Fighting Style', items: _fsList.map(fs => ({ name: fs.name, desc: fs.desc })) });
 
   if (classLevelFor(ch, 'warlock') >= 1) {
     // v0.20.78 — was calling an undefined `knownInvocations(ch)` which
@@ -45315,24 +46027,30 @@ function renderLongRestDialog(ch) {
 // FIGHTING STYLE DIALOG — pick at character creation or level-up
 // ============================================================
 function renderFightingStyleDialog(ch) {
-  const klass = CLASSES[ch.klass];
-  const pickLvl = fightingStylePickLevel(ch.klass);
-  const options = availableFightingStyles(ch.klass);
+  const grants = fightingStyleGrants(ch);
+  let slot = Number.isInteger(state.ui.fightingStyleSlot) ? state.ui.fightingStyleSlot : 0;
+  if (slot >= grants.length) slot = 0;
+  const g = grants[slot] || { klass: ch.klass, level: fightingStylePickLevel(ch.klass), extra: false };
+  const klass = CLASSES[g.klass];
+  const pickLvl = g.level;
+  const current = fightingStyleAt(ch, slot);
+  const taken = characterFightingStyleIds(ch).filter(id => id !== current);
+  const options = availableFightingStyles(g.klass).filter(s => !taken.includes(s.id));
   return `
     <div class="dialog-backdrop" id="dialogBackdrop">
       <div class="dialog browse-dialog">
-        <div class="dialog-title">Fighting Style — ${escape(klass?.name || '')}</div>
-        <div class="dialog-helper">Picked at Level ${pickLvl}. This is permanent and adds a passive feature plus mechanical bonuses where relevant.</div>
+        <div class="dialog-title">${g.extra ? 'Additional Fighting Style — Champion' : 'Fighting Style — ' + escape(klass?.name || '')}</div>
+        <div class="dialog-helper">${g.extra ? 'Champion level 10: choose a second Fighting Style. You can\'t take the same style twice.' : `Picked at ${escape(klass?.name || '')} level ${pickLvl}. This is permanent and adds a passive feature plus mechanical bonuses where relevant.`}${taken.length ? ` Already known: ${escape(taken.map(id => FIGHTING_STYLES[id].name).join(', '))}.` : ''}</div>
         <div class="card-grid" style="grid-template-columns: 1fr; margin-top: 8px;">
           ${options.map(s => `
-            <button class="card ${ch.fightingStyle === s.id ? 'selected' : ''}" data-pick-style="${s.id}" style="text-align:left;">
+            <button class="card ${current === s.id ? 'selected' : ''}" data-pick-style="${s.id}" style="text-align:left;">
               <div class="card-name">${escape(s.name)}</div>
-              <div style="font-size:12px;line-height:1.5;margin-top:6px;color:${ch.fightingStyle === s.id ? 'rgba(245, 239, 226, 0.85)' : 'var(--ink-soft)'};">${escape(s.desc)}</div>
+              <div style="font-size:12px;line-height:1.5;margin-top:6px;color:${current === s.id ? 'rgba(245, 239, 226, 0.85)' : 'var(--ink-soft)'};">${escape(s.desc)}</div>
             </button>
           `).join('')}
         </div>
         <div class="ai-row" style="margin-top: 12px;">
-          <button class="btn primary" id="confirmFightingStyleBtn" ${ch.fightingStyle ? '' : 'disabled'}>Confirm</button>
+          <button class="btn primary" id="confirmFightingStyleBtn" ${current ? '' : 'disabled'}>Confirm</button>
           <button class="btn" id="dialogClose">Close</button>
         </div>
       </div>
@@ -46501,16 +47219,22 @@ function renderFeaturesTab(ch) {
     ${classLevelFor(ch, 'sorcerer') >= 1 ? renderSorcererFeatureBlock(ch) : ''}
 
     ${characterFightingStyle(ch) ? `
-      <div class="section-mini" style="margin-top:14px;">Fighting Style</div>
+      <div class="section-mini" style="margin-top:14px;">Fighting Style${characterFightingStyles(ch).length > 1 ? 's' : ''}</div>
+      ${characterFightingStyles(ch).map(_fs => `
       <div class="feature" style="border-left:3px solid var(--gold);">
-        <div class="feature-name">${escape(characterFightingStyle(ch).name)}</div>
-        <div class="feature-desc">${escape(characterFightingStyle(ch).desc)}</div>
-      </div>
+        <div class="feature-name">${escape(_fs.name)}</div>
+        <div class="feature-desc">${escape(_fs.desc)}</div>
+      </div>`).join('')}
+      ${nextFightingStyleGrant(ch) ? `
+      <div class="feature" style="border-left:3px solid var(--gold);">
+        <div class="feature-name">${nextFightingStyleGrant(ch).extra ? 'Additional Fighting Style not chosen' : 'Fighting Style not chosen'}</div>
+        <div class="feature-desc">${escape((CLASSES[nextFightingStyleGrant(ch).klass] || {}).name || '')} level ${nextFightingStyleGrant(ch).level} gives you another Fighting Style. <button type="button" class="btn small" data-open-fighting-style="1">Choose</button></div>
+      </div>` : ''}
     ` : shouldHaveFightingStyle(ch) ? `
       <div class="section-mini" style="margin-top:14px;">Fighting Style</div>
       <div class="feature" style="border-left:3px solid var(--gold);">
         <div class="feature-name">No Fighting Style chosen</div>
-        <div class="feature-desc">Pick one to gain the corresponding combat benefit.</div>
+        <div class="feature-desc">Pick one to gain the corresponding combat benefit. <button type="button" class="btn small" data-open-fighting-style="1">Choose</button></div>
       </div>
     ` : ''}
 
@@ -48145,11 +48869,11 @@ function wirePlay(ch) {
     ch.skillOverrides = ch.skillOverrides || {};
     const g = bonusSkillGrants(ch).find(x => x.field === state.ui.loreSkillsDialog);
     if (!g) { state.ui.loreSkillsDialog = false; render(); return; }
-    if (g.mode !== 'list') picks.forEach(k => { if (g.mode === 'expertise') ch.skillOverrides[k] = 'expertise'; else if (skillOverrideLevel(ch, k) !== 'expertise') ch.skillOverrides[k] = 'prof'; });
+    if (g.mode !== 'list') picks.forEach(k => { if (k === 'thieves_tools') return; if (g.mode === 'expertise') ch.skillOverrides[k] = 'expertise'; else if (skillOverrideLevel(ch, k) !== 'expertise') ch.skillOverrides[k] = 'prof'; });
     ch[g.field] = picks.slice();
     state.ui.loreSkillsDialog = false;
     state.ui.loreSkillPicks = [];
-    logRoll(g.title, g.source, picks.map(k => g.mode === 'list' ? (RANGER_CHOICE_ITEMS[k] || k) : SKILLS[k].name).join(', '));
+    logRoll(g.title, g.source, picks.map(k => bonusGrantPickName(g, k)).join(', '));
     saveCharacter(ch);
     if (!wasManual) openNextLevelChoice(ch);
     render();
@@ -48340,8 +49064,7 @@ function wirePlay(ch) {
   const dlgBack = document.getElementById('dialogBackdrop');
   if (dlgBack) dlgBack.addEventListener('click', e => {
     if (e.target.id === 'dialogBackdrop') {
-      if (state.ui.rollDialog && state.ui.rollDialog.onCommit && !state.ui.rollDialog.committed) return;
-      if (state.ui.asiDialog) return;
+      if (state.ui.asiDialog) return; // v1.4.2 — roll dialogs (Attack) close on a backdrop tap like the others
       state.ui.castDialog = null;
       state.ui.hpDialog = false;
       state.ui.xpDialog = false;
@@ -48690,10 +49413,10 @@ function wirePlay(ch) {
       const abMod = mod(f[ab]);
 
       // Fighting Style: Archery — +2 to ranged attack rolls
-      const archeryBonus = (ch.fightingStyle === 'archery' && shouldHaveFightingStyle(ch) && weapon.kind === 'ranged') ? 2 : 0;
+      const archeryBonus = (hasFightingStyle(ch, 'archery') && weapon.kind === 'ranged') ? 2 : 0;
       // Fighting Style: Dueling — +2 damage with single 1H melee weapon
       let duelingBonus = 0;
-      if (ch.fightingStyle === 'dueling' && shouldHaveFightingStyle(ch) && weapon.kind === 'melee') {
+      if (hasFightingStyle(ch, 'dueling') && weapon.kind === 'melee') {
         const equipped = ((ch.inventory || {}).weapons || []).filter(w => w.equipped !== false);
         const isTwoHanded = (weapon.props || []).includes('two-handed');
         if (equipped.length <= 1 && !isTwoHanded) duelingBonus = 2;
@@ -48702,7 +49425,7 @@ function wirePlay(ch) {
       // Channel Divinity: Sacred Weapon — adds Cha mod to attack rolls while active
       const sacredActive = (ch.activeEffects || []).some(e => e.id === 'sacred_weapon');
       const chaMod = mod(f.cha);
-      const sacredBonus = (sacredActive && chaMod > 0) ? chaMod : 0;
+      const sacredBonus = sacredActive ? Math.max(1, chaMod) : 0; // v1.4.2 SRD minimum +1
       const weaponMagicBonus = weapon.magicBonus || 0;
 
       const atkBonus = abMod + profBonus(ch.level) + archeryBonus + sacredBonus + weaponMagicBonus;
@@ -48968,7 +49691,7 @@ function wirePlay(ch) {
       const numAttacks = (offhand || b.dataset.bonusStrike === '1') ? 1 : attacksPerAction(ch); // v0.91.3 — Martial Arts bonus strike is one attack
       // v0.27.0 — off-hand damage: only a NEGATIVE ability mod applies, unless
       // the Two-Weapon Fighting style is taken (then the full mod applies).
-      const twfStyleActive = ch.fightingStyle === 'two_weapon' && (typeof shouldHaveFightingStyle !== 'function' || shouldHaveFightingStyle(ch));
+      const twfStyleActive = hasFightingStyle(ch, 'two_weapon');
       const dmgAbMod = (offhand && !twfStyleActive) ? Math.min(abMod, 0) : abMod;
       const baseDamageMod = dmgAbMod + rageDamageBonus(ch, weapon) + duelingBonus + weaponMagicBonus + (weapon.itemDamageExtra || 0);
       const damageFormula = `${weapon.damage.count}d${weapon.damage.sides} ${fmtMod(baseDamageMod)} ${weapon.type}${offhand ? (twfStyleActive ? ' (off-hand · TWF style)' : ' (off-hand · no ability mod)') : ''}${rageDamageBonus(ch, weapon) ? ' (rage included)' : ''}${duelingBonus ? ' (Dueling +2)' : ''}${weaponMagicBonus ? ` (magic +${weaponMagicBonus})` : ''}${extraFormulaSuffix}`;
@@ -49590,7 +50313,7 @@ function wirePlay(ch) {
       const f = finalScores(ch);
       const ab = weaponAbility(weapon, ch);
       const abMod = mod(f[ab]);
-      const atkBonus = abMod + profBonus(ch.level) + ((ch.fightingStyle === 'archery' && shouldHaveFightingStyle(ch) && weapon.kind === 'ranged') ? 2 : 0);
+      const atkBonus = abMod + profBonus(ch.level) + ((hasFightingStyle(ch, 'archery') && weapon.kind === 'ranged') ? 2 : 0);
       const critThreshold = championCritThreshold(ch);
       state.ui.rollDialog = {
         title: `${reaction ? reaction.name : 'Reaction'}: ${weapon.name}`,
@@ -49959,6 +50682,9 @@ function wirePlay(ch) {
       // Pure warlock: clearing all spentSlots is safe (only pact slots exist)
       ch.spentSlots = {};
     } else if (warlockClassLevel(ch) > 0) {
+      // v1.4.2 — clear whichever key the pact pool actually uses (bare level when
+      // the warlock is the only caster class, 'pact:N' alongside other casters).
+      slotsRemaining(ch).filter(sl => sl.pact).forEach(sl => { if (ch.spentSlots) delete ch.spentSlots[sl.key]; });
       // Multiclass with warlock: only clear pact-keyed entries
       Object.keys(ch.spentSlots || {}).forEach(k => {
         if (typeof k === 'string' && k.startsWith('pact:')) delete ch.spentSlots[k];
@@ -49998,7 +50724,8 @@ function wirePlay(ch) {
   // Finish long rest — applies full recovery
   const confirmLongRest = document.getElementById('confirmLongRestBtn');
   if (confirmLongRest) confirmLongRest.addEventListener('click', () => {
-    ch.currentHp = maxHp(ch);
+    if (ch.activeShape) { revertWildShape(ch, false); state.ui.activeShapeSheet = false; } // v1.4.2 — a long rest ends Wild Shape
+    if (!hearthIsDead(ch)) ch.currentHp = maxHp(ch); // v1.4.2 — a rest doesn't revive the dead
     ch.tempHp = 0;
     ch.spentSlots = {};
     ch.fontSlots = {}; // v0.21.11 — Flexible Casting created slots vanish on long rest
@@ -50023,7 +50750,7 @@ function wirePlay(ch) {
     }
     const portentRolls = rollPortentDiceForLongRest(ch);
     state.ui.concentration = null;
-    state.ui.deathSaves = null;
+    if (ch.currentHp > 0) state.ui.deathSaves = null; // v1.4.2 — the dead stay dead
     // v0.91.2 — waking at full HP: the dying/down conditions go too.
     if (Array.isArray(ch.conditions)) ch.conditions = ch.conditions.filter(c => !['death_saves', 'unconscious', 'prone'].includes(c));
     logRoll('Long Rest', '', 'HP, slots, hit dice, and all abilities restored');
@@ -50034,22 +50761,35 @@ function wirePlay(ch) {
   });
 
   // Fighting Style picker — pick a style, then confirm
+  const _fsSlot = () => { const n = fightingStyleGrants(ch).length; const sl = Number.isInteger(state.ui.fightingStyleSlot) ? state.ui.fightingStyleSlot : 0; return sl < n ? sl : 0; };
   document.querySelectorAll('[data-pick-style]').forEach(b => {
     b.addEventListener('click', () => {
-      ch.fightingStyle = b.dataset.pickStyle;
+      setFightingStyleAt(ch, _fsSlot(), b.dataset.pickStyle);
       saveCharacter(ch);
+      render();
+    });
+  });
+  // v1.4.2 - Features tab: choose a missing / additional style later.
+  document.querySelectorAll('[data-open-fighting-style]').forEach(b => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const nx = nextFightingStyleGrant(ch);
+      state.ui.fightingStyleSlot = nx ? nx.slot : 0;
+      state.ui.fightingStyleDialog = true;
       render();
     });
   });
   const confirmFs = document.getElementById('confirmFightingStyleBtn');
   if (confirmFs) confirmFs.addEventListener('click', () => {
-    if (!ch.fightingStyle) { showToast('Pick a fighting style first.'); return; }
-    const fs = FIGHTING_STYLES[ch.fightingStyle];
-    logRoll('Fighting Style', '', `${fs?.name || ch.fightingStyle} chosen`);
+    const _picked = fightingStyleAt(ch, _fsSlot());
+    if (!_picked) { showToast('Pick a fighting style first.'); return; }
+    const fs = FIGHTING_STYLES[_picked];
+    logRoll('Fighting Style', '', `${fs?.name || _picked} chosen`);
+    state.ui.fightingStyleSlot = null;
     state.ui.fightingStyleDialog = false; state.ui.cdChooserDialog = null;
     saveCharacter(ch);
     // Continue the level-up chain in case more picks are pending
-    openNextLevelChoice(ch);
+    openNextLevelChoice(ch, { skipSpellLearn: true });
     render();
   });
 
@@ -50110,7 +50850,7 @@ function wirePlay(ch) {
   document.querySelectorAll('[data-stat-roll]').forEach(b => {
     b.addEventListener('click', () => {
       const [key, type] = b.dataset.statRoll.split('|');
-      const f = finalScores(ch);
+      const f = hfShapeScores(ch);
       const prof = profBonus(ch.level);
 
       if (type === 'skill') {
@@ -50389,6 +51129,22 @@ function wirePlay(ch) {
       render();
     });
   });
+  const hReviveBtn = document.getElementById('hearthReviveBtn');
+  if (hReviveBtn) hReviveBtn.addEventListener('click', () => {
+    confirmDialog(`Bring ${ch.name} back to life at 1 HP? Use this when a spell such as Revivify or Raise Dead (or your DM) revives them.`,
+      () => { hearthReviveCharacter(ch); render(); },
+      { title: 'Revive character?', yes: 'Revive at 1 HP' });
+  });
+  const hfWake = document.getElementById('hfStableWakeBtn');
+  if (hfWake) hfWake.addEventListener('click', () => {
+    if (!hfIsStable(ch)) return;
+    const hrs = rollDie(4);
+    ch.currentHp = 1;
+    state.ui.deathSaves = null; state.ui.deathOutcome = null;
+    logRoll('Stable → awake', '1 HP', `Regained 1 HP after ${hrs} hour${hrs === 1 ? '' : 's'} (1d4 [${hrs}]).`);
+    saveCharacter(ch);
+    render();
+  });
   const dsReset = document.getElementById('dsResetBtn');
   if (dsReset) dsReset.addEventListener('click', () => {
     pickUpFromDeathSaves(ch);
@@ -50462,6 +51218,15 @@ function wirePlay(ch) {
         saveCharacter(ch);
         render();
       }
+    });
+  });
+  // v1.4.2 — reopen the active beast sheet (banner, resource title, actions tab).
+  document.querySelectorAll('[data-hf-open-shape]').forEach(b => {
+    b.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      if (!isWildShaped(ch)) return;
+      state.ui.activeShapeSheet = true;
+      render();
     });
   });
   // Wild Shape: end voluntarily from active sheet
@@ -54256,13 +55021,13 @@ function getMapChannel() {
         const e = loadEncounter();
         const c = (e.combatants || []).find(x => x.id === d.id);
         if (!c) return;
-        c.mapX = d.x; c.mapY = d.y;
+        { const _sp = hearthTokenSpan(c), _cols = e.mapCols || 20, _rows = e.mapRows || 15; c.mapX = Math.max(0, Math.min(_cols - _sp, Math.round(+d.x) || 0)); c.mapY = Math.max(0, Math.min(_rows - _sp, Math.round(+d.y) || 0)); }
         const revealed = dmRevealVision(e); // v0.91.1 — player moves on the projector reveal fog too
         saveEncounter(e);
         broadcastMap(loadEncounter());
         if (revealed) { dmRefreshMapFromProjector(); return; }
         const tokEl = document.querySelector('[data-map-token="' + d.id + '"]');
-        if (tokEl) { tokEl.style.left = (d.x * 34) + 'px'; tokEl.style.top = (d.y * 34) + 'px'; }
+        if (tokEl) { tokEl.style.left = (c.mapX * 34) + 'px'; tokEl.style.top = (c.mapY * 34) + 'px'; }
       });
     } catch (e) {}
   }
@@ -54275,13 +55040,22 @@ function assignMapPositions(enc) {
   const cols = enc.mapCols || 20;
   const rows = enc.mapRows || 15;
   const occupied = new Set();
+  // v1.4.2 — tokens occupy their whole footprint (Large 2x2 etc.), so nothing is placed on top of another.
+  const mark = (x, y, sp) => { for (let dx = 0; dx < sp; dx++) for (let dy = 0; dy < sp; dy++) occupied.add((x + dx) + ',' + (y + dy)); };
+  const fits = (x, y, sp) => {
+    if (x < 0 || y < 0 || x + sp > cols || y + sp > rows) return false;
+    for (let dx = 0; dx < sp; dx++) for (let dy = 0; dy < sp; dy++) if (occupied.has((x + dx) + ',' + (y + dy))) return false;
+    return true;
+  };
   (enc.combatants || []).forEach(c => {
-    if (c.mapX != null && c.mapY != null) occupied.add(c.mapX + ',' + c.mapY);
+    if (c.mapX != null && c.mapY != null) mark(c.mapX, c.mapY, hearthTokenSpan(c));
   });
   const place = (c, startX, startY, dir) => {
-    let x = startX, y = startY;
+    const sp = hearthTokenSpan(c);
+    let x = Math.max(0, Math.min(cols - sp, startX)), y = Math.max(0, Math.min(rows - sp, startY));
+    const x0 = x, y0 = y;
     let guard = 0;
-    while (occupied.has(x + ',' + y) && guard < cols * rows) {
+    while (!fits(x, y, sp) && guard < cols * rows) {
       x += dir;
       if (x >= cols) { x = 0; y += 1; }
       if (x < 0) { x = cols - 1; y -= 1; }
@@ -54289,7 +55063,8 @@ function assignMapPositions(enc) {
       if (y >= rows) y = 0;
       guard++;
     }
-    c.mapX = x; c.mapY = y; occupied.add(x + ',' + y);
+    if (!fits(x, y, sp)) { x = x0; y = y0; }
+    c.mapX = x; c.mapY = y; mark(x, y, sp);
   };
   (enc.combatants || []).forEach(c => {
     if (c.mapX != null && c.mapY != null) return;
@@ -54310,7 +55085,7 @@ function buildMapState(enc) {
   const _mask = _fogOn && _FL && window.HearthMI ? HearthMI.fogMask(enc) : null;
   const _span = (c) => c.kind === 'player' ? 1 : tokenFootprint(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size }));
   const _underFog = (c) => _fogOn && c.mapX != null && (_mask ? _FL.tokenHidden(_mask, enc.fog.mw, enc.fog.mh, c.mapX, c.mapY, _span(c)) : !(enc.fog.revealed || []).includes(c.mapX + ',' + c.mapY));
-  const activeTurnId = _order.length ? (_order[dmTurnIdx(enc, _order)] || {}).id : null;
+  const activeTurnId = (enc.started !== false && _order.length) ? (_order[dmTurnIdx(enc, _order)] || {}).id : null;
   return {
     type: 'hearth-map',
     cols: enc.mapCols || 20,
@@ -54420,7 +55195,7 @@ function dmResetEncounter() {
     m.deathSaves = null;
     m.init = null;
     m.mapX = null; m.mapY = null;
-    m.hiddenFromPlayers = false;
+    m.concentrating = null; // v1.4.2 — hidden monsters stay hidden
   });
   enc.playerState = enc.playerState || {};
   Object.keys(enc.playerState).forEach(pid => {
@@ -54432,13 +55207,15 @@ function dmResetEncounter() {
     st.init = null;
     st.deathSaves = null;
     st.mapX = null; st.mapY = null;
+    st.concentrating = null;
   });
   enc.fog = null;
   enc.aoes = [];
   enc.turnIdx = 0;
   enc.round = 1;
   enc.started = false; // v0.91.3
-  enc.hiddenPlayers = [];
+  enc.turnId = null;
+  // v1.4.2 — sitting-out players stay sitting out (they come back via "+ back").
   saveGames(coll);
   if (typeof broadcastMap === 'function') broadcastMap(loadEncounter());
 }
@@ -54535,7 +55312,7 @@ function recolorLastAoe(color) {
 // helper. Tapping a tool drops one of these at a sensible origin, sized right —
 // no drag-to-size (which produced huge, skewed cones on touch). The DM then
 // drags the ✛ origin handle to move it and ↻ to aim cones/lines.
-const AOE_DEFAULT_FT = { circle: 20, cone: 30, line: 30, square: 15 };
+const AOE_DEFAULT_FT = { circle: 10, cone: 15, line: 30, square: 10 }; // v1.4.2 — same as the projector
 const AOE_SIZE_CHOICES = {
   circle: [10, 15, 20, 30, 40],
   cone: [15, 30, 60],
@@ -54719,8 +55496,9 @@ function aoeShapeSVG(a, cell, withControls, enc) {
   if (a.kind === 'circle') {
     shape = `<circle cx="${ox}" cy="${oy}" r="${len}" />`;
   } else if (a.kind === 'square') {
-    // Square cube/wall: len is the side; origin is its top-left corner.
-    shape = `<rect x="${ox}" y="${oy}" width="${len}" height="${len}" />`;
+    // Square cube/wall: len is the side; it fills whole squares starting at the
+    // square the origin sits in (v1.4.2 — was drawn from the cell centre, half a square off).
+    shape = `<rect x="${Math.floor(pos.x + 1e-6) * cell}" y="${Math.floor(pos.y + 1e-6) * cell}" width="${len}" height="${len}" />`;
   } else if (a.kind === 'line') {
     // A 5-ft-wide line of the given length at the given angle.
     const wpx = cell; // 5 ft wide
@@ -56016,7 +56794,7 @@ function dmMapBoardHTML(enc, cell, cols, rows, tokens, turnId) {
   return `
           <div class="dm-map-scroll" id="dmMapScroll">
             <div class="dm-map-zoom" id="dmMapZoom" style="transform:scale(${state.ui.dmMapZoom || 1});transform-origin:top left;width:${gridW}px;height:${gridH}px;${dmMapZoomMargins(state.ui.dmMapZoom || 1, gridW, gridH)}">
-            <div class="dm-map-grid ${encHasMap(enc) ? 'has-image' : ''} ${encHasMap(enc) && !enc.mapGridOverlay ? 'no-overlay' : ''} ${state.ui.dmRulerTool ? 'ruler-active' : ''} ${state.ui.dmFogTool ? 'fog-active' : ''}" id="dmMapGrid"
+            <div class="dm-map-grid ${encHasMap(enc) ? 'has-image' : ''} ${encHasMap(enc) && !enc.mapGridOverlay ? 'no-overlay' : ''} ${state.ui.dmRulerTool ? 'ruler-active' : ''} ${state.ui.dmFogTool ? 'fog-active' : ''} ${state.ui.dmPointerMode ? 'point-active' : ''} ${state.ui.dmGroupMode ? 'group-active' : ''}" id="dmMapGrid"
               style="width:${gridW}px;height:${gridH}px;background-size:${cell}px ${cell}px;">
               ${encPaintedId(enc) ? paintedBaseLayerHTML(encPaintedId(enc), cols, rows) : (enc.mapVideo ? mapVideoLayerHTML(enc.mapVideo) : (enc.mapImage ? mapBaseLayerHTML(enc.mapImage) : ''))}
               ${dmAuraLayerHTML(tokens, cell)}
@@ -56057,8 +56835,8 @@ function dmMapDialogsHTML(enc) {
       ${dmMapLibraryDialogHTML()}
       ${state.ui.dmTileStatsFor ? (() => {
         const c = enc.combatants.find(x => x.id === state.ui.dmTileStatsFor);
-        if (!c || !c.monsterId) return '';
-        const m = findMonster(c.monsterId);
+        if (!c) return '';
+        const m = c.monsterId ? findMonster(c.monsterId) : (c.isBoss ? c.bossStat : null); // v1.4.2 — boss stat block
         if (!m) return '';
         return `
           <div class="dialog-backdrop" id="dialogBackdrop">
@@ -56118,7 +56896,7 @@ function renderDMMap() {
   // same markup as the encounter board (dmEncListHTML / dmStatusDialogHTML),
   // wired by wireDMEncounter() below.
   const order = sortedCombatants(enc);
-  const turnId = order.length ? (order[dmTurnIdx(enc, order)] || {}).id : null;
+  const turnId = (enc.started && order.length) ? (order[dmTurnIdx(enc, order)] || {}).id : null;
   const needsRollMonsters = enc.combatants.some(c => c.kind === 'monster' && c.init == null);
   // v1.7.0 — Jenny's C2 layout (map-first, portrait strip, monster stat cards).
   if (dmLayoutIsC2()) {
@@ -56239,6 +57017,32 @@ function renderDMMap() {
 // v0.91.1 — Only one drag tool may be live: Measure, Point, Group, the fog brush
 // and AoE placement. Turning one on switches the rest off; switching Group off
 // by any route clears the group and its rings.
+// v1.4.2 — grid footprint (cells) of a combatant, same rule the projector uses.
+function hearthTokenSpan(c) {
+  if (!c || c.kind === 'player') return 1;
+  return tokenSizeCells(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size })) || 1;
+}
+// v1.4.2 — scroll a map token into view without leaving it under the sticky Battle Map header.
+function dmScrollTokenIntoView(tok) {
+  try {
+    tok.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    const head = document.querySelector('.dm-map-top');
+    if (!head) return;
+    const pad = 12;
+    let need = (head.getBoundingClientRect().bottom + pad) - tok.getBoundingClientRect().top;
+    if (need <= 0) {
+      // keep the caption under the token on screen too
+      const over = tok.getBoundingClientRect().bottom + 22 - window.innerHeight;
+      if (over > 0) window.scrollBy(0, over);
+      return;
+    }
+    const before = window.scrollY;
+    window.scrollBy(0, -need);
+    need -= (before - window.scrollY);
+    const sc = tok.closest('.dm-map-scroll');
+    if (need > 0 && sc) sc.scrollTop = Math.max(0, sc.scrollTop - need);
+  } catch (e) {}
+}
 function dmDragToolsOff(keep) {
   if (keep !== 'ruler') state.ui.dmRulerTool = false;
   if (keep !== 'pointer') state.ui.dmPointerMode = false;
@@ -56983,6 +57787,7 @@ function wireDMMap(enc, cell, cols, rows) {
       const enc2 = loadEncounter();
       const a = (enc2.aoes || []).find(x => x.id === id);
       if (!a || !gridForDrag) return;
+      dmDragToolsOff('aoe'); // v1.4.2 — one drag tool at a time (Measure was left live)
       state.ui.dmAoeMoving = id; state.ui.dmAoeAiming = null;
       const scroller = gridForDrag.closest('.dm-map-scroll');
       if (scroller) scroller.style.touchAction = 'none';
@@ -57041,7 +57846,7 @@ function wireDMMap(enc, cell, cols, rows) {
       groupStart = null;
       if (state.ui.dmGroupMode && (state.ui.dmGroupSel || []).includes(el.dataset.mapToken)) {
         groupStart = {};
-        (state.ui.dmGroupSel || []).forEach(gid => { const gel = grid.querySelector('[data-map-token="' + gid + '"]'); if (gel) groupStart[gid] = { left: parseFloat(gel.style.left) || 0, top: parseFloat(gel.style.top) || 0 }; });
+        (state.ui.dmGroupSel || []).forEach(gid => { const gel = grid.querySelector('[data-map-token="' + gid + '"]'); if (gel) groupStart[gid] = { left: parseFloat(gel.style.left) || 0, top: parseFloat(gel.style.top) || 0, span: parseInt(gel.dataset.tokenSpan, 10) || 1 }; });
       }
       el.setPointerCapture(ev.pointerId);
       ev.preventDefault();
@@ -57057,7 +57862,7 @@ function wireDMMap(enc, cell, cols, rows) {
       px = Math.max(0, Math.min((cols - span) * cell, px));
       py = Math.max(0, Math.min((rows - span) * cell, py));
       el.style.left = px + 'px'; el.style.top = py + 'px';
-      if (groupStart) { const gs0 = groupStart[el.dataset.mapToken]; if (gs0) { const dxp = px - gs0.left, dyp = py - gs0.top; Object.keys(groupStart).forEach(gid => { if (gid === el.dataset.mapToken) return; const gel = grid.querySelector('[data-map-token="' + gid + '"]'); if (gel) { gel.style.left = (groupStart[gid].left + dxp) + 'px'; gel.style.top = (groupStart[gid].top + dyp) + 'px'; } }); } }
+      if (groupStart) { const gs0 = groupStart[el.dataset.mapToken]; if (gs0) { let dxp = px - gs0.left, dyp = py - gs0.top; Object.keys(groupStart).forEach(gid => { const g0 = groupStart[gid], gsp = g0.span || 1; dxp = Math.max(-g0.left, Math.min((cols - gsp) * cell - g0.left, dxp)); dyp = Math.max(-g0.top, Math.min((rows - gsp) * cell - g0.top, dyp)); }); px = gs0.left + dxp; py = gs0.top + dyp; el.style.left = px + 'px'; el.style.top = py + 'px'; Object.keys(groupStart).forEach(gid => { if (gid === el.dataset.mapToken) return; const gel = grid.querySelector('[data-map-token="' + gid + '"]'); if (gel) { gel.style.left = (groupStart[gid].left + dxp) + 'px'; gel.style.top = (groupStart[gid].top + dyp) + 'px'; } }); } }
       // v0.21.101 — live-track any aura anchored to this token so it glides
       // along DURING the drag (not just on release). We read the token's
       // current pixel position, derive a fractional cell origin, and redraw the
@@ -57088,8 +57893,8 @@ function wireDMMap(enc, cell, cols, rows) {
       if (dragging !== el) return;
       el.classList.remove('dragging');
       const span = parseInt(el.dataset.tokenSpan, 10) || 1;
-      const gx = Math.max(0, Math.min(cols - span, Math.round(parseFloat(el.style.left) / cell)));
-      const gy = Math.max(0, Math.min(rows - span, Math.round(parseFloat(el.style.top) / cell)));
+      let gx = Math.max(0, Math.min(cols - span, Math.round(parseFloat(el.style.left) / cell)));
+      let gy = Math.max(0, Math.min(rows - span, Math.round(parseFloat(el.style.top) / cell)));
       const id = el.dataset.mapToken;
       const e = loadEncounter();
       const c = e.combatants.find(x => x.id === id);
@@ -57097,13 +57902,23 @@ function wireDMMap(enc, cell, cols, rows) {
         const oldGX = c.mapX, oldGY = c.mapY;
         c.mapX = gx; c.mapY = gy;
         if (groupStart && oldGX != null) {
-          const ddx = gx - oldGX, ddy = gy - oldGY;
+          let ddx = gx - oldGX, ddy = gy - oldGY;
+          // v1.4.2 — clamp the whole group's move by every member's footprint so the formation stays intact and on the board.
+          Object.keys(groupStart).forEach(gid => {
+            const gc = gid === id ? c : e.combatants.find(x => x.id === gid);
+            if (!gc || gc.mapX == null) return;
+            const bx = gid === id ? oldGX : gc.mapX, by = gid === id ? oldGY : gc.mapY, gsp = hearthTokenSpan(gc);
+            ddx = Math.max(-bx, Math.min(cols - gsp - bx, ddx));
+            ddy = Math.max(-by, Math.min(rows - gsp - by, ddy));
+          });
+          gx = oldGX + ddx; gy = oldGY + ddy; c.mapX = gx; c.mapY = gy;
           Object.keys(groupStart).forEach(gid => {
             if (gid === id) return;
             const gc = e.combatants.find(x => x.id === gid);
             if (gc && gc.mapX != null) {
-              gc.mapX = Math.max(0, Math.min(cols - 1, gc.mapX + ddx));
-              gc.mapY = Math.max(0, Math.min(rows - 1, gc.mapY + ddy));
+              const gsp = hearthTokenSpan(gc);
+              gc.mapX = Math.max(0, Math.min(cols - gsp, gc.mapX + ddx));
+              gc.mapY = Math.max(0, Math.min(rows - gsp, gc.mapY + ddy));
               const gel = grid.querySelector('[data-map-token="' + gid + '"]');
               if (gel) { gel.style.left = (gc.mapX * cell) + 'px'; gel.style.top = (gc.mapY * cell) + 'px'; }
             }
@@ -57323,7 +58138,7 @@ function projectorDocumentHTML() {
     background:rgba(16,12,8,0.82); color:#f3ead8; }
   .player-cap { background:rgba(34,58,68,0.92); color:#eaf4f6; }
   .boss-cap { background:#d4a04b; color:#1a1208; font-weight:700; }
-  .tok-num { position:absolute; top:100%; left:50%; transform:translateX(-50%); margin-top:3px;
+  .tok-num { position:absolute; top:-7px; right:-7px; z-index:1;
     font-weight:700; font-size:14px; line-height:1; background:#7a1e1a; color:#ffe9e4;
     border:1px solid #e08070; border-radius:50%; min-width:22px; height:22px; padding:0 3px;
     display:flex; align-items:center; justify-content:center; }
@@ -57524,12 +58339,12 @@ function projectorDocumentHTML() {
       // v0.21.62 — AoE templates (pinned only) painted under the tokens.
       if (state.aoes && state.aoes.length) {
         var gw = state.cols*cell, gh = state.rows*cell;
-        var svg = '<svg class="paoe" width="'+gw+'" height="'+gh+'" viewBox="0 0 '+gw+' '+gh+'" style="position:absolute;inset:0;pointer-events:none;z-index:1;overflow:visible;">';
+        var svg = '<svg class="paoe" width="'+gw+'" height="'+gh+'" viewBox="0 0 '+gw+' '+gh+'" style="position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden;">';
         state.aoes.forEach(function(a){
           var ox=a.x*cell, oy=a.y*cell, len=(a.len||1)*cell, ang=a.angle||0, col=a.color||'#d4673a';
           var sh='';
           if(a.kind==='circle'){ sh='<circle cx="'+ox+'" cy="'+oy+'" r="'+len+'"/>'; }
-          else if(a.kind==='square'){ sh='<rect x="'+ox+'" y="'+oy+'" width="'+len+'" height="'+len+'"/>'; }
+          else if(a.kind==='square'){ sh='<rect x="'+(Math.floor(a.x+1e-6)*cell)+'" y="'+(Math.floor(a.y+1e-6)*cell)+'" width="'+len+'" height="'+len+'"/>'; }
           else if(a.kind==='line'){ var w=cell; var ex=ox+Math.cos(ang)*len, ey=oy+Math.sin(ang)*len; var px=-Math.sin(ang)*w/2, py=Math.cos(ang)*w/2; sh='<polygon points="'+(ox+px)+','+(oy+py)+' '+(ex+px)+','+(ey+py)+' '+(ex-px)+','+(ey-py)+' '+(ox-px)+','+(oy-py)+'"/>'; }
           else if(a.kind==='cone'){ var h=Math.atan(0.5), cl=len/Math.cos(h); var a1=ang-h,a2=ang+h; sh='<polygon points="'+ox+','+oy+' '+(ox+Math.cos(a1)*cl)+','+(oy+Math.sin(a1)*cl)+' '+(ox+Math.cos(a2)*cl)+','+(oy+Math.sin(a2)*cl)+'"/>'; } // 5e: the far edge is as wide as the cone is long
           svg += '<g data-aoe-id="'+(a.id||'')+'" style="fill:'+col+';fill-opacity:0.30;stroke:'+col+';stroke-width:2.5;stroke-opacity:0.95;stroke-linejoin:round;pointer-events:auto;cursor:move;">'+sh+'</g>';
@@ -57633,7 +58448,7 @@ function projectorDocumentHTML() {
     // v0.50.0 — drag tokens on the projector with the laptop mouse. On drop we
     // post the new cell back to the DM window, which is authoritative: it saves
     // and re-broadcasts, so both screens stay in sync. No network involved.
-    var pdrag = null, pdox = 0, pdoy = 0, aoeHoldTimer = null, aimMode = null, aoeDrag = null, aoeDownXY = null, aoeMoved = false;
+    var aoeHoldFired = false, pdrag = null, pdox = 0, pdoy = 0, aoeHoldTimer = null, aimMode = null, aoeDrag = null, aoeDownXY = null, aoeMoved = false;
     function hideAoeBar(){ var b = document.getElementById('aoeBar'); if (b) b.style.display = 'none'; }
     function showAoeBar(id){
       var bar = document.getElementById('aoeBar'); if (!bar) return;
@@ -57704,7 +58519,7 @@ function projectorDocumentHTML() {
       ev.preventDefault();
       var _dx = ev.clientX, _dy = ev.clientY, _dtok = te.getAttribute('data-tok-id'), _te = te;
       if (aoeHoldTimer) clearTimeout(aoeHoldTimer);
-      aoeHoldTimer = setTimeout(function(){ aoeHoldTimer = null; pdrag = null; _te.style.zIndex=''; showAoeMenu(_dtok, _dx, _dy); }, 450);
+      aoeHoldTimer = setTimeout(function(){ aoeHoldTimer = null; pdrag = null; _te.style.zIndex=''; aoeHoldFired = true; showAoeMenu(_dtok, _dx, _dy); }, 450);
     });
     grid.addEventListener('pointermove', function(ev){
       if (aoeDrag) { if (aoeDownXY) { var mdx = ev.clientX - aoeDownXY.x, mdy = ev.clientY - aoeDownXY.y; if (Math.abs(mdx) > 6 || Math.abs(mdy) > 6) aoeMoved = true; var gEl = grid.querySelector('[data-aoe-id="' + aoeDrag + '"]'); if (gEl) gEl.setAttribute('transform', 'translate(' + mdx + ',' + mdy + ')'); } return; }
@@ -57719,9 +58534,13 @@ function projectorDocumentHTML() {
       if (!pdrag || !last) { pdrag = null; return; }
       var cell = fit(last.cols, last.rows);
       var gr = grid.getBoundingClientRect();
-      var gx = Math.max(0, Math.min(last.cols - 1, Math.floor((ev.clientX - gr.left) / cell)));
-      var gy = Math.max(0, Math.min(last.rows - 1, Math.floor((ev.clientY - gr.top) / cell)));
       var id = pdrag.getAttribute('data-tok-id');
+      var _pt = tokById(id), _sp = (_pt && _pt.span) || 1;
+      var _lx = parseFloat(pdrag.style.left), _ly = parseFloat(pdrag.style.top);
+      if (!isFinite(_lx)) _lx = ev.clientX - gr.left - pdox;
+      if (!isFinite(_ly)) _ly = ev.clientY - gr.top - pdoy;
+      var gx = Math.max(0, Math.min(last.cols - _sp, Math.round(_lx / cell)));
+      var gy = Math.max(0, Math.min(last.rows - _sp, Math.round(_ly / cell)));
       pdrag = null;
       if (ch) { try { ch.postMessage({ type: 'hearth-token-move', id: id, x: gx, y: gy }); } catch(e){} }
     }
@@ -57745,6 +58564,9 @@ function projectorDocumentHTML() {
       if (act === 'smaller') { if (ch){ try{ ch.postMessage({ type:'hearth-aoe-resize', id:id, delta:-1 }); }catch(e){} } return; }
       if (act === 'bigger') { if (ch){ try{ ch.postMessage({ type:'hearth-aoe-resize', id:id, delta:1 }); }catch(e){} } return; }
     });
+    // v1.4.2 — the click that ends a long-press must not close the menu it just opened.
+    document.addEventListener('pointerdown', function(){ aoeHoldFired = false; }, true);
+    document.addEventListener('click', function(ev){ if (aoeHoldFired) { aoeHoldFired = false; ev.stopPropagation(); ev.preventDefault(); } }, true);
     grid.addEventListener('contextmenu', function(ev){ var te = ev.target.closest('.tok'); if (!te || !te.getAttribute('data-tok-id')) return; ev.preventDefault(); showAoeMenu(te.getAttribute('data-tok-id'), ev.clientX, ev.clientY); });
     document.addEventListener('click', function(ev){
       var menu = document.getElementById('aoeMenu'); if (!menu || menu.style.display === 'none') return;
@@ -57755,7 +58577,7 @@ function projectorDocumentHTML() {
       if (b.getAttribute('data-aoe-clear')) { hideAoeMenu(); if (ch){ try { ch.postMessage({ type:'hearth-aoe-clear' }); } catch(e){} } return; }
       var kind = b.getAttribute('data-aoe-shape'); if (!kind) return;
       hideAoeMenu(); var tk = tokById(tokId); if (!tk) return;
-      var ox = tk.x + 0.5, oy = tk.y + 0.5;
+      var ox = tk.x + (tk.span || 1) / 2, oy = tk.y + (tk.span || 1) / 2;
       if (kind === 'circle' || kind === 'square') { aimMode = { kind:kind, place:true }; showAimHint('Tap where to drop the ' + kind); } else { aimMode = { kind:kind, ox:ox, oy:oy }; showAimHint('Tap where to aim the ' + kind); }
     });
     try {
@@ -58071,7 +58893,6 @@ function wireDMCombatRunner(enc, order, turnId) {
         if (mode === 'dmg') {
           const before = c.hp;
           c.hp = Math.max(0, c.hp - amt);
-          if (c.hp <= 0) c.dead = true;
           dmNoteDamage(c, before - c.hp);
         } else {
           c.hp = Math.min(c.maxHp == null ? c.hp + amt : c.maxHp, c.hp + amt);
@@ -58178,14 +58999,61 @@ document.addEventListener('input', e => {
   }
   const manualAbility = e.target.closest('[data-manual-ability]');
   if (manualAbility && state.draft) {
+    // v1.4.2 - live modifier, visible clamp, empty/too-low kept as typed (Next disabled).
+    const d = state.draft;
     const a = manualAbility.dataset.manualAbility;
-    let val = parseInt(manualAbility.value, 10);
-    if (Number.isNaN(val)) val = 3;
-    val = Math.max(3, Math.min(18, val));
-    state.draft.base[a] = val;
+    const lim = manualScoreLimits(d);
+    d.manualPending = d.manualPending || {};
+    d.manualClamped = d.manualClamped || {};
+    const raw = String(manualAbility.value == null ? '' : manualAbility.value).trim();
+    let val = parseInt(raw, 10);
+    delete d.manualClamped[a];
+    if (raw === '' || Number.isNaN(val) || val < lim.min) {
+      d.manualPending[a] = raw;
+    } else {
+      delete d.manualPending[a];
+      if (val > lim.max) { d.manualClamped[a] = val; val = lim.max; manualAbility.value = String(val); }
+      d.base[a] = val;
+    }
+    if (!Object.keys(d.manualPending).length) delete d.manualPending;
+    if (!Object.keys(d.manualClamped).length) delete d.manualClamped;
+    manualAbility.classList.toggle('hf142-invalid', !!(d.manualPending && Object.prototype.hasOwnProperty.call(d.manualPending, a)));
+    ABILITIES.forEach(ab => {
+      const el = document.querySelector('[data-manual-mod="' + ab + '"]');
+      if (!el) return;
+      const pending = !!(d.manualPending && Object.prototype.hasOwnProperty.call(d.manualPending, ab));
+      const lbl = abilityModLabel(d, ab);
+      el.textContent = pending ? '—' : lbl.text;
+      el.classList.remove('positive', 'negative');
+      if (!pending && lbl.cls) el.classList.add(lbl.cls);
+    });
+    const hint = document.getElementById('manualScoreHint');
+    if (hint) hint.innerHTML = manualScoreHintText(d);
     const btn = document.getElementById('nextBtn');
     if (btn) btn.disabled = !canAdvance();
     saveDraftProgress();
+  }
+  // v1.4.2 - Standard Array: assign a value; picking one already used swaps them.
+  const stdSel = e.target.closest('[data-std-ability]');
+  if (stdSel && state.draft) {
+    const d = state.draft;
+    const a = stdSel.dataset.stdAbility;
+    const v = parseInt(stdSel.value, 10);
+    d.stdAssign = d.stdAssign || {};
+    const prev = d.stdAssign[a];
+    if (Number.isNaN(v)) {
+      delete d.stdAssign[a];
+    } else {
+      const other = ABILITIES.find(o => o !== a && d.stdAssign[o] === v);
+      if (other) {
+        if (Number.isFinite(prev)) { d.stdAssign[other] = prev; d.base[other] = prev; }
+        else delete d.stdAssign[other];
+      }
+      d.stdAssign[a] = v;
+      d.base[a] = v;
+    }
+    saveDraftProgress();
+    render();
   }
   // v0.21.112 — 2024 builder manual score input (writes to the b55 base scores).
   const b55Manual = e.target.closest('[data-b55-manual]');
@@ -58311,7 +59179,13 @@ document.addEventListener('click', e => {
   if (statModeBtn) {
     const mode = statModeBtn.dataset.statMode;
     state.draft.statMode = mode;
-    if (mode === 'pointbuy') {
+    delete state.draft.manualPending; delete state.draft.manualClamped;
+    if (mode === 'standard') {
+      // Keep an existing standard-array spread; otherwise start unassigned.
+      const vals = ABILITIES.map(a => Number(state.draft.base[a]));
+      const isArr = vals.slice().sort((x, y) => y - x).join(',') === standardArrayValues().join(',');
+      state.draft.stdAssign = isArr ? Object.fromEntries(ABILITIES.map(a => [a, Number(state.draft.base[a])])) : {};
+    } else if (mode === 'pointbuy') {
       ABILITIES.forEach(a => { state.draft.base[a] = Math.max(8, Math.min(15, Number(state.draft.base[a]) || 8)); });
     } else {
       ABILITIES.forEach(a => { state.draft.base[a] = Math.max(3, Math.min(18, Number(state.draft.base[a]) || 8)); });
@@ -59224,7 +60098,7 @@ function linkCharSnapshot(ch) {
     auras: linkCharAuras(ch),
     saves,
     resist, immune: [], vuln: [],
-    dead: !!(open && state.ui.deathOutcome === 'dead'),
+    dead: !!(ch.currentHp != null && ch.currentHp <= 0 && dsRaw && dsRaw.failures >= 3),
   };
 }
 // Validate + normalise a snapshot from the wire. Returns null if unusable.
@@ -59846,7 +60720,7 @@ function linkSheetContext(ch) {
     state.ui._sheetCharId = ch.id;
     state.ui.concentration = ch.concentration || null;
     state.ui.deathSaves = ch.deathSaves ? { successes: ch.deathSaves.successes || 0, failures: ch.deathSaves.failures || 0 } : null;
-    state.ui.deathOutcome = (ch.currentHp != null && ch.currentHp <= 0 && state.ui.deathSaves && state.ui.deathSaves.failures >= 3) ? 'dead' : null;
+    state.ui.deathOutcome = (ch.currentHp != null && ch.currentHp <= 0 && state.ui.deathSaves && state.ui.deathSaves.failures >= 3 && !ch.deathAcknowledged) ? 'dead' : null;
     state.ui.concSaveDialog = null;
   }
 }
