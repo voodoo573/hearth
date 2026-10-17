@@ -11024,6 +11024,9 @@ html[data-texture]:not([data-palette]):not([data-theme="dark"]):not([data-textur
 </style>
 <script src="effects/hearth-effects.js"></script>
 <script src="tokens/hearth-tokens.js"></script>
+<link rel="stylesheet" href="dm/c2.css">
+<script src="dm/srd51-statblocks.js"></script>
+<script src="dm/c2.js"></script>
 <style id="hearth-reskin">/* @reskin */
 /* Hearth 1.6.0 — Jenny's "Hearth" signature reskin (built against v1.4.1; 1.5.x class names added:
    .vital-stat, .ability, .stat-cell-score, .section-label; red .danger buttons (End Rage) and pips in the parchment strips keep their colours). */
@@ -29472,6 +29475,9 @@ function linkHostOnRoll(dev, msg) {
 // ---- the one entry point every roll goes through ----
 function hearthDiceRoll(spec) {
   spec = spec || {};
+  // v1.7.0 — on the C2 DM screen nothing goes to the projector by itself: the
+  // DM sends a roll up with the dice card's button, or not at all.
+  if (!spec.noAutoProject && typeof dmLayoutIsC2 === 'function' && state.tab === 'dm' && state.ui && state.ui.dmMapMode && dmLayoutIsC2()) spec = Object.assign({}, spec, { noAutoProject: true });
   const groups = (spec.groups || []).filter(g => g && g.values && g.values.length);
   if (!groups.length && !spec.manual) return Promise.resolve(null);
   const entry = hearthRecordRoll(Object.assign({}, spec, { groups }));
@@ -29484,7 +29490,7 @@ function hearthDiceRoll(spec) {
   if (dp.anim === 'off' || !animatable) {
     // No 3D dice: the app's normal roll toast shows the number. An important
     // roll still goes to the big screen if the user chose that.
-    if (dp.projector === 'important' && big && projTarget) { _hearthDiceCurrentEntry = entry; hearthDiceOnProjector(); }
+    if (dp.projector === 'important' && big && projTarget && !spec.noAutoProject) { _hearthDiceCurrentEntry = entry; hearthDiceOnProjector(); }
     return Promise.resolve(entry);
   }
   const hideUnder = dp.size === 'full' || big; // full-screen dice: the result cards wait until the dice land
@@ -29494,7 +29500,13 @@ function hearthDiceRoll(spec) {
     _hearthDiceCurrentEntry = entry;
     if (hideUnder) document.body.classList.add('hd-rolling');
     const crit = entry.nat === 20 ? 'nat20' : (entry.nat === 1 ? 'nat1' : null);
-    return HD.roll({
+    // v1.7.0 — DM stat-card rolls never go up by themselves: 'important' acts as 'ask'
+    // for this roll (the Send-to-projector button is still offered).
+    const holdProj = !!(spec.noAutoProject && dp.projector === 'important' && HD.setProjectorMode);
+    if (holdProj) HD.setProjectorMode('ask');
+    const restoreProj = () => { if (holdProj) { try { HD.setProjectorMode(hearthDicePrefs().projector); } catch (e) {} } };
+    let p;
+    try { p = HD.roll({
       dice: groups.map(g => ({ type: 'd' + g.sides, count: g.values.length })),
       results: [].concat(...groups.map(g => g.values)),
       label: entry.label,
@@ -29502,7 +29514,8 @@ function hearthDiceRoll(spec) {
       crit, big, deathSave: !!spec.deathSave, boss: !!spec.boss,
       projector: projTarget ? undefined : false,
       reducedMotion: !!(window.hearthReducedMotion && window.hearthReducedMotion()),
-    });
+    }); } finally { restoreProj(); }
+    return p;
   }).then(() => { unhide(); return entry; }).catch((e) => { unhide(); console.warn('Dice animation skipped:', e && e.message); return entry; });
 }
 
@@ -30660,7 +30673,7 @@ function render() {
 
   // Capture inner scroll positions. Map key = "className:index"
   const innerScrolls = new Map();
-  const SCROLL_CONTAINERS = ['spell-list', 'browse-body', 'roll-log-body', 'dialog', 'dm-battle-track', 'dm-enc-list', 'dm-run-card', 'dm-notes-list', 'dm-maplib-scroll', 'dm-map-scroll', 'dm-link-list', 'rl-list'];
+  const SCROLL_CONTAINERS = ['spell-list', 'browse-body', 'roll-log-body', 'dialog', 'dm-battle-track', 'dm-enc-list', 'c2-sbbody', 'c2-strip', 'c2-fly', 'dm-run-card', 'dm-notes-list', 'dm-maplib-scroll', 'dm-map-scroll', 'dm-link-list', 'rl-list'];
   // v0.91.1 — horizontal scroll is kept too (the battle-map viewport pans both
   // ways). The map viewport isn't restored when the board is about to auto-fit
   // (first open / encounter switch), so the fit wins.
@@ -31152,6 +31165,7 @@ function hearthOpenLegal() {
           <li>Token frames and states: original hand-written SVG/CSS by Jenny. Condition badges are the HearthEffects set above.</li>
           <li>Token portrait library (32 creatures): AI-generated with Grok Bot image generation, art-directed by Jenny; cropped and circle-masked by Jenny's own scripts. All original creatures with generic, SRD-safe names; no Wizards of the Coast product-identity monsters.</li>
           <li>Animated 3D dice: designed by Jenny, built on three.js and cannon-es (MIT, listed above).</li>
+          <li>DM battle screen (C2 layout: portrait strip, stat cards, tool fan): designed by Jenny; original CSS and code. Monster stat cards quote the full stat blocks from the SRD 5.1 (CC-BY-4.0, attribution above), reformatted for Hearth.</li>
         </ul>
         <details class="hearth-legal-licence"><summary>MIT License (full text)</summary><pre>${escape(L.mit)}</pre></details>
         <details class="hearth-legal-licence"><summary>Apache License 2.0 (full text)</summary><pre>${escape(L.apache)}</pre></details>
@@ -54739,11 +54753,12 @@ function aoeShapeSVG(a, cell, withControls, enc) {
 // Human label of the AoE size in feet.
 function aoeFeetLabel(a) {
   const ft = Math.round((a.len || 0) * 5);
-  if (a.kind === 'circle') return `${ft} ft r`;
-  if (a.kind === 'cone') return `${ft} ft cone`;
-  if (a.kind === 'line') return `${ft} ft line`;
-  if (a.kind === 'square') return `${ft} ft`;
-  return `${ft} ft`;
+  // v1.7.0 — a template placed from a stat card carries its action's name.
+  const tag = a.label ? ' \u00b7 ' + String(a.label).slice(0, 28) : '';
+  if (a.kind === 'circle') return `${ft} ft r` + tag;
+  if (a.kind === 'cone') return `${ft} ft cone` + tag;
+  if (a.kind === 'line') return `${ft} ft line` + tag;
+  return `${ft} ft` + tag;
 }
 
 
@@ -55952,6 +55967,73 @@ function dmMapLibraryDialogHTML() {
 function dmMapZoomMargins(z, w, h) {
   return `margin-right:${(w * (z - 1)).toFixed(1)}px;margin-bottom:${(h * (z - 1)).toFixed(1)}px;`;
 }
+// v1.7.0 — the board and the dialogs, shared by the classic battle map and the
+// C2 layout (app/dm/c2.js), so both wire up through wireDMMap/wireDMEncounter.
+function dmMapBoardHTML(enc, cell, cols, rows, tokens, turnId) {
+  const gridW = cols * cell, gridH = rows * cell;
+  return `
+          <div class="dm-map-scroll" id="dmMapScroll">
+            <div class="dm-map-zoom" id="dmMapZoom" style="transform:scale(${state.ui.dmMapZoom || 1});transform-origin:top left;width:${gridW}px;height:${gridH}px;${dmMapZoomMargins(state.ui.dmMapZoom || 1, gridW, gridH)}">
+            <div class="dm-map-grid ${encHasMap(enc) ? 'has-image' : ''} ${encHasMap(enc) && !enc.mapGridOverlay ? 'no-overlay' : ''} ${state.ui.dmRulerTool ? 'ruler-active' : ''} ${state.ui.dmFogTool ? 'fog-active' : ''}" id="dmMapGrid"
+              style="width:${gridW}px;height:${gridH}px;background-size:${cell}px ${cell}px;">
+              ${encPaintedId(enc) ? paintedBaseLayerHTML(encPaintedId(enc), cols, rows) : (enc.mapVideo ? mapVideoLayerHTML(enc.mapVideo) : (enc.mapImage ? mapBaseLayerHTML(enc.mapImage) : ''))}
+              ${dmAuraLayerHTML(tokens, cell)}
+              <svg class="dm-aoe-layer" id="dmAoeLayer" width="${gridW}" height="${gridH}" viewBox="0 0 ${gridW} ${gridH}">
+                <defs><filter id="fogWave" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="1" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="11" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
+                ${(enc.aoes || []).map(a => aoeShapeSVG(a, cell, true, enc)).join('')}
+                <g id="dmAoePreview"></g>
+                <g id="dmRulerLayer"></g>
+                <g id="dmFogLayer" filter="url(#fogWave)">${fogLayerSVG(enc, cols, rows, cell)}</g>
+              </svg>
+              <div class="he-aoe-layer" id="heAoeLayer" data-cell="${cell}" aria-hidden="true"></div>
+              ${tokens.map(c => mapTokenHTML({
+                id: c.id, x: c.mapX, y: c.mapY, label: tokenLabel(c), kind: c.kind,
+                isBoss: !!c.isBoss, dead: c.kind === 'monster' && !!c.dead,
+                afflicted: Array.isArray(c.statuses) && c.statuses.length > 0,
+                monsterId: c.monsterId, name: c.name, isTurn: c.id === turnId, tokenImage: c.tokenImage, tokenIcon: c.tokenIcon, hidden: c.hiddenFromPlayers, hideName: c.hideName, disposition: c.disposition, highlighted: c.id === state.ui.dmHighlightMon,
+                hp: c.hp, maxHp: c.maxHp, statuses: c.statuses, concentrating: !!c.concentrating, size: c.size,
+              }, cell, true)).join('')}
+            </div>
+            </div>
+          </div>
+`;
+}
+function dmMapDialogsHTML(enc) {
+  return `
+      ${dmStatusDialogHTML(enc)}
+      ${dmConcDialogHTML(enc)}
+      ${dmTieDialogHTML(enc)}
+      ${dmLinkDialogsHTML(enc)}
+      ${state.ui.dmNotesOpen ? dmNotesWindowHTML() : ''}
+      ${state.ui.dmRemoveConfirm ? dmRemoveConfirmHTML() : ''}
+      ${state.ui.dmCustomMonster ? dmCustomMonsterHTML() : ''}
+      ${state.ui.tokenImageFor ? tokenImageDialogHTML() : ''}
+      ${dmProjectorHelpDialogHTML()}
+      ${dmMapLibraryDialogHTML()}
+      ${state.ui.dmTileStatsFor ? (() => {
+        const c = enc.combatants.find(x => x.id === state.ui.dmTileStatsFor);
+        if (!c || !c.monsterId) return '';
+        const m = findMonster(c.monsterId);
+        if (!m) return '';
+        return `
+          <div class="dialog-backdrop" id="dialogBackdrop">
+            <div class="dialog browse-dialog">
+              <div class="dialog-title">${escape(m.name)}</div>
+              <div class="dialog-helper"><em>${escape(m.size)} ${escape(m.type)} · CR ${crLabel(m.cr)}</em></div>
+              <div class="browse-body">${monsterStatblockHTML(m)}</div>
+              <div class="dialog-actions">
+                <button class="btn" id="dmTileStatsCloseBtn">Close</button>
+              </div>
+            </div>
+          </div>
+        `;
+      })() : ''}
+`;
+}
+// v1.7.0 — DM battle-map layout: 'c2' (Jenny's map-first redesign, the default)
+// or 'classic' (the v1.6 cockpit). Switch from the ⋯ More menu or the classic header.
+function dmLayoutIsC2() { return !!(typeof window !== 'undefined' && window.HearthC2) && (loadDmSettings().dmLayout || 'c2') === 'c2'; }
+function dmSetLayout(v) { const s = loadDmSettings(); s.dmLayout = v === 'classic' ? 'classic' : 'c2'; saveDmSettings(s); state.ui.dmMapZoomInit = false; }
 function renderDMMap() {
   const enc = assignMapPositions(assignTokens(loadEncounter()));
   if (dmRevealVision(enc)) saveEncounter(enc);
@@ -55972,6 +56054,14 @@ function renderDMMap() {
   const order = sortedCombatants(enc);
   const turnId = order.length ? (order[dmTurnIdx(enc, order)] || {}).id : null;
   const needsRollMonsters = enc.combatants.some(c => c.kind === 'monster' && c.init == null);
+  // v1.7.0 — Jenny's C2 layout (map-first, portrait strip, monster stat cards).
+  if (dmLayoutIsC2()) {
+    content.innerHTML = HearthC2.html({ enc, cell, cols, rows, tokens, order, turnId, needsRollMonsters, mapEncs });
+    wireDMMap(enc, cell, cols, rows);
+    wireDMEncounter();
+    HearthC2.wire(enc);
+    return;
+  }
 
   content.innerHTML = `
     <section class="dm-battle">
@@ -55982,6 +56072,7 @@ function renderDMMap() {
           ${mapEncs.length > 1 ? `<select class="dm-map-enc-select" id="dmMapEncSelect" title="Switch encounter" style="max-width:38vw;padding:7px 9px;border-radius:8px;border:1px solid var(--parchment-darker);background:var(--parchment);color:var(--ink);font-size:13px;">${mapEncs.map(e => `<option value="${e.id}"${e.id === enc.id ? ' selected' : ''}>${escape(e.name)}</option>`).join('')}</select>` : ''}
           ${dmLinkStatusChip().replace('class="btn dm-link-btn', 'class="dm-map-tool dm-link-btn')}${dmRollLogButton('dm-map-tool')}
           <button class="dm-map-tool" data-dm-notes-open="1" title="Campaign notes">📓 Notes</button>
+          ${window.HearthC2 ? `<button class="dm-map-tool" data-c2-layout="c2" title="Switch to the map-first layout">✦ New layout</button>` : ''}
           <button class="dm-map-project" id="dmMapProject"><svg class="hi-ico" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><rect x="1.5" y="2.5" width="13" height="8.5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 14h6M8 11v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> Open projector</button>
         </div>
       </div>
@@ -56067,61 +56158,11 @@ function renderDMMap() {
             ${encHasMap(enc) ? `<button class="dm-map-tool ${enc.mapGridOverlay ? 'on' : ''}" id="dmMapGridToggle">${enc.mapGridOverlay ? '☑' : '☐'} Grid lines</button>` : ''}
             <input type="file" id="dmMapFile" accept="image/*,video/mp4,video/webm,video/ogg" style="display:none;" />
           </div>
-          <div class="dm-map-scroll" id="dmMapScroll">
-            <div class="dm-map-zoom" id="dmMapZoom" style="transform:scale(${state.ui.dmMapZoom || 1});transform-origin:top left;width:${gridW}px;height:${gridH}px;${dmMapZoomMargins(state.ui.dmMapZoom || 1, gridW, gridH)}">
-            <div class="dm-map-grid ${encHasMap(enc) ? 'has-image' : ''} ${encHasMap(enc) && !enc.mapGridOverlay ? 'no-overlay' : ''} ${state.ui.dmRulerTool ? 'ruler-active' : ''} ${state.ui.dmFogTool ? 'fog-active' : ''}" id="dmMapGrid"
-              style="width:${gridW}px;height:${gridH}px;background-size:${cell}px ${cell}px;">
-              ${encPaintedId(enc) ? paintedBaseLayerHTML(encPaintedId(enc), cols, rows) : (enc.mapVideo ? mapVideoLayerHTML(enc.mapVideo) : (enc.mapImage ? mapBaseLayerHTML(enc.mapImage) : ''))}
-              ${dmAuraLayerHTML(tokens, cell)}
-              <svg class="dm-aoe-layer" id="dmAoeLayer" width="${gridW}" height="${gridH}" viewBox="0 0 ${gridW} ${gridH}">
-                <defs><filter id="fogWave" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="1" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="11" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
-                ${(enc.aoes || []).map(a => aoeShapeSVG(a, cell, true, enc)).join('')}
-                <g id="dmAoePreview"></g>
-                <g id="dmRulerLayer"></g>
-                <g id="dmFogLayer" filter="url(#fogWave)">${fogLayerSVG(enc, cols, rows, cell)}</g>
-              </svg>
-              <div class="he-aoe-layer" id="heAoeLayer" data-cell="${cell}" aria-hidden="true"></div>
-              ${tokens.map(c => mapTokenHTML({
-                id: c.id, x: c.mapX, y: c.mapY, label: tokenLabel(c), kind: c.kind,
-                isBoss: !!c.isBoss, dead: c.kind === 'monster' && !!c.dead,
-                afflicted: Array.isArray(c.statuses) && c.statuses.length > 0,
-                monsterId: c.monsterId, name: c.name, isTurn: c.id === turnId, tokenImage: c.tokenImage, tokenIcon: c.tokenIcon, hidden: c.hiddenFromPlayers, hideName: c.hideName, disposition: c.disposition, highlighted: c.id === state.ui.dmHighlightMon,
-                hp: c.hp, maxHp: c.maxHp, statuses: c.statuses, concentrating: !!c.concentrating, size: c.size,
-              }, cell, true)).join('')}
-            </div>
-            </div>
-          </div>
+          ${dmMapBoardHTML(enc, cell, cols, rows, tokens, turnId)}
           <div class="dm-map-hint">Tap an AoE shape above to drop it on the board. Then drag the ✛ handle to move it, the gold ↻ handle to aim cones/lines, 📍 to pin it (shows to players), ✕ to delete. Cones &amp; lines start from the active token unless Free-place is on. <strong>For players:</strong> <svg class="hi-ico" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><rect x="1.5" y="2.5" width="13" height="8.5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 14h6M8 11v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> Open projector, set your second screen to <em>Extend</em>, drag the window to the TV, press <em>Fullscreen</em>.</div>
         </div>
       </div>
-      ${dmStatusDialogHTML(enc)}
-      ${dmConcDialogHTML(enc)}
-      ${dmTieDialogHTML(enc)}
-      ${dmLinkDialogsHTML(enc)}
-      ${state.ui.dmNotesOpen ? dmNotesWindowHTML() : ''}
-      ${state.ui.dmRemoveConfirm ? dmRemoveConfirmHTML() : ''}
-      ${state.ui.dmCustomMonster ? dmCustomMonsterHTML() : ''}
-      ${state.ui.tokenImageFor ? tokenImageDialogHTML() : ''}
-      ${dmProjectorHelpDialogHTML()}
-      ${dmMapLibraryDialogHTML()}
-      ${state.ui.dmTileStatsFor ? (() => {
-        const c = enc.combatants.find(x => x.id === state.ui.dmTileStatsFor);
-        if (!c || !c.monsterId) return '';
-        const m = findMonster(c.monsterId);
-        if (!m) return '';
-        return `
-          <div class="dialog-backdrop" id="dialogBackdrop">
-            <div class="dialog browse-dialog">
-              <div class="dialog-title">${escape(m.name)}</div>
-              <div class="dialog-helper"><em>${escape(m.size)} ${escape(m.type)} · CR ${crLabel(m.cr)}</em></div>
-              <div class="browse-body">${monsterStatblockHTML(m)}</div>
-              <div class="dialog-actions">
-                <button class="btn" id="dmTileStatsCloseBtn">Close</button>
-              </div>
-            </div>
-          </div>
-        `;
-      })() : ''}
+      ${dmMapDialogsHTML(enc)}
     </section>
   `;
   wireDMMap(enc, cell, cols, rows);
@@ -56416,10 +56457,22 @@ function wireDMMap(enc, cell, cols, rows) {
     // the zoom, so measure against the window instead.)
     void availH;
     const headH = (document.querySelector('.dm-map-top') || { offsetHeight: 0 }).offsetHeight;
-    const availV = Math.max(gh * ZMIN, window.innerHeight - headH - padding - 8);
-    const z = Math.max(ZMIN, Math.min(ZMAX, availW / gw, availV / gh));
+    // v1.7.0 — the C2 layout gives the board a fixed stage: fit inside it.
+    const availV = scrollEl.closest('.c2') ? Math.max(gh * ZMIN, scrollEl.clientHeight - padding)
+      : Math.max(gh * ZMIN, window.innerHeight - headH - padding - 8);
+    let z = Math.max(ZMIN, Math.min(ZMAX, availW / gw, availV / gh));
+    // v1.7.0 — C2 on a phone: the board fills the map's height (Jenny's framing)
+    // and centres on whoever's turn it is; the DM pans for the rest.
+    const c2Phone = !!scrollEl.closest('.c2-phone');
+    if (c2Phone) z = Math.max(z, Math.min(ZMAX, 1.25, (scrollEl.clientHeight - 16) / gh));
     setZoom(z, false);
     if (scrollEl) { scrollEl.scrollLeft = 0; scrollEl.scrollTop = 0; }
+    if (c2Phone && gw * z > scrollEl.clientWidth) {
+      const enc2 = loadEncounter(), ord = sortedCombatants(enc2), tid = ord.length ? (ord[dmTurnIdx(enc2, ord)] || {}).id : null;
+      const tc = (enc2.combatants || []).find(c => c.id === tid && c.mapX != null);
+      const cx = tc ? (tc.mapX + 0.5) * cell : gw / 2;
+      scrollEl.scrollLeft = Math.max(0, cx * z - scrollEl.clientWidth / 2);
+    }
   };
   document.querySelectorAll('[data-map-zoom]').forEach(b => {
     b.addEventListener('click', () => {
@@ -57005,6 +57058,8 @@ function wireDMMap(enc, cell, cols, rows) {
           const gi = grp.indexOf(id);
           if (gi >= 0) grp.splice(gi, 1); else grp.push(id);
           el.classList.toggle('group-sel', grp.includes(id));
+        } else if (window.HearthC2 && HearthC2.active()) {
+          HearthC2.openCard(id, true); // v1.7.0 — C2: tapping a token opens its card
         } else {
           const wasHi = state.ui.dmHighlightMon === id;
           state.ui.dmHighlightMon = wasHi ? null : id;

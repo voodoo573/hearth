@@ -40,6 +40,9 @@ const APP_SHELL = [
   './dice/dice-worker.js',
   './effects/hearth-effects.js', // v1.6.0 — condition badges + spell areas
   './tokens/hearth-tokens.js', // v1.6.0 — framed map tokens + 32-portrait library
+  './dm/c2.css', // v1.7.0 — C2 DM layout (Jenny)
+  './dm/c2.js',
+  './dm/srd51-statblocks.js', // v1.7.0 — SRD 5.1 stat blocks (CC-BY-4.0)
   './tokens/lib/bandit.webp',
   './tokens/lib/bear.webp',
   './tokens/lib/cultist.webp',

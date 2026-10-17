@@ -53,6 +53,8 @@ function check(name, ok, info) { results.push({ ok: !!ok }); console.log((ok ? '
   });
   check('AoE size labels sit clear of every token', lab.length === 3 && lab.every(l => l.hits === 0), lab);
   // Laptop: the initiative sidebar sticks below the sticky map header instead of sliding under it.
+  // (v1.7.0: these three checks cover the classic layout; tests/c2.test.js covers C2.)
+  await p.evaluate(() => { dmSetLayout('classic'); render(); }); await p.waitForTimeout(300);
   const side = await p.evaluate(async () => {
     window.scrollTo(0, 0); const b = document.querySelector('.dm-battle'); window.scrollBy(0, b.getBoundingClientRect().top + 250);
     await new Promise(r => setTimeout(r, 100));
