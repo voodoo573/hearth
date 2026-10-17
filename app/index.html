@@ -11027,6 +11027,9 @@ html[data-texture]:not([data-palette]):not([data-theme="dark"]):not([data-textur
 <link rel="stylesheet" href="dm/c2.css">
 <script src="dm/srd51-statblocks.js"></script>
 <script src="dm/c2.js"></script>
+<link rel="stylesheet" href="dm/mi.css">
+<script src="dm/mi-fog.js"></script>
+<script src="dm/mi.js"></script>
 <style id="hearth-reskin">/* @reskin */
 /* Hearth 1.6.0 — Jenny's "Hearth" signature reskin (built against v1.4.1; 1.5.x class names added:
    .vital-stat, .ability, .stat-cell-score, .section-label; red .danger buttons (End Rage) and pips in the parchment strips keep their colours). */
@@ -54289,6 +54292,14 @@ function assignMapPositions(enc) {
 // Build the serializable map state broadcast to the projector window.
 function buildMapState(enc) {
   const _order = (typeof sortedCombatants === 'function') ? sortedCombatants(enc) : (enc.combatants || []);
+  // v1.7.0 — the fog travels as a fine alpha mask (4×4 per square) plus the last change's
+  // origin, so the projector can dissolve it softly; tokens under fog stay hidden.
+  const _FL = (typeof window !== 'undefined' && window.HearthFogLib) || null;
+  if (_FL && window.HearthMI) HearthMI.fogSync(enc);
+  const _fogOn = !!(enc.fog && enc.fog.on);
+  const _mask = _fogOn && _FL && window.HearthMI ? HearthMI.fogMask(enc) : null;
+  const _span = (c) => c.kind === 'player' ? 1 : tokenFootprint(tokenSize({ monsterId: c.monsterId, isBoss: !!c.isBoss, size: c.size }));
+  const _underFog = (c) => _fogOn && c.mapX != null && (_mask ? _FL.tokenHidden(_mask, enc.fog.mw, enc.fog.mh, c.mapX, c.mapY, _span(c)) : !(enc.fog.revealed || []).includes(c.mapX + ',' + c.mapY));
   const activeTurnId = _order.length ? (_order[dmTurnIdx(enc, _order)] || {}).id : null;
   return {
     type: 'hearth-map',
@@ -54306,12 +54317,13 @@ function buildMapState(enc) {
     video: enc.mapVideo || null,
     videoLoop: enc.mapVideoLoop !== false,
     gridOverlay: enc.mapGridOverlay !== false,
-    fog: (enc.fog && enc.fog.on) ? { on: true, revealed: (enc.fog.revealed || []) } : null,
+    fog: _fogOn ? { on: true, revealed: (enc.fog.revealed || []), mask: _mask ? enc.fog.mask : null, mw: enc.fog.mw || 0, mh: enc.fog.mh || 0, fx: enc.fog.fx || null } : null,
     aoes: (enc.aoes || []).filter(a => a.pinned).map(a => {
       const pos = (typeof resolveAoePos === 'function') ? resolveAoePos(a, enc) : { x: a.x, y: a.y };
       return {
         id: a.id, kind: a.kind, x: pos.x, y: pos.y, len: a.len, angle: a.angle || 0,
-        color: a.color || (typeof AOE_COLORS !== 'undefined' ? AOE_COLORS[a.kind] : '#d4673a'),
+        color: a.color || (window.HearthMI ? '#ff8a3d' : (typeof AOE_COLORS !== 'undefined' ? AOE_COLORS[a.kind] : '#d4673a')),
+        lbl: window.HearthMI ? HearthMI.projLabel(a) : null, // size only: players never see creature counts
       };
     }),
     tokens: (enc.combatants || []).map(c => {
@@ -54338,13 +54350,14 @@ function buildMapState(enc) {
         disposition: c.disposition || 'enemy',
         tokenImage: c.tokenImage || null,
         aura: (c.kind === 'player' && typeof dmTokenAura === 'function') ? dmTokenAura(c) : null, // v1.1.0
+        fogHidden: c.kind !== 'player' && _underFog(c), // v1.7.0
       };
     }),
     // v0.91.1 — the initiative panel follows the same rules as the tokens: no
     // hidden/dead monsters, no monsters standing in unrevealed fog, and a hidden
     // name shows only the token number (or "BOSS").
     initiative: _order.filter(c => !c.hiddenFromPlayers && !(c.kind === 'monster' && c.dead)
-      && !(c.kind !== 'player' && enc.fog && enc.fog.on && !(enc.fog.revealed || []).includes(c.mapX + ',' + c.mapY))).map(c => ({
+      && !(c.kind !== 'player' && _underFog(c))).map(c => ({
       name: (c.kind !== 'player' && c.hideName) ? tokenLabel(c) : (c.name || (typeof tokenLabel === 'function' ? tokenLabel(c) : '') || 'Combatant'),
       kind: c.kind, isBoss: !!c.isBoss, isTurn: c.id === activeTurnId,
     })),
@@ -55971,6 +55984,7 @@ function dmMapZoomMargins(z, w, h) {
 // C2 layout (app/dm/c2.js), so both wire up through wireDMMap/wireDMEncounter.
 function dmMapBoardHTML(enc, cell, cols, rows, tokens, turnId) {
   const gridW = cols * cell, gridH = rows * cell;
+  const MI = dmMapInteractions(); // v1.7.0 — Jenny's map interactions (C2 layout only)
   return `
           <div class="dm-map-scroll" id="dmMapScroll">
             <div class="dm-map-zoom" id="dmMapZoom" style="transform:scale(${state.ui.dmMapZoom || 1});transform-origin:top left;width:${gridW}px;height:${gridH}px;${dmMapZoomMargins(state.ui.dmMapZoom || 1, gridW, gridH)}">
@@ -55978,14 +55992,16 @@ function dmMapBoardHTML(enc, cell, cols, rows, tokens, turnId) {
               style="width:${gridW}px;height:${gridH}px;background-size:${cell}px ${cell}px;">
               ${encPaintedId(enc) ? paintedBaseLayerHTML(encPaintedId(enc), cols, rows) : (enc.mapVideo ? mapVideoLayerHTML(enc.mapVideo) : (enc.mapImage ? mapBaseLayerHTML(enc.mapImage) : ''))}
               ${dmAuraLayerHTML(tokens, cell)}
+              ${MI ? MI.under(enc, cell, cols, rows) : ''}
               <svg class="dm-aoe-layer" id="dmAoeLayer" width="${gridW}" height="${gridH}" viewBox="0 0 ${gridW} ${gridH}">
                 <defs><filter id="fogWave" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="1" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="11" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
-                ${(enc.aoes || []).map(a => aoeShapeSVG(a, cell, true, enc)).join('')}
+                ${MI ? MI.aoeGroup() : (enc.aoes || []).map(a => aoeShapeSVG(a, cell, true, enc)).join('')}
                 <g id="dmAoePreview"></g>
                 <g id="dmRulerLayer"></g>
-                <g id="dmFogLayer" filter="url(#fogWave)">${fogLayerSVG(enc, cols, rows, cell)}</g>
+                <g id="dmFogLayer" filter="url(#fogWave)">${MI ? '' : fogLayerSVG(enc, cols, rows, cell)}</g>
               </svg>
               <div class="he-aoe-layer" id="heAoeLayer" data-cell="${cell}" aria-hidden="true"></div>
+              ${MI ? MI.pathLayer(cols, rows, cell) : ''}
               ${tokens.map(c => mapTokenHTML({
                 id: c.id, x: c.mapX, y: c.mapY, label: tokenLabel(c), kind: c.kind,
                 isBoss: !!c.isBoss, dead: c.kind === 'monster' && !!c.dead,
@@ -55993,6 +56009,7 @@ function dmMapBoardHTML(enc, cell, cols, rows, tokens, turnId) {
                 monsterId: c.monsterId, name: c.name, isTurn: c.id === turnId, tokenImage: c.tokenImage, tokenIcon: c.tokenIcon, hidden: c.hiddenFromPlayers, hideName: c.hideName, disposition: c.disposition, highlighted: c.id === state.ui.dmHighlightMon,
                 hp: c.hp, maxHp: c.maxHp, statuses: c.statuses, concentrating: !!c.concentrating, size: c.size,
               }, cell, true)).join('')}
+              ${MI ? MI.over() : ''}
             </div>
             </div>
           </div>
@@ -56033,11 +56050,13 @@ function dmMapDialogsHTML(enc) {
 // v1.7.0 — DM battle-map layout: 'c2' (Jenny's map-first redesign, the default)
 // or 'classic' (the v1.6 cockpit). Switch from the ⋯ More menu or the classic header.
 function dmLayoutIsC2() { return !!(typeof window !== 'undefined' && window.HearthC2) && (loadDmSettings().dmLayout || 'c2') === 'c2'; }
+function dmMapInteractions() { return (dmLayoutIsC2() && typeof window !== 'undefined' && window.HearthMI) || null; }
 function dmSetLayout(v) { const s = loadDmSettings(); s.dmLayout = v === 'classic' ? 'classic' : 'c2'; saveDmSettings(s); state.ui.dmMapZoomInit = false; }
 function renderDMMap() {
   const enc = assignMapPositions(assignTokens(loadEncounter()));
   if (dmRevealVision(enc)) saveEncounter(enc);
   const mapEncs = ((activeGame(loadGames()) || {}).encounters) || [];
+  if (window.HearthMI) HearthMI.fogSync(enc); // keep the fine fog mask in step with any whole-square edits
   saveEncounter(enc);
   broadcastMap(enc);
   const cols = enc.mapCols || 20;
@@ -56443,6 +56462,7 @@ function wireDMMap(enc, cell, cols, rows) {
       }
     }
     if (zoomPct) zoomPct.textContent = Math.round(z * 100) + '%';
+    if (dmMapInteractions()) HearthMI.onZoom(z); // handles and chips keep their screen size
   };
   const fitZoom = () => {
     if (!scrollEl) return;
@@ -56491,6 +56511,7 @@ function wireDMMap(enc, cell, cols, rows) {
   if (scrollEl) {
     scrollEl.addEventListener('pointerdown', (ev) => {
       if (aoeInteracting) return; // v0.21.96 — don't pan while dragging an AoE handle
+      if (dmMapInteractions() && HearthMI.ownsPointer(ev)) return; // v1.7.0 — fog tools, template handles and the fan own the drag
       if (state.ui.dmPointerMode || ev.button === 2) return; // v0.91.1 — the pointer owns the drag (Point mode or right-click)
       if (state.ui.dmRulerTool) return; // v0.36.0 — ruler owns map taps while armed
       if (state.ui.dmFogTool) return; // v0.46.0 — fog brush owns map taps while armed
@@ -56952,6 +56973,7 @@ function wireDMMap(enc, cell, cols, rows) {
   grid.querySelectorAll('[data-map-token]').forEach(el => {
     el.addEventListener('pointerdown', (ev) => {
       if (state.ui.dmPointerMode || ev.button === 2) return; // v0.91.1 — let the pointer handler on the grid take it
+      if (dmMapInteractions() && !state.ui.dmGroupMode) { const r = HearthMI.tokenDown(ev, el); if (r === true || r === 'pass') return; } // v1.7.0 — lift, path and feet count
       ev.stopPropagation(); // don't start a pan
       dragging = el; el.classList.add('dragging');
       downX = ev.clientX; downY = ev.clientY;
@@ -57119,6 +57141,8 @@ function wireDMMap(enc, cell, cols, rows) {
     // Defer so layout is measured.
     setTimeout(fitZoom, 0);
   }
+  // v1.7.0 — Jenny's map interactions: templates with live labels, token paths, soft fog.
+  if (dmMapInteractions()) HearthMI.wire({ enc, cell, cols, rows, getZoom, setZoom, fitZoom, onTap: (id) => HearthC2.openCard(id, true) });
 }
 
 // Open (or focus) the projector window and push the current map to it.
@@ -57220,6 +57244,14 @@ function projectorDocumentHTML() {
   .tok-disc { font-weight:700; line-height:1; }
   .tok-img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
   .pfogcell { position:absolute; background:#070503; z-index:6; pointer-events:none; }
+  .pfogcv { position:absolute; left:0; top:0; z-index:6; pointer-events:none; }
+  .tok.tok-rev { animation: ptokRev .6s ease-in-out both; }
+  @keyframes ptokRev { from { opacity:0; filter: blur(6px); } to { opacity:1; filter:none; } }
+  .plbl { position:absolute; z-index:3; transform:translate(-50%,0); pointer-events:none; white-space:nowrap; font: 600 15px/1.2 system-ui, sans-serif; letter-spacing:.3px;
+    color:#ffe2c8; background:rgba(20,10,4,.78); border:1px solid rgba(255,138,61,.75); border-radius:999px; padding:4px 12px; box-shadow:0 2px 10px rgba(0,0,0,.6); }
+  .plbl.new { animation: plblIn .25s ease-out both; }
+  @keyframes plblIn { from { opacity:0; transform:translate(-50%,4px); } }
+  @media (prefers-reduced-motion: reduce) { .tok.tok-rev, .plbl.new { animation-duration: .08s; } }
   .pfog-wrap { position:absolute; inset:0; filter: blur(5px); z-index:6; pointer-events:none; }
   .tok-cap { position:absolute; top:100%; left:50%; transform:translateX(-50%); margin-top:3px;
     font-size:13px; letter-spacing:0.5px; white-space:nowrap; padding:1px 6px; border-radius:4px;
@@ -57354,6 +57386,28 @@ function projectorDocumentHTML() {
       }).catch(function(){ _pm.busy = false; });
     }
     function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]; }); }
+    // v1.7.0 — soft fog: the same mask as the DM screen, opaque umber, wide soft edges.
+    (${(typeof window !== 'undefined' && window.hearthFogLibSource) || 'function(){}'})(window);
+    if (${projectorReducedMotion() ? 'true' : 'false'}) window.__hearthReduceMotion = true;
+    var _pf = { cv: null, view: null, key: null, seq: null, enc: null }, _pTokSeen = null, _pAoeSeen = {};
+    function projFog(state, cell){
+      var f = state.fog, FL = window.HearthFogLib;
+      if (!f || !f.on || !f.mask || !FL) { if (_pf.view) _pf.view.stop(); _pf.cv = _pf.view = null; _pf.key = null; return null; }
+      var key = state.cols + 'x' + state.rows + '@' + cell;
+      if (!_pf.view || _pf.key !== key) {
+        var prev = _pf.view; if (prev) prev.stop();
+        _pf.cv = document.createElement('canvas'); _pf.cv.className = 'pfogcv';
+        _pf.view = new FL.FogView(_pf.cv, { look: 'proj', cols: state.cols, rows: state.rows });
+        _pf.view.size(state.cols * cell, state.rows * cell);
+        _pf.view.set(FL.decode(f.mask, f.mw * f.mh), { instant: true });
+        _pf.key = key; _pf.seq = f.fx ? f.fx.seq : null; _pf.enc = f.mask;
+      } else if (_pf.enc !== f.mask) {
+        var fx = f.fx || {}, fresh = fx.seq != null && fx.seq !== _pf.seq;
+        _pf.view.set(FL.decode(f.mask, f.mw * f.mh), fresh ? { origin: fx.origin, dur: fx.dur || 600 } : { dur: 400 });
+        _pf.seq = fx.seq; _pf.enc = f.mask;
+      }
+      return _pf.cv;
+    }
     function draw(state){
       last = state;
       var cell = fit(state.cols, state.rows);
@@ -57386,15 +57440,31 @@ function projectorDocumentHTML() {
           if(a.kind==='circle'){ sh='<circle cx="'+ox+'" cy="'+oy+'" r="'+len+'"/>'; }
           else if(a.kind==='square'){ sh='<rect x="'+ox+'" y="'+oy+'" width="'+len+'" height="'+len+'"/>'; }
           else if(a.kind==='line'){ var w=cell; var ex=ox+Math.cos(ang)*len, ey=oy+Math.sin(ang)*len; var px=-Math.sin(ang)*w/2, py=Math.cos(ang)*w/2; sh='<polygon points="'+(ox+px)+','+(oy+py)+' '+(ex+px)+','+(ey+py)+' '+(ex-px)+','+(ey-py)+' '+(ox-px)+','+(oy-py)+'"/>'; }
-          else if(a.kind==='cone'){ var h=Math.atan(0.5); var a1=ang-h,a2=ang+h; sh='<polygon points="'+ox+','+oy+' '+(ox+Math.cos(a1)*len)+','+(oy+Math.sin(a1)*len)+' '+(ox+Math.cos(a2)*len)+','+(oy+Math.sin(a2)*len)+'"/>'; }
-          svg += '<g data-aoe-id="'+(a.id||'')+'" style="fill:'+col+';fill-opacity:0.30;stroke:'+col+';stroke-width:2;stroke-opacity:0.9;pointer-events:auto;cursor:move;">'+sh+'</g>';
+          else if(a.kind==='cone'){ var h=Math.atan(0.5), cl=len/Math.cos(h); var a1=ang-h,a2=ang+h; sh='<polygon points="'+ox+','+oy+' '+(ox+Math.cos(a1)*cl)+','+(oy+Math.sin(a1)*cl)+' '+(ox+Math.cos(a2)*cl)+','+(oy+Math.sin(a2)*cl)+'"/>'; } // 5e: the far edge is as wide as the cone is long
+          svg += '<g data-aoe-id="'+(a.id||'')+'" style="fill:'+col+';fill-opacity:0.30;stroke:'+col+';stroke-width:2.5;stroke-opacity:0.95;stroke-linejoin:round;pointer-events:auto;cursor:move;">'+sh+'</g>';
         });
         svg += '</svg>';
         html += svg;
+        // a plain size label under each shown template (no creature counts)
+        var seenNow = {};
+        state.aoes.forEach(function(a){
+          if (!a.lbl) return;
+          var ox=a.x*cell, oy=a.y*cell, L=(a.len||1)*cell, ang=a.angle||0, bx, by;
+          if (a.kind==='circle') { bx=ox; by=oy+L+8; }
+          else if (a.kind==='square') { bx=ox+L/2; by=oy+L+8; }
+          else { var hh=a.kind==='cone'?Math.atan(0.5):0, cl=a.kind==='cone'?L/Math.cos(hh):L, pts=[[ox,oy],[ox+Math.cos(ang-hh)*cl,oy+Math.sin(ang-hh)*cl],[ox+Math.cos(ang+hh)*cl,oy+Math.sin(ang+hh)*cl]];
+            var maxY=-1e9, sx=0; pts.forEach(function(p){ if (p[1]>maxY) maxY=p[1]; sx+=p[0]; }); bx=sx/3; by=maxY+(a.kind==='line'?cell/2:0)+8; }
+          if (by > state.rows*cell - 30) by = Math.max(4, (a.kind==='circle' ? oy-L : oy) - 34);
+          bx = Math.max(60, Math.min(state.cols*cell - 60, bx));
+          seenNow[a.id] = 1;
+          html += '<div class="plbl' + (_pAoeSeen[a.id] ? '' : ' new') + '" style="left:'+bx.toFixed(1)+'px;top:'+by.toFixed(1)+'px">' + esc(a.lbl) + '</div>';
+        });
+        _pAoeSeen = seenNow;
       }
       var fogOn = !!(state.fog && state.fog.on);
       var fogRev = {};
       if (fogOn) (state.fog.revealed||[]).forEach(function(k){ fogRev[k]=1; });
+      var softFog = fogOn && !!state.fog.mask && !!window.HearthFogLib, tokSeen = {};
       // v1.1.0 — aura rings (Aura of Protection etc.) under the tokens.
       state.tokens.forEach(function(t){
         if (t.x==null||t.y==null||t.hidden||t.dead||!t.aura||!(t.aura.r>0)) return;
@@ -57405,8 +57475,9 @@ function projectorDocumentHTML() {
         if (t.x==null||t.y==null) return;
         if (t.hidden) return;
         if (t.dead) return;
-        if (fogOn && t.kind !== 'player' && !fogRev[t.x+','+t.y]) return;
-        var cls = 'tok ' + (t.kind==='player'?'player':'monster') + (t.disposition && t.disposition !== 'enemy' ? ' disp-' + t.disposition : '') + (t.isBoss?' boss':'') + (t.dead?' dead':'') + (t.afflicted?' afflicted':'') + (t.isTurn?' tok-turn':'');
+        if (fogOn && t.kind !== 'player' && (t.fogHidden != null ? t.fogHidden : !fogRev[t.x+','+t.y])) return;
+        tokSeen[t.id] = 1;
+        var cls = 'tok ' + (t.kind==='player'?'player':'monster') + (t.disposition && t.disposition !== 'enemy' ? ' disp-' + t.disposition : '') + (t.isBoss?' boss':'') + (t.dead?' dead':'') + (t.afflicted?' afflicted':'') + (t.isTurn?' tok-turn':'') + (_pTokSeen && !_pTokSeen[t.id] && fogOn ? ' tok-rev' : '');
         var inner = '';
         if (t.tokenImage) {
           var capI = t.kind==='player' ? '<span class="tok-cap player-cap">'+esc(t.name||t.label||'')+'</span>' : (t.isBoss ? '<span class="tok-cap boss-cap">'+esc((!t.hideName&&t.name)?t.name:'BOSS')+'</span>' : ('<span class="tok-num">'+((t.label!=null&&t.label!=='')?t.label:'?')+'</span>'+((!t.hideName&&t.name)?'<span class="tok-cap monster-cap">'+esc(t.name)+'</span>':'')));
@@ -57430,7 +57501,8 @@ function projectorDocumentHTML() {
         }
         html += '<div class="'+cls+'" data-tok-id="'+t.id+'" style="left:'+((t.x+(t.tiny?0.25:0))*cell)+'px;top:'+((t.y+(t.tiny?0.25:0))*cell)+'px;width:'+((t.tiny?0.5:(t.span||1))*cell)+'px;height:'+((t.tiny?0.5:(t.span||1))*cell)+'px;cursor:grab;'+(t.kind==='player'?'z-index:7;':'')+'">'+inner+'</div>';
       });
-      if (fogOn) {
+      _pTokSeen = tokSeen;
+      if (fogOn && !softFog) {
         var fogHtml = '';
         for (var fr=0; fr<state.rows; fr++) for (var fc=0; fc<state.cols; fc++) {
           if (!fogRev[fc+','+fr]) fogHtml += '<div class="pfogcell" style="left:'+(fc*cell)+'px;top:'+(fr*cell)+'px;width:'+cell+'px;height:'+cell+'px;"></div>';
@@ -57438,6 +57510,8 @@ function projectorDocumentHTML() {
         html += '<div class="pfog-wrap">' + fogHtml + '</div>';
       }
       grid.innerHTML = html;
+      var fogCv = softFog ? projFog(state, cell) : projFog({}, cell);
+      if (fogCv) grid.appendChild(fogCv);
       if (pmImg && _pm.node) grid.insertBefore(_pm.node, grid.firstChild);
       if (state.video) {
         ensureProjVideo(state.video, state.videoLoop !== false);
@@ -59985,7 +60059,7 @@ function linkRefreshDM(boardChanged) {
     _linkDmRenderTimer = null;
     if (state.tab !== 'dm') return;
     const ae = document.activeElement;
-    const busy = (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) || document.querySelector('.map-token.dragging');
+    const busy = (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) || document.querySelector('.map-token.dragging, .mi-busy');
     if (busy) { linkRefreshDM(boardChanged); return; }
     render();
   }, boardChanged ? 250 : 80);

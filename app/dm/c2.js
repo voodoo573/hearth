@@ -84,6 +84,7 @@
       chip + next + '<button class="c2-btn c2-brass c2-proj" id="dmMapProject" title="Open the projector window">' + PROJ_ICO + '<span class="c2-wide-only"> Projector</span></button>' +
       '<button class="c2-btn c2-more-btn ' + (ui().c2More ? 'on' : '') + '" data-c2-more="1" aria-expanded="' + (ui().c2More ? 'true' : 'false') + '" title="More">\u22EF<span class="c2-wide-only"> More</span></button></div>';
   }
+  function MI() { return W.HearthMI || null; }
   function projOn() { return typeof hearthDicePrefs === 'function' && hearthDicePrefs().projector !== 'off'; }
   function moreHTML(ctx) {
     var enc = ctx.enc, mapEncs = ctx.mapEncs || [];
@@ -97,6 +98,7 @@
       '<button class="c2-mi" data-dm-reset-enc="1">\u21BA Reset combat</button>' +
       '<button class="c2-mi c2-mi-tog ' + (projOn() ? 'on' : '') + '" data-c2-proj-dice="1" role="menuitemcheckbox" aria-checked="' + (projOn() ? 'true' : 'false') + '"><span>Show dice rolls on projector</span><i class="c2-switch"></i></button>' +
       (hidden.length ? '<div class="c2-mi c2-mi-hid"><span>Sitting out</span>' + hidden.map(function (h) { return '<button class="c2-chip" data-dm-unhide="' + E(h.id) + '">' + E(h.name || 'Player') + ' + back</button>'; }).join('') + '</div>' : '') +
+      (MI() ? '<button class="c2-mi c2-mi-tog ' + (ui().miRH ? 'on' : '') + '" data-mi-rh="1" aria-expanded="' + (ui().miRH ? 'true' : 'false') + '">\uD83D\uDCDC Round history</button>' + (ui().miRH ? MI().historyHTML(enc) : '') : '') +
       '<button class="c2-mi" data-c2-layout="classic">\u25A4 Classic layout</button></div>';
   }
 
@@ -115,14 +117,15 @@
     return '<button class="c2-fan-i ' + (on ? 'on' : '') + '" data-c2-fan-i="' + key + '" ' + attrs + ' aria-label="' + E(label) + '">' + ICO[key] + '<small>' + E(label) + '</small></button>';
   }
   function fanHTML(enc) {
-    var u = ui(), open = !!u.c2Fan;
+    var u = ui(), open = !!u.c2Fan, mi = MI();
+    if (mi && mi.aoeOpen()) return mi.fanHTML();
     var inner = [
-      fanItem('aoe', 'AoE', 'data-c2-fly="aoe"', u.c2Fly === 'aoe'),
+      fanItem('aoe', 'AoE', mi ? 'data-mi-aoe-open="1"' : 'data-c2-fly="aoe"', u.c2Fly === 'aoe'),
       fanItem('measure', 'Measure', 'data-ruler-tool="1"', !!u.dmRulerTool),
       fanItem('point', 'Point', 'data-pointer-tool="1"', !!u.dmPointerMode),
     ];
     var outer = [
-      fanItem('fog', 'Fog', 'data-c2-fly="fog"', u.c2Fly === 'fog' || !!(enc.fog && enc.fog.on)),
+      fanItem('fog', 'Fog', mi ? 'data-mi-fog-open="1"' : 'data-c2-fly="fog"', u.c2Fly === 'fog' || !!(enc.fog && enc.fog.on)),
       fanItem('group', 'Group', 'data-group-tool="1"', !!u.dmGroupMode),
       fanItem('grid', 'Grid', 'data-c2-fly="grid"', u.c2Fly === 'grid'),
       fanItem('map', 'Map', 'data-c2-fly="map"', u.c2Fly === 'map'),
@@ -148,6 +151,8 @@
     var aoe = '<div class="c2-row">' + b('data-aoe-tool="circle"', '\u25CF Circle', u.dmAoeTool === 'circle') + b('data-aoe-tool="cone"', '\u25D7 Cone', u.dmAoeTool === 'cone') + b('data-aoe-tool="line"', '\u25AC Line', u.dmAoeTool === 'line') + b('data-aoe-tool="square"', '\u25A0 Square', u.dmAoeTool === 'square') + '</div>' +
       '<div class="c2-lbl">Colour</div><div class="c2-row c2-colours">' + colours + '<label class="aoe-color-custom" title="Any colour"><span class="rs-sr">Custom AoE colour</span><input type="color" aria-label="Custom AoE colour" data-aoe-color-custom="1" value="' + ((u.dmAoeColor && /^#/.test(u.dmAoeColor)) ? u.dmAoeColor : '#d4673a') + '" /></label></div>' +
       '<div class="c2-row">' + b('data-aoe-free="1" title="When on, cones & lines drop where you drag instead of from the active token"', (u.dmAoeFree ? '\u2611' : '\u2610') + ' Free-place', u.dmAoeFree) + ((enc.aoes && enc.aoes.length) ? b('data-aoe-clear="1"', 'Clear all (' + enc.aoes.length + ')') : '') + '</div>';
+    if (MI()) aoe = '<div class="c2-lbl">Colour for new templates' + (u.miAoe && u.miAoe.sel ? ' and the selected one' : '') + '</div><div class="c2-row c2-colours">' + colours + '<label class="aoe-color-custom" title="Any colour"><span class="rs-sr">Custom AoE colour</span><input type="color" aria-label="Custom AoE colour" data-aoe-color-custom="1" value="' + ((u.dmAoeColor && /^#/.test(u.dmAoeColor)) ? u.dmAoeColor : '#d4673a') + '" /></label></div>' +
+      ((enc.aoes && enc.aoes.length) ? '<div class="c2-row">' + b('data-aoe-clear="1"', 'Clear all templates (' + enc.aoes.length + ')') + '</div>' : '');
     var fog = '<div class="c2-row">' + b('data-fog-toggle="1"', fogOn ? '\u2611 Fog on' : '\u2610 Fog off', fogOn) + '</div>' +
       (fogOn ? '<div class="c2-row">' + b('data-fog-tool="reveal"', 'Reveal', u.dmFogTool === 'reveal') + b('data-fog-tool="hide"', 'Hide', u.dmFogTool === 'hide') + b('data-fog-cover="1"', 'Cover all') + b('data-fog-clear="1"', 'Reveal all') + '</div>' +
         '<div class="c2-lbl">Brush</div><div class="c2-row">' + b('data-fog-brush="0"', 'Fine', (u.dmFogBrush || 0) === 0) + b('data-fog-brush="1"', 'Med', u.dmFogBrush === 1) + b('data-fog-brush="2"', 'Wide', u.dmFogBrush === 2) + '</div>' : '<div class="c2-note">Fog hides the board on the projector until you reveal it.</div>');
@@ -169,6 +174,7 @@
   }
   function aoeBars(enc) {
     var u = ui(), out = '';
+    if (MI()) return ''; // the template fan replaces the move / aim / size bars
     var last = u.dmAoeLastDropped ? (enc.aoes || []).find(function (a) { return a.id === u.dmAoeLastDropped; }) : null;
     if (u.dmAoeMoving && (enc.aoes || []).some(function (a) { return a.id === u.dmAoeMoving; })) {
       out += '<div class="c2-bar"><span>Drag \u271B to move, \u21BB to spin.</span><button class="c2-btn c2-brass" data-aoe-move-done="1">\u2713 Done</button></div>';
@@ -184,7 +190,7 @@
   }
   function helpHTML() {
     return '<button class="c2-help ' + (ui().c2Help ? 'on' : '') + '" data-c2-help="1" aria-expanded="' + (ui().c2Help ? 'true' : 'false') + '" title="How the map works">?</button>' +
-      (ui().c2Help ? '<div class="c2-helpbox" role="note"><b>Map tools</b><p>Tap \u2726 for templates, measuring, fog, grid, map and view. A template drops on the board: drag \u271B to move it, \u21BB to aim a cone or line, \uD83D\uDCCD shows it to players, \u2715 deletes it. Cones and lines start from the active token unless Free-place is on.</p><p>Tap a token or a portrait to open its card. Drag tokens to move them.</p><p><b>Projector:</b> open it, set your second screen to <em>Extend</em>, drag the window to the TV and press <em>Fullscreen</em>.</p></div>' : '');
+      (ui().c2Help ? '<div class="c2-helpbox" role="note"><b>Map tools</b>' + (MI() ? '<p>Tap \u2726 for templates, measuring, fog, grid, map and view. <b>AoE</b>: pick a shape, tap the map to place it, then drag \u2725 to move, \u27F3 to aim and \u25C6 to resize. The label shows how many creatures are inside; \uD83D\uDCCD Show players puts it on the projector. <b>Fog</b>: brush, drag a rectangle or tap a room to reveal; every change can be undone.</p><p>Tap a token or a portrait to open its card. Drag a token to move it: the path counts feet against its speed. Right-click or Esc cancels; Ctrl+Z undoes a move.</p>' : '<p>Tap \u2726 for templates, measuring, fog, grid, map and view. A template drops on the board: drag \u271B to move it, \u21BB to aim a cone or line, \uD83D\uDCCD shows it to players, \u2715 deletes it. Cones and lines start from the active token unless Free-place is on.</p><p>Tap a token or a portrait to open its card. Drag tokens to move them.</p>') + '<p><b>Projector:</b> open it, set your second screen to <em>Extend</em>, drag the window to the TV and press <em>Fullscreen</em>.</p></div>' : '');
   }
 
   // ---------- stat card ----------
@@ -266,7 +272,10 @@
         buttons += rech ? '<button class="c2-roll" data-c2-recharge="' + E(c.id) + '" data-c2-key="' + E(key) + '" data-c2-min="' + rech[1] + '" title="Roll a d6 to recharge">\uD83C\uDFB2 Recharge</button>' : '';
         buttons += '<button class="c2-roll c2-sm" data-c2-spend="' + E(c.id) + '" data-c2-key="' + E(key) + '">' + (spent ? '\u21BA Ready' : '\u2713 Used') + '</button>';
       }
-      if (area) buttons += '<button class="c2-roll c2-place" data-c2-place="' + E(c.id) + '" data-c2-kind="' + area.kind + '" data-c2-ft="' + area.ft + '" data-c2-t="' + E((atk && atk.damages[0] && atk.damages[0].type) || '') + '" data-c2-l="' + E(clean) + '" title="Place the template on the map">\u25F8 Place ' + (area.kind === 'circle' ? 'circle' : area.kind === 'square' ? 'cube' : area.kind) + '</button>';
+      if (area) {
+        var noun = area.kind === 'circle' ? 'circle' : area.kind === 'square' ? 'cube' : area.kind, placingNow = MI() && MI().placing(c.id, key);
+        buttons += '<button class="c2-roll c2-place' + (placingNow ? ' placing' : '') + '" data-c2-place="' + E(c.id) + '" data-c2-kind="' + area.kind + '" data-c2-ft="' + area.ft + '" data-c2-t="' + E((atk && atk.damages[0] && atk.damages[0].type) || '') + '" data-c2-l="' + E(clean) + '" data-c2-dc="' + (dc ? E('DC ' + dc.dc + ' ' + dc.ab) : '') + '" data-c2-key="' + E(key) + '" title="Place the template on the map"' + (placingNow ? ' aria-pressed="true"' : '') + '>' + (placingNow ? '\u25FA Placing ' + noun + '\u2026' : '\u25F8 Place ' + noun) + '</button>';
+      }
       return '<div class="' + cls + '">' + nameHTML + (meta.length ? ' <small>' + E(meta.join(' \u00b7 ')) + '</small>' : '') + (dc && !isAttack ? ' <span class="c2-dc">DC ' + dc.dc + ' ' + E(dc.ab) + '</span>' : '') + pipH + rc +
         (text && !(area && !opts.legendary && text.length > 220) ? '<p>' + hl(text) + '</p>' : (text ? '<p>' + hl(text) + '</p>' : '')) +
         (buttons ? '<span class="c2-rolls">' + buttons + laUse + '</span>' : (laUse ? '<span class="c2-rolls">' + laUse + '</span>' : '')) + '</div>';
@@ -361,8 +370,23 @@
       (c.dead ? '<button class="c2-btn c2-ico" data-dm-revive="' + E(c.id) + '">Revive</button>' : (atZero ? '<button class="c2-btn c2-ico c2-danger" data-dm-kill="' + E(c.id) + '">Kill</button>' : '')) +
       '<button class="c2-btn c2-ico c2-danger" data-dm-remove-ask="' + E(c.id) + '" title="Remove from encounter">\u2715 Remove</button></div>';
     var phone = !wide();
+    if (phone && MI() && MI().aoeOpen()) return peekHTML(c, hp, max, low);
     return '<aside class="c2-card ' + (phone ? 'sheet' : 'side') + (isTurn ? ' turn' : '') + '" data-c2-card="' + E(c.id) + '" aria-label="' + E(c.name) + ' card">' + (phone ? '<span class="c2-grab" aria-hidden="true"></span>' : '') +
       head + '<div class="c2-sbbody">' + cardBody(c) + tokenRow + '</div></aside>';
+  }
+
+  // Phone: while the template fan is open the sheet folds to a 99 px peek bar so the map stays visible.
+  function peekHTML(c, hp, max, low) {
+    var a = ui().miAoe, from = a && a.from && a.from.id === c.id ? a.from : null, s = c2s(c);
+    var t = from ? (loadEncounter().aoes || []).find(function (q) { return q.id === from.aoe; }) : null;
+    var act = from ? String(from.key || '').replace(/^.:/, '') : '';
+    var noun = t ? (t.kind === 'circle' ? 'circle' : t.kind === 'square' ? 'cube' : t.kind) : '';
+    var rech = from ? (s.spent[from.key] ? '<span class="mi-pkrc spent">SPENT</span>' : '<span class="mi-pkrc">READY</span>') : '';
+    return '<aside class="c2-card mi-peek" data-c2-card="' + E(c.id) + '" aria-label="' + E(c.name) + ' card (folded)">' +
+      '<div class="mi-pk1"><span class="c2-cface">' + face(c, 38) + '</span><span class="mi-pkn"><b>' + E(c.name) + '</b><small>' + (from ? E(act) + (t && t.dc ? ' \u00b7 ' + E(t.dc) : '') : 'Placing a template') + '</small></span>' +
+      '<span class="mi-pkhp"><b class="' + (low ? 'low' : '') + '">' + (hp != null ? E(hp) : '\u2013') + (max != null ? '<small>/' + E(max) + '</small>' : '') + '</b>' + hpBar(c) + '</span>' +
+      '<button class="mi-pkx" data-mi-done="1" aria-label="Done placing, open the card">\u2303</button></div>' +
+      (from ? '<div class="mi-pk2"><button class="mi-pkact" data-mi-done="1">\u25FA Placing ' + noun + ' <small>' + E(act) + '</small></button>' + rech + '</div>' : '') + '</aside>';
   }
 
   // ---------- render ----------
@@ -383,13 +407,14 @@
     var card = u.c2Card ? (enc.combatants || []).find(function (c) { return c.id === u.c2Card.id; }) : null;
     if (u.c2Card && !card) u.c2Card = null;
     var phone = !wide();
-    var lk = (phone ? 'p' : 'd') + (card ? 1 : 0);
+    var lk = (phone ? 'p' : 'd') + (card ? 1 : 0) + (phone && card && MI() && MI().aoeOpen() ? 'k' : ''); // the peek bar gives the map more height: refit
     if (u.c2LayoutKey !== lk) { if (u.c2LayoutKey != null && !u.c2ManualZoom) u.dmMapZoomInit = false; u.c2LayoutKey = lk; }
-    return '<section class="dm-battle c2' + (card ? ' c2-open' : '') + (phone ? ' c2-phone' : ' c2-desk') + '">' + headHTML(ctx) + moreHTML(ctx) +
+    var mi = MI(), miCls = mi ? (mi.aoeOpen() ? ' mi-aoe-on' : '') + (mi.fogOpen() ? ' mi-fog-on' : '') : '';
+    return '<section class="dm-battle c2' + (card ? ' c2-open' : '') + (phone ? ' c2-phone' : ' c2-desk') + miCls + '">' + headHTML(ctx) + moreHTML(ctx) +
       stripHTML(ctx, phone && !!card) +
       '<div class="c2-body">' + (card ? cardHTML(ctx, card) : '') +
       '<div class="c2-stage dm-battle-map">' + dmMapBoardHTML(enc, ctx.cell, ctx.cols, ctx.rows, ctx.tokens, ctx.turnId) +
-      '<div class="c2-bars">' + aoeBars(enc) + modeChip() + '</div>' + helpHTML() + flyHTML(enc, ctx.cols, ctx.rows) + fanHTML(enc) + '</div></div>' +
+      '<div class="c2-bars">' + aoeBars(enc) + modeChip() + '</div>' + helpHTML() + flyHTML(enc, ctx.cols, ctx.rows) + fanHTML(enc) + (mi ? mi.stageHTML() : '') + '</div></div>' +
       dmMapDialogsHTML(enc) + '</section>';
   }
 
@@ -489,6 +514,7 @@
     }
     if ((el = t.closest('[data-c2-la-use]'))) { var cost = +el.getAttribute('data-c2-cost') || 1; mutate(el.getAttribute('data-c2-la-use'), function (c, s, e) { var max = 3; var bl = blockFor(c); var lm = bl && bl.srd && /can take (\d+)/i.exec(bl.srd.legDesc || ''); if (lm) max = +lm[1]; if (s.la + cost > max) { showToast('Not enough legendary actions left this round.'); return; } s.la += cost; }); return; }
     if ((el = t.closest('[data-c2-la-reset]'))) { mutate(el.getAttribute('data-c2-la-reset'), function (c, s) { s.la = 0; }); return; }
+    if ((el = t.closest('[data-c2-place]')) && MI()) { if (el.classList.contains('placing')) { MI().closeAoe(false); return; } MI().placeFromCard(el.getAttribute('data-c2-place'), el.getAttribute('data-c2-kind'), +el.getAttribute('data-c2-ft'), el.getAttribute('data-c2-t'), el.getAttribute('data-c2-l'), el.getAttribute('data-c2-dc'), el.getAttribute('data-c2-key')); return; }
     if ((el = t.closest('[data-c2-place]'))) { placeTemplate(el.getAttribute('data-c2-place'), el.getAttribute('data-c2-kind'), +el.getAttribute('data-c2-ft'), el.getAttribute('data-c2-t'), el.getAttribute('data-c2-l')); return; }
     if (t.closest('[data-map-zoom="in"],[data-map-zoom="out"]')) u.c2ManualZoom = true;
     if (t.closest('[data-map-zoom="fit"]')) u.c2ManualZoom = false;
@@ -521,7 +547,7 @@
     W.addEventListener('resize', function () {
       clearTimeout(rt); rt = setTimeout(function () {
         if (!document.querySelector('.c2')) return;
-        var u = ui(), lk = (wide() ? 'd' : 'p') + (u.c2Card ? 1 : 0);
+        var u = ui(), lk = (wide() ? 'd' : 'p') + (u.c2Card ? 1 : 0) + (!wide() && u.c2Card && MI() && MI().aoeOpen() ? 'k' : '');
         if (lk !== u.c2LayoutKey) { render(); return; }
         if (!u.c2ManualZoom) { var f = document.querySelector('[data-map-zoom="fit"]'); if (f) f.click(); }
       }, 150);

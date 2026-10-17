@@ -42,6 +42,9 @@ const APP_SHELL = [
   './tokens/hearth-tokens.js', // v1.6.0 — framed map tokens + 32-portrait library
   './dm/c2.css', // v1.7.0 — C2 DM layout (Jenny)
   './dm/c2.js',
+  './dm/mi.css', // v1.7.0 — map interactions (Jenny): templates, token paths, soft fog
+  './dm/mi.js',
+  './dm/mi-fog.js',
   './dm/srd51-statblocks.js', // v1.7.0 — SRD 5.1 stat blocks (CC-BY-4.0)
   './tokens/lib/bandit.webp',
   './tokens/lib/bear.webp',

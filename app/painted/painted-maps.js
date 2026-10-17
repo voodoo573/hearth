@@ -183,6 +183,7 @@
         blocks.push({ q, tone: P.r(0.8, 1.12), rot: P.rnd() < 0.5 ? 0 : 90 });
       }
     }
+    if (P.capture && P.capture.walls) for (const b of blocks) { const xs = b.q.map(p => p[0] / S), ys = b.q.map(p => p[1] / S); P.capture.walls.push([Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]); }   // v1.7.0 terrain(): wall footprint in squares
     const lift = S * 0.07, hgt = o.h == null ? 1.1 : o.h;
     P.prop({ z: 50, h: hgt, ao2: o.ao2 !== false, sil: s => { s.beginPath(); for (const b of blocks) { s.moveTo(b.q[0][0], b.q[0][1]); for (let i = 1; i < 4; i++) s.lineTo(b.q[i][0], b.q[i][1]); s.closePath(); } s.fill(); },
       draw: x => { for (const b of blocks) {
@@ -1217,6 +1218,52 @@
     const P = new Painter(cols, rows, 16, seedOf(mapId) + cols * 131 + rows * 7); P.capture = { water: [], lava: [] };
     const meta = MAPS[mapId](P) || {}; return { cols, rows, cap: P.capture, overlays: (meta.overlays || []).concat(P.ov || []) };
   }
+  // v1.7.0 — map metadata for the DM tools: which squares are wall, which are water (difficult terrain,
+  // x2 movement) and the rooms between the walls (fog "Room" tool). Same painter pass as capture(), so
+  // it lines up with the bitmap exactly, including the centre-crop used for boards smaller than 8 squares.
+  function terrain(mapId, cols, rows) {
+    return ensurePack(mapId).then(() => {
+      const rc = Math.max(8, Math.min(40, cols | 0)), rr = Math.max(8, Math.min(40, rows | 0));
+      const ox = Math.floor((rc - cols) / 2), oy = Math.floor((rr - rows) / 2);
+      const P = new Painter(rc, rr, 16, seedOf(mapId) + rc * 131 + rr * 7); P.capture = { water: [], lava: [], walls: [] };
+      MAPS[mapId](P);
+      const n = cols * rows, wallA = new Float32Array(n), wall = new Uint8Array(n), water = new Uint8Array(n);
+      for (const w of P.capture.walls) {
+        const x0 = w[0] - ox, y0 = w[1] - oy, x1 = w[2] - ox, y1 = w[3] - oy;
+        for (let y = Math.max(0, Math.floor(y0)); y < Math.min(rows, Math.ceil(y1)); y++) for (let x = Math.max(0, Math.floor(x0)); x < Math.min(cols, Math.ceil(x1)); x++) {
+          wallA[y * cols + x] += Math.max(0, Math.min(x1, x + 1) - Math.max(x0, x)) * Math.max(0, Math.min(y1, y + 1) - Math.max(y0, y)); }
+      }
+      for (let i = 0; i < n; i++) wall[i] = wallA[i] >= 0.3 ? 1 : 0;
+      const cache = new Map(), grab = m => { if (!cache.has(m)) { const k = m.getContext('2d'); cache.set(m, { w: m.width, h: m.height, d: k.getImageData(0, 0, m.width, m.height).data }); } return cache.get(m); };
+      const frac = (m, i) => { const g = grab(m), sx = g.w / rc, sy = g.h / rr, x = (i % cols) + ox, y = Math.floor(i / cols) + oy; let hit = 0;
+        for (let v = 0; v < 4; v++) for (let u = 0; u < 4; u++) { const px = Math.min(g.w - 1, Math.floor((x + (u + 0.5) / 4) * sx)), py = Math.min(g.h - 1, Math.floor((y + (v + 0.5) / 4) * sy)); if (g.d[(py * g.w + px) * 4 + 3] > 96) hit++; }
+        return hit / 16; };
+      const masks = P.capture.water.concat(P.capture.lava), props = P.capture.props || null;
+      for (let i = 0; i < n; i++) { if (wall[i]) continue; let w = 0; for (const m of masks) w = Math.max(w, frac(m, i)); if (w >= 0.5 && !(props && frac(props, i) >= 0.5)) water[i] = 1; }
+      return { mapId, cols, rows, wall: Array.from(wall), water: Array.from(water), rooms: roomsOf(wall, cols, rows) };
+    });
+  }
+  // Rooms: open squares at least two squares from any wall are room "cores"; each core region grows back
+  // out over the open squares (doorways and narrow passages split between their neighbours).
+  function roomsOf(wall, cols, rows) {
+    const n = cols * rows; if (!wall.some(Boolean)) return [];
+    const dist = new Int32Array(n).fill(1e9), q = [];
+    for (let i = 0; i < n; i++) if (wall[i]) { dist[i] = 0; q.push(i); }
+    for (let h = 0; h < q.length; h++) { const i = q[h], x = i % cols, y = (i / cols) | 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= cols || Y >= rows) continue; const j = Y * cols + X; if (dist[j] > dist[i] + 1) { dist[j] = dist[i] + 1; q.push(j); } } }
+    const lab = new Int32Array(n).fill(-1); let k = 0; const front = [];
+    for (let i = 0; i < n; i++) { if (wall[i] || dist[i] < 2 || lab[i] >= 0) continue; const st = [i]; lab[i] = k; let size = 0;
+      while (st.length) { const c = st.pop(); size++; front.push(c); const x = c % cols, y = (c / cols) | 0;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= cols || Y >= rows) continue; const j = Y * cols + X; if (!wall[j] && dist[j] >= 2 && lab[j] < 0) { lab[j] = k; st.push(j); } } }
+      k++; }
+    for (let h = 0; h < front.length; h++) { const c = front[h], x = c % cols, y = (c / cols) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= cols || Y >= rows) continue; const j = Y * cols + X; if (!wall[j] && lab[j] < 0) { lab[j] = lab[c]; front.push(j); } } }
+    const rooms = [];
+    for (let r = 0; r < k; r++) { const cells = []; let x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1;
+      for (let i = 0; i < n; i++) if (lab[i] === r) { const x = i % cols, y = (i / cols) | 0; cells.push(i); x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+      if (cells.length >= 2) rooms.push({ cells, x0, y0, x1, y1 }); }
+    return rooms;
+  }
   // periodic smooth 1D value noise (n knots per loop) and a 3-octave sum; argument u = fraction of the loop
   function pnoise1(seed, n) { const r = rng(seed), v = new Float32Array(n); for (let i = 0; i < n; i++) v[i] = r();
     return u => { const f = (u - Math.floor(u)) * n, i = f | 0, a = f - i, s = a * a * (3 - 2 * a); return v[i % n] + (v[(i + 1) % n] - v[i % n]) * s; }; }
@@ -1408,7 +1455,7 @@
   if (root.__hearthPaintedPacks) for (const k of Object.keys(root.__hearthPaintedPacks)) registerPack(k, root.__hearthPaintedPacks[k]);
   root.HearthPaintedMaps = { version: '0.6.0', animate, createOverlay, animLoopSeconds: LOOP_S, maps: CATALOG.map(m => m[0]),
     list: () => CATALOG.map(([id, name, cat]) => ({ id, name, cat })),
-    ready, ensurePack, render, renderSync, toWebP, registerPack,
+    ready, ensurePack, render, renderSync, toWebP, registerPack, terrain,
     packsFor: id => ['core'].concat(MAP_PACKS[id] || []), packFiles: () => Object.assign({}, PACK_FILES),
     setPackBase: u => { packBase = u.endsWith('/') ? u : u + '/'; }, setPackLoader: fn => { packLoader = fn; },
     textureBytes: () => Object.values(_packSrc).reduce((a, src) => a + Object.values(src).reduce((b, v) => b + Math.round((v.length - v.indexOf(',') - 1) * 3 / 4), 0), 0) };
