@@ -58137,7 +58137,7 @@ function projectorLookCSS() {
     const page = v('--page', '#15110c'), deep = v('--page-deep', '#241a10'), ink = v('--ink', '#e8d9b5'), faded = v('--ink-faded', '#7a6a4a'), gold = v('--gold', '#d4a04b'), line = v('--rs-gold-line', 'rgba(184,137,61,0.55)');
     return `html,body { background:${page}; color:${ink}; }
   .grid { background: linear-gradient(${line} 1px, transparent 1px), linear-gradient(90deg, ${line} 1px, transparent 1px), radial-gradient(circle at 50% 40%, ${deep}, ${page}); border-color:${line}; }
-  .fsbtn { background:${page}; border-color:${line}; color:${ink}; }
+  .fsbtn { background:${page}; border-color:${line}; color:${ink}; } .fsico { stroke:${gold}; }
   .initpanel { background: color-mix(in srgb, ${page} 58%, transparent); border-color: color-mix(in srgb, ${line} 70%, transparent); color:${ink}; }
   .init-title { color:${gold}; } .init-row { color:${ink}; } .idle { color:${faded}; }
   .tok-cap { background:${page}; color:${ink}; }
@@ -58211,6 +58211,8 @@ function projectorDocumentHTML() {
     color:#e8d9b5; border:1px solid rgba(184,137,61,0.6); border-radius:8px; padding:9px 13px;
     font:13px Georgia,'Times New Roman',serif; cursor:pointer; opacity:0; transition:opacity 0.35s; }
   .fsbtn.show { opacity:0.9; }
+  .fsbtn { display:inline-flex; align-items:center; gap:7px; }
+  .fsico { width:16px; height:16px; fill:none; stroke:#d4a04b; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; flex:none; } /* gold line icon (UI polish), no emoji */
   .fsbtn:hover { opacity:1; }
   body.cursor-hidden { cursor:none; }
   ${PAINTED_OVERLAY_CSS}
@@ -58236,7 +58238,7 @@ function projectorDocumentHTML() {
   .pj-dice.n1 .pj-dice-num, .pj-dice.n1 .pj-dice-nat { color:#ff6a5a; }
 </style></head>
 <body>
-  <button class="fsbtn" id="fsBtn" title="Fill this screen for the players">⛶ Fullscreen</button>
+  <button class="fsbtn" id="fsBtn" title="Fill this screen for the players"><svg class="fsico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/></svg>Fullscreen</button>
   <div class="initpanel" id="initpanel"></div>
   <div class="wrap"><div class="idle" id="idle">Waiting for the battle map…</div><div class="grid" id="grid" style="display:none"></div></div>
   <div id="aoeMenu" style="display:none"></div>

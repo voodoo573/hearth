@@ -33,6 +33,11 @@ const STEPS = [
       const pin = await p.evaluate(async () => { const before = loadEncounter().aoes.find(a => a.id === 'a1').pinned; const c = document.querySelector('circle[data-aoe-pin="a1"]'); const r = c.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const el = document.elementFromPoint(x, y); el.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: x, clientY: y })); await new Promise(r => setTimeout(r, 250)); return { before, after: loadEncounter().aoes.find(a => a.id === 'a1').pinned, hit: el.tagName + '.' + el.getAttribute('class') }; });
       check('tapping the pin icon spot still pins the template (the circle takes the tap)', pin.before === false && pin.after === true, pin);
       check('an anchored template says "on token" in words', await p.evaluate(() => [...document.querySelectorAll('#dmMapGrid .dm-aoe-label')].some(t => /on token/.test(t.textContent))));
+      const [pop] = await Promise.all([ctx.waitForEvent('page'), p.evaluate(() => openProjectorWindow(loadEncounter()))]);
+      pop.on('pageerror', e => errs.push('projector: ' + e.message)); await pop.waitForTimeout(1200);
+      const pj = await pop.evaluate((src) => { const re = new RegExp(src, 'u'); const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); let n; const out = []; while ((n = w.nextNode())) if (re.test(n.nodeValue)) out.push(n.nodeValue.trim().slice(0, 30)); const fs = document.getElementById('fsBtn'); return { out, svg: !!(fs && fs.querySelector('svg.fsico path')), label: fs && fs.textContent.trim() }; }, '(?:(?![\\u00A9\\u00AE\\u203C\\u2049\\u2122\\u2139\\u2194-\\u21AA\\u2713\\u2715\\u2716\\u2717])\\p{Extended_Pictographic}|[\\u2726\\u2605\\u2606])');
+      check('projector window: no emoji; Fullscreen carries the line icon', pj.out.length === 0 && pj.svg && pj.label === 'Fullscreen', pj);
+      await pop.close();
     }
     await ctx.close();
   }
