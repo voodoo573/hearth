@@ -250,7 +250,7 @@
     if (g) g.innerHTML = list.map(function (t) { return shapeSVG(t, cell, enc, { sel: t.id === sel, handles: open, pulse: t.id === (U().miPulse || '') }); }).join('') + (ghost ? shapeSVG(ghost, cell, enc, { ghost: true, sel: true }) : '');
     var boxes = tokenBoxes(enc, cell), html = '', hitSet = {};
     var hs = W.innerWidth < 900 ? 44 : 26, hb = (hs + 6) / z;
-    if (open) list.forEach(function (t) { handlePts(t, geo(t, enc), cell, enc).forEach(function (h) { boxes.push([h.x - hb / 2, h.y - hb / 2, hb, hb]); }); });
+    if (open) list.forEach(function (t) { var b2 = t.id === sel ? hb : 32 / z; var g2 = geo(t, enc); handlePts(t, g2, cell, enc).forEach(function (h) { if (t.id === sel) h = thumbOff(t, g2, h); boxes.push([h.x - b2 / 2, h.y - b2 / 2, b2, b2]); }); });
     list.concat(ghost ? [ghost] : []).forEach(function (t) {
       var gg = geo(t, enc), hit = hits(t, enc), isSel = t.id === sel || t === ghost, big = isSel && open;
       hit.forEach(function (c) { hitSet[c.id] = 1; });
@@ -258,8 +258,8 @@
       var p = placeLabel(t, gg, cell, w, h, boxes, BW, BH);
       boxes.push([p[0] - w / 2, p[1] - h / 2, w, h]);
       html += '<div class="mi-chip' + (big ? ' big' : '') + (t === ghost ? ' ghost' : '') + '" data-mi-sel="' + E(t.id) + '" style="left:' + p[0].toFixed(1) + 'px;top:' + p[1].toFixed(1) + 'px" title="' + E((t.label ? t.label + (t.dc ? ' \u00b7 ' + t.dc : '') + ' \u2014 ' : '') + (open ? 'Select this template' : 'Edit templates')) + '">' + labelHTML(t, hit.length) + '</div>';
-      if (open && t !== ghost) handlePts(t, gg, cell, enc).forEach(function (hp) {
-        html += '<button class="mi-hdl k-' + hp.k + (isSel ? ' on' : '') + (U().miDragH === t.id + hp.k ? ' active' : '') + '" data-mi-h="' + hp.k + '" data-mi-id="' + E(t.id) + '" style="left:' + hp.x.toFixed(1) + 'px;top:' + hp.y.toFixed(1) + 'px" aria-label="' + ({ move: 'Move', size: 'Resize', aim: 'Aim' })[hp.k] + ' ' + KIND[t.kind] + '">' + hp.t + '</button>';
+      if (open && t !== ghost) handlePts(t, gg, cell, enc).map(function (hp) { return isSel ? thumbOff(t, gg, hp) : hp; }).forEach(function (hp) {
+        html += '<button class="mi-hdl k-' + hp.k + (isSel ? ' on' : ' sm') + (U().miDragH === t.id + hp.k ? ' active' : '') + '" data-mi-h="' + hp.k + '" data-mi-id="' + E(t.id) + '" style="left:' + hp.x.toFixed(1) + 'px;top:' + hp.y.toFixed(1) + 'px" aria-label="' + ({ move: 'Move', size: 'Resize', aim: 'Aim' })[hp.k] + ' ' + KIND[t.kind] + '">' + hp.t + '</button>';
       });
     });
     var tpl = el('miTpl'); if (tpl) tpl.innerHTML = html;
@@ -426,6 +426,10 @@
       var zf = Math.min(availW / bw, availH / bh);
       if (zf < b.z - 0.01 && X.setZoom) { X.setZoom(Math.max(0.4, zf), false); b = box(); }
       var ddx = (b.x0 + b.x1) / 2 - (sr.left + 6 + availW / 2), ddy = (b.y0 + b.y1) / 2 - (top + 34 + availH / 2);
+      // then nudge sideways so the selected template's 44 px thumb handles aren't cut off by the screen edge
+      var gr2 = X.grid.getBoundingClientRect(), g2 = geo(t, X.enc), hx = handlePts(t, g2, cell, X.enc).map(function (hp) { return gr2.left + thumbOff(t, g2, hp).x * b.z; });
+      var hx0 = Math.min.apply(null, hx) - 24, hx1 = Math.max.apply(null, hx) + 24;
+      if (hx0 - ddx < sr.left + 4) ddx = hx0 - sr.left - 4; else if (hx1 - ddx > sr.right - 4) ddx = hx1 - sr.right + 4;
       sc.scrollTo({ left: sc.scrollLeft + ddx, top: sc.scrollTop + ddy, behavior: behavior });
     }
     setTimeout(offHits, reduced() ? 0 : 320);
@@ -442,6 +446,15 @@
     if (!u.c2ManualZoom) u.dmMapZoomInit = false; // the next render refits
   }
 
+  // Phone: the selected template's 44 px handles sit just off the point they control (out past the rim or tip,
+  // behind the origin), so the thumb doesn't hide what it is dragging. startHandle keeps the grab offset.
+  function thumbOff(t, g, hp) {
+    if (wide() || t.kind === 'circle' || t.kind === 'square') return hp;
+    var d = 30 / zoom(), a = hp.k === 'move' ? g.ang + Math.PI : hp.k === 'size' ? g.ang + HALF : g.ang;
+    var dm = dims(X.enc), r = 24 / zoom(), BW = dm.cols * X.cell, BH = dm.rows * X.cell;
+    var cl = function (v, m) { return Math.max(r, Math.min(m - r, v)); }; // keep the whole thumb target on the board
+    return { k: hp.k, t: hp.t, x: cl(hp.x + Math.cos(a) * d, BW), y: cl(hp.y + Math.sin(a) * d, BH) };
+  }
   // ----- gestures while the AoE fan is open
   var hdrag = null;
   function startHandle(ev, id, k) {
@@ -450,14 +463,17 @@
     var a = A(); if (a) { a.sel = id; a.armed = false; a.ghost = null; a.kind = t.kind; a.ft = Math.round(t.len * 5); }
     snapAoe();
     if (t.attachedTo && k === 'move') { var p = resolveAoePos(t, X.enc); t.x = p.x; t.y = p.y; t.attachedTo = null; }
-    hdrag = { t: t, k: k, pid: ev.pointerId, moved: false };
+    var p0 = boardPt(ev), g0 = handlePts(t, geo(t, X.enc), X.cell, X.enc).find(function (q) { return q.k === k; });
+    var off = g0 ? { x: g0.x / X.cell - p0.x, y: g0.y / X.cell - p0.y } : { x: 0, y: 0 };
+    if (Math.hypot(off.x, off.y) > 2) off = { x: 0, y: 0 };
+    hdrag = { t: t, k: k, pid: ev.pointerId, moved: false, off: off };
     U().miDragH = id + k;
     try { X.grid.setPointerCapture(ev.pointerId); } catch (e) {}
     if (X.scroll) X.scroll.style.touchAction = 'none';
     syncFan(); refresh();
   }
   function moveHandle(ev) {
-    var h = hdrag, t = h.t, p = boardPt(ev), free = ev.shiftKey || (A() && A().snap === false), st = Math.PI / 12; h.moved = true;
+    var h = hdrag, t = h.t, p = boardPt(ev); p = { x: p.x + h.off.x, y: p.y + h.off.y }; var free = ev.shiftKey || (A() && A().snap === false), st = Math.PI / 12; h.moved = true;
     if (h.k === 'move') {
       if (t.kind === 'circle') { t.x = free ? p.x : Math.round(p.x); t.y = free ? p.y : Math.round(p.y); }
       else if (t.kind === 'square') { t.x = free ? p.x - t.len / 2 : Math.round(p.x - t.len / 2); t.y = free ? p.y - t.len / 2 : Math.round(p.y - t.len / 2); }
@@ -794,8 +810,9 @@
     if (!mv.free) h += '<rect class="mi-snapcell" x="' + mv.cur[0] * cell + '" y="' + mv.cur[1] * cell + '" width="' + s * cell + '" height="' + s * cell + '"/>';
     g.innerHTML = h;
     // distance chip under the destination; "×2" on the first difficult square of the path
+    var prevPt = mv.way[mv.way.length - 1], chipAbove = prevPt[1] > mv.cur[1] && mv.cur[1] > 0; // keep the chip off the path it came along
     var ft = mv.free && mv.fp ? Math.round(Math.hypot(mv.fp.x - (mv.x0 + s / 2), mv.fp.y - (mv.y0 + s / 2)) * 5) : pc.ft, over = ft > mv.speed;
-    var chip = '<div class="mi-mchip' + (over ? ' over' : '') + '" style="left:' + ((mv.cur[0] + s / 2) * cell).toFixed(1) + 'px;top:' + ((mv.cur[1] + s) * cell + 24 / zoom()).toFixed(1) + 'px"><b>' + ft + ' ft</b> <small>of ' + mv.speed + '</small>' + (pc.extra && !mv.free ? ' \u00b7 <span class="mi-dt">difficult +' + pc.extra + '</span>' : '') + (over ? ' \u00b7 <span class="mi-ov2">over speed</span>' : '') + '</div>';
+    var chip = '<div class="mi-mchip' + (over ? ' over' : '') + '" style="left:' + ((mv.cur[0] + s / 2) * cell).toFixed(1) + 'px;top:' + (chipAbove ? mv.cur[1] * cell - 24 / zoom() : (mv.cur[1] + s) * cell + 24 / zoom()).toFixed(1) + 'px"><b>' + ft + ' ft</b> <small>of ' + mv.speed + '</small>' + (pc.extra && !mv.free ? ' \u00b7 <span class="mi-dt">difficult +' + pc.extra + '</span>' : '') + (over ? ' \u00b7 <span class="mi-ov2">over speed</span>' : '') + '</div>';
     var fd = pc.cells.filter(function (q) { return q[2]; })[0];
     if (fd && !mv.free) chip += '<div class="mi-x2" style="left:' + ((fd[0] + 0.5) * cell).toFixed(1) + 'px;top:' + ((fd[1] - 0.15) * cell).toFixed(1) + 'px">\u00d72</div>';
     var box = el('miMv'); if (box) box.innerHTML = chip;

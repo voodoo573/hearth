@@ -32,6 +32,9 @@
 .c2 .mi-hdl.active { cursor: grabbing; box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 45%, transparent), 0 0 16px var(--gold), 0 2px 6px #000; }
 .c2 .mi-phone .mi-hdl { width: 44px; height: 44px; font-size: 19px; }
 .c2 .mi-phone .mi-hdl.k-size { font-size: 15px; }
+/* on phone only the selected template gets the 44 px thumb handles; the others stay desk-sized until tapped */
+.c2 .mi-phone .mi-hdl.sm { width: 26px; height: 26px; font-size: 12px; }
+.c2 .mi-phone .mi-hdl.sm.k-size { font-size: 10px; }
 @keyframes mi-pop { from { opacity: 0; transform: translate(-50%, -50%) scale(calc(var(--mi-inv) * .6)); } }
 /* live label chips */
 .c2 .mi-chip { position: absolute; transform: translate(-50%, -50%) scale(var(--mi-inv)); white-space: nowrap; pointer-events: auto; cursor: pointer;
